@@ -1,6 +1,6 @@
 # Progress Tracker
 
-**Document Status:** Verified and updated as of 2024-07-29.
+**Document Status:** Verified and updated as of 2024-07-30.
 
 This document tracks the development progress of the Sun AI Pitch Deck Engine, aligned with the project's changelog and current codebase.
 
@@ -46,13 +46,13 @@ This phase focuses on integrating Gemini API to bring intelligent features to th
   - [x] Create the `AICopilot.tsx` UI for conversational commands.
   - [x] Create the `AnalysisPanel.tsx` UI to display strategic feedback.
   - [x] Create the `ResearchResultPanel.tsx` UI for the AI research assistant.
-- [ ] **Deck Generation Agent (Core)**
-    - [ ] **Wizard Data Input:** Implement a form in `WizardSteps.tsx` to capture user input.
-    - [ ] **AI Generation Trigger:** Connect the wizard to `GeneratingScreen.tsx` to call the `generateDeckContent` service.
-    - [ ] **Dynamic Deck Loading:** Update `DeckEditor.tsx` to load and display the AI-generated content instead of mock data.
-- [ ] **Visual Agent (Image Generation)**
-    - [ ] Implement `geminiService` function to generate images from a text prompt.
-    - [ ] Add a "Generate Image" feature to the `DeckEditor` for slides.
+- [x] **Deck Generation Agent (Core)**
+    - [x] **Wizard Data Input:** Implement a form in `WizardSteps.tsx` to capture user input.
+    - [x] **AI Generation Trigger:** Connect the wizard to `GeneratingScreen.tsx` to call the `generateDeckContent` service.
+    - [x] **Dynamic Deck Loading:** Update `DeckEditor.tsx` to load and display the AI-generated content instead of mock data.
+- [x] **Visual Agent (Image Generation)**
+    - [x] Implement `geminiService` function to generate images from a text prompt.
+    - [x] Add a "Generate Image" feature to the `DeckEditor` for slides.
 - [ ] **Editor Agent (Content Modification)**
     - [ ] Implement `geminiService` functions for slide content modification (e.g., rewrite, shorten, expand).
     - [ ] Wire up the `AICopilot` component to send user commands to the service and update the deck state.

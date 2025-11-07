@@ -1,4 +1,4 @@
-import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
+import { GoogleGenAI, GenerateContentResponse, Type, Modality } from "@google/genai";
 import { Slide } from '../data/decks';
 
 // As per guidelines, API key must be from process.env.API_KEY
@@ -77,5 +77,31 @@ export const generateDeckContent = async (companyDetails: string): Promise<DeckG
     } catch (error) {
         console.error("Error generating deck content with Gemini:", error);
         throw new Error("Failed to generate pitch deck. Please try again.");
+    }
+};
+
+export const generateSlideImage = async (prompt: string): Promise<string> => {
+    try {
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: {
+                parts: [{ text: `Generate a visually appealing, professional image for a business pitch deck slide with the following theme: ${prompt}` }],
+            },
+            config: {
+                responseModalities: [Modality.IMAGE],
+            },
+        });
+        
+        for (const part of response.candidates[0].content.parts) {
+            if (part.inlineData) {
+                return part.inlineData.data;
+            }
+        }
+
+        throw new Error("No image data found in the API response.");
+
+    } catch (error) {
+        console.error("Error generating slide image with Gemini:", error);
+        throw new Error("Failed to generate slide image. Please check the prompt or try again.");
     }
 };

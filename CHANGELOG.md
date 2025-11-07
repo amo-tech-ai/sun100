@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2024-07-30
+
+### Added
+- **Visual AI Agent:** Implemented AI-powered image generation within the Deck Editor.
+- **Image Generation Service:** Added `generateSlideImage` function to `geminiService.ts` using the `gemini-2.5-flash-image` model.
+- **Dynamic Image UI:** The editor now shows a "Generate Image" button for slides with an image prompt. Clicking it calls the AI, displays a loading state, and then renders the generated image.
+
 ## [0.3.0] - 2024-07-29
 
 ### Added

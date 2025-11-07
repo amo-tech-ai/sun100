@@ -31,6 +31,9 @@ const GeneratingScreen: React.FC = () => {
                     template: 'default', // default template for now
                     slides: deckData.slides,
                 };
+
+                // Persist the generated deck to session storage to prevent data loss on refresh
+                sessionStorage.setItem(`deck-${newDeck.id}`, JSON.stringify(newDeck));
                 
                 navigate(`/dashboard/decks/${newDeck.id}/edit`, { state: { generatedDeck: newDeck } });
             } catch (err) {
