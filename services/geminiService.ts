@@ -243,3 +243,50 @@ export const analyzeSlide = async (title: string, content: string): Promise<Slid
         throw new Error("Failed to get slide analysis. Please try again.");
     }
 };
+
+// --- Research Agent ---
+export interface ResearchResult {
+    summary: string;
+    sources: {
+        uri: string;
+        title: string;
+    }[];
+}
+
+export const researchTopic = async (topic: string): Promise<ResearchResult> => {
+    try {
+        const prompt = `
+            You are a research assistant. Your task is to provide a concise, factual summary on the following topic.
+            Topic: "${topic}"
+            
+            Based on your search, provide a summary of the key findings.
+            Do not add any conversational text or introductions like "Here is a summary".
+            Just provide the summary directly.
+        `;
+
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: "gemini-2.5-pro", // Using pro for better summarization and grounding
+            contents: prompt,
+            config: {
+                tools: [{ googleSearch: {} }],
+            },
+        });
+
+        const summary = response.text;
+        const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+
+        const sources = groundingChunks
+            .map(chunk => chunk.web)
+            .filter(web => web && web.uri && web.title)
+            .map(web => ({ uri: web!.uri!, title: web!.title! }));
+
+        // Deduplicate sources based on URI
+        const uniqueSources = Array.from(new Map(sources.map(item => [item['uri'], item])).values());
+        
+        return { summary, sources: uniqueSources };
+
+    } catch (error) {
+        console.error("Error researching topic with Gemini:", error);
+        throw new Error("Failed to perform research. The AI agent might be busy, please try again.");
+    }
+};

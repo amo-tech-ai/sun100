@@ -44,26 +44,29 @@ This document outlines the phased approach to implement the core AI functionalit
 
 ---
 
-## 🟡 Phase 2.5: Research Agent - Web Search (Next Up)
+## ✅ Phase 2.5: Research Agent - Web Search (Complete)
 
 **Goal:** Enable users to research topics and get up-to-date information directly within the editor.
 
-### Step 1: Create Research Service with Grounding
+**Status:** Implemented. The `ResearchResultPanel` is now fully functional. It calls the `researchTopic` service which uses the Gemini API with the `googleSearch` tool. The UI displays the AI's summary and a list of clickable source links returned from the grounding metadata.
 
-- **File:** `services/geminiService.ts`
-- **Task:** Add a function `researchTopic` that takes a string query.
+---
+
+## 🟡 Phase 3: Polish & Production Readiness (Next Up)
+
+**Goal:** Transition from a client-side prototype to a robust, multi-user application.
+
+### Step 1: User Authentication & Persistence
+- **Task:** Integrate a service like Clerk for user sign-up/login and Supabase for database storage.
 - **Implementation:**
-    - Use the Gemini API with the `googleSearch` tool enabled.
-    - The prompt will ask the model to summarize findings on the user's query.
-    - The function must parse the response to extract both the text summary and the source URLs from the `groundingMetadata`.
+    - Replace `sessionStorage` with database calls to fetch and save user-owned decks.
+    - Protect routes to ensure only authenticated users can create and edit decks.
 
-### Step 2: Integrate into ResearchResultPanel Component
+### Step 2: Advanced Editor Features
+- **Task:** Implement features like drag-and-drop slide reordering.
 
-- **File:** `components/ResearchResultPanel.tsx`
-- **Task:** Make the research input functional.
-- **Logic:**
-    - Typing in the input and clicking a "Search" button will trigger the `researchTopic` service.
-    - The panel will display the summarized text and a list of clickable source links.
+### Step 3: Export & Sharing
+- **Task:** Implement functionality to export decks to PDF/PPTX and create shareable presentation links.
 
 ---
 
