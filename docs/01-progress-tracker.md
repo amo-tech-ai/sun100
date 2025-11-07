@@ -36,7 +36,7 @@ This phase established the foundational structure, user flow, and core editor fu
 
 ## 🟡 Phase 2: AI Integration (In Progress)
 
-This phase focuses on integrating Gemini API to bring intelligent features to the editor.
+This phase focuses on integrating Gemini API to bring intelligent features to the editor. See the [Implementation Plan](./02-implementation-plan.md) for technical details.
 
 - [x] **AI Service Layer**
   - [x] Create the `geminiService.ts` module to encapsulate all AI API calls.
@@ -46,20 +46,22 @@ This phase focuses on integrating Gemini API to bring intelligent features to th
   - [x] Create the `AICopilot.tsx` UI for conversational commands.
   - [x] Create the `AnalysisPanel.tsx` UI to display strategic feedback.
   - [x] Create the `ResearchResultPanel.tsx` UI for the AI research assistant.
-- [ ] **Functional AI Agent Implementation**
-  - [ ] **Editor Agent:**
-    - [ ] Implement `geminiService` function for slide content modification (e.g., rewrite, shorten, expand).
-    - [ ] Wire up the `AICopilot` component to send user commands to the service.
-    - [ ] Process AI responses to update the deck state in real-time.
-  - [ ] **Analyst Agent:**
+- [ ] **Deck Generation Agent (Core)**
+    - [ ] **Wizard Data Input:** Implement a form in `WizardSteps.tsx` to capture user input.
+    - [ ] **AI Generation Trigger:** Connect the wizard to `GeneratingScreen.tsx` to call the `generateDeckContent` service.
+    - [ ] **Dynamic Deck Loading:** Update `DeckEditor.tsx` to load and display the AI-generated content instead of mock data.
+- [ ] **Visual Agent (Image Generation)**
+    - [ ] Implement `geminiService` function to generate images from a text prompt.
+    - [ ] Add a "Generate Image" feature to the `DeckEditor` for slides.
+- [ ] **Editor Agent (Content Modification)**
+    - [ ] Implement `geminiService` functions for slide content modification (e.g., rewrite, shorten, expand).
+    - [ ] Wire up the `AICopilot` component to send user commands to the service and update the deck state.
+- [ ] **Analyst Agent (Feedback)**
     - [ ] Implement `geminiService` function to analyze a slide for clarity, impact, and tone.
-    - [ ] Fetch and display dynamic feedback and a quality score in the `AnalysisPanel`.
-  - [ ] **Research Agent:**
+    - [ ] Fetch and display dynamic feedback in the `AnalysisPanel`.
+- [ ] **Research Agent (Web Search)**
     - [ ] Implement `geminiService` function to perform web searches on a given topic.
-    - [ ] Display summarized findings and source links in the `ResearchResultPanel`.
-  - [ ] **Visual Agent:**
-    - [ ] Implement `geminiService` function to generate images using a model like Imagen.
-    - [ ] Add functionality to replace a slide's background image with an AI-generated one.
+    - [ ] Display summarized findings in the `ResearchResultPanel`.
 
 ---
 

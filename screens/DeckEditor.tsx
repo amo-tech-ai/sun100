@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { mockDeck, Deck, Slide } from '../data/decks';
 import { templates } from '../styles/templates';
 import AICopilot from '../components/AICopilot';
@@ -12,6 +12,8 @@ const EditIcon = () => (
 
 const DeckEditor: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const location = useLocation();
+    const { generatedDeck } = location.state || {};
 
     const [deck, setDeck] = useState<Deck | null>(null);
     const [selectedSlide, setSelectedSlide] = useState<Slide | null>(null);
@@ -19,13 +21,14 @@ const DeckEditor: React.FC = () => {
     const [editedTitle, setEditedTitle] = useState('');
 
     useEffect(() => {
-        // In a real app, this would fetch the deck data based on the ID.
-        // For now, we use mock data.
+        const initialDeck = generatedDeck || mockDeck;
         console.log(`Editing deck with id: ${id}`);
-        setDeck(mockDeck);
-        setSelectedSlide(mockDeck.slides[0]);
-        setEditedTitle(mockDeck.title);
-    }, [id]);
+        setDeck(initialDeck);
+        if (initialDeck.slides && initialDeck.slides.length > 0) {
+            setSelectedSlide(initialDeck.slides[0]);
+        }
+        setEditedTitle(initialDeck.title);
+    }, [id, generatedDeck]);
 
     const handleSlideSelect = (slide: Slide) => {
         setSelectedSlide(slide);
@@ -46,7 +49,7 @@ const DeckEditor: React.FC = () => {
         return <div className="p-8">Loading deck...</div>;
     }
 
-    const templateStyles = templates[deck.template];
+    const templateStyles = templates[deck.template] || templates.default;
 
     return (
         <div className="flex h-full bg-[#FBF8F5]">
