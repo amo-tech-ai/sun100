@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { mockDeck, Deck } from '../data/decks';
 import { templates } from '../styles/templates';
 
@@ -19,15 +19,20 @@ const ChevronRightIcon = () => (
 const PresentationScreen: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { deck: deckFromState } = location.state || {};
     
     const [deck, setDeck] = useState<Deck | null>(null);
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
     useEffect(() => {
-        // In a real app, fetch deck by id
+        // Load deck with priority: Navigation state > Session Storage > Mock Data
         console.log(`Presenting deck with id: ${id}`);
-        setDeck(mockDeck);
-    }, [id]);
+        const storedDeckJson = sessionStorage.getItem(`deck-${id}`);
+        const storedDeck = storedDeckJson ? JSON.parse(storedDeckJson) : null;
+        const deckToLoad = deckFromState || storedDeck || mockDeck;
+        setDeck(deckToLoad);
+    }, [id, deckFromState]);
 
     const handlePrev = useCallback(() => {
         if (!deck) return;
