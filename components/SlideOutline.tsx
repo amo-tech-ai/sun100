@@ -15,9 +15,10 @@ interface SlideOutlineProps {
     selectedSlideId: string;
     onSlideSelect: (slide: Slide) => void;
     onTitleSave: (newTitle: string) => void;
+    isCollapsed: boolean;
 }
 
-const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, template, selectedSlideId, onSlideSelect, onTitleSave }) => {
+const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, template, selectedSlideId, onSlideSelect, onTitleSave, isCollapsed }) => {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState(deckTitle);
 
@@ -32,14 +33,13 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, 
         setIsEditingTitle(false);
     };
     
-    // Update local title if deckTitle prop changes from parent
     React.useEffect(() => {
         setEditedTitle(deckTitle);
     }, [deckTitle]);
 
     return (
-        <aside className="w-[320px] flex-shrink-0 bg-white border-r border-gray-200 flex flex-col p-4">
-            <div className="mb-4">
+        <aside className={`flex-shrink-0 bg-white border-r border-gray-200 flex flex-col p-4 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-[320px]'}`}>
+            <div className={`mb-4 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 {isEditingTitle ? (
                     <div className="flex items-center">
                         <input
@@ -66,21 +66,23 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, 
                         onClick={() => onSlideSelect(slide)}
                         className={`p-2 rounded-md cursor-pointer border-2 transition-colors flex items-center gap-3 ${selectedSlideId === slide.id ? 'border-[#E87C4D] bg-orange-50' : 'border-transparent hover:border-gray-300'}`}
                     >
-                        <span className="text-sm font-medium text-gray-500">{index + 1}</span>
-                        <div className="w-full aspect-video bg-gray-200 rounded-sm overflow-hidden">
-                            <div className={`w-full h-full text-[4px] p-1 ${templates[template]?.slide || templates.default.slide}`}>
-                                <p className="font-bold truncate">{slide.title}</p>
+                        <span className={`text-sm font-medium text-gray-500 transition-all ${isCollapsed ? 'w-full text-center' : ''}`}>{index + 1}</span>
+                        {!isCollapsed && (
+                            <div className="w-full aspect-video bg-gray-200 rounded-sm overflow-hidden">
+                                <div className={`w-full h-full text-[4px] p-1 ${templates[template]?.slide || templates.default.slide}`}>
+                                    <p className="font-bold truncate">{slide.title}</p>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 ))}
             </div>
-            <Link
+             <Link
                 to={`/dashboard/decks/${deckId}/present`}
                 state={{deck: {id: deckId, title: deckTitle, slides: slides, template: template}}}
-                className="mt-4 text-center bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
+                className={`mt-4 text-center bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
             >
-                Present
+                {isCollapsed ? '' : 'Present'}
             </Link>
         </aside>
     );
