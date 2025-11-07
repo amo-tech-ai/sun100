@@ -5,7 +5,7 @@ import { templates } from '../styles/templates';
 import AICopilot from '../components/AICopilot';
 import AnalysisPanel from '../components/AnalysisPanel';
 import ResearchResultPanel from '../components/ResearchResultPanel';
-import { generateSlideImage } from '../services/geminiService';
+import { generateSlideImage, modifySlideContent, analyzeSlide, SlideAnalysis } from '../services/geminiService';
 
 const EditIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
@@ -21,6 +21,9 @@ const DeckEditor: React.FC = () => {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState('');
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+    const [isCopilotLoading, setIsCopilotLoading] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState<SlideAnalysis | null>(null);
 
     useEffect(() => {
         // Priority for loading deck: Navigation state > Session Storage > Mock Data
@@ -45,6 +48,7 @@ const DeckEditor: React.FC = () => {
 
     const handleSlideSelect = (slide: Slide) => {
         setSelectedSlide(slide);
+        setAnalysisResult(null); // Clear previous analysis when changing slides
     };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +90,50 @@ const DeckEditor: React.FC = () => {
             alert("Sorry, the image could not be generated. Please try again.");
         } finally {
             setIsGeneratingImage(false);
+        }
+    };
+
+    const handleCopilotGenerate = async (prompt: string) => {
+        if (!deck || !selectedSlide) return;
+
+        setIsCopilotLoading(true);
+        try {
+            const { newTitle, newContent } = await modifySlideContent(
+                selectedSlide.title,
+                selectedSlide.content,
+                prompt
+            );
+
+            const updatedSlide = { ...selectedSlide, title: newTitle, content: newContent };
+            
+            const updatedSlides = deck.slides.map(slide => 
+                slide.id === selectedSlide.id ? updatedSlide : slide
+            );
+
+            const updatedDeck = { ...deck, slides: updatedSlides };
+            setDeck(updatedDeck);
+            setSelectedSlide(updatedSlide);
+
+        } catch (error) {
+            console.error("Failed to modify slide content:", error);
+            alert(error instanceof Error ? error.message : "An unknown error occurred during modification.");
+        } finally {
+            setIsCopilotLoading(false);
+        }
+    };
+
+    const handleAnalyzeSlide = async () => {
+        if (!selectedSlide) return;
+        setIsAnalyzing(true);
+        setAnalysisResult(null);
+        try {
+            const result = await analyzeSlide(selectedSlide.title, selectedSlide.content);
+            setAnalysisResult(result);
+        } catch (error) {
+            console.error("Failed to analyze slide:", error);
+            alert(error instanceof Error ? error.message : "An unknown error occurred during analysis.");
+        } finally {
+            setIsAnalyzing(false);
         }
     };
 
@@ -187,8 +235,8 @@ const DeckEditor: React.FC = () => {
 
             {/* AI Panels */}
             <aside className="w-96 bg-white border-l border-gray-200 p-4 overflow-y-auto">
-                <AICopilot />
-                <AnalysisPanel />
+                <AICopilot isLoading={isCopilotLoading} onGenerate={handleCopilotGenerate} />
+                <AnalysisPanel onAnalyze={handleAnalyzeSlide} isLoading={isAnalyzing} analysis={analysisResult} />
                 <ResearchResultPanel />
             </aside>
         </div>
