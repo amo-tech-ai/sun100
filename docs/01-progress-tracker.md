@@ -68,7 +68,7 @@ This phase focuses on integrating Gemini API to bring intelligent features to th
 
 ---
 
-## ⚫ Phase 3: Polish & Production Readiness (Not Started)
+## 🟡 Phase 3: Polish & Production Readiness (In Progress)
 
 This phase will focus on making the application robust, scalable, and ready for users.
 
@@ -85,5 +85,6 @@ This phase will focus on making the application robust, scalable, and ready for 
   - [ ] Implement "Export to PPTX" functionality.
   - [ ] Create shareable links for presentations.
 - [ ] **Testing & Deployment**
-  - [ ] Write unit and integration tests for critical components.
-  - [ ] Set up a CI/CD pipeline for automated deployments.
+  - [x] **Deployment Readiness:** Containerized the application using a `Dockerfile` and added a production web server to serve the static build, making it deployable on services like Google Cloud Run.
+  - [ ] **Testing Framework:** Write unit and integration tests for critical components.
+  - [ ] **CI/CD:** Set up a CI/CD pipeline for automated deployments.

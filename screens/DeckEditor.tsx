@@ -5,7 +5,8 @@ import { templates } from '../styles/templates';
 import AICopilot from '../components/AICopilot';
 import AnalysisPanel from '../components/AnalysisPanel';
 import ResearchResultPanel from '../components/ResearchResultPanel';
-import { generateSlideImage, modifySlideContent, analyzeSlide, SlideAnalysis, researchTopic, ResearchResult } from '../services/geminiService';
+import ImageEditorPanel from '../components/ImageEditorPanel';
+import { generateSlideImage, editSlideImage, modifySlideContent, analyzeSlide, SlideAnalysis, researchTopic, ResearchResult } from '../services/geminiService';
 
 const EditIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
@@ -20,7 +21,12 @@ const DeckEditor: React.FC = () => {
     const [selectedSlide, setSelectedSlide] = useState<Slide | null>(null);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState('');
+    
+    // Image-specific states
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+    const [isEditingImage, setIsEditingImage] = useState(false);
+    const [imageError, setImageError] = useState<string | null>(null);
+
     const [isCopilotLoading, setIsCopilotLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState<SlideAnalysis | null>(null);
@@ -51,6 +57,7 @@ const DeckEditor: React.FC = () => {
     const handleSlideSelect = (slide: Slide) => {
         setSelectedSlide(slide);
         setAnalysisResult(null); // Clear previous analysis when changing slides
+        setImageError(null); // Clear image errors
     };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +82,7 @@ const DeckEditor: React.FC = () => {
         }
 
         setIsGeneratingImage(true);
+        setImageError(null);
         try {
             const base64Data = await generateSlideImage(selectedSlide.imageUrl);
             const newImageUrl = `data:image/png;base64,${base64Data}`;
@@ -89,9 +97,43 @@ const DeckEditor: React.FC = () => {
 
         } catch (error) {
             console.error("Failed to generate image:", error);
-            alert("Sorry, the image could not be generated. Please try again.");
+            setImageError(error instanceof Error ? error.message : "An unknown error occurred during generation.");
         } finally {
             setIsGeneratingImage(false);
+        }
+    };
+    
+    const handleEditImage = async (prompt: string) => {
+        if (!selectedSlide || !selectedSlide.imageUrl || !isUrl(selectedSlide.imageUrl) || !deck) {
+            return;
+        }
+
+        setIsEditingImage(true);
+        setImageError(null);
+        try {
+            const match = selectedSlide.imageUrl.match(/^data:(image\/[a-z]+);base64,(.*)$/);
+            if (!match || match.length < 3) {
+                throw new Error("Invalid image format for editing.");
+            }
+            const mimeType = match[1];
+            const base64ImageData = match[2];
+
+            const newBase64Data = await editSlideImage(base64ImageData, mimeType, prompt);
+            const newImageUrl = `data:image/png;base64,${newBase64Data}`;
+
+            const updatedSlides = deck.slides.map(slide =>
+                slide.id === selectedSlide.id ? { ...slide, imageUrl: newImageUrl } : slide
+            );
+
+            const updatedDeck = { ...deck, slides: updatedSlides };
+            setDeck(updatedDeck);
+            setSelectedSlide({ ...selectedSlide, imageUrl: newImageUrl });
+
+        } catch (error) {
+            console.error("Failed to edit image:", error);
+            setImageError(error instanceof Error ? error.message : "An unknown error occurred during editing.");
+        } finally {
+            setIsEditingImage(false);
         }
     };
 
@@ -235,6 +277,9 @@ const DeckEditor: React.FC = () => {
                                         >
                                             Generate Image
                                         </button>
+                                        {imageError && (
+                                            <p className="mt-2 text-sm text-red-600">{imageError}</p>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -252,6 +297,9 @@ const DeckEditor: React.FC = () => {
             {/* AI Panels */}
             <aside className="w-96 bg-white border-l border-gray-200 p-4 overflow-y-auto">
                 <AICopilot isLoading={isCopilotLoading} onGenerate={handleCopilotGenerate} />
+                {selectedSlide.imageUrl && isUrl(selectedSlide.imageUrl) && (
+                    <ImageEditorPanel onEdit={handleEditImage} isLoading={isEditingImage} error={imageError} />
+                )}
                 <AnalysisPanel onAnalyze={handleAnalyzeSlide} isLoading={isAnalyzing} analysis={analysisResult} />
                 <ResearchResultPanel onResearch={handleResearch} isLoading={isResearching} result={researchResult} />
             </aside>

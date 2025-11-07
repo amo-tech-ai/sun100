@@ -92,19 +92,54 @@ export const generateSlideImage = async (prompt: string): Promise<string> => {
             },
         });
         
-        for (const part of response.candidates[0].content.parts) {
-            if (part.inlineData) {
-                return part.inlineData.data;
-            }
+        const part = response.candidates?.[0]?.content?.parts?.[0];
+        if (part?.inlineData?.data) {
+            return part.inlineData.data;
         }
 
-        throw new Error("No image data found in the API response.");
+        throw new Error("The AI model returned an unexpected response. Please try a different prompt.");
 
     } catch (error) {
         console.error("Error generating slide image with Gemini:", error);
-        throw new Error("Failed to generate slide image. Please check the prompt or try again.");
+        throw new Error(error instanceof Error ? `Image generation failed: ${error.message}` : "An unknown error occurred during image generation.");
     }
 };
+
+export const editSlideImage = async (base64ImageData: string, mimeType: string, prompt: string): Promise<string> => {
+    try {
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: {
+                parts: [
+                    {
+                        inlineData: {
+                            data: base64ImageData,
+                            mimeType: mimeType,
+                        },
+                    },
+                    {
+                        text: prompt,
+                    },
+                ],
+            },
+            config: {
+                responseModalities: [Modality.IMAGE],
+            },
+        });
+
+        const part = response.candidates?.[0]?.content?.parts?.[0];
+        if (part?.inlineData?.data) {
+            return part.inlineData.data;
+        }
+
+        throw new Error("The AI model returned an unexpected response. Please try a different prompt for editing.");
+
+    } catch (error) {
+        console.error("Error editing slide image with Gemini:", error);
+        throw new Error(error instanceof Error ? `Image editing failed: ${error.message}` : "An unknown error occurred during image editing.");
+    }
+};
+
 
 export interface ModifiedSlideContent {
     newTitle: string;
@@ -275,13 +310,16 @@ export const researchTopic = async (topic: string): Promise<ResearchResult> => {
         const summary = response.text;
         const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
 
+        // FIX: Added a type guard to the filter function to ensure TypeScript correctly infers
+        // the type of the `web` object. This resolves an issue where the `sources` array
+        // was not strongly typed, causing a downstream error with `uniqueSources`.
         const sources = groundingChunks
             .map(chunk => chunk.web)
-            .filter(web => web && web.uri && web.title)
-            .map(web => ({ uri: web!.uri!, title: web!.title! }));
+            .filter((web): web is { uri: string; title: string } => !!(web && web.uri && web.title))
+            .map(web => ({ uri: web.uri, title: web.title }));
 
         // Deduplicate sources based on URI
-        const uniqueSources = Array.from(new Map(sources.map(item => [item['uri'], item])).values());
+        const uniqueSources = Array.from(new Map(sources.map(item => [item.uri, item])).values());
         
         return { summary, sources: uniqueSources };
 
