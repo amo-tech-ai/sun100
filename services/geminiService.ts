@@ -318,8 +318,13 @@ export const researchTopic = async (topic: string): Promise<ResearchResult> => {
             .filter((web): web is { uri: string; title: string } => !!(web && web.uri && web.title))
             .map(web => ({ uri: web.uri, title: web.title }));
 
-        // Deduplicate sources based on URI
-        const uniqueSources = Array.from(new Map(sources.map(item => [item.uri, item])).values());
+        // FIX: Replaced source deduplication logic to fix a TypeScript type inference issue.
+        // The previous method using `new Map(...).values()` could result in `uniqueSources`
+        // being typed as `unknown[]` in some TypeScript configurations.
+        // This `filter`/`findIndex` approach is more robust for type inference.
+        const uniqueSources = sources.filter((source, index, self) =>
+            index === self.findIndex((s) => s.uri === source.uri)
+        );
         
         return { summary, sources: uniqueSources };
 
