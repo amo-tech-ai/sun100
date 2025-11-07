@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2024-08-01
+
+### Added
+- **Analyst AI Agent:** Implemented AI-powered slide analysis via the "Slide Analysis" panel.
+- **Slide Analysis Service:** Added `analyzeSlide` function to `geminiService.ts` using `gemini-2.5-pro` to rate and provide feedback on a slide's clarity, impact, and tone.
+- **Dynamic Feedback UI:** The Analysis Panel is now fully interactive, allowing users to request feedback for the selected slide, showing a loading state, and displaying the dynamic, color-coded results from the AI.
+
+## [0.5.0] - 2024-07-31
+
+### Added
+- **Editor AI Agent:** Implemented AI-powered content modification via the "AI Copilot" panel.
+- **Content Modification Service:** Added `modifySlideContent` function to `geminiService.ts` using `gemini-2.5-pro` to rewrite, shorten, or expand slide content based on user commands.
+- **Interactive Copilot:** The AI Copilot is now fully functional, allowing users to request changes and see them applied directly to the selected slide.
+
 ## [0.4.0] - 2024-07-30
 
 ### Added

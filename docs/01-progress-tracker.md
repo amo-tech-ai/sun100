@@ -34,9 +34,9 @@ This phase established the foundational structure, user flow, and core editor fu
 
 ---
 
-## 🟡 Phase 2: AI Integration (In Progress)
+## 🟡 Phase 2: AI Integration & Editor Enhancements (In Progress)
 
-This phase focuses on integrating Gemini API to bring intelligent features to the editor. See the [Implementation Plan](./02-implementation-plan.md) for technical details.
+This phase focuses on integrating Gemini API to bring intelligent features to the editor and improving the core editor experience. See the [Implementation Plan](./02-implementation-plan.md) for technical details.
 
 - [x] **AI Service Layer**
   - [x] Create the `geminiService.ts` module to encapsulate all AI API calls.
@@ -53,12 +53,15 @@ This phase focuses on integrating Gemini API to bring intelligent features to th
 - [x] **Visual Agent (Image Generation)**
     - [x] Implement `geminiService` function to generate images from a text prompt.
     - [x] Add a "Generate Image" feature to the `DeckEditor` for slides.
-- [ ] **Editor Agent (Content Modification)**
-    - [ ] Implement `geminiService` functions for slide content modification (e.g., rewrite, shorten, expand).
-    - [ ] Wire up the `AICopilot` component to send user commands to the service and update the deck state.
-- [ ] **Analyst Agent (Feedback)**
-    - [ ] Implement `geminiService` function to analyze a slide for clarity, impact, and tone.
-    - [ ] Fetch and display dynamic feedback in the `AnalysisPanel`.
+- [x] **Editor Core Enhancements**
+    - [x] **State Persistence:** Implemented `sessionStorage` to save the current deck, preventing data loss on page refresh.
+    - [x] **Data Flow Integrity:** Fixed bug where the editor's current state was not passed to the presentation screen.
+- [x] **Editor Agent (Content Modification)**
+    - [x] Implement `geminiService` functions for slide content modification (e.g., rewrite, shorten, expand).
+    - [x] Wire up the `AICopilot` component to send user commands to the service and update the deck state.
+- [x] **Analyst Agent (Feedback)**
+    - [x] Implement `geminiService` function to analyze a slide for clarity, impact, and tone.
+    - [x] Fetch and display dynamic feedback in the `AnalysisPanel`.
 - [ ] **Research Agent (Web Search)**
     - [ ] Implement `geminiService` function to perform web searches on a given topic.
     - [ ] Display summarized findings in the `ResearchResultPanel`.
@@ -72,7 +75,7 @@ This phase will focus on making the application robust, scalable, and ready for 
 - [ ] **User Authentication & Persistence**
   - [ ] Integrate a service like Clerk for user sign-up and login.
   - [ ] Set up a Supabase project for the database and backend.
-  - [ ] Replace `mockDeck` with database calls to fetch and save user-owned decks.
+  - [ ] Replace `sessionStorage` with database calls to fetch and save user-owned decks.
 - [ ] **Advanced Editor Features**
   - [ ] Real-time collaboration using Supabase subscriptions.
   - [ ] Advanced theme and style customization.
