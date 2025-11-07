@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2024-08-04
+
+### Added
+- **Deployment Readiness:** Implemented containerization with a `Dockerfile` and `.dockerignore` to prepare the application for production deployment on services like Google Cloud Run. This fulfills the core setup outlined in the deployment guide.
+
+### Changed
+- **Project Status:** Updated version to `1.0.0` to signify MVP completion and deployment readiness. The progress tracker has been updated to reflect this milestone.
+
+## [0.9.0] - 2024-08-03
+
+### Added
+- **Advanced Image Generation Plan:** Created a new document (`docs/05-image-plan.md`) outlining a phased plan to implement advanced image features, including conversational image editing (Image + Text-to-Image) and user image uploads.
+
+## [0.8.0] - 2024-08-03
+
+### Added
+- **Image Generation Strategy Guide:** Created a new document (`docs/04-image-generation-strategy.md`) outlining strategic options and best practices for generating high-quality, context-aware images for different types of pitch deck slides using the `gemini-2.5-flash-image` model.
+
 ## [0.7.0] - 2024-08-02
 
 ### Added
