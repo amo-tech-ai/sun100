@@ -72,6 +72,9 @@ This phase focuses on integrating Gemini API to bring intelligent features to th
 
 This phase will focus on making the application robust, scalable, and ready for users.
 
+- [x] **Editor Layout Redesign**
+  - [x] Refactor the editor into a two-column, Decktopus-style layout.
+  - [x] Consolidate AI tools into a tabbed interface.
 - [ ] **User Authentication & Persistence**
   - [ ] Integrate a service like Clerk for user sign-up and login.
   - [ ] Set up a Supabase project for the database and backend.

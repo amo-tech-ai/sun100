@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2024-08-05
+
+### Changed
+- **Layout Redesign:** Overhauled the `DeckEditor` to use a two-column, Decktopus-style layout. This provides a more focused editing experience with a slide outline on the left and the main editor panel on the right.
+- **Component Refactor:** Broke down the monolithic `DeckEditor` into smaller, reusable components: `SlideOutline`, `EditorPanel`, and `AIToolbox`.
+- **AI Tools UI:** Consolidated all AI panels (Copilot, Image, Analysis, Research) into a single, tabbed `AIToolbox` component to reduce clutter and improve usability.
+
 ## [1.0.0] - 2024-08-04
 
 ### Added
