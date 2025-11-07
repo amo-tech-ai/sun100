@@ -38,7 +38,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, 
     }, [deckTitle]);
 
     return (
-        <aside className={`flex-shrink-0 bg-white border-r border-gray-200 flex flex-col p-4 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-[320px]'}`}>
+        <aside className={`flex-shrink-0 bg-white border-r border-gray-200 flex flex-col p-4 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-16' : 'w-[320px]'}`}>
             <div className={`mb-4 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 {isEditingTitle ? (
                     <div className="flex items-center">
@@ -64,7 +64,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, 
                     <div
                         key={slide.id}
                         onClick={() => onSlideSelect(slide)}
-                        className={`p-2 rounded-md cursor-pointer border-2 transition-colors flex items-center gap-3 ${selectedSlideId === slide.id ? 'border-[#E87C4D] bg-orange-50' : 'border-transparent hover:border-gray-300'}`}
+                        className={`p-2 rounded-md cursor-pointer border-2 transition-colors flex items-center ${isCollapsed ? '' : 'gap-3'} ${selectedSlideId === slide.id ? 'border-[#E87C4D] bg-orange-50' : 'border-transparent hover:border-gray-300'}`}
                     >
                         <span className={`text-sm font-medium text-gray-500 transition-all ${isCollapsed ? 'w-full text-center' : ''}`}>{index + 1}</span>
                         {!isCollapsed && (
