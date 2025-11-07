@@ -34,7 +34,7 @@ This phase established the foundational structure, user flow, and core editor fu
 
 ---
 
-## 🟡 Phase 2: AI Integration & Editor Enhancements (In Progress)
+## ✅ Phase 2: AI Integration & Editor Enhancements (Complete)
 
 This phase focuses on integrating Gemini API to bring intelligent features to the editor and improving the core editor experience. See the [Implementation Plan](./02-implementation-plan.md) for technical details.
 
@@ -62,9 +62,9 @@ This phase focuses on integrating Gemini API to bring intelligent features to th
 - [x] **Analyst Agent (Feedback)**
     - [x] Implement `geminiService` function to analyze a slide for clarity, impact, and tone.
     - [x] Fetch and display dynamic feedback in the `AnalysisPanel`.
-- [ ] **Research Agent (Web Search)**
-    - [ ] Implement `geminiService` function to perform web searches on a given topic.
-    - [ ] Display summarized findings in the `ResearchResultPanel`.
+- [x] **Research Agent (Web Search)**
+    - [x] Implement `geminiService` function to perform web searches on a given topic.
+    - [x] Display summarized findings in the `ResearchResultPanel`.
 
 ---
 

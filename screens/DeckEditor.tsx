@@ -5,7 +5,7 @@ import { templates } from '../styles/templates';
 import AICopilot from '../components/AICopilot';
 import AnalysisPanel from '../components/AnalysisPanel';
 import ResearchResultPanel from '../components/ResearchResultPanel';
-import { generateSlideImage, modifySlideContent, analyzeSlide, SlideAnalysis } from '../services/geminiService';
+import { generateSlideImage, modifySlideContent, analyzeSlide, SlideAnalysis, researchTopic, ResearchResult } from '../services/geminiService';
 
 const EditIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
@@ -24,6 +24,8 @@ const DeckEditor: React.FC = () => {
     const [isCopilotLoading, setIsCopilotLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState<SlideAnalysis | null>(null);
+    const [isResearching, setIsResearching] = useState(false);
+    const [researchResult, setResearchResult] = useState<ResearchResult | null>(null);
 
     useEffect(() => {
         // Priority for loading deck: Navigation state > Session Storage > Mock Data
@@ -136,6 +138,20 @@ const DeckEditor: React.FC = () => {
             setIsAnalyzing(false);
         }
     };
+    
+    const handleResearch = async (query: string) => {
+        setIsResearching(true);
+        setResearchResult(null);
+        try {
+            const result = await researchTopic(query);
+            setResearchResult(result);
+        } catch (error) {
+            console.error("Failed to research topic:", error);
+            alert(error instanceof Error ? error.message : "An unknown error occurred during research.");
+        } finally {
+            setIsResearching(false);
+        }
+    };
 
     if (!deck || !selectedSlide) {
         return <div className="p-8">Loading deck...</div>;
@@ -237,7 +253,7 @@ const DeckEditor: React.FC = () => {
             <aside className="w-96 bg-white border-l border-gray-200 p-4 overflow-y-auto">
                 <AICopilot isLoading={isCopilotLoading} onGenerate={handleCopilotGenerate} />
                 <AnalysisPanel onAnalyze={handleAnalyzeSlide} isLoading={isAnalyzing} analysis={analysisResult} />
-                <ResearchResultPanel />
+                <ResearchResultPanel onResearch={handleResearch} isLoading={isResearching} result={researchResult} />
             </aside>
         </div>
     );
