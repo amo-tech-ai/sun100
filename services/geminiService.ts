@@ -1,5 +1,6 @@
 import { GoogleGenAI, GenerateContentResponse, Type, Modality, FunctionDeclaration } from "@google/genai";
 import { Slide } from '../data/decks';
+import { templates } from "../styles/templates";
 
 // As per guidelines, API key must be from process.env.API_KEY
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -77,6 +78,21 @@ const analyzeSlideContentFunctionDeclaration: FunctionDeclaration = {
             },
         },
         required: ['clarity', 'impact', 'tone'],
+    },
+};
+
+const chooseLayoutFunctionDeclaration: FunctionDeclaration = {
+    name: 'chooseLayout',
+    description: 'Based on the slide content, choose the most appropriate layout style.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            layoutName: {
+                type: Type.STRING,
+                description: 'The name of the chosen layout. Must be one of: "default", "professional".'
+            },
+        },
+        required: ['layoutName'],
     },
 };
 
@@ -355,5 +371,42 @@ export const researchTopic = async (topic: string): Promise<ResearchResult> => {
     } catch (error) {
         console.error("Error researching topic with Gemini:", error);
         throw new Error("Failed to perform research. The AI agent might be busy, please try again.");
+    }
+};
+
+export const suggestLayout = async (title: string, content: string): Promise<keyof typeof templates> => {
+    try {
+        const prompt = `
+            You are a presentation design expert. Based on the following slide content, choose the best layout to visually represent the information by calling the 'chooseLayout' function.
+            
+            - A "default" layout is good for mixed content with an image and text side-by-side.
+            - A "professional" layout is good for formal, text-heavy, or title slides.
+
+            **Slide Title:** "${title}"
+            **Slide Content:** "${content}"
+        `;
+
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: "gemini-2.5-pro",
+            contents: prompt,
+            config: {
+                tools: [{ functionDeclarations: [chooseLayoutFunctionDeclaration] }],
+            },
+        });
+
+        const functionCall = response.functionCalls?.[0];
+
+        if (functionCall?.name === 'chooseLayout' && functionCall.args?.layoutName) {
+            const layoutName = functionCall.args.layoutName as string;
+            if (layoutName in templates) {
+                return layoutName as keyof typeof templates;
+            }
+        }
+
+        throw new Error("The AI model did not suggest a valid layout.");
+
+    } catch (error) {
+        console.error("Error suggesting layout with Gemini:", error);
+        throw new Error("Failed to suggest a layout. Please try again.");
     }
 };

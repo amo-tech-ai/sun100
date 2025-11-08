@@ -69,7 +69,7 @@ const PresentationScreen: React.FC = () => {
     }
     
     const activeSlide = deck.slides[currentSlideIndex];
-    const templateStyles = templates[deck.template];
+    const templateStyles = templates[activeSlide.template || deck.template] || templates.default;
 
     return (
         <div className="bg-gray-900 text-white h-screen w-screen flex flex-col items-center justify-center relative p-4 select-none">

@@ -9,9 +9,11 @@ import {
     modifySlideContent,
     analyzeSlide,
     researchTopic,
+    suggestLayout,
     SlideAnalysis,
     ResearchResult,
 } from '../services/geminiService';
+import { templates } from '../styles/templates';
 
 
 // ICONS
@@ -41,6 +43,7 @@ const DeckEditor: React.FC = () => {
     const [analysisResult, setAnalysisResult] = useState<SlideAnalysis | null>(null);
     const [isResearching, setIsResearching] = useState(false);
     const [researchResult, setResearchResult] = useState<ResearchResult | null>(null);
+    const [isSuggestingLayout, setIsSuggestingLayout] = useState(false);
 
     useEffect(() => {
         const storedDeckJson = sessionStorage.getItem(`deck-${id}`);
@@ -193,6 +196,25 @@ const DeckEditor: React.FC = () => {
             setIsResearching(false);
         }
     };
+
+    const handleSuggestLayout = async () => {
+        if (!deck || !selectedSlide) return;
+        setIsSuggestingLayout(true);
+        try {
+            const newLayout = await suggestLayout(selectedSlide.title, selectedSlide.content);
+            const updatedSlides = deck.slides.map(slide =>
+                slide.id === selectedSlide.id ? { ...slide, template: newLayout } : slide
+            );
+            const updatedDeck = { ...deck, slides: updatedSlides };
+            setDeck(updatedDeck);
+            setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
+        } catch (err) {
+            console.error("Layout suggestion error:", err);
+            // Optionally set an error state for the UI
+        } finally {
+            setIsSuggestingLayout(false);
+        }
+    };
     // --- END AI HANDLERS ---
 
     useEffect(() => {
@@ -253,11 +275,13 @@ const DeckEditor: React.FC = () => {
                     analysisResult={analysisResult}
                     isResearching={isResearching}
                     researchResult={researchResult}
+                    isSuggestingLayout={isSuggestingLayout}
                     handleGenerateImage={handleGenerateImage}
                     handleEditImage={handleEditImage}
                     handleCopilotGenerate={handleCopilotGenerate}
                     handleAnalyzeSlide={handleAnalyzeSlide}
                     handleResearch={handleResearch}
+                    handleSuggestLayout={handleSuggestLayout}
                     onPrevSlide={handlePrevSlide}
                     onNextSlide={handleNextSlide}
                 />
