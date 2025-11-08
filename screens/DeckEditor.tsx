@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { mockDeck, Deck, Slide } from '../data/decks';
+import { mockDeck, Deck, Slide, ChartData } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
 import {
@@ -294,7 +294,7 @@ const DeckEditor: React.FC = () => {
         try {
             const chartData = await suggestChart(selectedSlide.title, selectedSlide.content);
             const updatedSlides = deck.slides.map(slide =>
-                slide.id === selectedSlide.id ? { ...slide, chartData: chartData ?? undefined } : slide
+                slide.id === selectedSlide.id ? { ...slide, content: chartData ? '' : slide.content, chartData: chartData ?? undefined } : slide
             );
             const updatedDeck = { ...deck, slides: updatedSlides };
             setDeck(updatedDeck);

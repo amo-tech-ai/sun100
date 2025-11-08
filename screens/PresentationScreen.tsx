@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { mockDeck, Deck } from '../data/decks';
 import { templates } from '../styles/templates';
+import Chart from '../components/Chart';
 
 const ChevronLeftIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -116,11 +117,15 @@ const PresentationScreen: React.FC = () => {
                          )}
                          <div className={templateStyles.textContainer ?? ''}>
                             <h1 className={templateStyles.title}>{activeSlide.title}</h1>
-                            <ul className={templateStyles.content}>
-                                {activeSlide.content.split('\n').map((point, i) => (
-                                    <li key={i} className={templateStyles.bullet}>{point}</li>
-                                ))}
-                            </ul>
+                            {activeSlide.chartData ? (
+                                <Chart chartData={activeSlide.chartData} />
+                            ) : (
+                                <ul className={templateStyles.content}>
+                                    {activeSlide.content.split('\n').map((point, i) => (
+                                        <li key={i} className={templateStyles.bullet}>{point}</li>
+                                    ))}
+                                </ul>
+                            )}
                          </div>
                     </div>
                 </div>
