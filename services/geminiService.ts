@@ -117,9 +117,7 @@ const chartSuggesterFunctionDeclaration: FunctionDeclaration = {
     parameters: {
         type: Type.OBJECT,
         properties: {
-            // FIX: Renamed property to 'type' to align with the ChartData interface.
             type: { type: Type.STRING, description: "The type of chart. Must be 'bar'." },
-            // FIX: Renamed property to 'data' to align with the ChartData interface.
             data: {
                 type: Type.ARRAY,
                 description: 'An array of data objects for the chart.',
@@ -133,7 +131,6 @@ const chartSuggesterFunctionDeclaration: FunctionDeclaration = {
                 },
             },
         },
-        // FIX: Updated required properties to match the changes above.
         required: ['type', 'data'],
     },
 };
@@ -161,6 +158,22 @@ const generateAllSuggestionsFunctionDeclaration: FunctionDeclaration = {
             },
         },
         required: ['copilotSuggestions', 'imageSuggestions', 'researchSuggestions'],
+    },
+};
+
+const createRoadmapContentFunctionDeclaration: FunctionDeclaration = {
+    name: 'createRoadmapContent',
+    description: 'Generates content for a 4-milestone startup roadmap.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            milestones: {
+                type: Type.ARRAY,
+                description: 'An array of exactly 4 milestone titles.',
+                items: { type: Type.STRING },
+            },
+        },
+        required: ['milestones'],
     },
 };
 
@@ -206,7 +219,6 @@ export const generateDeckContent = async (companyDetails: string): Promise<DeckG
         const functionCall = response.functionCalls?.[0];
 
         if (functionCall?.name === 'generateDeckOutline' && functionCall.args) {
-            // FIX: Cast function call arguments to 'unknown' first to satisfy TypeScript's type assertion rules.
             const deckData = functionCall.args as unknown as DeckGenerationResult;
              if (!deckData.title || !Array.isArray(deckData.slides)) {
                 throw new Error("Invalid data structure in function call arguments.");
@@ -347,7 +359,6 @@ export const modifySlideContent = async (
         const functionCall = response.functionCalls?.[0];
 
         if (functionCall?.name === 'rewriteSlide' && functionCall.args) {
-            // FIX: Cast function call arguments to 'unknown' first to satisfy TypeScript's type assertion rules.
             const modifiedData = functionCall.args as unknown as ModifiedSlideContent;
             if (!modifiedData.newTitle || typeof modifiedData.newContent === 'undefined') {
                  throw new Error("Invalid data structure in function call arguments for slide modification.");
@@ -396,7 +407,6 @@ export const analyzeSlide = async (title: string, content: string): Promise<Slid
         const functionCall = response.functionCalls?.[0];
 
         if (functionCall?.name === 'analyzeSlideContent' && functionCall.args) {
-            // FIX: Cast function call arguments to 'unknown' first to satisfy TypeScript's type assertion rules.
             const analysisData = functionCall.args as unknown as SlideAnalysis;
             if (!analysisData.clarity || !analysisData.impact || !analysisData.tone) {
                 throw new Error("Invalid format received from Gemini API for slide analysis.");
@@ -443,18 +453,10 @@ export const researchTopic = async (topic: string): Promise<ResearchResult> => {
         const summary = response.text;
         const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
 
-        // FIX: Added a type guard to the filter function to ensure TypeScript correctly infers
-        // the type of the `web` object. This resolves an issue where the `sources` array
-        // was not strongly typed, causing a downstream error with `uniqueSources`.
         const sources = groundingChunks
             .map(chunk => chunk.web)
-            .filter((web): web is { uri: string; title: string } => !!(web && web.uri && web.title))
-            .map(web => ({ uri: web.uri, title: web.title }));
+            .filter((web): web is { uri: string; title: string } => !!(web && web.uri && web.title));
 
-        // FIX: Replaced source deduplication logic to fix a TypeScript type inference issue.
-        // The previous method using `new Map(...).values()` could result in `uniqueSources`
-        // being typed as `unknown[]` in some TypeScript configurations.
-        // This `filter`/`findIndex` approach is more robust for type inference.
         const uniqueSources = sources.filter((source, index, self) =>
             index === self.findIndex((s) => s.uri === source.uri)
         );
@@ -527,10 +529,7 @@ export const suggestChart = async (title: string, content: string): Promise<Char
 
         if (functionCall?.name === 'suggestChart' && functionCall.args) {
             const chartResult = functionCall.args as unknown as ChartData;
-            // FIX: The property from the function call is now 'data', which matches the 'ChartData' type.
-            // This resolves the error "Property 'chartData' does not exist on type 'ChartData'".
             if (chartResult.data?.length > 1) { // Only return if we have a meaningful chart
-                // FIX: The property from the function call is now 'data'.
                 return { type: 'bar', data: chartResult.data };
             }
         }
@@ -579,5 +578,71 @@ export const fetchAllSuggestions = async (title: string, content: string): Promi
     } catch (error) {
         console.error("Error fetching all suggestions:", error);
         return emptyResult; // Silently fail and return empty object
+    }
+};
+
+export const generateRoadmapSlide = async (companyDetails: string, deckTemplate: keyof typeof templates): Promise<Slide> => {
+    try {
+        // Step 1: Generate the strategic milestone content
+        const contentPrompt = `
+            You are a startup strategy consultant. Based on the following company details, generate four concise, high-impact roadmap milestones by calling the 'createRoadmapContent' function. The milestones should represent a logical progression from launch to scale.
+            
+            Company Details: "${companyDetails}"
+        `;
+
+        const contentResponse: GenerateContentResponse = await ai.models.generateContent({
+            model: "gemini-2.5-pro",
+            contents: contentPrompt,
+            config: {
+                tools: [{ functionDeclarations: [createRoadmapContentFunctionDeclaration] }],
+            },
+        });
+
+        const contentFunctionCall = contentResponse.functionCalls?.[0];
+        if (contentFunctionCall?.name !== 'createRoadmapContent' || !Array.isArray(contentFunctionCall.args.milestones) || contentFunctionCall.args.milestones.length !== 4) {
+            throw new Error("The AI failed to generate valid roadmap milestones.");
+        }
+        
+        const milestones: string[] = contentFunctionCall.args.milestones;
+
+        // Step 2: Build the dynamic image prompt using the generated milestones
+        const roadmapPrompt = `
+            A minimalist timeline roadmap on a light beige background (#FBF8F5). 
+            A single, clean horizontal line (#1F2937) runs from left to right. 
+            Four circular nodes are evenly spaced on the line, with simple, recognizable icons inside. 
+            The first circle is green (#10B981), the second is brand orange (#E87C4D), and the last two are gray (#6B7280). 
+            A vertical dashed orange line labeled 'Now' passes through the second circle. 
+            Below each circle, add a short, dark gray label. The labels must be, in order: '${milestones[0]}', '${milestones[1]}', '${milestones[2]}', and '${milestones[3]}'.
+        `;
+        
+        // Step 3: Generate the visual roadmap image
+        const imageResponse: GenerateContentResponse = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: { parts: [{ text: roadmapPrompt }] },
+            config: {
+                responseModalities: [Modality.IMAGE],
+            },
+        });
+        
+        const imagePart = imageResponse.candidates?.[0]?.content?.parts?.find(p => !!p.inlineData);
+
+        if (!imagePart?.inlineData?.data) {
+            throw new Error("The AI model did not return an image for the roadmap.");
+        }
+
+        // Step 4: Construct and return the complete slide object
+        const newImageUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
+        const newSlide: Slide = {
+            id: `slide-${Date.now()}`,
+            title: 'Our Roadmap to Market Leadership',
+            content: milestones.join('\n'), // Add the generated text content
+            imageUrl: newImageUrl,
+            template: deckTemplate,
+        };
+        return newSlide;
+
+    } catch (error) {
+        console.error("Error generating roadmap slide with Gemini:", error);
+        throw new Error("Failed to generate the roadmap slide. Please try again.");
     }
 };
