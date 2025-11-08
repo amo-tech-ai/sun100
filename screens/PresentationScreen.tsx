@@ -60,6 +60,27 @@ const PresentationScreen: React.FC = () => {
         };
     }, [handleNext, handlePrev, navigate, id]);
 
+    // --- Performance Optimization: Image Pre-loading ---
+    useEffect(() => {
+        if (!deck) return;
+        
+        const preloadImage = (slideIndex: number) => {
+            if (slideIndex >= 0 && slideIndex < deck.slides.length) {
+                const slide = deck.slides[slideIndex];
+                if (slide.imageUrl && (slide.imageUrl.startsWith('data:image') || slide.imageUrl.startsWith('http'))) {
+                    const img = new Image();
+                    img.src = slide.imageUrl;
+                }
+            }
+        };
+
+        // Preload next and previous slide images for smoother transitions
+        preloadImage(currentSlideIndex + 1);
+        preloadImage(currentSlideIndex - 1);
+
+    }, [deck, currentSlideIndex]);
+
+
     if (!deck) {
         return (
             <div className="bg-gray-900 text-white h-screen w-screen flex items-center justify-center">
