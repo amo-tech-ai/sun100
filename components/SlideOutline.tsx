@@ -19,7 +19,8 @@ interface SlideOutlineProps {
     selectedSlideId: string;
     onSlideSelect: (slide: Slide) => void;
     onTitleSave: (newTitle: string) => void;
-    onAddRoadmapSlide: () => void;
+    onGenerateRoadmapSlide: () => void;
+    isGeneratingRoadmap: boolean;
     isCollapsed: boolean;
 }
 
@@ -53,7 +54,7 @@ const SlideOutlineItem: React.FC<SlideOutlineItemProps> = React.memo(({ slide, i
 SlideOutlineItem.displayName = 'SlideOutlineItem';
 
 
-const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, template, selectedSlideId, onSlideSelect, onTitleSave, onAddRoadmapSlide, isCollapsed }) => {
+const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, template, selectedSlideId, onSlideSelect, onTitleSave, onGenerateRoadmapSlide, isGeneratingRoadmap, isCollapsed }) => {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState(deckTitle);
 
@@ -109,11 +110,24 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, 
             </div>
             <div className={`mt-4 flex flex-col space-y-2 transition-opacity duration-300 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <button
-                    onClick={onAddRoadmapSlide}
-                    className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2"
+                    onClick={onGenerateRoadmapSlide}
+                    disabled={isGeneratingRoadmap}
+                    className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2 disabled:bg-gray-200 disabled:cursor-not-allowed"
                 >
-                    <RoadmapIcon />
-                    <span>Add Roadmap</span>
+                    {isGeneratingRoadmap ? (
+                        <>
+                            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-[#E87C4D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Generating...</span>
+                        </>
+                    ) : (
+                         <>
+                            <RoadmapIcon />
+                            <span>Generate Roadmap</span>
+                        </>
+                    )}
                 </button>
                  <Link
                     to={`/dashboard/decks/${deckId}/present`}

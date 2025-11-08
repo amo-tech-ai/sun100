@@ -10,8 +10,9 @@ import {
     analyzeSlide,
     researchTopic,
     suggestLayout,
-    fetchAllSuggestions, // Updated import
+    fetchAllSuggestions,
     suggestChart,
+    generateRoadmapSlide, // New import
     SlideAnalysis,
     ResearchResult,
 } from '../services/geminiService';
@@ -49,6 +50,7 @@ const DeckEditor: React.FC = () => {
     const [layoutError, setLayoutError] = useState<string | null>(null);
     const [isSuggestingChart, setIsSuggestingChart] = useState(false);
     const [chartError, setChartError] = useState<string | null>(null);
+    const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState(false);
 
 
     // AI Suggestion States
@@ -139,24 +141,26 @@ const DeckEditor: React.FC = () => {
         setIsSidebarCollapsed(isCollapsed => !isCollapsed);
     }, []);
 
-    const handleAddRoadmapSlide = useCallback(() => {
+    const handleGenerateRoadmapSlide = useCallback(async () => {
         if (!deck) return;
+        setIsGeneratingRoadmap(true);
+        try {
+            // Use the original company details from the first slide's content if available,
+            // or a generic description of the deck's title.
+            const companyContext = deck.slides[0]?.content || deck.title;
+            const newSlide = await generateRoadmapSlide(companyContext, deck.template);
+            
+            const updatedSlides = [...deck.slides, newSlide];
+            const updatedDeck = { ...deck, slides: updatedSlides };
 
-        const roadmapPrompt = "A minimalist timeline roadmap on a light beige background (`#FBF8F5`). A single, clean horizontal line (`#1F2937`) runs from left to right. Four circular nodes are evenly spaced on the line, with simple, recognizable icons inside. The first circle is green (`#10B981`), the second is brand orange (`#E87C4D`), and the last two are gray (`#6B7280`). A vertical dashed orange line labeled 'Now' passes through the second circle. Below each circle, add a short, dark gray label: 'Launch MVP', '10K Users', 'Series A', 'Global Expansion'.";
-
-        const newSlide: Slide = {
-            id: `slide-${Date.now()}`,
-            title: 'Our Roadmap to Market Leadership',
-            content: '', // Start with no content for a visual focus
-            imageUrl: roadmapPrompt,
-            template: deck.template, // Inherit deck template
-        };
-
-        const updatedSlides = [...deck.slides, newSlide];
-        const updatedDeck = { ...deck, slides: updatedSlides };
-
-        setDeck(updatedDeck);
-        handleSlideSelect(newSlide);
+            setDeck(updatedDeck);
+            handleSlideSelect(newSlide);
+        } catch (err) {
+            console.error("Failed to generate roadmap slide:", err);
+            // Optionally, set an error state to show in the UI.
+        } finally {
+            setIsGeneratingRoadmap(false);
+        }
     }, [deck, handleSlideSelect]);
 
     // --- AI HANDLERS ---
@@ -340,7 +344,8 @@ const DeckEditor: React.FC = () => {
                 selectedSlideId={selectedSlide.id}
                 onSlideSelect={handleSlideSelect}
                 onTitleSave={handleTitleSave}
-                onAddRoadmapSlide={handleAddRoadmapSlide}
+                onGenerateRoadmapSlide={handleGenerateRoadmapSlide}
+                isGeneratingRoadmap={isGeneratingRoadmap}
                 isCollapsed={isSidebarCollapsed}
             />
             <div className="flex-1 flex flex-col relative">

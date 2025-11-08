@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2024-08-11
+
+### Changed
+- **Upgraded Roadmap Generation to Intelligent Agent:** The "Add Roadmap" feature has been completely re-architected. It now uses a multi-step AI workflow to first generate four strategic roadmap milestones (text content) and then uses that text to create a perfectly aligned "Vision Trail" visual. This ensures the generated slide is fully compatible with all other AI agents (Copilot, Analysis, Research) from the moment it's created.
+
+## [1.7.0] - 2024-08-10
+
+### Added
+- **Intelligent Roadmap Agent Plan:** Created a new document (`docs/18-roadmap-implementation-plan.md`) outlining a comprehensive plan to upgrade the "Add Roadmap" feature. The new "Intelligent Roadmap Agent" will fully automate the generation of a complete, visually-focused "Vision Trail" roadmap slide in a single click, including generating supporting text content to ensure full compatibility with the Copilot, Analysis, and Research AI tools.
+
 ## [1.6.0] - 2024-08-09
 
 ### Added
