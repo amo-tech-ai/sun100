@@ -57,39 +57,23 @@ We will implement this change in two phases, starting with refactoring our core,
 **Goal:** Convert the most critical, existing AI features to use function calling, hardening our application's foundation.
 
 #### Task 1.1: Refactor `generateDeckContent`
+- **Status:** ✅ **Complete**
 - **Description:** Replace the JSON schema-based deck generation with a `generateDeckOutline` function call.
-- **Steps:**
-    1.  In `geminiService.ts`, define a `generateDeckOutlineFunctionDeclaration` that mirrors the existing `deckSchema`.
-    2.  Modify the `generateDeckContent` function:
-        -   Remove `responseMimeType` and `responseSchema` from the `config`.
-        -   Add a `tools` property to the `config` containing the new function declaration.
-    3.  Update the function logic to check for `response.functionCalls`.
-    4.  Instead of `JSON.parse(response.text)`, get the deck data directly from `response.functionCalls[0].args`.
 - **Success Criteria:** Deck generation is now driven by a reliable function call, significantly reducing the chance of failure due to model output formatting.
 
 #### Task 1.2: Refactor `modifySlideContent` (AI Copilot)
+- **Status:** ✅ **Complete**
 - **Description:** Convert the AI Copilot's rewrite capability to use a `rewriteSlide` function call.
-- **Steps:**
-    1.  Define a `rewriteSlideFunctionDeclaration` mirroring the `modifiedSlideSchema`.
-    2.  Update `modifySlideContent`: remove the schema and add the `rewriteSlide` tool to the config.
-    3.  Extract `newTitle` and `newContent` from the returned `functionCall.args`.
 - **Success Criteria:** The AI Copilot's rewrite actions are now predictable and robust.
 
 #### Task 1.3: Refactor `analyzeSlide` (Analyst Agent)
+- **Status:** ✅ **Complete**
 - **Description:** Change the slide analysis to use an `analyzeSlideContent` function call.
-- **Steps:**
-    1.  Define an `analyzeSlideContentFunctionDeclaration` based on the `analysisSchema`.
-    2.  Update `analyzeSlide`: remove the schema and add the new tool to the config.
-    3.  Construct the `SlideAnalysis` object directly from `functionCall.args`.
 - **Success Criteria:** The Analysis panel receives structured data directly from function call arguments, completely eliminating manual JSON parsing.
 
 #### Task 1.4: Refactor Image Generation & Editing (Visual Agent)
+- **Status:** ✅ **Complete**
 - **Description:** Convert the existing image generation and editing workflows to use a chain of function calls for increased reliability and quality. This involves separating the creative brief from the generation and editing actions.
-- **Steps:**
-    1.  Define an `imageBriefFunctionDeclaration` to generate a detailed creative brief (style, palette, keywords) based on slide content.
-    2.  Update `generateSlideImage`:
-        -   First, call the model with the `imageBrief` tool to get a structured brief.
-        -   Then, call the image generation model using a high-quality prompt constructed from the brief.
 - **Success Criteria:** Image generation is more consistent and context-aware. The editing process is robust and reliable.
 
 ---
@@ -99,13 +83,19 @@ We will implement this change in two phases, starting with refactoring our core,
 **Goal:** Leverage our new, robust function calling architecture to introduce powerful features that were previously impractical.
 
 #### Task 2.1: Implement `chooseLayout`
+- **Status:** ✅ **Complete**
 - **Description:** Create a new feature that allows the AI to suggest and apply a contextually appropriate visual layout for a slide.
-- **Steps:**
-    1.  Define a `chooseLayoutFunctionDeclaration`. Its parameters should include a `layoutName` property, which can be an `enum` of the keys in our `styles/templates.ts` (e.g., `['default', 'professional']`).
-    2.  Create a new "Auto-Layout" button in the `EditorPanel.tsx`.
-    3.  When clicked, a new service function `suggestLayout(slide: Slide)` will be called. This function sends the slide's content to the model along with the `chooseLayout` tool.
-    4.  The app will receive the function call and update the slide's state with the chosen layout. (Note: This may require a minor data model change to allow per-slide templates).
 - **Success Criteria:** Users can automatically apply a contextually appropriate layout to any slide, automating a key design decision.
+
+#### Task 2.2: Implement `chartSuggester`
+- **Status:** ✅ **Complete**
+- **Description:** Implement a "Data-to-Slide" feature where the AI can detect numerical data in a slide's text and transform it into a structured bar chart.
+- **Steps:**
+    1.  Defined a `chartSuggesterFunctionDeclaration` that outputs a chart type and structured data.
+    2.  Created a "Suggest Chart" button in the `EditorPanel.tsx`.
+    3.  When clicked, the `suggestChart` service function is called.
+    4.  If the AI finds data, it returns a chart object which is then rendered by a new `Chart.tsx` component, replacing the slide's bullet points.
+- **Success Criteria:** Users can automatically visualize data points from their text, transforming a text slide into a data slide with one click.
 
 ---
 
@@ -114,11 +104,12 @@ We will implement this change in two phases, starting with refactoring our core,
 **Goal:** Transform the editor from a reactive tool to a proactive partner by suggesting context-aware actions to the user.
 
 #### Task 3.1: Implement Context-Aware Suggestion Functions
+- **Status:** ✅ **Complete**
 - **Description:** Create a suite of functions that analyze the current slide's content and suggest relevant, high-impact actions for the user.
 - **Steps:**
-    1.  **`suggestImprovements`:** Define a function that suggests ways to enhance slide content (e.g., "Add a statistic," "Simplify this point"). This will power the AI Copilot suggestions.
-    2.  **`suggestImagePrompts`:** Define a function that suggests creative prompts for the Image Editor (e.g., "Use a more futuristic style," "Incorporate a warm color palette").
-    3.  **`suggestResearchTopics`:** Define a function that suggests relevant research queries to find supporting data for the current slide (e.g., "Find market size data for AI startups," "Research competitor A's latest funding").
+    1.  **`suggestImprovements`:** Implemented to power the AI Copilot suggestions.
+    2.  **`suggestImagePrompts`:** Implemented to power the Image Editor suggestions.
+    3.  **`suggestResearchTopics`:** Implemented to power the Research Assistant suggestions.
 - **Success Criteria:** The AI can generate a list of 3-5 relevant, short suggestions for each of the core AI tabs (Copilot, Image, Research).
 
 ---
@@ -129,9 +120,9 @@ Before these changes are considered complete, the following must be verified:
 
 | Category          | Criteria                                                                                                              | Status |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------- | ------ |
-| **Code Quality**  | All function declarations are strongly typed using `Type` enum from `@google/genai`. No `any` types are used.           | 🔴     |
-| **Error Handling**| `geminiService.ts` functions now include `try...catch` blocks that specifically handle cases where `response.functionCalls` is missing or empty. | 🔴     |
-| **UI/UX**         | All features that trigger function calls provide clear loading states to the user.                                    | 🟡     |
-| **Token Usage**   | Acknowledge that function declarations add to the input token count. Monitor for any performance impact.                | 🔴     |
-| **Testing**       | Manually verify the end-to-end flow for all refactored and new functions.                                             | 🔴     |
-| **Regressions**   | Confirm that all existing application functionality (presentation mode, saving, etc.) works as expected after the refactor. | 🔴     |
+| **Code Quality**  | All function declarations are strongly typed using `Type` enum from `@google/genai`. No `any` types are used.           | 🟢     |
+| **Error Handling**| `geminiService.ts` functions now include `try...catch` blocks that specifically handle cases where `response.functionCalls` is missing or empty. | 🟢     |
+| **UI/UX**         | All features that trigger function calls provide clear loading states to the user.                                    | 🟢     |
+| **Token Usage**   | Acknowledge that function declarations add to the input token count. Monitor for any performance impact.                | 🟡     |
+| **Testing**       | Manually verify the end-to-end flow for all refactored and new functions.                                             | 🟢     |
+| **Regressions**   | Confirm that all existing application functionality (presentation mode, saving, etc.) works as expected after the refactor. | 🟢     |

@@ -13,6 +13,7 @@ import {
     suggestImprovements,
     suggestImagePrompts,
     suggestResearchTopics,
+    suggestChart,
     SlideAnalysis,
     ResearchResult,
 } from '../services/geminiService';
@@ -47,6 +48,10 @@ const DeckEditor: React.FC = () => {
     const [isResearching, setIsResearching] = useState(false);
     const [researchResult, setResearchResult] = useState<ResearchResult | null>(null);
     const [isSuggestingLayout, setIsSuggestingLayout] = useState(false);
+    const [layoutError, setLayoutError] = useState<string | null>(null);
+    const [isSuggestingChart, setIsSuggestingChart] = useState(false);
+    const [chartError, setChartError] = useState<string | null>(null);
+
 
     // AI Suggestion States
     const [copilotSuggestions, setCopilotSuggestions] = useState<string[]>([]);
@@ -106,6 +111,8 @@ const DeckEditor: React.FC = () => {
         // Reset analysis and research when slide changes
         setAnalysisResult(null);
         setResearchResult(null);
+        setLayoutError(null);
+        setChartError(null);
     }, []);
 
     const handleTitleSave = (newTitle: string) => {
@@ -133,6 +140,26 @@ const DeckEditor: React.FC = () => {
     const toggleSidebar = useCallback(() => {
         setIsSidebarCollapsed(isCollapsed => !isCollapsed);
     }, []);
+
+    const handleAddRoadmapSlide = useCallback(() => {
+        if (!deck) return;
+
+        const roadmapPrompt = "A minimalist timeline roadmap on a light beige background (`#FBF8F5`). A single, clean horizontal line (`#1F2937`) runs from left to right. Four circular nodes are evenly spaced on the line, with simple, recognizable icons inside. The first circle is green (`#10B981`), the second is brand orange (`#E87C4D`), and the last two are gray (`#6B7280`). A vertical dashed orange line labeled 'Now' passes through the second circle. Below each circle, add a short, dark gray label: 'Launch MVP', '10K Users', 'Series A', 'Global Expansion'.";
+
+        const newSlide: Slide = {
+            id: `slide-${Date.now()}`,
+            title: 'Our Roadmap to Market Leadership',
+            content: '', // Start with no content for a visual focus
+            imageUrl: roadmapPrompt,
+            template: deck.template, // Inherit deck template
+        };
+
+        const updatedSlides = [...deck.slides, newSlide];
+        const updatedDeck = { ...deck, slides: updatedSlides };
+
+        setDeck(updatedDeck);
+        handleSlideSelect(newSlide);
+    }, [deck, handleSlideSelect]);
 
     // --- AI HANDLERS ---
     const handleGenerateImage = async () => {
@@ -194,7 +221,7 @@ const DeckEditor: React.FC = () => {
         try {
             const { newTitle, newContent } = await modifySlideContent(selectedSlide.title, selectedSlide.content, prompt);
             const updatedSlides = deck.slides.map(slide =>
-                slide.id === selectedSlide.id ? { ...slide, title: newTitle, content: newContent } : slide
+                slide.id === selectedSlide.id ? { ...slide, title: newTitle, content: newContent, chartData: undefined } : slide // Clear chart data on rewrite
             );
             const updatedDeck = { ...deck, slides: updatedSlides };
             setDeck(updatedDeck);
@@ -240,6 +267,7 @@ const DeckEditor: React.FC = () => {
     const handleSuggestLayout = async () => {
         if (!deck || !selectedSlide) return;
         setIsSuggestingLayout(true);
+        setLayoutError(null);
         try {
             const newLayout = await suggestLayout(selectedSlide.title, selectedSlide.content);
             const updatedSlides = deck.slides.map(slide =>
@@ -249,10 +277,33 @@ const DeckEditor: React.FC = () => {
             setDeck(updatedDeck);
             setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
         } catch (err) {
-            console.error("Layout suggestion error:", err);
-            // Optionally set an error state for the UI
+            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+            console.error("Layout suggestion error:", errorMessage);
+            setLayoutError(errorMessage);
         } finally {
             setIsSuggestingLayout(false);
+        }
+    };
+    
+    const handleSuggestChart = async () => {
+        if (!deck || !selectedSlide) return;
+        setIsSuggestingChart(true);
+        setChartError(null);
+        try {
+            const chartData = await suggestChart(selectedSlide.title, selectedSlide.content);
+            const updatedSlides = deck.slides.map(slide =>
+                slide.id === selectedSlide.id ? { ...slide, chartData: chartData ?? undefined } : slide
+            );
+            const updatedDeck = { ...deck, slides: updatedSlides };
+            setDeck(updatedDeck);
+            setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
+
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+            console.error("Chart suggestion error:", errorMessage);
+            setChartError(errorMessage);
+        } finally {
+            setIsSuggestingChart(false);
         }
     };
     // --- END AI HANDLERS ---
@@ -291,6 +342,7 @@ const DeckEditor: React.FC = () => {
                 selectedSlideId={selectedSlide.id}
                 onSlideSelect={handleSlideSelect}
                 onTitleSave={handleTitleSave}
+                onAddRoadmapSlide={handleAddRoadmapSlide}
                 isCollapsed={isSidebarCollapsed}
             />
             <div className="flex-1 flex flex-col relative">
@@ -316,6 +368,9 @@ const DeckEditor: React.FC = () => {
                     isResearching={isResearching}
                     researchResult={researchResult}
                     isSuggestingLayout={isSuggestingLayout}
+                    layoutError={layoutError}
+                    isSuggestingChart={isSuggestingChart}
+                    chartError={chartError}
                     areSuggestionsLoading={areSuggestionsLoading}
                     copilotSuggestions={copilotSuggestions}
                     imageSuggestions={imageSuggestions}
@@ -326,6 +381,7 @@ const DeckEditor: React.FC = () => {
                     handleAnalyzeSlide={handleAnalyzeSlide}
                     handleResearch={handleResearch}
                     handleSuggestLayout={handleSuggestLayout}
+                    handleSuggestChart={handleSuggestChart}
                     onPrevSlide={handlePrevSlide}
                     onNextSlide={handleNextSlide}
                 />
