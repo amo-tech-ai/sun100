@@ -72,12 +72,14 @@ const EditorPanel: React.FC<EditorPanelProps> = (props) => {
                             )}
                         </div>
                     )}
-                    <h1 className={templateStyles.title}>{selectedSlide.title}</h1>
-                    <ul className={templateStyles.content}>
-                        {selectedSlide.content.split('\n').map((point, i) => (
-                            <li key={i} className={templateStyles.bullet}>{point}</li>
-                        ))}
-                    </ul>
+                    <div className={templateStyles.textContainer ?? ''}>
+                        <h1 className={templateStyles.title}>{selectedSlide.title}</h1>
+                        <ul className={templateStyles.content}>
+                            {selectedSlide.content.split('\n').map((point, i) => (
+                                <li key={i} className={templateStyles.bullet}>{point}</li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </div>
 
