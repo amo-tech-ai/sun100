@@ -92,9 +92,10 @@ export const generateSlideImage = async (prompt: string): Promise<string> => {
             },
         });
         
-        const part = response.candidates?.[0]?.content?.parts?.[0];
-        if (part?.inlineData?.data) {
-            return part.inlineData.data;
+        const imagePart = response.candidates?.[0]?.content?.parts?.find(p => !!p.inlineData);
+
+        if (imagePart?.inlineData?.data) {
+            return imagePart.inlineData.data;
         }
 
         throw new Error("The AI model returned an unexpected response. Please try a different prompt.");
@@ -127,9 +128,10 @@ export const editSlideImage = async (base64ImageData: string, mimeType: string, 
             },
         });
 
-        const part = response.candidates?.[0]?.content?.parts?.[0];
-        if (part?.inlineData?.data) {
-            return part.inlineData.data;
+        const imagePart = response.candidates?.[0]?.content?.parts?.find(p => !!p.inlineData);
+
+        if (imagePart?.inlineData?.data) {
+            return imagePart.inlineData.data;
         }
 
         throw new Error("The AI model returned an unexpected response. Please try a different prompt for editing.");
