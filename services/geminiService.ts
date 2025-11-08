@@ -1,32 +1,87 @@
-import { GoogleGenAI, GenerateContentResponse, Type, Modality } from "@google/genai";
+import { GoogleGenAI, GenerateContentResponse, Type, Modality, FunctionDeclaration } from "@google/genai";
 import { Slide } from '../data/decks';
 
 // As per guidelines, API key must be from process.env.API_KEY
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const slideSchema = {
-    type: Type.OBJECT,
-    properties: {
-        id: { type: Type.STRING, description: 'A unique identifier for the slide (e.g., "slide-1")' },
-        title: { type: Type.STRING, description: 'The title of the slide.' },
-        content: { type: Type.STRING, description: 'Bulleted list of content points, separated by newlines.' },
-        imageUrl: { type: Type.STRING, description: '(Optional) A relevant search query for a background image for Unsplash API.' },
+// --- Function Declarations (Phase 1 Refactor) ---
+
+const generateDeckOutlineFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateDeckOutline',
+    description: 'Generates a structured 10-slide pitch deck outline with a title and slide content.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            title: { type: Type.STRING, description: 'A compelling title for the entire pitch deck.' },
+            slides: {
+                type: Type.ARRAY,
+                description: 'An array of slide objects, typically 8-12 slides for a standard pitch deck.',
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        id: { type: Type.STRING, description: 'A unique identifier for the slide (e.g., "slide-1")' },
+                        title: { type: Type.STRING, description: 'The title of the slide.' },
+                        content: { type: Type.STRING, description: 'Bulleted list of content points, separated by newlines.' },
+                        imageUrl: { type: Type.STRING, description: '(Optional) A relevant search query for a background image.' },
+                    },
+                    required: ['id', 'title', 'content'],
+                },
+            },
+        },
+        required: ['title', 'slides'],
     },
-    required: ['id', 'title', 'content'],
 };
 
-const deckSchema = {
-    type: Type.OBJECT,
-    properties: {
-        title: { type: Type.STRING, description: 'A compelling title for the entire pitch deck.' },
-        slides: {
-            type: Type.ARRAY,
-            items: slideSchema,
-            description: 'An array of slide objects, typically 8-12 slides for a standard pitch deck.'
+const rewriteSlideFunctionDeclaration: FunctionDeclaration = {
+    name: 'rewriteSlide',
+    description: 'Revises and improves the title and content of a slide based on an instruction.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            newTitle: { type: Type.STRING, description: 'The revised, improved title for the slide.' },
+            newContent: { type: Type.STRING, description: 'The revised, improved bullet points for the slide, separated by newlines.' },
         },
+        required: ['newTitle', 'newContent'],
     },
-    required: ['title', 'slides'],
 };
+
+const analyzeSlideContentFunctionDeclaration: FunctionDeclaration = {
+    name: 'analyzeSlideContent',
+    description: 'Analyzes a slide for clarity, impact, and tone, providing a rating and feedback for each.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            clarity: {
+                type: Type.OBJECT,
+                properties: {
+                    rating: { type: Type.STRING, description: 'A single-word rating (e.g., "Good", "Average", "Needs Improvement").' },
+                    feedback: { type: Type.STRING, description: 'A brief, one-sentence justification for the clarity rating.' },
+                },
+                required: ['rating', 'feedback'],
+            },
+            impact: {
+                type: Type.OBJECT,
+                properties: {
+                    rating: { type: Type.STRING, description: 'A single-word rating (e.g., "Good", "Average", "Needs Improvement").' },
+                    feedback: { type: Type.STRING, description: 'A brief, one-sentence justification for the impact rating.' },
+                },
+                required: ['rating', 'feedback'],
+            },
+            tone: {
+                type: Type.OBJECT,
+                properties: {
+                    rating: { type: Type.STRING, description: 'A single-word rating (e.g., "Good", "Average", "Needs Improvement").' },
+                    feedback: { type: Type.STRING, description: 'A brief, one-sentence justification for the tone rating.' },
+                },
+                required: ['rating', 'feedback'],
+            },
+        },
+        required: ['clarity', 'impact', 'tone'],
+    },
+};
+
+
+// --- Service Functions ---
 
 export interface DeckGenerationResult {
     title: string;
@@ -36,7 +91,7 @@ export interface DeckGenerationResult {
 export const generateDeckContent = async (companyDetails: string): Promise<DeckGenerationResult> => {
     try {
         const prompt = `
-            Based on the following company details, generate a compelling 10-slide pitch deck.
+            Based on the following company details, generate a compelling 10-slide pitch deck by calling the 'generateDeckOutline' function.
             The company details are: "${companyDetails}".
 
             The pitch deck should follow a standard structure:
@@ -54,26 +109,29 @@ export const generateDeckContent = async (companyDetails: string): Promise<DeckG
             For each slide, provide a concise title and 2-3 bullet points.
             For the content, separate each bullet point with a newline character (\\n).
             For the 'imageUrl', suggest a simple, descriptive search query for an image that would visually represent the slide's content (e.g., "team working together", "growing market chart", "happy customer").
-            Return the response as a JSON object matching the provided schema.
         `;
 
         const response: GenerateContentResponse = await ai.models.generateContent({
             model: "gemini-2.5-pro",
             contents: prompt,
             config: {
-                responseMimeType: "application/json",
-                responseSchema: deckSchema,
+                tools: [{ functionDeclarations: [generateDeckOutlineFunctionDeclaration] }],
             },
         });
+        
+        const functionCall = response.functionCalls?.[0];
 
-        const jsonStr = response.text.trim();
-        const deckData: DeckGenerationResult = JSON.parse(jsonStr);
-        
-        if (!deckData.title || !Array.isArray(deckData.slides)) {
-            throw new Error("Invalid format received from Gemini API.");
+        if (functionCall?.name === 'generateDeckOutline' && functionCall.args) {
+            // FIX: Cast function call arguments to 'unknown' first to satisfy TypeScript's type assertion rules.
+            const deckData = functionCall.args as unknown as DeckGenerationResult;
+             if (!deckData.title || !Array.isArray(deckData.slides)) {
+                throw new Error("Invalid data structure in function call arguments.");
+            }
+            return deckData;
         }
-        
-        return deckData;
+
+        throw new Error("The AI model did not return the expected function call. Please try again.");
+
     } catch (error) {
         console.error("Error generating deck content with Gemini:", error);
         throw new Error("Failed to generate pitch deck. Please try again.");
@@ -148,15 +206,6 @@ export interface ModifiedSlideContent {
     newContent: string;
 }
 
-const modifiedSlideSchema = {
-    type: Type.OBJECT,
-    properties: {
-        newTitle: { type: Type.STRING, description: 'The revised, improved title for the slide.' },
-        newContent: { type: Type.STRING, description: 'The revised, improved bullet points for the slide, separated by newlines.' },
-    },
-    required: ['newTitle', 'newContent'],
-};
-
 export const modifySlideContent = async (
     originalTitle: string,
     originalContent: string,
@@ -164,7 +213,7 @@ export const modifySlideContent = async (
 ): Promise<ModifiedSlideContent> => {
     try {
         const prompt = `
-            You are an expert pitch deck editor. Your task is to revise a slide based on a specific instruction.
+            You are an expert pitch deck editor. Your task is to revise a slide based on a specific instruction by calling the 'rewriteSlide' function.
 
             **Original Slide Title:**
             "${originalTitle}"
@@ -175,27 +224,29 @@ export const modifySlideContent = async (
             **Instruction:**
             "${instruction}"
 
-            Please apply the instruction to the original title and content.
-            Return only the revised title and content as a JSON object matching the provided schema. Do not add any conversational text.
+            Please apply the instruction to the original title and content and call the function with the revised text.
         `;
 
         const response: GenerateContentResponse = await ai.models.generateContent({
             model: "gemini-2.5-pro",
             contents: prompt,
             config: {
-                responseMimeType: "application/json",
-                responseSchema: modifiedSlideSchema,
+                tools: [{ functionDeclarations: [rewriteSlideFunctionDeclaration] }],
             },
         });
+        
+        const functionCall = response.functionCalls?.[0];
 
-        const jsonStr = response.text.trim();
-        const modifiedData: ModifiedSlideContent = JSON.parse(jsonStr);
-
-        if (!modifiedData.newTitle || !modifiedData.newContent) {
-            throw new Error("Invalid format received from Gemini API for slide modification.");
+        if (functionCall?.name === 'rewriteSlide' && functionCall.args) {
+            // FIX: Cast function call arguments to 'unknown' first to satisfy TypeScript's type assertion rules.
+            const modifiedData = functionCall.args as unknown as ModifiedSlideContent;
+            if (!modifiedData.newTitle || typeof modifiedData.newContent === 'undefined') {
+                 throw new Error("Invalid data structure in function call arguments for slide modification.");
+            }
+            return modifiedData;
         }
 
-        return modifiedData;
+        throw new Error("The AI model did not return the expected function call for slide modification.");
 
     } catch (error) {
         console.error("Error modifying slide content with Gemini:", error);
@@ -210,41 +261,11 @@ export interface SlideAnalysis {
     tone: { rating: string; feedback: string };
 }
 
-const analysisSchema = {
-    type: Type.OBJECT,
-    properties: {
-        clarity: {
-            type: Type.OBJECT,
-            properties: {
-                rating: { type: Type.STRING, description: 'A single-word rating (e.g., "Good", "Average", "Needs Improvement").' },
-                feedback: { type: Type.STRING, description: 'A brief, one-sentence justification for the clarity rating.' },
-            },
-            required: ['rating', 'feedback'],
-        },
-        impact: {
-            type: Type.OBJECT,
-            properties: {
-                rating: { type: Type.STRING, description: 'A single-word rating (e.g., "Good", "Average", "Needs Improvement").' },
-                feedback: { type: Type.STRING, description: 'A brief, one-sentence justification for the impact rating.' },
-            },
-            required: ['rating', 'feedback'],
-        },
-        tone: {
-            type: Type.OBJECT,
-            properties: {
-                rating: { type: Type.STRING, description: 'A single-word rating (e.g., "Good", "Average", "Needs Improvement").' },
-                feedback: { type: Type.STRING, description: 'A brief, one-sentence justification for the tone rating.' },
-            },
-             required: ['rating', 'feedback'],
-        },
-    },
-    required: ['clarity', 'impact', 'tone'],
-};
 
 export const analyzeSlide = async (title: string, content: string): Promise<SlideAnalysis> => {
     try {
         const prompt = `
-            You are a pitch deck coach. Analyze the following slide for its effectiveness.
+            You are a pitch deck coach. Analyze the following slide for its effectiveness and return the analysis by calling the 'analyzeSlideContent' function.
 
             **Slide Title:** "${title}"
             **Slide Content:** "${content}"
@@ -253,27 +274,28 @@ export const analyzeSlide = async (title: string, content: string): Promise<Slid
             1.  **Clarity:** Is the message easy to understand?
             2.  **Impact:** Is the content compelling and memorable? Does it use strong language or data?
             3.  **Tone:** Is the tone appropriate for an investor pitch (e.g., confident, professional)?
-
-            Return the analysis as a JSON object matching the provided schema.
         `;
         
         const response: GenerateContentResponse = await ai.models.generateContent({
             model: "gemini-2.5-pro",
             contents: prompt,
             config: {
-                responseMimeType: "application/json",
-                responseSchema: analysisSchema,
+                tools: [{ functionDeclarations: [analyzeSlideContentFunctionDeclaration] }],
             },
         });
 
-        const jsonStr = response.text.trim();
-        const analysisData: SlideAnalysis = JSON.parse(jsonStr);
+        const functionCall = response.functionCalls?.[0];
 
-        if (!analysisData.clarity || !analysisData.impact || !analysisData.tone) {
-            throw new Error("Invalid format received from Gemini API for slide analysis.");
+        if (functionCall?.name === 'analyzeSlideContent' && functionCall.args) {
+            // FIX: Cast function call arguments to 'unknown' first to satisfy TypeScript's type assertion rules.
+            const analysisData = functionCall.args as unknown as SlideAnalysis;
+            if (!analysisData.clarity || !analysisData.impact || !analysisData.tone) {
+                throw new Error("Invalid format received from Gemini API for slide analysis.");
+            }
+            return analysisData;
         }
-
-        return analysisData;
+        
+        throw new Error("The AI model did not return the expected function call for slide analysis.");
 
     } catch (error) {
         console.error("Error analyzing slide with Gemini:", error);
