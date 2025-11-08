@@ -2,12 +2,21 @@ import React, { useState } from 'react';
 
 interface AICopilotProps {
     isLoading: boolean;
-    onGenerate: (prompt: string) => void;
+    onGenerate: (prompt: string, newTitle?: string) => void;
     suggestions: string[];
     areSuggestionsLoading: boolean;
+    // New props for enhancements
+    headlineIdeas: string[];
+    isGeneratingHeadlines: boolean;
+    headlineError: string | null;
+    onGenerateHeadlines: () => void;
+    onSummarizeBio: () => void;
 }
 
-const AICopilot: React.FC<AICopilotProps> = ({ isLoading, onGenerate, suggestions, areSuggestionsLoading }) => {
+const AICopilot: React.FC<AICopilotProps> = ({ 
+    isLoading, onGenerate, suggestions, areSuggestionsLoading,
+    headlineIdeas, isGeneratingHeadlines, headlineError, onGenerateHeadlines, onSummarizeBio
+}) => {
     const [prompt, setPrompt] = useState('');
 
     const handleGenerateClick = () => {
@@ -17,8 +26,12 @@ const AICopilot: React.FC<AICopilotProps> = ({ isLoading, onGenerate, suggestion
     };
 
     const handleSuggestionClick = (suggestion: string) => {
-        setPrompt(suggestion); // Populate the textarea for user feedback
-        onGenerate(suggestion); // Immediately trigger the action
+        setPrompt(suggestion);
+        onGenerate(suggestion);
+    };
+
+    const handleApplyHeadline = (idea: string) => {
+        onGenerate(`Set the title to "${idea}"`, idea);
     };
 
     return (
@@ -72,6 +85,46 @@ const AICopilot: React.FC<AICopilotProps> = ({ isLoading, onGenerate, suggestion
                         ))}
                     </div>
                 )}
+            </div>
+
+            {/* Headline Studio UI */}
+            <div className="border-t border-gray-200 mt-4 pt-3">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Headline Studio</h4>
+                <button
+                    onClick={onGenerateHeadlines}
+                    disabled={isGeneratingHeadlines || isLoading}
+                    className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 disabled:bg-gray-200 disabled:cursor-not-allowed"
+                >
+                    {isGeneratingHeadlines ? 'Generating Ideas...' : 'Generate Headline Ideas'}
+                </button>
+                {headlineError && <p className="text-red-600 text-sm mt-2">{headlineError}</p>}
+                {headlineIdeas.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                        {headlineIdeas.map((idea, index) => (
+                            <div key={index} className="flex items-center justify-between bg-white p-2 rounded-md border">
+                                <p className="text-sm text-gray-700 mr-2">{idea}</p>
+                                <button
+                                    onClick={() => handleApplyHeadline(idea)}
+                                    className="text-sm bg-[#E87C4D] text-white font-semibold py-1 px-3 rounded-md hover:bg-opacity-90 flex-shrink-0"
+                                >
+                                    Use
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+             {/* Team Bio Tools UI */}
+             <div className="border-t border-gray-200 mt-4 pt-3">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Team Bio Tools</h4>
+                <p className="text-sm text-gray-500 mb-2">Paste a full bio in the slide content area and use this tool.</p>
+                <button 
+                    onClick={onSummarizeBio} 
+                    disabled={isLoading} 
+                    className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 disabled:bg-gray-200 disabled:cursor-not-allowed">
+                    {isLoading ? 'Summarizing...' : 'Summarize Bio & Get Highlights'}
+                </button>
             </div>
         </div>
     );

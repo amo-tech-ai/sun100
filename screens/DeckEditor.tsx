@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { mockDeck, Deck, Slide, ChartData } from '../data/decks';
+import { mockDeck, Deck, Slide, ChartData, TableData } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
 import {
@@ -12,11 +12,17 @@ import {
     suggestLayout,
     fetchAllSuggestions,
     suggestChart,
-    generateRoadmapSlide, // New import
+    generateRoadmapSlide,
+    // New imports for strategic enhancements
+    generateHeadlineVariations,
+    extractMetrics,
+    ExtractedMetric,
+    generatePricingTable,
+    summarizeBio,
+    suggestPieChart,
     SlideAnalysis,
     ResearchResult,
 } from '../services/geminiService';
-import { templates } from '../styles/templates';
 
 
 // ICONS
@@ -52,6 +58,17 @@ const DeckEditor: React.FC = () => {
     const [chartError, setChartError] = useState<string | null>(null);
     const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState(false);
 
+    // New states for strategic enhancements
+    const [headlineIdeas, setHeadlineIdeas] = useState<string[]>([]);
+    const [isGeneratingHeadlines, setIsGeneratingHeadlines] = useState(false);
+    const [headlineError, setHeadlineError] = useState<string | null>(null);
+    const [extractedMetrics, setExtractedMetrics] = useState<ExtractedMetric[]>([]);
+    const [isExtractingMetrics, setIsExtractingMetrics] = useState(false);
+    const [metricError, setMetricError] = useState<string | null>(null);
+    const [isGeneratingTable, setIsGeneratingTable] = useState(false);
+    const [tableError, setTableError] = useState<string | null>(null);
+    const [isSuggestingPieChart, setIsSuggestingPieChart] = useState(false);
+    const [pieChartError, setPieChartError] = useState<string | null>(null);
 
     // AI Suggestion States
     const [copilotSuggestions, setCopilotSuggestions] = useState<string[]>([]);
@@ -87,7 +104,6 @@ const DeckEditor: React.FC = () => {
             setResearchSuggestions([]);
             
             try {
-                // Use the new single function call
                 const { copilotSuggestions, imageSuggestions, researchSuggestions } = await fetchAllSuggestions(
                     selectedSlide.title,
                     selectedSlide.content
@@ -97,7 +113,6 @@ const DeckEditor: React.FC = () => {
                 setResearchSuggestions(researchSuggestions);
             } catch (err) {
                 console.error("Failed to fetch AI suggestions:", err);
-                // Silently fail, don't show an error to the user for this feature
             } finally {
                 setAreSuggestionsLoading(false);
             }
@@ -108,11 +123,15 @@ const DeckEditor: React.FC = () => {
 
     const handleSlideSelect = useCallback((slide: Slide) => {
         setSelectedSlide(slide);
-        // Reset analysis and research when slide changes
         setAnalysisResult(null);
         setResearchResult(null);
         setLayoutError(null);
         setChartError(null);
+        setPieChartError(null);
+        setMetricError(null);
+        setHeadlineError(null);
+        setHeadlineIdeas([]);
+        setExtractedMetrics([]);
     }, []);
 
     const handleTitleSave = useCallback((newTitle: string) => {
@@ -145,8 +164,6 @@ const DeckEditor: React.FC = () => {
         if (!deck) return;
         setIsGeneratingRoadmap(true);
         try {
-            // Use the original company details from the first slide's content if available,
-            // or a generic description of the deck's title.
             const companyContext = deck.slides[0]?.content || deck.title;
             const newSlide = await generateRoadmapSlide(companyContext, deck.template);
             
@@ -157,11 +174,20 @@ const DeckEditor: React.FC = () => {
             handleSlideSelect(newSlide);
         } catch (err) {
             console.error("Failed to generate roadmap slide:", err);
-            // Optionally, set an error state to show in the UI.
         } finally {
             setIsGeneratingRoadmap(false);
         }
     }, [deck, handleSlideSelect]);
+
+    const updateSlide = useCallback((slideId: string, updates: Partial<Slide>) => {
+        if (!deck) return;
+        const updatedSlides = deck.slides.map(slide =>
+            slide.id === slideId ? { ...slide, ...updates } : slide
+        );
+        const updatedDeck = { ...deck, slides: updatedSlides };
+        setDeck(updatedDeck);
+        setSelectedSlide(updatedSlides.find(s => s.id === slideId) || null);
+    }, [deck]);
 
     // --- AI HANDLERS ---
     const handleGenerateImage = useCallback(async () => {
@@ -174,19 +200,13 @@ const DeckEditor: React.FC = () => {
         try {
             const imagePrompt = (typeof selectedSlide.imageUrl === 'string' && !selectedSlide.imageUrl.startsWith('data:image')) ? selectedSlide.imageUrl : undefined;
             const newBase64Data = await generateSlideImage(selectedSlide.title, selectedSlide.content, imagePrompt);
-            const newImageUrl = `data:image/png;base64,${newBase64Data}`;
-            const updatedSlides = deck.slides.map(slide => 
-                slide.id === selectedSlide.id ? { ...slide, imageUrl: newImageUrl } : slide
-            );
-            const updatedDeck = { ...deck, slides: updatedSlides };
-            setDeck(updatedDeck);
-            setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
+            updateSlide(selectedSlide.id, { imageUrl: `data:image/png;base64,${newBase64Data}` });
         } catch (err) {
             setImageError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
             setIsGeneratingImage(false);
         }
-    }, [deck, selectedSlide]);
+    }, [selectedSlide, updateSlide]);
 
     const handleEditImage = useCallback(async (prompt: string) => {
         if (!deck || !selectedSlide || !selectedSlide.imageUrl || !selectedSlide.imageUrl.startsWith('data:image')) {
@@ -197,44 +217,36 @@ const DeckEditor: React.FC = () => {
         setImageError(null);
         try {
             const imageParts = selectedSlide.imageUrl.match(/^data:(image\/.+);base64,(.+)$/);
-            if (!imageParts || imageParts.length !== 3) {
-                throw new Error("Invalid image format.");
-            }
+            if (!imageParts || imageParts.length !== 3) throw new Error("Invalid image format.");
             const mimeType = imageParts[1];
             const base64Data = imageParts[2];
             const newBase64Data = await editSlideImage(base64Data, mimeType, prompt);
-            const newImageUrl = `data:${mimeType};base64,${newBase64Data}`;
-            const updatedSlides = deck.slides.map(slide => 
-                slide.id === selectedSlide.id ? { ...slide, imageUrl: newImageUrl } : slide
-            );
-            const updatedDeck = { ...deck, slides: updatedSlides };
-            setDeck(updatedDeck);
-            setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
+            updateSlide(selectedSlide.id, { imageUrl: `data:${mimeType};base64,${newBase64Data}` });
         } catch (err) {
             setImageError(err instanceof Error ? err.message : "An unknown error occurred during image editing.");
         } finally {
             setIsEditingImage(false);
         }
-    }, [deck, selectedSlide]);
+    }, [selectedSlide, updateSlide]);
 
-    const handleCopilotGenerate = useCallback(async (prompt: string) => {
+    const handleCopilotGenerate = useCallback(async (prompt: string, newTitle?: string) => {
         if (!deck || !selectedSlide) return;
         setIsCopilotLoading(true);
         try {
-            const { newTitle, newContent } = await modifySlideContent(selectedSlide.title, selectedSlide.content, prompt);
-            const updatedSlides = deck.slides.map(slide =>
-                slide.id === selectedSlide.id ? { ...slide, title: newTitle, content: newContent, chartData: undefined } : slide // Clear chart data on rewrite
-            );
-            const updatedDeck = { ...deck, slides: updatedSlides };
-            setDeck(updatedDeck);
-            setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
+            const contentToUse = newTitle ? selectedSlide.content : prompt;
+            const titleToUse = newTitle || selectedSlide.title;
+            const instruction = newTitle ? `Set the title to "${newTitle}" and keep the content.` : prompt;
+            
+            const { newTitle: updatedTitle, newContent } = await modifySlideContent(titleToUse, contentToUse, instruction);
+            const finalTitle = newTitle || updatedTitle;
+
+            updateSlide(selectedSlide.id, { title: finalTitle, content: newContent, chartData: undefined, tableData: undefined });
         } catch (err) {
             console.error("Copilot error:", err);
-            // Optionally set an error state for the copilot UI
         } finally {
             setIsCopilotLoading(false);
         }
-    }, [deck, selectedSlide]);
+    }, [deck, selectedSlide, updateSlide]);
 
     const handleAnalyzeSlide = useCallback(async () => {
         if (!deck || !selectedSlide) return;
@@ -245,7 +257,6 @@ const DeckEditor: React.FC = () => {
             setAnalysisResult(result);
         } catch (err) {
             console.error("Analysis error:", err);
-            // Optionally set an error state for the analysis UI
         } finally {
             setIsAnalyzing(false);
         }
@@ -260,7 +271,6 @@ const DeckEditor: React.FC = () => {
             setResearchResult(result);
         } catch (err) {
             console.error("Research error:", err);
-            // Optionally set an error state for the research UI
         } finally {
             setIsResearching(false);
         }
@@ -272,20 +282,14 @@ const DeckEditor: React.FC = () => {
         setLayoutError(null);
         try {
             const newLayout = await suggestLayout(selectedSlide.title, selectedSlide.content);
-            const updatedSlides = deck.slides.map(slide =>
-                slide.id === selectedSlide.id ? { ...slide, template: newLayout } : slide
-            );
-            const updatedDeck = { ...deck, slides: updatedSlides };
-            setDeck(updatedDeck);
-            setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
+            updateSlide(selectedSlide.id, { template: newLayout });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-            console.error("Layout suggestion error:", errorMessage);
             setLayoutError(errorMessage);
         } finally {
             setIsSuggestingLayout(false);
         }
-    }, [deck, selectedSlide]);
+    }, [deck, selectedSlide, updateSlide]);
     
     const handleSuggestChart = useCallback(async () => {
         if (!deck || !selectedSlide) return;
@@ -293,38 +297,116 @@ const DeckEditor: React.FC = () => {
         setChartError(null);
         try {
             const chartData = await suggestChart(selectedSlide.title, selectedSlide.content);
-            const updatedSlides = deck.slides.map(slide =>
-                slide.id === selectedSlide.id ? { ...slide, content: chartData ? '' : slide.content, chartData: chartData ?? undefined } : slide
-            );
-            const updatedDeck = { ...deck, slides: updatedSlides };
-            setDeck(updatedDeck);
-            setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
-
+            updateSlide(selectedSlide.id, { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-            console.error("Chart suggestion error:", errorMessage);
             setChartError(errorMessage);
         } finally {
             setIsSuggestingChart(false);
         }
-    }, [deck, selectedSlide]);
+    }, [deck, selectedSlide, updateSlide]);
+    
+    // --- NEW HANDLERS FOR ENHANCEMENTS ---
+    const handleGenerateHeadlines = useCallback(async () => {
+        if (!selectedSlide) return;
+        setIsGeneratingHeadlines(true);
+        setHeadlineError(null);
+        setHeadlineIdeas([]);
+        try {
+            const ideas = await generateHeadlineVariations(selectedSlide.title);
+            setHeadlineIdeas(ideas);
+        } catch (err) {
+            setHeadlineError(err instanceof Error ? err.message : "An unknown error occurred.");
+        } finally {
+            setIsGeneratingHeadlines(false);
+        }
+    }, [selectedSlide]);
+
+    const handleExtractMetrics = useCallback(async () => {
+        if (!selectedSlide) return;
+        setIsExtractingMetrics(true);
+        setMetricError(null);
+        setExtractedMetrics([]);
+        try {
+            const metrics = await extractMetrics(selectedSlide.content);
+            setExtractedMetrics(metrics);
+        } catch (err) {
+            setMetricError(err instanceof Error ? err.message : "An unknown error occurred.");
+        } finally {
+            setIsExtractingMetrics(false);
+        }
+    }, [selectedSlide]);
+
+    const handleMarketResearch = useCallback(async () => {
+        if (!deck) return;
+        const marketTopic = deck.title.replace("Pitch Deck", "").trim() || "the user's industry";
+        const query = `Latest market size data (TAM, SAM, SOM) and key growth trends for ${marketTopic}`;
+        handleResearch(query);
+    }, [deck, handleResearch]);
+
+    const handleGenerateTable = useCallback(async () => {
+        if (!deck || !selectedSlide) return;
+        setIsGeneratingTable(true);
+        setTableError(null);
+        try {
+            const tableData = await generatePricingTable(selectedSlide.content);
+            updateSlide(selectedSlide.id, { content: '', tableData, chartData: undefined });
+        } catch (err) {
+            setTableError(err instanceof Error ? err.message : "An unknown error occurred.");
+        } finally {
+            setIsGeneratingTable(false);
+        }
+    }, [deck, selectedSlide, updateSlide]);
+    
+    const handleCompetitorResearch = useCallback(async () => {
+        if (!selectedSlide) return;
+        const competitors = selectedSlide.content.match(/\b[A-Z][a-z]*\b/g) || [];
+        let query = "Key features of our product";
+        if (competitors.length > 0) {
+            query += ` vs competitors like ${competitors.join(', ')}`;
+        }
+        handleResearch(query);
+    }, [selectedSlide, handleResearch]);
+
+    const handleSummarizeBio = useCallback(async () => {
+        if (!deck || !selectedSlide) return;
+        setIsCopilotLoading(true);
+        try {
+            const { summary, highlights } = await summarizeBio(selectedSlide.content);
+            const newContent = `${summary}\n\n**Key Highlights:**\n- ${highlights.join('\n- ')}`;
+            const { newTitle, newContent: finalContent } = await modifySlideContent(selectedSlide.title, selectedSlide.content, `Replace the content with the following summary:\n${newContent}`);
+            updateSlide(selectedSlide.id, { title: newTitle, content: finalContent });
+        } catch (err) {
+            console.error("Bio summarization error:", err);
+        } finally {
+            setIsCopilotLoading(false);
+        }
+    }, [deck, selectedSlide, updateSlide]);
+
+    const handleSuggestPieChart = useCallback(async () => {
+        if (!deck || !selectedSlide) return;
+        setIsSuggestingPieChart(true);
+        setPieChartError(null);
+        try {
+            const chartData = await suggestPieChart(selectedSlide.content);
+            updateSlide(selectedSlide.id, { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined });
+        } catch (err) {
+            setPieChartError(err instanceof Error ? err.message : "An unknown error occurred.");
+        } finally {
+            setIsSuggestingPieChart(false);
+        }
+    }, [deck, selectedSlide, updateSlide]);
+
     // --- END AI HANDLERS ---
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowRight') {
-                handleNextSlide();
-            } else if (e.key === 'ArrowLeft') {
-                handlePrevSlide();
-            } else if ((e.metaKey || e.ctrlKey) && e.key === '[') {
-                toggleSidebar();
-            }
+            if (e.key === 'ArrowRight') handleNextSlide();
+            else if (e.key === 'ArrowLeft') handlePrevSlide();
+            else if ((e.metaKey || e.ctrlKey) && e.key === '[') toggleSidebar();
         };
-
         window.addEventListener('keydown', handleKeyDown);
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleNextSlide, handlePrevSlide, toggleSidebar]);
 
 
@@ -362,6 +444,7 @@ const DeckEditor: React.FC = () => {
                     selectedSlide={selectedSlide}
                     selectedSlideIndex={selectedSlideIndex}
                     totalSlides={deck.slides.length}
+                    // Pass all state and handlers
                     isGeneratingImage={isGeneratingImage}
                     isEditingImage={isEditingImage}
                     imageError={imageError}
@@ -387,6 +470,24 @@ const DeckEditor: React.FC = () => {
                     handleSuggestChart={handleSuggestChart}
                     onPrevSlide={handlePrevSlide}
                     onNextSlide={handleNextSlide}
+                    // New props for enhancements
+                    headlineIdeas={headlineIdeas}
+                    isGeneratingHeadlines={isGeneratingHeadlines}
+                    headlineError={headlineError}
+                    handleGenerateHeadlines={handleGenerateHeadlines}
+                    extractedMetrics={extractedMetrics}
+                    isExtractingMetrics={isExtractingMetrics}
+                    metricError={metricError}
+                    handleExtractMetrics={handleExtractMetrics}
+                    handleMarketResearch={handleMarketResearch}
+                    isGeneratingTable={isGeneratingTable}
+                    tableError={tableError}
+                    handleGenerateTable={handleGenerateTable}
+                    handleCompetitorResearch={handleCompetitorResearch}
+                    handleSummarizeBio={handleSummarizeBio}
+                    isSuggestingPieChart={isSuggestingPieChart}
+                    pieChartError={pieChartError}
+                    handleSuggestPieChart={handleSuggestPieChart}
                 />
             </div>
         </div>

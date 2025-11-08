@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { mockDeck, Deck } from '../data/decks';
 import { templates } from '../styles/templates';
 import Chart from '../components/Chart';
+import Table from '../components/Table'; // Import Table component
 
 const ChevronLeftIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -27,8 +28,6 @@ const PresentationScreen: React.FC = () => {
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
     useEffect(() => {
-        // Load deck with priority: Navigation state > Session Storage > Mock Data
-        console.log(`Presenting deck with id: ${id}`);
         const storedDeckJson = sessionStorage.getItem(`deck-${id}`);
         const storedDeck = storedDeckJson ? JSON.parse(storedDeckJson) : null;
         const deckToLoad = deckFromState || storedDeck || mockDeck;
@@ -44,27 +43,29 @@ const PresentationScreen: React.FC = () => {
         if (!deck) return;
         setCurrentSlideIndex(prev => (prev < deck.slides.length - 1 ? prev + 1 : prev));
     }, [deck]);
+
+    const renderWithMarkdown = (text: string) => {
+        const parts = text.split(/(\*\*.*?\*\*)/g);
+        return parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={i}>{part.slice(2, -2)}</strong>;
+            }
+            return part;
+        });
+    };
     
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowRight' || e.key === ' ') {
-                handleNext();
-            } else if (e.key === 'ArrowLeft') {
-                handlePrev();
-            } else if (e.key === 'Escape') {
-                navigate(`/dashboard/decks/${id}/edit`);
-            }
+            if (e.key === 'ArrowRight' || e.key === ' ') handleNext();
+            else if (e.key === 'ArrowLeft') handlePrev();
+            else if (e.key === 'Escape') navigate(`/dashboard/decks/${id}/edit`);
         };
         window.addEventListener('keydown', handleKeyDown);
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleNext, handlePrev, navigate, id]);
 
-    // --- Performance Optimization: Image Pre-loading ---
     useEffect(() => {
         if (!deck) return;
-        
         const preloadImage = (slideIndex: number) => {
             if (slideIndex >= 0 && slideIndex < deck.slides.length) {
                 const slide = deck.slides[slideIndex];
@@ -74,11 +75,8 @@ const PresentationScreen: React.FC = () => {
                 }
             }
         };
-
-        // Preload next and previous slide images for smoother transitions
         preloadImage(currentSlideIndex + 1);
         preloadImage(currentSlideIndex - 1);
-
     }, [deck, currentSlideIndex]);
 
 
@@ -95,7 +93,6 @@ const PresentationScreen: React.FC = () => {
 
     return (
         <div className="bg-gray-900 text-white h-screen w-screen flex flex-col items-center justify-center relative p-4 select-none">
-            {/* Header Controls */}
             <div className="absolute top-4 right-4 z-20">
                 <button
                     onClick={() => navigate(`/dashboard/decks/${id}/edit`)}
@@ -105,10 +102,8 @@ const PresentationScreen: React.FC = () => {
                 </button>
             </div>
 
-            {/* Slide Content */}
             <div className="w-full h-full flex items-center justify-center p-16">
                  <div className="w-full max-w-6xl aspect-video bg-black rounded-lg shadow-2xl relative">
-                     {/* The actual slide content */}
                     <div className={`w-full h-full shadow-lg rounded-lg overflow-hidden ${templateStyles.slide}`}>
                          {activeSlide.imageUrl && (
                             <div className={templateStyles.imageContainer}>
@@ -119,10 +114,12 @@ const PresentationScreen: React.FC = () => {
                             <h1 className={templateStyles.title}>{activeSlide.title}</h1>
                             {activeSlide.chartData ? (
                                 <Chart chartData={activeSlide.chartData} />
+                            ) : activeSlide.tableData ? (
+                                <Table tableData={activeSlide.tableData} />
                             ) : (
                                 <ul className={templateStyles.content}>
                                     {activeSlide.content.split('\n').map((point, i) => (
-                                        <li key={i} className={templateStyles.bullet}>{point}</li>
+                                        <li key={i} className={templateStyles.bullet}>{renderWithMarkdown(point)}</li>
                                     ))}
                                 </ul>
                             )}
@@ -131,7 +128,6 @@ const PresentationScreen: React.FC = () => {
                 </div>
             </div>
 
-            {/* Navigation Controls */}
             <div className="absolute inset-0 flex justify-between items-center z-10">
                 <button 
                     onClick={handlePrev} 
@@ -151,7 +147,6 @@ const PresentationScreen: React.FC = () => {
                 </button>
             </div>
 
-            {/* Footer Info */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-gray-400 text-sm">
                 {currentSlideIndex + 1} / {deck.slides.length}
             </div>

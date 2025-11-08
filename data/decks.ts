@@ -1,9 +1,17 @@
 import { templates } from '../styles/templates';
 
 // --- Type Definitions ---
-export interface ChartData {
-  type: 'bar'; // Currently only bar charts are supported
-  data: { label: string; value: number }[];
+export type ChartData = 
+  | { type: 'bar'; data: { label: string; value: number }[] }
+  | { type: 'pie'; data: { label: string; value: number }[] };
+
+export interface TableData {
+  type: 'pricing';
+  tiers: {
+    name: string;
+    price: string;
+    features: string[];
+  }[];
 }
 
 export interface Slide {
@@ -13,6 +21,7 @@ export interface Slide {
   imageUrl?: string; // Can be a URL or an AI prompt
   template?: keyof typeof templates;
   chartData?: ChartData;
+  tableData?: TableData; // New property for pricing tables
 }
 
 export interface Deck {
