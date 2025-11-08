@@ -3,6 +3,16 @@ import { useParams, useLocation } from 'react-router-dom';
 import { mockDeck, Deck, Slide } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
+import {
+    generateSlideImage,
+    editSlideImage,
+    modifySlideContent,
+    analyzeSlide,
+    researchTopic,
+    SlideAnalysis,
+    ResearchResult,
+} from '../services/geminiService';
+
 
 // ICONS
 const PanelLeftOpenIcon = () => (
@@ -21,6 +31,16 @@ const DeckEditor: React.FC = () => {
     const [deck, setDeck] = useState<Deck | null>(null);
     const [selectedSlide, setSelectedSlide] = useState<Slide | null>(null);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    // AI Tool States
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+    const [isEditingImage, setIsEditingImage] = useState(false);
+    const [imageError, setImageError] = useState<string | null>(null);
+    const [isCopilotLoading, setIsCopilotLoading] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState<SlideAnalysis | null>(null);
+    const [isResearching, setIsResearching] = useState(false);
+    const [researchResult, setResearchResult] = useState<ResearchResult | null>(null);
 
     useEffect(() => {
         const storedDeckJson = sessionStorage.getItem(`deck-${id}`);
@@ -41,6 +61,9 @@ const DeckEditor: React.FC = () => {
 
     const handleSlideSelect = useCallback((slide: Slide) => {
         setSelectedSlide(slide);
+        // Reset analysis and research when slide changes
+        setAnalysisResult(null);
+        setResearchResult(null);
     }, []);
 
     const handleTitleSave = (newTitle: string) => {
@@ -53,19 +76,124 @@ const DeckEditor: React.FC = () => {
         if (!deck || !selectedSlide) return;
         const currentIndex = deck.slides.findIndex(s => s.id === selectedSlide.id);
         if (currentIndex > 0) {
-            setSelectedSlide(deck.slides[currentIndex - 1]);
+            handleSlideSelect(deck.slides[currentIndex - 1]);
         }
-    }, [deck, selectedSlide]);
+    }, [deck, selectedSlide, handleSlideSelect]);
 
     const handleNextSlide = useCallback(() => {
         if (!deck || !selectedSlide) return;
         const currentIndex = deck.slides.findIndex(s => s.id === selectedSlide.id);
         if (currentIndex < deck.slides.length - 1) {
-            setSelectedSlide(deck.slides[currentIndex + 1]);
+            handleSlideSelect(deck.slides[currentIndex + 1]);
         }
-    }, [deck, selectedSlide]);
+    }, [deck, selectedSlide, handleSlideSelect]);
     
-    const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
+    const toggleSidebar = useCallback(() => {
+        setIsSidebarCollapsed(isCollapsed => !isCollapsed);
+    }, []);
+
+    // --- AI HANDLERS ---
+    const handleGenerateImage = async () => {
+        if (!deck || !selectedSlide || !selectedSlide.imageUrl || selectedSlide.imageUrl.startsWith('data:image')) {
+            setImageError("No image prompt available for this slide.");
+            return;
+        }
+        setIsGeneratingImage(true);
+        setImageError(null);
+        try {
+            const newBase64Data = await generateSlideImage(selectedSlide.imageUrl);
+            const newImageUrl = `data:image/png;base64,${newBase64Data}`;
+            const updatedSlides = deck.slides.map(slide => 
+                slide.id === selectedSlide.id ? { ...slide, imageUrl: newImageUrl } : slide
+            );
+            const updatedDeck = { ...deck, slides: updatedSlides };
+            setDeck(updatedDeck);
+            setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
+        } catch (err) {
+            setImageError(err instanceof Error ? err.message : "An unknown error occurred.");
+        } finally {
+            setIsGeneratingImage(false);
+        }
+    };
+
+    const handleEditImage = async (prompt: string) => {
+        if (!deck || !selectedSlide || !selectedSlide.imageUrl || !selectedSlide.imageUrl.startsWith('data:image')) {
+            setImageError("No image selected to edit.");
+            return;
+        }
+        setIsEditingImage(true);
+        setImageError(null);
+        try {
+            const imageParts = selectedSlide.imageUrl.match(/^data:(image\/.+);base64,(.+)$/);
+            if (!imageParts || imageParts.length !== 3) {
+                throw new Error("Invalid image format.");
+            }
+            const mimeType = imageParts[1];
+            const base64Data = imageParts[2];
+            const newBase64Data = await editSlideImage(base64Data, mimeType, prompt);
+            const newImageUrl = `data:${mimeType};base64,${newBase64Data}`;
+            const updatedSlides = deck.slides.map(slide => 
+                slide.id === selectedSlide.id ? { ...slide, imageUrl: newImageUrl } : slide
+            );
+            const updatedDeck = { ...deck, slides: updatedSlides };
+            setDeck(updatedDeck);
+            setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
+        } catch (err) {
+            setImageError(err instanceof Error ? err.message : "An unknown error occurred during image editing.");
+        } finally {
+            setIsEditingImage(false);
+        }
+    };
+
+    const handleCopilotGenerate = async (prompt: string) => {
+        if (!deck || !selectedSlide) return;
+        setIsCopilotLoading(true);
+        try {
+            const { newTitle, newContent } = await modifySlideContent(selectedSlide.title, selectedSlide.content, prompt);
+            const updatedSlides = deck.slides.map(slide =>
+                slide.id === selectedSlide.id ? { ...slide, title: newTitle, content: newContent } : slide
+            );
+            const updatedDeck = { ...deck, slides: updatedSlides };
+            setDeck(updatedDeck);
+            setSelectedSlide(updatedSlides.find(s => s.id === selectedSlide.id) || null);
+        } catch (err) {
+            console.error("Copilot error:", err);
+            // Optionally set an error state for the copilot UI
+        } finally {
+            setIsCopilotLoading(false);
+        }
+    };
+
+    const handleAnalyzeSlide = async () => {
+        if (!deck || !selectedSlide) return;
+        setIsAnalyzing(true);
+        setAnalysisResult(null);
+        try {
+            const result = await analyzeSlide(selectedSlide.title, selectedSlide.content);
+            setAnalysisResult(result);
+        } catch (err) {
+            console.error("Analysis error:", err);
+            // Optionally set an error state for the analysis UI
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    const handleResearch = async (query: string) => {
+        if (!query.trim()) return;
+        setIsResearching(true);
+        setResearchResult(null);
+        try {
+            const result = await researchTopic(query);
+            setResearchResult(result);
+        } catch (err) {
+            console.error("Research error:", err);
+            // Optionally set an error state for the research UI
+        } finally {
+            setIsResearching(false);
+        }
+    };
+    // --- END AI HANDLERS ---
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -82,7 +210,7 @@ const DeckEditor: React.FC = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [handleNextSlide, handlePrevSlide]);
+    }, [handleNextSlide, handlePrevSlide, toggleSidebar]);
 
 
     if (!deck || !selectedSlide) {
@@ -117,20 +245,19 @@ const DeckEditor: React.FC = () => {
                     selectedSlide={selectedSlide}
                     selectedSlideIndex={selectedSlideIndex}
                     totalSlides={deck.slides.length}
-                    // TODO: Replace with real state and handlers
-                    isGeneratingImage={false}
-                    isEditingImage={false}
-                    imageError={null}
-                    isCopilotLoading={false}
-                    isAnalyzing={false}
-                    analysisResult={null}
-                    isResearching={false}
-                    researchResult={null}
-                    handleGenerateImage={async () => {}}
-                    handleEditImage={async () => {}}
-                    handleCopilotGenerate={async () => {}}
-                    handleAnalyzeSlide={async () => {}}
-                    handleResearch={async () => {}}
+                    isGeneratingImage={isGeneratingImage}
+                    isEditingImage={isEditingImage}
+                    imageError={imageError}
+                    isCopilotLoading={isCopilotLoading}
+                    isAnalyzing={isAnalyzing}
+                    analysisResult={analysisResult}
+                    isResearching={isResearching}
+                    researchResult={researchResult}
+                    handleGenerateImage={handleGenerateImage}
+                    handleEditImage={handleEditImage}
+                    handleCopilotGenerate={handleCopilotGenerate}
+                    handleAnalyzeSlide={handleAnalyzeSlide}
+                    handleResearch={handleResearch}
                     onPrevSlide={handlePrevSlide}
                     onNextSlide={handleNextSlide}
                 />
