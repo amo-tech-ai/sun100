@@ -83,6 +83,19 @@ We will implement this change in two phases, starting with refactoring our core,
     3.  Construct the `SlideAnalysis` object directly from `functionCall.args`.
 - **Success Criteria:** The Analysis panel receives structured data directly from function call arguments, completely eliminating manual JSON parsing.
 
+#### Task 1.4: Refactor Image Generation & Editing (Visual Agent)
+- **Description:** Convert the existing image generation and editing workflows to use a chain of function calls for increased reliability and quality. This involves separating the creative brief from the generation and editing actions.
+- **Steps:**
+    1.  Define an `imageBriefFunctionDeclaration` to generate a detailed creative brief (style, palette, keywords) based on slide content.
+    2.  Define a `generateImageFromBriefFunctionDeclaration` that takes a brief and generates an image.
+    3.  Define an `editImageFunctionDeclaration` for iterative refinements.
+    4.  Update `generateSlideImage`:
+        -   First, call the model with the `imageBrief` tool to get a structured brief.
+        -   Then, call the model again with the brief and the `generateImageFromBrief` tool.
+    5.  Update `editSlideImage`:
+        -   Refactor to use the new `editImage` function call, passing the image and a text prompt.
+- **Success Criteria:** Image generation is more consistent and context-aware. The editing process is robust and reliable.
+
 ---
 
 ### Phase 2: Advanced & New Functionality
@@ -106,6 +119,22 @@ We will implement this change in two phases, starting with refactoring our core,
     3.  When triggered, a new service function will send the slide content to the model with the `chartSuggester` tool.
     4.  The app will receive the function call's arguments and use them to render a placeholder chart image or integrate with a charting library.
 - **Success Criteria:** Users can transform text-based data into visual charts with a single click, dramatically improving the quality of data-heavy slides.
+
+#### Task 2.3: Implement `styleHarmonize`
+- **Description:** Create a "Brand Harmony" tool that adjusts all images in a deck to match a consistent visual style (palette, contrast).
+- **Steps:**
+    1.  Define a `styleHarmonizeFunctionDeclaration` with parameters for target palette, contrast, etc.
+    2.  Create a UI element (e.g., "Harmonize All Images" button).
+    3.  The associated service function will iterate through all slides, calling the model with the `styleHarmonize` tool for each image.
+- **Success Criteria:** Users can achieve deck-wide visual consistency with a single action.
+
+#### Task 2.4: Implement Smart Cropping and Accessibility Checks
+- **Description:** Add functions to intelligently crop images for different layouts and ensure text overlays are accessible.
+- **Steps:**
+    1.  Define `layoutCropFunctionDeclaration` to perform a smart 16:9 crop that keeps the focal point visible.
+    2.  Define `contrastAccessibilityCheckFunctionDeclaration` to verify that text placed over an image meets AA contrast standards.
+    3.  Integrate these checks into the editor, perhaps as automated steps after an image is added or as a pre-flight check before presenting/exporting.
+- **Success Criteria:** All images are well-composed within the slide layout, and text is always readable, improving professionalism and accessibility.
 
 ---
 

@@ -6,6 +6,7 @@ export interface Slide {
   title: string;
   content: string; // Bullet points separated by newlines
   imageUrl?: string; // Can be a URL or an AI prompt
+  template?: keyof typeof templates;
 }
 
 export interface Deck {
