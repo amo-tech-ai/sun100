@@ -77,4 +77,4 @@ const AICopilot: React.FC<AICopilotProps> = ({ isLoading, onGenerate, suggestion
     );
 };
 
-export default AICopilot;
+export default React.memo(AICopilot);

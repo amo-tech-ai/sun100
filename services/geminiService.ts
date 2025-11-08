@@ -111,54 +111,6 @@ const imageBriefFunctionDeclaration: FunctionDeclaration = {
     },
 };
 
-const suggestImprovementsFunctionDeclaration: FunctionDeclaration = {
-    name: 'suggestImprovements',
-    description: 'Generates a list of 3-5 short, actionable suggestions to improve a slide.',
-    parameters: {
-        type: Type.OBJECT,
-        properties: {
-            suggestions: {
-                type: Type.ARRAY,
-                description: 'An array of short, actionable suggestion strings (e.g., "Make it more concise", "Add a success metric").',
-                items: { type: Type.STRING },
-            },
-        },
-        required: ['suggestions'],
-    },
-};
-
-const suggestImagePromptsFunctionDeclaration: FunctionDeclaration = {
-    name: 'suggestImagePrompts',
-    description: 'Generates a list of 3-5 short, creative image prompt ideas to visually enhance a slide.',
-    parameters: {
-        type: Type.OBJECT,
-        properties: {
-            prompts: {
-                type: Type.ARRAY,
-                description: 'An array of short, creative image prompt strings (e.g., "Use a futuristic background", "Incorporate a pastel palette").',
-                items: { type: Type.STRING },
-            },
-        },
-        required: ['prompts'],
-    },
-};
-
-const suggestResearchTopicsFunctionDeclaration: FunctionDeclaration = {
-    name: 'suggestResearchTopics',
-    description: 'Generates a list of 3-5 relevant research topics to add depth and data to a slide.',
-    parameters: {
-        type: Type.OBJECT,
-        properties: {
-            topics: {
-                type: Type.ARRAY,
-                description: 'An array of short, relevant research topic strings (e.g., "Find latest market trends", "Fetch AI funding statistics").',
-                items: { type: Type.STRING },
-            },
-        },
-        required: ['topics'],
-    },
-};
-
 const chartSuggesterFunctionDeclaration: FunctionDeclaration = {
     name: 'suggestChart',
     description: 'Analyzes slide content for data points and suggests a suitable bar chart representation.',
@@ -183,6 +135,32 @@ const chartSuggesterFunctionDeclaration: FunctionDeclaration = {
         },
         // FIX: Updated required properties to match the changes above.
         required: ['type', 'data'],
+    },
+};
+
+const generateAllSuggestionsFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateAllSuggestions',
+    description: 'Generates three distinct sets of suggestions for improving a slide: for content, visuals, and research.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            copilotSuggestions: {
+                type: Type.ARRAY,
+                description: 'An array of 3-5 short, actionable suggestions to improve the slide\'s content (e.g., "Make it more concise").',
+                items: { type: Type.STRING },
+            },
+            imageSuggestions: {
+                type: Type.ARRAY,
+                description: 'An array of 3-5 short, creative image prompt ideas to visually enhance the slide (e.g., "Use a futuristic background").',
+                items: { type: Type.STRING },
+            },
+            researchSuggestions: {
+                type: Type.ARRAY,
+                description: 'An array of 3-5 relevant research topics to add depth and data to the slide (e.g., "Find latest market trends").',
+                items: { type: Type.STRING },
+            },
+        },
+        required: ['copilotSuggestions', 'imageSuggestions', 'researchSuggestions'],
     },
 };
 
@@ -565,42 +543,41 @@ export const suggestChart = async (title: string, content: string): Promise<Char
     }
 };
 
-// --- Suggestion Services ---
-const callSuggestionApi = async (prompt: string, tool: FunctionDeclaration): Promise<string[]> => {
+// --- Suggestion Services (PERFORMANCE OPTIMIZATION) ---
+
+interface AllSuggestions {
+    copilotSuggestions: string[];
+    imageSuggestions: string[];
+    researchSuggestions: string[];
+}
+
+export const fetchAllSuggestions = async (title: string, content: string): Promise<AllSuggestions> => {
+    const emptyResult = { copilotSuggestions: [], imageSuggestions: [], researchSuggestions: [] };
     try {
+        const prompt = `
+            Analyze the slide content below and generate three distinct sets of suggestions by calling the 'generateAllSuggestions' function.
+            1.  **Copilot:** 3-5 actionable ideas to improve the text (e.g., "Make it more concise").
+            2.  **Image:** 3-5 creative visual ideas (e.g., "Use a futuristic background").
+            3.  **Research:** 3-5 relevant topics to find supporting data (e.g., "Find latest market trends").
+
+            **Slide Title:** "${title}"
+            **Slide Content:** "${content}"
+        `;
+
         const response: GenerateContentResponse = await ai.models.generateContent({
             model: "gemini-2.5-pro",
             contents: prompt,
-            config: { tools: [{ functionDeclarations: [tool] }] },
+            config: { tools: [{ functionDeclarations: [generateAllSuggestionsFunctionDeclaration] }] },
         });
 
         const functionCall = response.functionCalls?.[0];
-        if (functionCall && functionCall.args) {
-            const args = functionCall.args as { [key: string]: string[] };
-            // The key can be 'suggestions', 'prompts', or 'topics'
-            const key = Object.keys(args)[0]; 
-            if (key && Array.isArray(args[key])) {
-                return args[key];
-            }
+        if (functionCall?.name === 'generateAllSuggestions' && functionCall.args) {
+            return functionCall.args as unknown as AllSuggestions;
         }
-        return []; // Return empty array if no valid suggestions
+
+        return emptyResult;
     } catch (error) {
-        console.error(`Error fetching suggestions with tool ${tool.name}:`, error);
-        return []; // Silently fail and return empty array
+        console.error("Error fetching all suggestions:", error);
+        return emptyResult; // Silently fail and return empty object
     }
-};
-
-export const suggestImprovements = async (title: string, content: string): Promise<string[]> => {
-    const prompt = `Analyze the slide title "${title}" and content "${content}" and call the 'suggestImprovements' function with 3-5 short, actionable suggestions. Examples: "Make it more concise", "Add a success metric", "Reword for investors".`;
-    return callSuggestionApi(prompt, suggestImprovementsFunctionDeclaration);
-};
-
-export const suggestImagePrompts = async (title: string, content: string): Promise<string[]> => {
-    const prompt = `Analyze the slide title "${title}" and content "${content}" and call the 'suggestImagePrompts' function with 3-5 creative and relevant image prompt ideas. Examples: "Add futuristic background", "Use pastel palette", "Match theme to AI concept".`;
-    return callSuggestionApi(prompt, suggestImagePromptsFunctionDeclaration);
-};
-
-export const suggestResearchTopics = async (title: string, content: string): Promise<string[]> => {
-    const prompt = `Analyze the slide title "${title}" and content "${content}" and call the 'suggestResearchTopics' function with 3-5 relevant research topics. Examples: "Find latest market trends", "Fetch AI funding stats", "Get event tech case studies".`;
-    return callSuggestionApi(prompt, suggestResearchTopicsFunctionDeclaration);
 };

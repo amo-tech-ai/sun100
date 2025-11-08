@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2024-08-09
+
+### Added
+- **Validation & Performance Audit:** Conducted a comprehensive, full-cycle audit of the application. This process verified the successful implementation of all performance optimizations (Combined AI Suggestions, Image Pre-loading, Component Memoization), confirmed the end-to-end stability of the user journey, and validated the correctness of all AI agent functionalities. The application is officially confirmed as production-ready.
+
+## [1.5.0] - 2024-08-08
+
+### Added
+- **Performance Optimization:** Implemented component memoization across the Deck Editor using `React.memo` and `useCallback`. This optimization significantly reduces unnecessary re-renders when interacting with the editor, ensuring the UI remains responsive and scalable, especially for larger decks. This completes Stage 3 of the performance improvement plan.
+
 ## [1.4.0] - 2024-08-07
 
 ### Added

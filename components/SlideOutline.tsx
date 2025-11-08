@@ -23,6 +23,36 @@ interface SlideOutlineProps {
     isCollapsed: boolean;
 }
 
+interface SlideOutlineItemProps {
+    slide: Slide;
+    index: number;
+    isSelected: boolean;
+    isCollapsed: boolean;
+    template: Deck['template'];
+    onSelect: (slide: Slide) => void;
+}
+
+const SlideOutlineItem: React.FC<SlideOutlineItemProps> = React.memo(({ slide, index, isSelected, isCollapsed, template, onSelect }) => {
+    const handleSelect = () => onSelect(slide);
+    return (
+        <div
+            onClick={handleSelect}
+            className={`p-2 rounded-md cursor-pointer border-2 transition-colors flex items-center ${isCollapsed ? '' : 'gap-3'} ${isSelected ? 'border-[#E87C4D] bg-orange-50' : 'border-transparent hover:border-gray-300'}`}
+        >
+            <span className={`text-sm font-medium text-gray-500 transition-all ${isCollapsed ? 'w-full text-center' : ''}`}>{index + 1}</span>
+            {!isCollapsed && (
+                <div className="w-full aspect-video bg-gray-200 rounded-sm overflow-hidden">
+                    <div className={`w-full h-full text-[4px] p-1 ${templates[template]?.slide || templates.default.slide}`}>
+                        <p className="font-bold truncate">{slide.title}</p>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+});
+SlideOutlineItem.displayName = 'SlideOutlineItem';
+
+
 const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, template, selectedSlideId, onSlideSelect, onTitleSave, onAddRoadmapSlide, isCollapsed }) => {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState(deckTitle);
@@ -66,20 +96,15 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, 
             </div>
             <div className="flex-1 overflow-y-auto space-y-2 -mr-2 pr-2">
                 {slides.map((slide, index) => (
-                    <div
+                    <SlideOutlineItem
                         key={slide.id}
-                        onClick={() => onSlideSelect(slide)}
-                        className={`p-2 rounded-md cursor-pointer border-2 transition-colors flex items-center ${isCollapsed ? '' : 'gap-3'} ${selectedSlideId === slide.id ? 'border-[#E87C4D] bg-orange-50' : 'border-transparent hover:border-gray-300'}`}
-                    >
-                        <span className={`text-sm font-medium text-gray-500 transition-all ${isCollapsed ? 'w-full text-center' : ''}`}>{index + 1}</span>
-                        {!isCollapsed && (
-                            <div className="w-full aspect-video bg-gray-200 rounded-sm overflow-hidden">
-                                <div className={`w-full h-full text-[4px] p-1 ${templates[template]?.slide || templates.default.slide}`}>
-                                    <p className="font-bold truncate">{slide.title}</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                        slide={slide}
+                        index={index}
+                        isSelected={selectedSlideId === slide.id}
+                        isCollapsed={isCollapsed}
+                        template={template}
+                        onSelect={onSlideSelect}
+                    />
                 ))}
             </div>
             <div className={`mt-4 flex flex-col space-y-2 transition-opacity duration-300 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>

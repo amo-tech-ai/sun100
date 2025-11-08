@@ -10,9 +10,7 @@ import {
     analyzeSlide,
     researchTopic,
     suggestLayout,
-    suggestImprovements,
-    suggestImagePrompts,
-    suggestResearchTopics,
+    fetchAllSuggestions, // Updated import
     suggestChart,
     SlideAnalysis,
     ResearchResult,
@@ -87,14 +85,14 @@ const DeckEditor: React.FC = () => {
             setResearchSuggestions([]);
             
             try {
-                const [copilotRes, imageRes, researchRes] = await Promise.all([
-                    suggestImprovements(selectedSlide.title, selectedSlide.content),
-                    suggestImagePrompts(selectedSlide.title, selectedSlide.content),
-                    suggestResearchTopics(selectedSlide.title, selectedSlide.content),
-                ]);
-                setCopilotSuggestions(copilotRes);
-                setImageSuggestions(imageRes);
-                setResearchSuggestions(researchRes);
+                // Use the new single function call
+                const { copilotSuggestions, imageSuggestions, researchSuggestions } = await fetchAllSuggestions(
+                    selectedSlide.title,
+                    selectedSlide.content
+                );
+                setCopilotSuggestions(copilotSuggestions);
+                setImageSuggestions(imageSuggestions);
+                setResearchSuggestions(researchSuggestions);
             } catch (err) {
                 console.error("Failed to fetch AI suggestions:", err);
                 // Silently fail, don't show an error to the user for this feature
@@ -115,11 +113,11 @@ const DeckEditor: React.FC = () => {
         setChartError(null);
     }, []);
 
-    const handleTitleSave = (newTitle: string) => {
+    const handleTitleSave = useCallback((newTitle: string) => {
         if (deck) {
             setDeck({ ...deck, title: newTitle });
         }
-    };
+    }, [deck]);
 
     const handlePrevSlide = useCallback(() => {
         if (!deck || !selectedSlide) return;
@@ -162,7 +160,7 @@ const DeckEditor: React.FC = () => {
     }, [deck, handleSlideSelect]);
 
     // --- AI HANDLERS ---
-    const handleGenerateImage = async () => {
+    const handleGenerateImage = useCallback(async () => {
         if (!deck || !selectedSlide) {
             setImageError("No slide selected to generate an image for.");
             return;
@@ -184,9 +182,9 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsGeneratingImage(false);
         }
-    };
+    }, [deck, selectedSlide]);
 
-    const handleEditImage = async (prompt: string) => {
+    const handleEditImage = useCallback(async (prompt: string) => {
         if (!deck || !selectedSlide || !selectedSlide.imageUrl || !selectedSlide.imageUrl.startsWith('data:image')) {
             setImageError("No image selected to edit.");
             return;
@@ -213,9 +211,9 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsEditingImage(false);
         }
-    };
+    }, [deck, selectedSlide]);
 
-    const handleCopilotGenerate = async (prompt: string) => {
+    const handleCopilotGenerate = useCallback(async (prompt: string) => {
         if (!deck || !selectedSlide) return;
         setIsCopilotLoading(true);
         try {
@@ -232,9 +230,9 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsCopilotLoading(false);
         }
-    };
+    }, [deck, selectedSlide]);
 
-    const handleAnalyzeSlide = async () => {
+    const handleAnalyzeSlide = useCallback(async () => {
         if (!deck || !selectedSlide) return;
         setIsAnalyzing(true);
         setAnalysisResult(null);
@@ -247,9 +245,9 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsAnalyzing(false);
         }
-    };
+    }, [deck, selectedSlide]);
 
-    const handleResearch = async (query: string) => {
+    const handleResearch = useCallback(async (query: string) => {
         if (!query.trim()) return;
         setIsResearching(true);
         setResearchResult(null);
@@ -262,9 +260,9 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsResearching(false);
         }
-    };
+    }, []);
 
-    const handleSuggestLayout = async () => {
+    const handleSuggestLayout = useCallback(async () => {
         if (!deck || !selectedSlide) return;
         setIsSuggestingLayout(true);
         setLayoutError(null);
@@ -283,9 +281,9 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsSuggestingLayout(false);
         }
-    };
+    }, [deck, selectedSlide]);
     
-    const handleSuggestChart = async () => {
+    const handleSuggestChart = useCallback(async () => {
         if (!deck || !selectedSlide) return;
         setIsSuggestingChart(true);
         setChartError(null);
@@ -305,7 +303,7 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsSuggestingChart(false);
         }
-    };
+    }, [deck, selectedSlide]);
     // --- END AI HANDLERS ---
 
     useEffect(() => {

@@ -82,4 +82,4 @@ const ImageEditorPanel: React.FC<ImageEditorPanelProps> = ({ onEdit, isLoading, 
     );
 };
 
-export default ImageEditorPanel;
+export default React.memo(ImageEditorPanel);

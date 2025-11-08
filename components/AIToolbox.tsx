@@ -95,4 +95,4 @@ const AIToolbox: React.FC<AIToolboxProps> = (props) => {
     );
 };
 
-export default AIToolbox;
+export default React.memo(AIToolbox);

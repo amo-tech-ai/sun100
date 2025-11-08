@@ -104,4 +104,4 @@ const ResearchResultPanel: React.FC<ResearchResultPanelProps> = ({ onResearch, i
     );
 };
 
-export default ResearchResultPanel;
+export default React.memo(ResearchResultPanel);
