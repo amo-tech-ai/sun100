@@ -1,5 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse, Type, Modality, FunctionDeclaration } from "@google/genai";
-import { Slide } from '../data/decks';
+import { Slide, ChartData } from '../data/decks';
 import { templates } from "../styles/templates";
 
 // As per guidelines, API key must be from process.env.API_KEY
@@ -156,6 +156,33 @@ const suggestResearchTopicsFunctionDeclaration: FunctionDeclaration = {
             },
         },
         required: ['topics'],
+    },
+};
+
+const chartSuggesterFunctionDeclaration: FunctionDeclaration = {
+    name: 'suggestChart',
+    description: 'Analyzes slide content for data points and suggests a suitable bar chart representation.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            // FIX: Renamed property to 'type' to align with the ChartData interface.
+            type: { type: Type.STRING, description: "The type of chart. Must be 'bar'." },
+            // FIX: Renamed property to 'data' to align with the ChartData interface.
+            data: {
+                type: Type.ARRAY,
+                description: 'An array of data objects for the chart.',
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        label: { type: Type.STRING, description: 'The label for the data point (e.g., a year or category).' },
+                        value: { type: Type.NUMBER, description: 'The numerical value for the data point.' },
+                    },
+                    required: ['label', 'value'],
+                },
+            },
+        },
+        // FIX: Updated required properties to match the changes above.
+        required: ['type', 'data'],
     },
 };
 
@@ -496,6 +523,45 @@ export const suggestLayout = async (title: string, content: string): Promise<key
     } catch (error) {
         console.error("Error suggesting layout with Gemini:", error);
         throw new Error("Failed to suggest a layout. Please try again.");
+    }
+};
+
+export const suggestChart = async (title: string, content: string): Promise<ChartData | null> => {
+    try {
+        const prompt = `
+            You are a data visualization expert. Analyze the following slide content for numerical data that can be represented as a bar chart. If suitable data is found (at least 2 data points), call the 'suggestChart' function. Otherwise, do not call the function.
+
+            **Slide Title:** "${title}"
+            **Slide Content:** "${content}"
+
+            Look for patterns like "Metric: Value", "Category: Amount", or "Year: Number". Extract these into labels and values.
+        `;
+
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: "gemini-2.5-pro",
+            contents: prompt,
+            config: {
+                tools: [{ functionDeclarations: [chartSuggesterFunctionDeclaration] }],
+            },
+        });
+        
+        const functionCall = response.functionCalls?.[0];
+
+        if (functionCall?.name === 'suggestChart' && functionCall.args) {
+            const chartResult = functionCall.args as unknown as ChartData;
+            // FIX: The property from the function call is now 'data', which matches the 'ChartData' type.
+            // This resolves the error "Property 'chartData' does not exist on type 'ChartData'".
+            if (chartResult.data?.length > 1) { // Only return if we have a meaningful chart
+                // FIX: The property from the function call is now 'data'.
+                return { type: 'bar', data: chartResult.data };
+            }
+        }
+        
+        return null; // No suitable chart found
+
+    } catch (error) {
+        console.error("Error suggesting chart with Gemini:", error);
+        throw new Error("Failed to suggest a chart. Please try again.");
     }
 };
 

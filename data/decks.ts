@@ -1,16 +1,22 @@
 import { templates } from '../styles/templates';
 
 // --- Type Definitions ---
+export interface ChartData {
+  type: 'bar'; // Currently only bar charts are supported
+  data: { label: string; value: number }[];
+}
+
 export interface Slide {
   id: string;
   title: string;
   content: string; // Bullet points separated by newlines
   imageUrl?: string; // Can be a URL or an AI prompt
   template?: keyof typeof templates;
+  chartData?: ChartData;
 }
 
 export interface Deck {
-  id: string;
+  id:string;
   title: string;
   template: keyof typeof templates;
   slides: Slide[];

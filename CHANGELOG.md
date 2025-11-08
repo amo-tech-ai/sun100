@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2024-08-07
+
+### Added
+- **Roadmap Slide Generation:** Added an "Add Roadmap" button to the editor sidebar. This automates the creation of a new slide pre-populated with a title and a detailed AI image prompt for the recommended "Vision Trail" roadmap style, streamlining the creation of this key pitch deck slide.
+
 ## [1.3.0] - 2024-08-06
 
 ### Changed

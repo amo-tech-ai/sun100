@@ -6,6 +6,10 @@ import { templates } from '../styles/templates';
 const EditIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
 );
+const RoadmapIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" x2="8" y1="2" y2="18"/><line x1="16" x2="16" y1="6" y2="22"/></svg>
+);
+
 
 interface SlideOutlineProps {
     deckId: string;
@@ -15,10 +19,11 @@ interface SlideOutlineProps {
     selectedSlideId: string;
     onSlideSelect: (slide: Slide) => void;
     onTitleSave: (newTitle: string) => void;
+    onAddRoadmapSlide: () => void;
     isCollapsed: boolean;
 }
 
-const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, template, selectedSlideId, onSlideSelect, onTitleSave, isCollapsed }) => {
+const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, template, selectedSlideId, onSlideSelect, onTitleSave, onAddRoadmapSlide, isCollapsed }) => {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState(deckTitle);
 
@@ -77,13 +82,22 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, 
                     </div>
                 ))}
             </div>
-             <Link
-                to={`/dashboard/decks/${deckId}/present`}
-                state={{deck: {id: deckId, title: deckTitle, slides: slides, template: template}}}
-                className={`mt-4 text-center bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-            >
-                {isCollapsed ? '' : 'Present'}
-            </Link>
+            <div className={`mt-4 flex flex-col space-y-2 transition-opacity duration-300 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <button
+                    onClick={onAddRoadmapSlide}
+                    className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2"
+                >
+                    <RoadmapIcon />
+                    <span>Add Roadmap</span>
+                </button>
+                 <Link
+                    to={`/dashboard/decks/${deckId}/present`}
+                    state={{deck: {id: deckId, title: deckTitle, slides: slides, template: template}}}
+                    className="block w-full text-center bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
+                >
+                    Present
+                </Link>
+            </div>
         </aside>
     );
 };
