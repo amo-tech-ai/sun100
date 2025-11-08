@@ -4,9 +4,11 @@ interface ImageEditorPanelProps {
     onEdit: (prompt: string) => void;
     isLoading: boolean;
     error: string | null;
+    suggestions: string[];
+    areSuggestionsLoading: boolean;
 }
 
-const ImageEditorPanel: React.FC<ImageEditorPanelProps> = ({ onEdit, isLoading, error }) => {
+const ImageEditorPanel: React.FC<ImageEditorPanelProps> = ({ onEdit, isLoading, error, suggestions, areSuggestionsLoading }) => {
     const [prompt, setPrompt] = useState('');
 
     const handleEditClick = () => {
@@ -15,8 +17,13 @@ const ImageEditorPanel: React.FC<ImageEditorPanelProps> = ({ onEdit, isLoading, 
         }
     };
 
+    const handleSuggestionClick = (suggestion: string) => {
+        setPrompt(suggestion);
+        onEdit(suggestion);
+    };
+
     return (
-        <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <div className="bg-gray-50 p-4 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Edit Image with AI</h3>
             <textarea
                 value={prompt}
@@ -47,6 +54,30 @@ const ImageEditorPanel: React.FC<ImageEditorPanelProps> = ({ onEdit, isLoading, 
             {error && (
                 <p className="mt-2 text-sm text-red-600">{error}</p>
             )}
+
+            <div className="border-t border-gray-200 mt-4 pt-3">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Suggestions</h4>
+                {areSuggestionsLoading ? (
+                     <div className="flex flex-wrap gap-2">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="h-7 w-32 bg-gray-200 rounded-full animate-pulse"></div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-wrap gap-2">
+                        {suggestions.map((s, i) => (
+                             <button
+                                key={i}
+                                onClick={() => handleSuggestionClick(s)}
+                                disabled={isLoading}
+                                className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {s}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

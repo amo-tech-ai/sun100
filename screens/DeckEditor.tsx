@@ -10,6 +10,9 @@ import {
     analyzeSlide,
     researchTopic,
     suggestLayout,
+    suggestImprovements,
+    suggestImagePrompts,
+    suggestResearchTopics,
     SlideAnalysis,
     ResearchResult,
 } from '../services/geminiService';
@@ -45,6 +48,12 @@ const DeckEditor: React.FC = () => {
     const [researchResult, setResearchResult] = useState<ResearchResult | null>(null);
     const [isSuggestingLayout, setIsSuggestingLayout] = useState(false);
 
+    // AI Suggestion States
+    const [copilotSuggestions, setCopilotSuggestions] = useState<string[]>([]);
+    const [imageSuggestions, setImageSuggestions] = useState<string[]>([]);
+    const [researchSuggestions, setResearchSuggestions] = useState<string[]>([]);
+    const [areSuggestionsLoading, setAreSuggestionsLoading] = useState(false);
+
     useEffect(() => {
         const storedDeckJson = sessionStorage.getItem(`deck-${id}`);
         const storedDeck = storedDeckJson ? JSON.parse(storedDeckJson) : null;
@@ -61,6 +70,36 @@ const DeckEditor: React.FC = () => {
             sessionStorage.setItem(`deck-${deck.id}`, JSON.stringify(deck));
         }
     }, [deck]);
+
+    // Fetch suggestions when the selected slide changes
+    useEffect(() => {
+        if (!selectedSlide) return;
+
+        const fetchSuggestions = async () => {
+            setAreSuggestionsLoading(true);
+            setCopilotSuggestions([]);
+            setImageSuggestions([]);
+            setResearchSuggestions([]);
+            
+            try {
+                const [copilotRes, imageRes, researchRes] = await Promise.all([
+                    suggestImprovements(selectedSlide.title, selectedSlide.content),
+                    suggestImagePrompts(selectedSlide.title, selectedSlide.content),
+                    suggestResearchTopics(selectedSlide.title, selectedSlide.content),
+                ]);
+                setCopilotSuggestions(copilotRes);
+                setImageSuggestions(imageRes);
+                setResearchSuggestions(researchRes);
+            } catch (err) {
+                console.error("Failed to fetch AI suggestions:", err);
+                // Silently fail, don't show an error to the user for this feature
+            } finally {
+                setAreSuggestionsLoading(false);
+            }
+        };
+
+        fetchSuggestions();
+    }, [selectedSlide]);
 
     const handleSlideSelect = useCallback((slide: Slide) => {
         setSelectedSlide(slide);
@@ -97,14 +136,15 @@ const DeckEditor: React.FC = () => {
 
     // --- AI HANDLERS ---
     const handleGenerateImage = async () => {
-        if (!deck || !selectedSlide || !selectedSlide.imageUrl || selectedSlide.imageUrl.startsWith('data:image')) {
-            setImageError("No image prompt available for this slide.");
+        if (!deck || !selectedSlide) {
+            setImageError("No slide selected to generate an image for.");
             return;
         }
         setIsGeneratingImage(true);
         setImageError(null);
         try {
-            const newBase64Data = await generateSlideImage(selectedSlide.imageUrl);
+            const imagePrompt = (typeof selectedSlide.imageUrl === 'string' && !selectedSlide.imageUrl.startsWith('data:image')) ? selectedSlide.imageUrl : undefined;
+            const newBase64Data = await generateSlideImage(selectedSlide.title, selectedSlide.content, imagePrompt);
             const newImageUrl = `data:image/png;base64,${newBase64Data}`;
             const updatedSlides = deck.slides.map(slide => 
                 slide.id === selectedSlide.id ? { ...slide, imageUrl: newImageUrl } : slide
@@ -276,6 +316,10 @@ const DeckEditor: React.FC = () => {
                     isResearching={isResearching}
                     researchResult={researchResult}
                     isSuggestingLayout={isSuggestingLayout}
+                    areSuggestionsLoading={areSuggestionsLoading}
+                    copilotSuggestions={copilotSuggestions}
+                    imageSuggestions={imageSuggestions}
+                    researchSuggestions={researchSuggestions}
                     handleGenerateImage={handleGenerateImage}
                     handleEditImage={handleEditImage}
                     handleCopilotGenerate={handleCopilotGenerate}

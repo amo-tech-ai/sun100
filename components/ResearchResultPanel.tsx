@@ -5,9 +5,11 @@ interface ResearchResultPanelProps {
     onResearch: (query: string) => void;
     isLoading: boolean;
     result: ResearchResult | null;
+    suggestions: string[];
+    areSuggestionsLoading: boolean;
 }
 
-const ResearchResultPanel: React.FC<ResearchResultPanelProps> = ({ onResearch, isLoading, result }) => {
+const ResearchResultPanel: React.FC<ResearchResultPanelProps> = ({ onResearch, isLoading, result, suggestions, areSuggestionsLoading }) => {
     const [query, setQuery] = useState('');
 
     const handleResearchClick = () => {
@@ -16,8 +18,13 @@ const ResearchResultPanel: React.FC<ResearchResultPanelProps> = ({ onResearch, i
         }
     };
 
+    const handleSuggestionClick = (suggestion: string) => {
+        setQuery(suggestion);
+        onResearch(suggestion);
+    };
+
     return (
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <div className="bg-gray-50 p-4 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-800 mb-3">AI Research Assistant</h3>
              <div className="flex gap-2 mb-3">
                  <input
@@ -43,15 +50,39 @@ const ResearchResultPanel: React.FC<ResearchResultPanelProps> = ({ onResearch, i
                     ) : 'Go'}
                 </button>
             </div>
+            
+            <div className="border-t border-gray-200 pt-3">
+                 <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Suggestions</h4>
+                {areSuggestionsLoading ? (
+                     <div className="flex flex-wrap gap-2">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="h-7 w-32 bg-gray-200 rounded-full animate-pulse"></div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-wrap gap-2">
+                        {suggestions.map((s, i) => (
+                             <button
+                                key={i}
+                                onClick={() => handleSuggestionClick(s)}
+                                disabled={isLoading}
+                                className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {s}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
 
-            {isLoading && (
-                 <div className="text-center py-4 border-t">
+            {isLoading && !result && (
+                 <div className="text-center py-4 border-t mt-3">
                     <p className="text-gray-600">Researching...</p>
                 </div>
             )}
             
-            {result ? (
-                <div className="space-y-3 text-sm border-t pt-3">
+            {result && (
+                <div className="space-y-3 text-sm border-t pt-3 mt-3">
                     <p className="text-gray-700 whitespace-pre-wrap">{result.summary}</p>
                     {result.sources.length > 0 && (
                         <div>
@@ -68,8 +99,6 @@ const ResearchResultPanel: React.FC<ResearchResultPanelProps> = ({ onResearch, i
                         </div>
                     )}
                 </div>
-            ) : (
-                !isLoading && <p className="text-sm text-center text-gray-500 border-t pt-3">Enter a topic above to get started.</p>
             )}
         </div>
     );

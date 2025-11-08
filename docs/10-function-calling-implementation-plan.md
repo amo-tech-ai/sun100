@@ -87,13 +87,9 @@ We will implement this change in two phases, starting with refactoring our core,
 - **Description:** Convert the existing image generation and editing workflows to use a chain of function calls for increased reliability and quality. This involves separating the creative brief from the generation and editing actions.
 - **Steps:**
     1.  Define an `imageBriefFunctionDeclaration` to generate a detailed creative brief (style, palette, keywords) based on slide content.
-    2.  Define a `generateImageFromBriefFunctionDeclaration` that takes a brief and generates an image.
-    3.  Define an `editImageFunctionDeclaration` for iterative refinements.
-    4.  Update `generateSlideImage`:
+    2.  Update `generateSlideImage`:
         -   First, call the model with the `imageBrief` tool to get a structured brief.
-        -   Then, call the model again with the brief and the `generateImageFromBrief` tool.
-    5.  Update `editSlideImage`:
-        -   Refactor to use the new `editImage` function call, passing the image and a text prompt.
+        -   Then, call the image generation model using a high-quality prompt constructed from the brief.
 - **Success Criteria:** Image generation is more consistent and context-aware. The editing process is robust and reliable.
 
 ---
@@ -111,30 +107,19 @@ We will implement this change in two phases, starting with refactoring our core,
     4.  The app will receive the function call and update the slide's state with the chosen layout. (Note: This may require a minor data model change to allow per-slide templates).
 - **Success Criteria:** Users can automatically apply a contextually appropriate layout to any slide, automating a key design decision.
 
-#### Task 2.2: Implement `chartSuggester`
-- **Description:** Add a tool that can detect data within a slide's text and suggest a visual chart representation.
-- **Steps:**
-    1.  Define a `chartSuggesterFunctionDeclaration` with parameters like `chartType` (`'bar'`, `'line'`), `labels` (array of strings), and `data` (array of numbers).
-    2.  Create a new "Visualize Data" feature in the `AIToolbox`.
-    3.  When triggered, a new service function will send the slide content to the model with the `chartSuggester` tool.
-    4.  The app will receive the function call's arguments and use them to render a placeholder chart image or integrate with a charting library.
-- **Success Criteria:** Users can transform text-based data into visual charts with a single click, dramatically improving the quality of data-heavy slides.
+---
 
-#### Task 2.3: Implement `styleHarmonize`
-- **Description:** Create a "Brand Harmony" tool that adjusts all images in a deck to match a consistent visual style (palette, contrast).
-- **Steps:**
-    1.  Define a `styleHarmonizeFunctionDeclaration` with parameters for target palette, contrast, etc.
-    2.  Create a UI element (e.g., "Harmonize All Images" button).
-    3.  The associated service function will iterate through all slides, calling the model with the `styleHarmonize` tool for each image.
-- **Success Criteria:** Users can achieve deck-wide visual consistency with a single action.
+### Phase 3: Intelligent Suggestions & Proactive Assistance
 
-#### Task 2.4: Implement Smart Cropping and Accessibility Checks
-- **Description:** Add functions to intelligently crop images for different layouts and ensure text overlays are accessible.
+**Goal:** Transform the editor from a reactive tool to a proactive partner by suggesting context-aware actions to the user.
+
+#### Task 3.1: Implement Context-Aware Suggestion Functions
+- **Description:** Create a suite of functions that analyze the current slide's content and suggest relevant, high-impact actions for the user.
 - **Steps:**
-    1.  Define `layoutCropFunctionDeclaration` to perform a smart 16:9 crop that keeps the focal point visible.
-    2.  Define `contrastAccessibilityCheckFunctionDeclaration` to verify that text placed over an image meets AA contrast standards.
-    3.  Integrate these checks into the editor, perhaps as automated steps after an image is added or as a pre-flight check before presenting/exporting.
-- **Success Criteria:** All images are well-composed within the slide layout, and text is always readable, improving professionalism and accessibility.
+    1.  **`suggestImprovements`:** Define a function that suggests ways to enhance slide content (e.g., "Add a statistic," "Simplify this point"). This will power the AI Copilot suggestions.
+    2.  **`suggestImagePrompts`:** Define a function that suggests creative prompts for the Image Editor (e.g., "Use a more futuristic style," "Incorporate a warm color palette").
+    3.  **`suggestResearchTopics`:** Define a function that suggests relevant research queries to find supporting data for the current slide (e.g., "Find market size data for AI startups," "Research competitor A's latest funding").
+- **Success Criteria:** The AI can generate a list of 3-5 relevant, short suggestions for each of the core AI tabs (Copilot, Image, Research).
 
 ---
 

@@ -75,7 +75,7 @@ This flowchart shows the advanced, two-step process for generating a high-qualit
 flowchart TD
     A[1. Start with Slide Content] --> B{2. Call AI with `imageBrief` tool};
     B --> C[3. AI returns a structured brief<br/>(e.g., style, palette, keywords)];
-    C --> D{4. Call AI with Brief + `generateImageFromBrief` tool};
+    C --> D{4. Call AI with Brief + generate image prompt};
     D --> E[5. AI returns a final, high-quality image];
 ```
 
@@ -83,7 +83,7 @@ flowchart TD
 
 ### 5. Image Editing Sequence Diagram
 
-This diagram shows how a user can iteratively refine an existing image using the `editImage` function call.
+This diagram shows how a user can iteratively refine an existing image. While this doesn't use a function call, it shows the multi-modal text + image input.
 
 ```mermaid
 sequenceDiagram
@@ -95,8 +95,8 @@ sequenceDiagram
     User->>UI: Enters prompt: "Add a sun in the sky"
     User->>UI: Clicks "Apply Edit"
     UI->>Service: editSlideImage(base64Image, "Add a sun...")
-    Service->>Model: generateContent({ tools: [editImage], parts: [image, text] })
-    Model-->>Service: response { functionCalls: [editImage(newImageBytes)] }
+    Service->>Model: generateContent({ parts: [image, text] })
+    Model-->>Service: response { candidates: [{ content: { parts: [newImage] } }] }
     Service-->>UI: Returns new base64 image string
     UI->>User: Displays the edited image
 ```
@@ -167,47 +167,7 @@ sequenceDiagram
 
 ---
 
-### 9. Data Visualization (Chart Suggester) Workflow
-
-This illustrates how the AI could transform text-based data into a structured chart suggestion.
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI as Deck Editor / AI Toolbox
-    participant Service as geminiService
-    participant Model as Gemini API
-
-    User->>UI: Clicks "Visualize Data" on a data-heavy slide
-    UI->>Service: suggestChart(slide.content)
-    Service->>Model: generateContent({ tools: [chartSuggester] })
-    Model-->>Service: response { functionCalls: [chartSuggester(type, labels, data)] }
-    Service-->>UI: Returns structured chart data
-    UI->>User: Renders a placeholder chart image or uses a library to draw it
-```
-
----
-
-### 10. Brand Harmony Batch Process Flowchart
-
-This flowchart conceptualizes how a `styleHarmonize` function would be applied across an entire deck for visual consistency.
-
-```mermaid
-flowchart TD
-    A[User clicks "Harmonize All Images"] --> B{Get deck's visual brief<br/>(palette, style)};
-    B --> C{For each slide in the deck...};
-    C -- Yes --> D{Does slide have an image?};
-    D -- Yes --> E{Call AI with image + brief<br/>using `styleHarmonize` tool};
-    E --> F[AI returns harmonized image];
-    F --> G[Update slide with new image];
-    G --> C;
-    D -- No --> C;
-    C -- No more slides --> H[All images are now visually consistent];
-```
-
----
-
-### 11. Overall System Architecture
+### 9. Overall System Architecture
 
 This diagram provides a master map of how all the components of the Sun AI Pitch Deck Engine interact.
 
@@ -240,9 +200,8 @@ graph TD
             L[rewriteSlide]
             M[analyzeSlideContent]
             N[imageBrief]
-            O[generateImageFromBrief]
-            P[editImage]
-            Q[googleSearch]
+            O[googleSearch]
+            P[chooseLayout]
         end
     end
 
@@ -253,7 +212,32 @@ graph TD
     J -- Executes --> N;
     J -- Executes --> O;
     J -- Executes --> P;
-    J -- Executes --> Q;
 
     J -- Returns structured data --> I;
+```
+
+---
+
+### 10. Context-Aware Suggestion Workflow
+
+This sequence diagram shows how the application proactively generates suggestions for the user whenever they select a new slide.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as Deck Editor
+    participant Service as geminiService
+    participant Model as Gemini API
+
+    User->>UI: Selects a new slide
+    UI->>UI: useEffect triggers on slide change
+    UI->>Service: Promise.all([suggestImprovements, suggestImagePrompts, ...])
+    Service->>Model: generateContent({ tools: [suggestImprovements] })
+    Model-->>Service: response { functionCalls: [suggestImprovements(...)] }
+    Service-->>UI: Returns array of suggestions
+    UI->>UI: Updates state with suggestions
+    UI->>User: Displays suggestions as clickable chips
+
+    User->>UI: Clicks a suggestion chip
+    UI->>Service: Triggers corresponding action (e.g., modifySlideContent)
 ```
