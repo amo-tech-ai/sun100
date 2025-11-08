@@ -22,6 +22,10 @@ interface EditorPanelProps {
     isResearching: boolean;
     researchResult: ResearchResult | null;
     isSuggestingLayout: boolean;
+    areSuggestionsLoading: boolean;
+    copilotSuggestions: string[];
+    imageSuggestions: string[];
+    researchSuggestions: string[];
     handleGenerateImage: () => Promise<void>;
     handleEditImage: (prompt: string) => Promise<void>;
     handleCopilotGenerate: (prompt: string) => Promise<void>;
@@ -142,6 +146,10 @@ const EditorPanel: React.FC<EditorPanelProps> = (props) => {
                 isResearching={props.isResearching}
                 researchResult={props.researchResult}
                 onResearch={props.handleResearch}
+                areSuggestionsLoading={props.areSuggestionsLoading}
+                copilotSuggestions={props.copilotSuggestions}
+                imageSuggestions={props.imageSuggestions}
+                researchSuggestions={props.researchSuggestions}
             />
         </main>
     );

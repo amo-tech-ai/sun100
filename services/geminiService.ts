@@ -96,6 +96,69 @@ const chooseLayoutFunctionDeclaration: FunctionDeclaration = {
     },
 };
 
+const imageBriefFunctionDeclaration: FunctionDeclaration = {
+    name: 'imageBrief',
+    description: 'Generates a creative brief for an image based on slide content.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            keywords: { type: Type.STRING, description: 'The main subjects of the image, e.g., "team collaborating".' },
+            style: { type: Type.STRING, description: 'The visual style, e.g., "photorealistic", "minimalist illustration".' },
+            palette: { type: Type.STRING, description: 'The desired color palette, e.g., "warm and inviting", "professional blues".' },
+            composition: { type: Type.STRING, description: 'A brief description of the shot, e.g., "wide angle shot", "close-up".' },
+        },
+        required: ['keywords', 'style', 'palette', 'composition'],
+    },
+};
+
+const suggestImprovementsFunctionDeclaration: FunctionDeclaration = {
+    name: 'suggestImprovements',
+    description: 'Generates a list of 3-5 short, actionable suggestions to improve a slide.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            suggestions: {
+                type: Type.ARRAY,
+                description: 'An array of short, actionable suggestion strings (e.g., "Make it more concise", "Add a success metric").',
+                items: { type: Type.STRING },
+            },
+        },
+        required: ['suggestions'],
+    },
+};
+
+const suggestImagePromptsFunctionDeclaration: FunctionDeclaration = {
+    name: 'suggestImagePrompts',
+    description: 'Generates a list of 3-5 short, creative image prompt ideas to visually enhance a slide.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            prompts: {
+                type: Type.ARRAY,
+                description: 'An array of short, creative image prompt strings (e.g., "Use a futuristic background", "Incorporate a pastel palette").',
+                items: { type: Type.STRING },
+            },
+        },
+        required: ['prompts'],
+    },
+};
+
+const suggestResearchTopicsFunctionDeclaration: FunctionDeclaration = {
+    name: 'suggestResearchTopics',
+    description: 'Generates a list of 3-5 relevant research topics to add depth and data to a slide.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            topics: {
+                type: Type.ARRAY,
+                description: 'An array of short, relevant research topic strings (e.g., "Find latest market trends", "Fetch AI funding statistics").',
+                items: { type: Type.STRING },
+            },
+        },
+        required: ['topics'],
+    },
+};
+
 
 // --- Service Functions ---
 
@@ -154,25 +217,50 @@ export const generateDeckContent = async (companyDetails: string): Promise<DeckG
     }
 };
 
-export const generateSlideImage = async (prompt: string): Promise<string> => {
+export const generateSlideImage = async (title: string, content: string, initialPrompt?: string): Promise<string> => {
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: {
-                parts: [{ text: `Generate a visually appealing, professional image for a business pitch deck slide with the following theme: ${prompt}` }],
+        // Step 1: Generate a creative brief using a function call for structured output.
+        const briefPrompt = `
+            You are a creative director. Analyze the content of this pitch deck slide and the initial image idea to generate a creative brief for a compelling background image by calling the 'imageBrief' function.
+            The image should be professional and align with the slide's message.
+
+            **Slide Title:** "${title}"
+            **Slide Content:** "${content}"
+            ${initialPrompt ? `**Initial Image Idea:** "${initialPrompt}"` : ''}
+        `;
+
+        const briefResponse: GenerateContentResponse = await ai.models.generateContent({
+            model: "gemini-2.5-pro",
+            contents: briefPrompt,
+            config: {
+                tools: [{ functionDeclarations: [imageBriefFunctionDeclaration] }],
             },
+        });
+
+        const briefCall = briefResponse.functionCalls?.[0];
+        if (briefCall?.name !== 'imageBrief' || !briefCall.args) {
+            throw new Error("Failed to generate a creative brief for the image.");
+        }
+        const { keywords, style, palette, composition } = briefCall.args as { [key: string]: string };
+
+        // Step 2: Use the structured brief to generate a high-quality prompt for the image model.
+        const imagePrompt = `A ${style} image for a business pitch deck. The scene should depict ${keywords}. The composition is a ${composition}, with a ${palette} color palette. The overall mood should be professional and engaging.`;
+
+        const imageResponse: GenerateContentResponse = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: { parts: [{ text: imagePrompt }] },
             config: {
                 responseModalities: [Modality.IMAGE],
             },
         });
         
-        const imagePart = response.candidates?.[0]?.content?.parts?.find(p => !!p.inlineData);
+        const imagePart = imageResponse.candidates?.[0]?.content?.parts?.find(p => !!p.inlineData);
 
         if (imagePart?.inlineData?.data) {
             return imagePart.inlineData.data;
         }
 
-        throw new Error("The AI model returned an unexpected response. Please try a different prompt.");
+        throw new Error("The AI model returned an unexpected response after generating the brief.");
 
     } catch (error) {
         console.error("Error generating slide image with Gemini:", error);
@@ -409,4 +497,44 @@ export const suggestLayout = async (title: string, content: string): Promise<key
         console.error("Error suggesting layout with Gemini:", error);
         throw new Error("Failed to suggest a layout. Please try again.");
     }
+};
+
+// --- Suggestion Services ---
+const callSuggestionApi = async (prompt: string, tool: FunctionDeclaration): Promise<string[]> => {
+    try {
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: "gemini-2.5-pro",
+            contents: prompt,
+            config: { tools: [{ functionDeclarations: [tool] }] },
+        });
+
+        const functionCall = response.functionCalls?.[0];
+        if (functionCall && functionCall.args) {
+            const args = functionCall.args as { [key: string]: string[] };
+            // The key can be 'suggestions', 'prompts', or 'topics'
+            const key = Object.keys(args)[0]; 
+            if (key && Array.isArray(args[key])) {
+                return args[key];
+            }
+        }
+        return []; // Return empty array if no valid suggestions
+    } catch (error) {
+        console.error(`Error fetching suggestions with tool ${tool.name}:`, error);
+        return []; // Silently fail and return empty array
+    }
+};
+
+export const suggestImprovements = async (title: string, content: string): Promise<string[]> => {
+    const prompt = `Analyze the slide title "${title}" and content "${content}" and call the 'suggestImprovements' function with 3-5 short, actionable suggestions. Examples: "Make it more concise", "Add a success metric", "Reword for investors".`;
+    return callSuggestionApi(prompt, suggestImprovementsFunctionDeclaration);
+};
+
+export const suggestImagePrompts = async (title: string, content: string): Promise<string[]> => {
+    const prompt = `Analyze the slide title "${title}" and content "${content}" and call the 'suggestImagePrompts' function with 3-5 creative and relevant image prompt ideas. Examples: "Add futuristic background", "Use pastel palette", "Match theme to AI concept".`;
+    return callSuggestionApi(prompt, suggestImagePromptsFunctionDeclaration);
+};
+
+export const suggestResearchTopics = async (title: string, content: string): Promise<string[]> => {
+    const prompt = `Analyze the slide title "${title}" and content "${content}" and call the 'suggestResearchTopics' function with 3-5 relevant research topics. Examples: "Find latest market trends", "Fetch AI funding stats", "Get event tech case studies".`;
+    return callSuggestionApi(prompt, suggestResearchTopicsFunctionDeclaration);
 };

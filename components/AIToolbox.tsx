@@ -20,6 +20,10 @@ interface AIToolboxProps {
     isResearching: boolean;
     researchResult: ResearchResult | null;
     onResearch: (query: string) => void;
+    areSuggestionsLoading: boolean;
+    copilotSuggestions: string[];
+    imageSuggestions: string[];
+    researchSuggestions: string[];
 }
 
 type AITab = 'copilot' | 'image' | 'analysis' | 'research';
@@ -39,13 +43,30 @@ const AIToolbox: React.FC<AIToolboxProps> = (props) => {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'copilot':
-                return <AICopilot isLoading={props.isCopilotLoading} onGenerate={props.onCopilotGenerate} />;
+                return <AICopilot 
+                    isLoading={props.isCopilotLoading} 
+                    onGenerate={props.onCopilotGenerate}
+                    suggestions={props.copilotSuggestions}
+                    areSuggestionsLoading={props.areSuggestionsLoading}
+                />;
             case 'image':
-                return showImageTab ? <ImageEditorPanel onEdit={props.onEditImage} isLoading={props.isEditingImage} error={props.imageError} /> : null;
+                return showImageTab ? <ImageEditorPanel 
+                    onEdit={props.onEditImage} 
+                    isLoading={props.isEditingImage} 
+                    error={props.imageError} 
+                    suggestions={props.imageSuggestions}
+                    areSuggestionsLoading={props.areSuggestionsLoading}
+                /> : null;
             case 'analysis':
                 return <AnalysisPanel onAnalyze={props.onAnalyzeSlide} isLoading={props.isAnalyzing} analysis={props.analysisResult} />;
             case 'research':
-                return <ResearchResultPanel onResearch={props.onResearch} isLoading={props.isResearching} result={props.researchResult} />;
+                return <ResearchResultPanel 
+                    onResearch={props.onResearch} 
+                    isLoading={props.isResearching} 
+                    result={props.researchResult} 
+                    suggestions={props.researchSuggestions}
+                    areSuggestionsLoading={props.areSuggestionsLoading}
+                />;
             default:
                 return null;
         }
