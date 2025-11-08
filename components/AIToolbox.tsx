@@ -4,13 +4,14 @@ import ImageEditorPanel from './ImageEditorPanel';
 import AnalysisPanel from './AnalysisPanel';
 import ResearchResultPanel from './ResearchResultPanel';
 import { Slide } from '../data/decks';
-import { SlideAnalysis, ResearchResult } from '../services/geminiService';
+import { SlideAnalysis, ResearchResult, ExtractedMetric } from '../services/geminiService';
 
 interface AIToolboxProps {
     selectedSlide: Slide;
     isUrl: (url: string | undefined) => boolean;
+    // Base AI Props
     isCopilotLoading: boolean;
-    onCopilotGenerate: (prompt: string) => void;
+    onCopilotGenerate: (prompt: string, newTitle?: string) => void;
     isEditingImage: boolean;
     imageError: string | null;
     onEditImage: (prompt: string) => void;
@@ -24,7 +25,23 @@ interface AIToolboxProps {
     copilotSuggestions: string[];
     imageSuggestions: string[];
     researchSuggestions: string[];
+    // New Enhancement Props
+    headlineIdeas: string[];
+    isGeneratingHeadlines: boolean;
+    headlineError: string | null;
+    handleGenerateHeadlines: () => void;
+    extractedMetrics: ExtractedMetric[];
+    isExtractingMetrics: boolean;
+    metricError: string | null;
+    handleExtractMetrics: () => void;
+    handleMarketResearch: () => void;
+    isGeneratingTable: boolean;
+    tableError: string | null;
+    handleGenerateTable: () => void;
+    handleCompetitorResearch: () => void;
+    handleSummarizeBio: () => void;
 }
+
 
 type AITab = 'copilot' | 'image' | 'analysis' | 'research';
 
@@ -34,7 +51,6 @@ const AIToolbox: React.FC<AIToolboxProps> = (props) => {
     const showImageTab = props.selectedSlide.imageUrl && props.isUrl(props.selectedSlide.imageUrl);
 
     useEffect(() => {
-        // If the image tab was active but is now hidden, switch to copilot
         if (activeTab === 'image' && !showImageTab) {
             setActiveTab('copilot');
         }
@@ -48,6 +64,11 @@ const AIToolbox: React.FC<AIToolboxProps> = (props) => {
                     onGenerate={props.onCopilotGenerate}
                     suggestions={props.copilotSuggestions}
                     areSuggestionsLoading={props.areSuggestionsLoading}
+                    headlineIdeas={props.headlineIdeas}
+                    isGeneratingHeadlines={props.isGeneratingHeadlines}
+                    headlineError={props.headlineError}
+                    onGenerateHeadlines={props.handleGenerateHeadlines}
+                    onSummarizeBio={props.handleSummarizeBio}
                 />;
             case 'image':
                 return showImageTab ? <ImageEditorPanel 
@@ -58,7 +79,15 @@ const AIToolbox: React.FC<AIToolboxProps> = (props) => {
                     areSuggestionsLoading={props.areSuggestionsLoading}
                 /> : null;
             case 'analysis':
-                return <AnalysisPanel onAnalyze={props.onAnalyzeSlide} isLoading={props.isAnalyzing} analysis={props.analysisResult} />;
+                return <AnalysisPanel 
+                    onAnalyze={props.onAnalyzeSlide} 
+                    isLoading={props.isAnalyzing} 
+                    analysis={props.analysisResult} 
+                    onExtractMetrics={props.handleExtractMetrics}
+                    isExtractingMetrics={props.isExtractingMetrics}
+                    extractedMetrics={props.extractedMetrics}
+                    metricError={props.metricError}
+                />;
             case 'research':
                 return <ResearchResultPanel 
                     onResearch={props.onResearch} 
@@ -66,6 +95,9 @@ const AIToolbox: React.FC<AIToolboxProps> = (props) => {
                     result={props.researchResult} 
                     suggestions={props.researchSuggestions}
                     areSuggestionsLoading={props.areSuggestionsLoading}
+                    onMarketResearch={props.handleMarketResearch}
+                    onCompetitorResearch={props.handleCompetitorResearch}
+                    onSocialProofSearch={() => props.onResearch(`quotes or testimonials about the problem of ${props.selectedSlide.title}`)}
                 />;
             default:
                 return null;

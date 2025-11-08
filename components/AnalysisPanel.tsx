@@ -1,10 +1,15 @@
 import React from 'react';
-import { SlideAnalysis } from '../services/geminiService';
+import { SlideAnalysis, ExtractedMetric } from '../services/geminiService';
 
 interface AnalysisPanelProps {
     onAnalyze: () => void;
     isLoading: boolean;
     analysis: SlideAnalysis | null;
+    // New props
+    onExtractMetrics: () => void;
+    isExtractingMetrics: boolean;
+    extractedMetrics: ExtractedMetric[];
+    metricError: string | null;
 }
 
 const ratingStyles: { [key: string]: string } = {
@@ -13,7 +18,10 @@ const ratingStyles: { [key: string]: string } = {
     "Needs Improvement": 'text-red-600 font-semibold',
 };
 
-const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ onAnalyze, isLoading, analysis }) => {
+const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ 
+    onAnalyze, isLoading, analysis,
+    onExtractMetrics, isExtractingMetrics, extractedMetrics, metricError
+}) => {
     return (
         <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Slide Analysis</h3>
@@ -54,6 +62,28 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ onAnalyze, isLoading, ana
             >
                 Get Detailed Feedback
             </button>
+
+            {/* Key Metric Extraction UI */}
+            <div className="border-t border-gray-200 mt-4 pt-3">
+                <h4 className="text-md font-semibold text-gray-800 mb-2">Key Metric Extraction</h4>
+                <button onClick={onExtractMetrics} disabled={isExtractingMetrics} className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 disabled:bg-gray-200 disabled:cursor-not-allowed">
+                    {isExtractingMetrics ? 'Extracting...' : 'Extract Key Metrics'}
+                </button>
+                {metricError && <p className="text-red-600 text-sm mt-2">{metricError}</p>}
+                {extractedMetrics.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                        <p className="text-sm text-gray-500">AI found these metrics in your text:</p>
+                        {extractedMetrics.map((metric, i) => (
+                            <div key={i} className="flex justify-between items-center bg-white p-2 border rounded-md">
+                                <p className="text-sm"><span className="font-semibold">{metric.label}:</span> {metric.value}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                 {extractedMetrics.length === 0 && !isExtractingMetrics && !metricError && (
+                    <p className="text-sm text-gray-500 mt-2">No metrics found yet. Click the button to analyze.</p>
+                )}
+            </div>
         </div>
     );
 };
