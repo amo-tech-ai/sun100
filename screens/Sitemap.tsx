@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -19,6 +20,13 @@ const Sitemap: React.FC = () => {
     { path: '/jobs/:id', name: 'Job Detail', description: 'Details for a specific job posting.' },
     { path: '/blogs', name: 'Blogs', description: 'Community blog and articles.' },
     { path: '/blogs/:id', name: 'Blog Detail', description: 'A single blog post.' },
+  ];
+
+  const agencyServicesRoutes = [
+    { path: '/services', name: 'Services Overview', description: 'Hub for all agency service offerings.' },
+    { path: '/services/web-design', name: 'Web Design Service', description: 'Details about our web design services.' },
+    { path: '/services/logo-branding', name: 'Logo & Branding Service', description: 'Details about our branding services.' },
+    { path: '/services/mvp-development', name: 'MVP Development Service', description: 'Details about our MVP development services.' },
   ];
 
   const appRoutes = [
@@ -70,6 +78,11 @@ const Sitemap: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl lg:text-2xl font-semibold mb-4 border-b pb-2">Community Screens</h2>
           {renderRouteList(communityRoutes)}
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl lg:text-2xl font-semibold mb-4 border-b pb-2">Agency Services</h2>
+          {renderRouteList(agencyServicesRoutes)}
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">

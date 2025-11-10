@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Outlet, Link, NavLink } from 'react-router-dom';
 
@@ -13,6 +14,7 @@ const PublicLayout: React.FC = () => {
         { name: 'Perks', path: '/perks' },
         { name: 'Events', path: '/events' },
         { name: 'Jobs', path: '/jobs' },
+        { name: 'Services', path: '/services' },
         { name: 'Blogs', path: '/blogs' },
     ];
     return (
@@ -53,7 +55,7 @@ const PublicLayout: React.FC = () => {
 
             <footer className="w-full bg-white border-t border-gray-200 mt-20">
                 <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                   <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-gray-600">
+                   <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-gray-600">
                         <div>
                             <h3 className="font-semibold font-heading text-gray-900">Community</h3>
                             <ul className="mt-4 space-y-2">
@@ -61,6 +63,14 @@ const PublicLayout: React.FC = () => {
                                 <li><Link to="/how-it-works" className="hover:text-brand-orange">How It Works</Link></li>
                                 <li><Link to="/blogs" className="hover:text-brand-orange">Blog</Link></li>
                                 <li><Link to="/jobs" className="hover:text-brand-orange">Careers</Link></li>
+                            </ul>
+                        </div>
+                         <div>
+                            <h3 className="font-semibold font-heading text-gray-900">Services</h3>
+                            <ul className="mt-4 space-y-2">
+                                <li><Link to="/services/web-design" className="hover:text-brand-orange">Web Design</Link></li>
+                                <li><Link to="/services/logo-branding" className="hover:text-brand-orange">Logo & Branding</Link></li>
+                                <li><Link to="/services/mvp-development" className="hover:text-brand-orange">MVP Development</Link></li>
                             </ul>
                         </div>
                         <div>

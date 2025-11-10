@@ -1,3 +1,4 @@
+
 # Application Sitemap
 
 This document outlines the routing structure of the Sun AI Pitch Deck Engine, organized by the layout components that wrap the routes. This reflects the architecture in `App.tsx`.
@@ -21,6 +22,10 @@ These routes are accessible to all visitors and are wrapped in a public-facing l
 -   **`/how-it-works`**: `HowItWorks.tsx` - Explanation of the community platform.
 -   **`/blogs`**: `Blogs.tsx` - Community blog and articles.
 -   **`/blogs/:id`**: `BlogDetail.tsx` - A single blog post.
+-   **`/services`**: `Services.tsx` - Overview of agency service offerings.
+-   **`/services/web-design`**: `WebDesign.tsx` - Detail page for web design services.
+-   **`/services/logo-branding`**: `LogoBranding.tsx` - Detail page for branding services.
+-   **`/services/mvp-development`**: `MvpDevelopment.tsx` - Detail page for MVP development.
 -   **`/login`**: Redirects to `/dashboard`.
 -   **`/signup`**: Redirects to `/dashboard`.
 
