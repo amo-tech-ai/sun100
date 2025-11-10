@@ -341,6 +341,29 @@ export const generateDeckContent = async (companyDetails: string): Promise<DeckG
     throw new Error("Failed to generate deck outline. The AI did not return the expected structure.");
 };
 
+export const generateDeckFromUrls = async (urls: string[]): Promise<DeckGenerationResult> => {
+    const prompt = `You are a pitch deck expert. Analyze the content from the provided URLs and generate a complete 10-slide pitch deck by calling the 'generateDeckOutline' function. Extract the company overview, problem, solution, market, traction, and competitors.
+
+    URLs to analyze:
+    ${urls.join('\n')}
+    `;
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-pro',
+        contents: prompt,
+        config: {
+            tools: [{ urlContext: {} }, { functionDeclarations: [generateDeckOutlineFunctionDeclaration] }],
+        },
+    });
+
+    const functionCall = response.functionCalls?.[0];
+    if (functionCall?.name === 'generateDeckOutline' && functionCall.args) {
+        return functionCall.args as unknown as DeckGenerationResult;
+    }
+
+    throw new Error("Failed to generate deck from URLs. The AI did not return the expected structure.");
+};
+
 export const generateSlideImage = async (slideTitle: string, slideContent: string, promptOverride?: string): Promise<string> => {
     const prompt = promptOverride || `A professional, visually appealing image for a presentation slide titled "${slideTitle}" with the key message: "${slideContent.split('\n')[0]}". The style should be modern and clean.`;
     
