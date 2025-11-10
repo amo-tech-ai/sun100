@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, NavLink } from 'react-router-dom';
 
 const SunIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-brand-orange" viewBox="0 0 20 20" fill="currentColor">
@@ -8,6 +8,13 @@ const SunIcon = () => (
 );
 
 const PublicLayout: React.FC = () => {
+    const navLinks = [
+        { name: 'About', path: '/about' },
+        { name: 'Perks', path: '/perks' },
+        { name: 'Events', path: '/events' },
+        { name: 'Jobs', path: '/jobs' },
+        { name: 'Blogs', path: '/blogs' },
+    ];
     return (
         <div className="min-h-screen flex flex-col bg-[#FBF8F5] font-sans">
             <header className="w-full bg-white/80 backdrop-blur-sm sticky top-0 z-10 border-b border-gray-200">
@@ -17,14 +24,25 @@ const PublicLayout: React.FC = () => {
                             <SunIcon />
                             <span className="font-bold font-heading text-2xl text-gray-800">Sun AI</span>
                         </Link>
-                        <nav>
+                        <nav className="hidden md:flex items-center gap-6">
+                           {navLinks.map(link => (
+                               <NavLink 
+                                key={link.path}
+                                to={link.path} 
+                                className={({isActive}) => `font-semibold text-gray-600 hover:text-brand-orange transition-colors ${isActive ? 'text-brand-orange' : ''}`}
+                               >
+                                {link.name}
+                               </NavLink>
+                           ))}
+                        </nav>
+                        <div className="flex items-center">
                             <Link 
                                 to="/dashboard"
                                 className="inline-block bg-brand-orange text-white font-bold py-2 px-5 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
                             >
                                 Join Community
                             </Link>
-                        </nav>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -37,33 +55,34 @@ const PublicLayout: React.FC = () => {
                 <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-gray-600">
                         <div>
-                            <h3 className="font-semibold font-heading text-gray-900">Quick Links</h3>
+                            <h3 className="font-semibold font-heading text-gray-900">Community</h3>
                             <ul className="mt-4 space-y-2">
-                                <li><Link to="/" className="hover:text-brand-orange">Home</Link></li>
-                                <li><Link to="/dashboard" className="hover:text-brand-orange">Community</Link></li>
-                                <li><Link to="/dashboard" className="hover:text-brand-orange">AI Events</Link></li>
+                                <li><Link to="/about" className="hover:text-brand-orange">About Us</Link></li>
+                                <li><Link to="/how-it-works" className="hover:text-brand-orange">How It Works</Link></li>
+                                <li><Link to="/blogs" className="hover:text-brand-orange">Blog</Link></li>
+                                <li><Link to="/jobs" className="hover:text-brand-orange">Careers</Link></li>
                             </ul>
                         </div>
                         <div>
-                            <h3 className="font-semibold font-heading text-gray-900">Dashboards</h3>
+                            <h3 className="font-semibold font-heading text-gray-900">For Founders</h3>
+                             <ul className="mt-4 space-y-2">
+                                <li><Link to="/events" className="hover:text-brand-orange">Events</Link></li>
+                                <li><Link to="/perks" className="hover:text-brand-orange">Perks & Credits</Link></li>
+                                <li><Link to="/dashboard" className="hover:text-brand-orange">Submit Startup</Link></li>
+                            </ul>
+                        </div>
+                         <div>
+                            <h3 className="font-semibold font-heading text-gray-900">For Investors</h3>
                              <ul className="mt-4 space-y-2">
                                 <li><Link to="/dashboard" className="hover:text-brand-orange">Founder Dashboard</Link></li>
-                                <li><Link to="/dashboard" className="hover:text-brand-orange">Investor Dashboard</Link></li>
+                                <li><Link to="/dashboard" className="hover:text-brand-orange">AI Projects</Link></li>
                                 <li><Link to="/dashboard" className="hover:text-brand-orange">Analytics</Link></li>
                             </ul>
                         </div>
                          <div>
-                            <h3 className="font-semibold font-heading text-gray-900">Community</h3>
+                            <h3 className="font-semibold font-heading text-gray-900">Legal & Contact</h3>
                              <ul className="mt-4 space-y-2">
-                                <li><Link to="/dashboard" className="hover:text-brand-orange">Submit Startup</Link></li>
-                                <li><Link to="/dashboard" className="hover:text-brand-orange">AI Projects</Link></li>
-                                <li><Link to="/dashboard" className="hover:text-brand-orange">Perks & Credits</Link></li>
-                            </ul>
-                        </div>
-                         <div>
-                            <h3 className="font-semibold font-heading text-gray-900">Contact</h3>
-                             <ul className="mt-4 space-y-2">
-                                <li><a href="#" className="hover:text-brand-orange">Email Us</a></li>
+                                <li><a href="#" className="hover:text-brand-orange">Contact Us</a></li>
                                 <li><a href="#" className="hover:text-brand-orange">Slack Community</a></li>
                                 <li><Link to="/privacy" className="hover:text-brand-orange">Privacy Policy</Link></li>
                                 <li><Link to="/terms" className="hover:text-brand-orange">Terms of Service</Link></li>

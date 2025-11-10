@@ -1,5 +1,6 @@
+
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Layouts
 import DashboardLayout from './screens/DashboardLayout';
@@ -7,12 +8,20 @@ import PublicLayout from './screens/PublicLayout';
 
 // Public Screens
 import Landing from './screens/Landing';
-// Login and Signup are no longer needed for dev flow
-// import Login from './screens/Login';
-// import Signup from './screens/Signup';
 import Terms from './screens/Terms';
 import Privacy from './screens/Privacy';
 import NotFound from './screens/NotFound';
+import Sitemap from './screens/Sitemap';
+import About from './screens/About';
+import Perks from './screens/Perks';
+import PerkDetail from './screens/PerkDetail';
+import Events from './screens/Events';
+import EventDetail from './screens/EventDetail';
+import Jobs from './screens/Jobs';
+import JobDetail from './screens/JobDetail';
+import HowItWorks from './screens/HowItWorks';
+import Blogs from './screens/Blogs';
+import BlogDetail from './screens/BlogDetail';
 
 // App Screens
 import Dashboard from './screens/Dashboard';
@@ -23,10 +32,6 @@ import GeneratingScreen from './screens/GeneratingScreen';
 const DeckEditor = lazy(() => import('./screens/DeckEditor'));
 const PresentationScreen = lazy(() => import('./screens/PresentationScreen'));
 
-// Components
-// ProtectedRoute is disabled for development
-// import ProtectedRoute from './components/ProtectedRoute';
-
 // Loading fallback component
 const LoadingSpinner: React.FC = () => (
   <div className="flex h-screen w-full items-center justify-center bg-[#FBF8F5]">
@@ -36,40 +41,50 @@ const LoadingSpinner: React.FC = () => (
 
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          {/* --- Public Routes --- */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<Landing />} />
-            {/* Redirect auth pages to the dashboard for development */}
-            <Route path="/login" element={<Navigate to="/dashboard" />} />
-            <Route path="/signup" element={<Navigate to="/dashboard" />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-          </Route>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
+        {/* --- Public Routes --- */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Landing />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/perks" element={<Perks />} />
+          <Route path="/perks/:id" element={<PerkDetail />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/events/:id" element={<EventDetail />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/jobs/:id" element={<JobDetail />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/blogs/:id" element={<BlogDetail />} />
+          
+          {/* Redirect auth pages to the dashboard for development */}
+          <Route path="/login" element={<Navigate to="/dashboard" />} />
+          <Route path="/signup" element={<Navigate to="/dashboard" />} />
+        </Route>
 
-          {/* --- App Routes (No longer protected for dev) --- */}
-          <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/pitch-deck" element={<WizardSteps />} />
-            <Route path="/pitch-deck/generating" element={<GeneratingScreen />} />
-            <Route path="/dashboard/decks/:id/edit" element={<DeckEditor />} />
-          </Route>
+        {/* --- App Routes (No longer protected for dev) --- */}
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/pitch-deck" element={<WizardSteps />} />
+          <Route path="/pitch-deck/generating" element={<GeneratingScreen />} />
+          <Route path="/dashboard/decks/:id/edit" element={<DeckEditor />} />
+          <Route path="/sitemap" element={<Sitemap />} />
+        </Route>
 
-          {/* --- Full-screen Route (No longer protected for dev) --- */}
-          <Route
-            path="/dashboard/decks/:id/present"
-            element={
-              <PresentationScreen />
-            }
-          />
+        {/* --- Full-screen Route (No longer protected for dev) --- */}
+        <Route
+          path="/dashboard/decks/:id/present"
+          element={
+            <PresentationScreen />
+          }
+        />
 
-          {/* --- Fallback Route --- */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+        {/* --- Fallback Route --- */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 
