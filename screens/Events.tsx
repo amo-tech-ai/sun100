@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -65,9 +66,9 @@ const Events: React.FC = () => (
             <div className="relative z-10">
                 <h1 className="text-4xl md:text-6xl font-bold font-heading">Explore Events That Shape the Future of AI</h1>
                 <p className="mt-4 text-lg text-slate-300 max-w-2xl mx-auto">Join founders, investors, and creators at global AI-powered gatherings.</p>
-                <div className="mt-8 flex justify-center gap-4">
+                <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
                     <a href="#events-grid" className="bg-brand-orange text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors">View Upcoming Events</a>
-                    <a href="#" className="bg-white/10 border border-white/20 text-white font-bold py-3 px-6 rounded-lg hover:bg-white/20 transition-colors">Host an Event</a>
+                    <Link to="/events/new" className="bg-white/10 border border-white/20 text-white font-bold py-3 px-6 rounded-lg hover:bg-white/20 transition-colors">Host an Event</Link>
                 </div>
             </div>
         </section>
@@ -88,7 +89,7 @@ const Events: React.FC = () => (
                         <div className="flex-grow w-full">
                             <input type="search" placeholder="Search by name or location..." className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-orange focus:border-transparent"/>
                         </div>
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
                             <button className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 border border-gray-200 bg-white rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50">
                                 <FilterIcon />
                                 <span>Category</span>
@@ -136,7 +137,7 @@ const Events: React.FC = () => (
             </div>
 
              {/* --- Featured Highlight Section --- */}
-            <section className="mt-24 bg-brand-deep-blue rounded-xl text-white p-12 text-center relative overflow-hidden">
+            <section className="mt-24 bg-brand-deep-blue rounded-xl text-white p-8 sm:p-12 text-center relative overflow-hidden">
                 <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-brand-orange/20 rounded-full"></div>
                 <div className="absolute -top-12 -left-12 w-48 h-48 bg-brand-orange/20 rounded-full"></div>
                 <h2 className="text-3xl font-bold font-heading">Featured Event: AI Founder & Investor Mixer</h2>

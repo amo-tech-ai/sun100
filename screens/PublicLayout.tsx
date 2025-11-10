@@ -78,6 +78,7 @@ const PublicLayout: React.FC = () => {
                             <h3 className="font-semibold font-heading text-gray-900">For Founders</h3>
                              <ul className="mt-4 space-y-2">
                                 <li><Link to="/events" className="hover:text-brand-orange">Events</Link></li>
+                                <li><Link to="/events/new" className="hover:text-brand-orange">Host an Event</Link></li>
                                 <li><Link to="/perks" className="hover:text-brand-orange">Perks & Credits</Link></li>
                                 <li><Link to="/dashboard" className="hover:text-brand-orange">Submit Startup</Link></li>
                             </ul>
