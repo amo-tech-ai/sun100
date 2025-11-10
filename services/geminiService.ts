@@ -358,9 +358,9 @@ export const generateDeckFromUrls = async (urls: string[]): Promise<DeckGenerati
 
     // ADDED: Check for URL retrieval errors as per best practices
     const metadata = response.candidates?.[0]?.urlContextMetadata;
-    // FIX: The `urlContextMetadata` object contains a `urlMetadatas` array property. The filter should be applied to this array, not the object itself.
-    if (metadata && metadata.urlMetadatas) {
-        const failedUrls = metadata.urlMetadatas
+    // FIX: The `urlContextMetadata` object contains a `urlMetadata` array property. The property name was misspelled as `urlMetadatas`.
+    if (metadata && metadata.urlMetadata) {
+        const failedUrls = metadata.urlMetadata
             .filter(meta => meta.status !== 'URL_RETRIEVAL_STATUS_SUCCESS')
             .map(meta => meta.url);
 

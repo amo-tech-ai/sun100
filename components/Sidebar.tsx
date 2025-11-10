@@ -25,20 +25,12 @@ const activeLinkClass = 'bg-orange-100 text-[#E87C4D]';
 const inactiveLinkClass = 'text-gray-500 hover:bg-gray-100 hover:text-gray-800';
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
-    const navigate = useNavigate();
-
-    const handleLogout = () => {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userEmail');
-        navigate('/login');
-    };
-
     return (
         <aside className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-64'}`}>
             <div className={`h-20 flex items-center border-b border-gray-200 ${isCollapsed ? 'justify-center' : 'px-6'}`}>
                 <div className="flex items-center gap-2">
                     <SunIcon />
-                    {!isCollapsed && <span className="font-bold text-xl">Sun AI</span>}
+                    {!isCollapsed && <span className="font-bold text-xl font-heading">Sun AI</span>}
                 </div>
             </div>
 
@@ -60,13 +52,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             </nav>
 
             <div className="mt-auto p-4 border-t border-gray-200 space-y-2">
-                 {!isCollapsed && (
-                    <div className="flex justify-around text-xs text-gray-500 mb-2">
-                        <Link to="/terms" className="hover:underline">Terms</Link>
-                        <span>&bull;</span>
-                        <Link to="/privacy" className="hover:underline">Privacy</Link>
-                    </div>
-                )}
                 {onToggle && (
                     <button
                         onClick={onToggle}
@@ -77,14 +62,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                         {!isCollapsed && <span className="ml-3 font-semibold">Collapse</span>}
                     </button>
                 )}
-                 <button
-                    onClick={handleLogout}
-                    className={`flex items-center w-full p-3 rounded-lg ${inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
-                    aria-label="Logout"
-                >
-                    <LogoutIcon />
-                    {!isCollapsed && <span className="ml-3 font-semibold">Logout</span>}
-                </button>
             </div>
         </aside>
     );
