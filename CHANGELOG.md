@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2024-08-20
+
+### Added
+- **Founder Dashboard Implementation (Phase 2):** Completed the implementation of the new Founder Dashboard experience as outlined in the engineering blueprint.
+  - **Main Dashboard (`/dashboard`):** The new dashboard UI is live, providing a personalized hub for founders.
+  - **Startup Profile Wizard (`/startup-wizard`):** Implemented the multi-step wizard for creating a public startup profile.
+  - **Pitch Decks Hub (`/pitch-decks`):** Implemented the dedicated workspace for managing and creating presentations.
+  - **My Events (`/my-events`):** Implemented the personal dashboard for tracking event registrations.
+- **Sitemap Update:** The application sitemap has been updated to reflect all new dashboard routes.
+
+## [3.0.0] - 2024-08-19
+
+### Added
+- **Founder Dashboard Expansion (Phase 1):** Implemented the first stage of the new Founder Dashboard experience.
+  - **Dashboard Redesign:** Completely overhauled the main `/dashboard` page into a dynamic hub featuring a hero welcome with a progress tracker, a row of key metric cards, a grid of quick actions, and modules for upcoming events and recommended jobs.
+  - **New Information Architecture:** Restructured the application's routing in `App.tsx` to support the expanded dashboard.
+  - **Placeholder Pages:** Created placeholder pages and routes for upcoming features (`/startup-wizard`, `/pitch-decks`, `/my-events`) to establish the full sitemap.
+  - **Updated Navigation:** The main sidebar (`Sidebar.tsx`) has been updated with new links to the expanded dashboard sections.
+
 ## [2.0.0] - 2024-08-13
 
 ### Changed

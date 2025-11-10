@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UrlInput from '../components/UrlInput';
@@ -10,9 +11,9 @@ const WizardSteps: React.FC = () => {
   const handleGenerate = () => {
     // Prioritize company details if provided, otherwise use URLs.
     if (companyDetails.trim().length > 0) {
-      navigate('/pitch-deck/generating', { state: { companyDetails } });
+      navigate('/pitch-decks/generating', { state: { companyDetails } });
     } else if (urls.length > 0) {
-      navigate('/pitch-deck/generating', { state: { urls } });
+      navigate('/pitch-decks/generating', { state: { urls } });
     }
   };
 

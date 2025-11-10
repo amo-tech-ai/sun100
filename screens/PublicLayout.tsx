@@ -11,6 +11,7 @@ const SunIcon = () => (
 const PublicLayout: React.FC = () => {
     const navLinks = [
         { name: 'About', path: '/about' },
+        { name: 'Accelerators', path: '/accelerators' },
         { name: 'Perks', path: '/perks' },
         { name: 'Events', path: '/events' },
         { name: 'Jobs', path: '/jobs' },

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -12,6 +11,8 @@ const Sitemap: React.FC = () => {
   const communityRoutes = [
     { path: '/about', name: 'About', description: 'Information about the Sun AI community.' },
     { path: '/how-it-works', name: 'How It Works', description: 'Explanation of the community platform.' },
+    { path: '/accelerators', name: 'Accelerators', description: 'Directory of startup accelerators.' },
+    { path: '/accelerators/:id', name: 'Accelerator Detail', description: 'Details for a specific accelerator.' },
     { path: '/perks', name: 'Perks', description: 'List of available perks for members.' },
     { path: '/perks/:id', name: 'Perk Detail', description: 'Details for a specific perk.' },
     { path: '/events', name: 'Events', description: 'List of upcoming community events.' },
@@ -30,9 +31,12 @@ const Sitemap: React.FC = () => {
   ];
 
   const appRoutes = [
-    { path: '/dashboard', name: 'Dashboard', description: 'Main view for authenticated users.' },
-    { path: '/pitch-deck', name: 'New Deck Wizard', description: 'Start the guided process to create a new presentation.' },
-    { path: '/pitch-deck/generating', name: 'Generating Screen', description: 'Intermediate screen shown while the AI creates your deck.' },
+    { path: '/dashboard', name: 'Dashboard', description: 'Main hub for authenticated users.' },
+    { path: '/startup-wizard', name: 'Startup Profile Wizard', description: 'Guided flow to create a public startup profile.' },
+    { path: '/pitch-decks', name: 'Pitch Decks Hub', description: 'Workspace to manage and create new pitch decks.' },
+    { path: '/my-events', name: 'My Events', description: 'Personal dashboard for registered events.' },
+    { path: '/pitch-decks/new', name: 'New Deck Wizard', description: 'Start the guided process to create a new presentation.' },
+    { path: '/pitch-decks/generating', name: 'Generating Screen', description: 'Intermediate screen shown while the AI creates your deck.' },
     { path: '/dashboard/decks/:id/edit', name: 'Deck Editor', description: 'The core editor for a specific deck.' },
     { path: '/dashboard/decks/:id/present', name: 'Presentation View', description: 'The full-screen presentation mode for a deck.' },
   ];
