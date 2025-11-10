@@ -5,10 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.2.0] - 2024-08-16
+## [2.2.0] - 2024-08-18
 
 ### Added
-- **URL Context for Deck Generation:** Integrated Gemini's `urlContext` tool into the Pitch Deck Wizard. Users can now provide up to 5 website URLs, which the AI will analyze to automatically generate a pitch deck, providing an alternative to writing a detailed company brief.
+- **URL-based Deck Generation:** Implemented a new "From URL" feature in the Pitch Deck Wizard. Users can now provide up to 5 website URLs. The application uses the Gemini API's `urlContext` tool to crawl the sites, extract business context, and automatically generate a 10-slide pitch deck outline.
 
 ## [2.1.0] - 2024-08-15
 

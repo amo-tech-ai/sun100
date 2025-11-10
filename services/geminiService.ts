@@ -349,12 +349,25 @@ export const generateDeckFromUrls = async (urls: string[]): Promise<DeckGenerati
     `;
 
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-pro',
+        model: "gemini-2.5-pro",
         contents: prompt,
         config: {
             tools: [{ urlContext: {} }, { functionDeclarations: [generateDeckOutlineFunctionDeclaration] }],
-        },
+        }
     });
+
+    // ADDED: Check for URL retrieval errors as per best practices
+    const metadata = response.candidates?.[0]?.urlContextMetadata;
+    // FIX: The `urlContextMetadata` object contains a `urlMetadatas` array property. The filter should be applied to this array, not the object itself.
+    if (metadata && metadata.urlMetadatas) {
+        const failedUrls = metadata.urlMetadatas
+            .filter(meta => meta.status !== 'URL_RETRIEVAL_STATUS_SUCCESS')
+            .map(meta => meta.url);
+
+        if (failedUrls.length > 0) {
+            throw new Error(`Failed to retrieve content from the following URLs: ${failedUrls.join(', ')}. Please ensure they are public and accessible.`);
+        }
+    }
 
     const functionCall = response.functionCalls?.[0];
     if (functionCall?.name === 'generateDeckOutline' && functionCall.args) {
