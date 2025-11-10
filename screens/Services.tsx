@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 // --- Icons (self-contained for simplicity) ---
@@ -13,29 +13,83 @@ const ScalabilityIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24"
 const ArrowRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
 
 const Services: React.FC = () => {
+    const sectionsRef = useRef<(HTMLElement | null)[]>([]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            },
+            {
+                rootMargin: '0px',
+                threshold: 0.1,
+            }
+        );
+
+        sectionsRef.current.forEach((section) => {
+            if (section) observer.observe(section);
+        });
+
+        return () => {
+            sectionsRef.current.forEach((section) => {
+                if (section) observer.unobserve(section);
+            });
+        };
+    }, []);
+
+    const addToRefs = (el: HTMLElement | null) => {
+        if (el && !sectionsRef.current.includes(el)) {
+            sectionsRef.current.push(el);
+        }
+    };
+
+
     return (
         <div className="bg-[#FBF8F5]">
+            <style>{`
+                .fade-in-section {
+                    opacity: 0;
+                    transform: translateY(20px);
+                    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+                }
+                .fade-in-section.is-visible {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            `}</style>
             <title>AI-Powered Design & Development Services - Sun AI</title>
-            <meta name="description" content="From branding to app development, Sun AI helps startups build fast, look sharp, and scale smart." />
+            <meta name="description" content="From branding to app builds, Sun AI helps startups grow fast and look exceptional." />
 
             {/* --- Hero Section --- */}
             <section className="relative text-center py-20 md:py-32 overflow-hidden bg-brand-deep-blue text-white">
                  <div className="absolute inset-0 bg-grid-white/10 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
-                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-brand-pastel-teal/10 to-transparent"></div>
+                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-brand-accent-teal/10 to-transparent"></div>
                  <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h1 className="text-4xl md:text-6xl font-extrabold font-heading leading-tight mb-4 tracking-tight">
                         Bring Your Vision to Life with AI-Powered Design.
                     </h1>
                     <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto mb-8">
-                        From branding to app development, Sun AI helps startups build fast, look sharp, and scale smart.
+                        From branding to app builds, Sun AI helps startups grow fast and look exceptional.
                     </p>
+                    <div className="mt-8">
+                         <Link
+                            to="/dashboard"
+                            className="inline-block bg-brand-accent-teal text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-colors duration-200 shadow-lg"
+                        >
+                            Get Started
+                        </Link>
+                    </div>
                 </div>
             </section>
 
              {/* --- Services Cards Grid --- */}
-             <section className="py-20 sm:py-24">
+             <section ref={addToRefs} className="fade-in-section py-20 sm:py-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {[
                             {
                                 icon: <WebDesignIcon />,
@@ -57,10 +111,10 @@ const Services: React.FC = () => {
                             },
                         ].map(service => (
                             <div key={service.title} className="bg-white p-8 rounded-xl shadow-sm border border-gray-200/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                                <div className="text-brand-orange mb-4">{service.icon}</div>
+                                <div className="text-brand-accent-teal mb-4">{service.icon}</div>
                                 <h3 className="text-2xl font-bold font-heading text-slate-800 mb-2">{service.title}</h3>
                                 <p className="text-slate-600 mb-6">{service.desc}</p>
-                                <Link to={service.link} className="font-bold text-brand-orange group-hover:underline flex items-center gap-2">
+                                <Link to={service.link} className="font-bold text-brand-accent-teal group-hover:underline flex items-center gap-2">
                                     Learn More <ArrowRight />
                                 </Link>
                             </div>
@@ -70,16 +124,16 @@ const Services: React.FC = () => {
              </section>
 
               {/* --- Highlights Section --- */}
-             <section className="py-20 sm:py-24 bg-white/50">
+             <section ref={addToRefs} className="fade-in-section py-20 sm:py-24 bg-white/50">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
                          {[
                             { icon: <FastDeliveryIcon />, title: "Fast Delivery", desc: "Launch your project in weeks, not months, with our streamlined, AI-assisted workflows." },
-                            { icon: <AiPrecisionIcon />, title: "AI Precision", desc: "Leverage the power of AI for data-driven design choices and hyper-efficient development." },
-                            { icon: <ScalabilityIcon />, title: "Built to Scale", desc: "We build on modern, robust architectures that grow with your startup from day one." },
+                            { icon: <AiPrecisionIcon />, title: "Smart AI Tools", desc: "Leverage the power of AI for data-driven design choices and hyper-efficient development." },
+                            { icon: <ScalabilityIcon />, title: "Scalable Systems", desc: "We build on modern, robust architectures that grow with your startup from day one." },
                          ].map(highlight => (
                              <div key={highlight.title} className="flex flex-col items-center">
-                                 <div className="text-brand-orange mb-4">{highlight.icon}</div>
+                                 <div className="text-brand-accent-teal mb-4">{highlight.icon}</div>
                                  <h3 className="text-xl font-bold font-heading text-slate-800">{highlight.title}</h3>
                                  <p className="text-slate-600 mt-2">{highlight.desc}</p>
                              </div>
@@ -89,15 +143,15 @@ const Services: React.FC = () => {
             </section>
 
             {/* --- CTA Footer --- */}
-            <section className="py-20 sm:py-24">
+            <section ref={addToRefs} className="fade-in-section py-20 sm:py-24">
                  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold font-heading text-slate-800">Let’s build something remarkable together.</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold font-heading text-slate-800">Ready to create something remarkable?</h2>
                     <div className="mt-8">
                          <Link
                             to="/dashboard"
-                            className="inline-block bg-brand-orange text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-colors duration-200 shadow-lg"
+                            className="inline-block bg-brand-accent-teal text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-colors duration-200 shadow-lg"
                         >
-                            Get Started
+                            Book a Free Call
                         </Link>
                     </div>
                  </div>

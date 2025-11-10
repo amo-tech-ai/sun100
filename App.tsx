@@ -26,6 +26,8 @@ import Services from './screens/Services';
 import WebDesign from './screens/WebDesign';
 import LogoBranding from './screens/LogoBranding';
 import MvpDevelopment from './screens/MvpDevelopment';
+import Accelerators from './screens/Accelerators';
+import AcceleratorDetail from './screens/AcceleratorDetail';
 
 // App Screens
 import Dashboard from './screens/Dashboard';
@@ -35,6 +37,10 @@ import GeneratingScreen from './screens/GeneratingScreen';
 // App Screens (Lazily loaded)
 const DeckEditor = lazy(() => import('./screens/DeckEditor'));
 const PresentationScreen = lazy(() => import('./screens/PresentationScreen'));
+const StartupWizard = lazy(() => import('./screens/StartupWizard'));
+const PitchDecks = lazy(() => import('./screens/PitchDecks'));
+const MyEvents = lazy(() => import('./screens/MyEvents'));
+
 
 // Loading fallback component
 const LoadingSpinner: React.FC = () => (
@@ -66,6 +72,8 @@ const App: React.FC = () => {
           <Route path="/services/web-design" element={<WebDesign />} />
           <Route path="/services/logo-branding" element={<LogoBranding />} />
           <Route path="/services/mvp-development" element={<MvpDevelopment />} />
+          <Route path="/accelerators" element={<Accelerators />} />
+          <Route path="/accelerators/:id" element={<AcceleratorDetail />} />
           
           {/* Redirect auth pages to the dashboard for development */}
           <Route path="/login" element={<Navigate to="/dashboard" />} />
@@ -75,8 +83,16 @@ const App: React.FC = () => {
         {/* --- App Routes (No longer protected for dev) --- */}
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/pitch-deck" element={<WizardSteps />} />
-          <Route path="/pitch-deck/generating" element={<GeneratingScreen />} />
+
+          {/* NEW: Dashboard expansion routes */}
+          <Route path="/startup-wizard" element={<StartupWizard />} />
+          <Route path="/pitch-decks" element={<PitchDecks />} />
+          <Route path="/my-events" element={<MyEvents />} />
+
+          {/* UPDATED: Pitch deck creation flow nested under pitch-decks */}
+          <Route path="/pitch-decks/new" element={<WizardSteps />} />
+          <Route path="/pitch-decks/generating" element={<GeneratingScreen />} />
+          
           <Route path="/dashboard/decks/:id/edit" element={<DeckEditor />} />
           <Route path="/sitemap" element={<Sitemap />} />
         </Route>
