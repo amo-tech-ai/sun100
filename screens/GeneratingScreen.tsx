@@ -16,22 +16,18 @@ const GeneratingScreen: React.FC = () => {
         }, 500);
 
         const generateDeck = async () => {
-            const hasUrls = urls && Array.isArray(urls) && urls.length > 0;
             const hasDetails = companyDetails && typeof companyDetails === 'string' && companyDetails.trim().length > 0;
+            const hasUrls = urls && Array.isArray(urls) && urls.length > 0;
 
-            if (!hasUrls && !hasDetails) {
+            if (!hasDetails && !hasUrls) {
                 setError("No company details or URLs provided. Please go back and fill out the wizard.");
                 return;
             }
 
             try {
-                let deckData: DeckGenerationResult;
-
-                if (hasUrls) {
-                    deckData = await generateDeckFromUrls(urls);
-                } else {
-                    deckData = await generateDeckContent(companyDetails);
-                }
+                const deckData: DeckGenerationResult = hasDetails
+                    ? await generateDeckContent(companyDetails)
+                    : await generateDeckFromUrls(urls);
                 
                 // Construct a Deck object compatible with the editor
                 const newDeck = {
