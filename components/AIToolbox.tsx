@@ -3,52 +3,16 @@ import AICopilot from './AICopilot';
 import ImageEditorPanel from './ImageEditorPanel';
 import AnalysisPanel from './AnalysisPanel';
 import ResearchResultPanel from './ResearchResultPanel';
-import { Slide } from '../data/decks';
-import { SlideAnalysis, ResearchResult, ExtractedMetric } from '../services/geminiService';
-
-interface AIToolboxProps {
-    selectedSlide: Slide;
-    isUrl: (url: string | undefined) => boolean;
-    // Base AI Props
-    isCopilotLoading: boolean;
-    onCopilotGenerate: (prompt: string, newTitle?: string) => void;
-    isEditingImage: boolean;
-    imageError: string | null;
-    onEditImage: (prompt: string) => void;
-    isAnalyzing: boolean;
-    analysisResult: SlideAnalysis | null;
-    onAnalyzeSlide: () => void;
-    isResearching: boolean;
-    researchResult: ResearchResult | null;
-    onResearch: (query: string) => void;
-    areSuggestionsLoading: boolean;
-    copilotSuggestions: string[];
-    imageSuggestions: string[];
-    researchSuggestions: string[];
-    // New Enhancement Props
-    headlineIdeas: string[];
-    isGeneratingHeadlines: boolean;
-    headlineError: string | null;
-    handleGenerateHeadlines: () => void;
-    extractedMetrics: ExtractedMetric[];
-    isExtractingMetrics: boolean;
-    metricError: string | null;
-    handleExtractMetrics: () => void;
-    handleMarketResearch: () => void;
-    isGeneratingTable: boolean;
-    tableError: string | null;
-    handleGenerateTable: () => void;
-    handleCompetitorResearch: () => void;
-    handleSummarizeBio: () => void;
-}
-
+import { useDeckEditor } from '../screens/DeckEditor';
 
 type AITab = 'copilot' | 'image' | 'analysis' | 'research';
 
-const AIToolbox: React.FC<AIToolboxProps> = (props) => {
+const AIToolbox: React.FC = () => {
+    const { selectedSlide } = useDeckEditor();
     const [activeTab, setActiveTab] = useState<AITab>('copilot');
 
-    const showImageTab = props.selectedSlide.imageUrl && props.isUrl(props.selectedSlide.imageUrl);
+    const isUrl = (url: string | undefined): boolean => !!url && (url.startsWith('http') || url.startsWith('data:image'));
+    const showImageTab = selectedSlide && isUrl(selectedSlide.imageUrl);
 
     useEffect(() => {
         if (activeTab === 'image' && !showImageTab) {
@@ -59,46 +23,13 @@ const AIToolbox: React.FC<AIToolboxProps> = (props) => {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'copilot':
-                return <AICopilot 
-                    isLoading={props.isCopilotLoading} 
-                    onGenerate={props.onCopilotGenerate}
-                    suggestions={props.copilotSuggestions}
-                    areSuggestionsLoading={props.areSuggestionsLoading}
-                    headlineIdeas={props.headlineIdeas}
-                    isGeneratingHeadlines={props.isGeneratingHeadlines}
-                    headlineError={props.headlineError}
-                    onGenerateHeadlines={props.handleGenerateHeadlines}
-                    onSummarizeBio={props.handleSummarizeBio}
-                />;
+                return <AICopilot />;
             case 'image':
-                return showImageTab ? <ImageEditorPanel 
-                    onEdit={props.onEditImage} 
-                    isLoading={props.isEditingImage} 
-                    error={props.imageError} 
-                    suggestions={props.imageSuggestions}
-                    areSuggestionsLoading={props.areSuggestionsLoading}
-                /> : null;
+                return showImageTab ? <ImageEditorPanel /> : null;
             case 'analysis':
-                return <AnalysisPanel 
-                    onAnalyze={props.onAnalyzeSlide} 
-                    isLoading={props.isAnalyzing} 
-                    analysis={props.analysisResult} 
-                    onExtractMetrics={props.handleExtractMetrics}
-                    isExtractingMetrics={props.isExtractingMetrics}
-                    extractedMetrics={props.extractedMetrics}
-                    metricError={props.metricError}
-                />;
+                return <AnalysisPanel />;
             case 'research':
-                return <ResearchResultPanel 
-                    onResearch={props.onResearch} 
-                    isLoading={props.isResearching} 
-                    result={props.researchResult} 
-                    suggestions={props.researchSuggestions}
-                    areSuggestionsLoading={props.areSuggestionsLoading}
-                    onMarketResearch={props.handleMarketResearch}
-                    onCompetitorResearch={props.handleCompetitorResearch}
-                    onSocialProofSearch={() => props.onResearch(`quotes or testimonials about the problem of ${props.selectedSlide.title}`)}
-                />;
+                return <ResearchResultPanel />;
             default:
                 return null;
         }

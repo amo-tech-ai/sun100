@@ -12,12 +12,12 @@ const WizardSteps: React.FC = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">Pitch Deck Wizard</h1>
+    <div className="bg-white p-6 md:p-8 rounded-lg shadow-md max-w-3xl mx-auto">
+      <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2 text-center">Pitch Deck Wizard</h1>
       <p className="text-center text-gray-500 mb-6">Let's start with the core of your business.</p>
 
       <div className="mb-6">
-        <label htmlFor="company-details" className="block text-xl font-semibold mb-2 text-gray-700">
+        <label htmlFor="company-details" className="block text-lg lg:text-xl font-semibold mb-2 text-gray-700">
           Step 1: Company Details
         </label>
         <p className="text-gray-600 mb-3">
@@ -33,11 +33,11 @@ const WizardSteps: React.FC = () => {
         />
       </div>
 
-      <div className="flex justify-end mt-8">
+      <div className="flex justify-center sm:justify-end mt-8">
         <button
           onClick={handleGenerate}
           disabled={!companyDetails.trim()}
-          className="bg-[#E87C4D] text-white font-bold py-3 px-8 rounded-lg hover:bg-opacity-90 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md disabled:shadow-none"
+          className="w-full sm:w-auto bg-[#E87C4D] text-white font-bold py-3 px-8 rounded-lg hover:bg-opacity-90 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md disabled:shadow-none"
         >
           Generate Deck &rarr;
         </button>

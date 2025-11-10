@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
@@ -13,7 +12,7 @@ const Sidebar: React.FC = () => {
     const activeNavLinkClasses = "bg-[#E87C4D]";
 
     return (
-        <aside className="w-64 bg-gray-800 text-white flex flex-col flex-shrink-0">
+        <aside className="w-64 bg-gray-800 text-white flex flex-col flex-shrink-0 h-full">
             <div className="flex items-center justify-center h-20 border-b border-gray-700">
                 <SunIcon />
                 <span className="ml-2 text-2xl font-bold">Sun AI</span>

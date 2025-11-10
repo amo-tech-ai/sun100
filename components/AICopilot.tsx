@@ -1,37 +1,34 @@
 import React, { useState } from 'react';
+import { useDeckEditor } from '../screens/DeckEditor';
 
-interface AICopilotProps {
-    isLoading: boolean;
-    onGenerate: (prompt: string, newTitle?: string) => void;
-    suggestions: string[];
-    areSuggestionsLoading: boolean;
-    // New props for enhancements
-    headlineIdeas: string[];
-    isGeneratingHeadlines: boolean;
-    headlineError: string | null;
-    onGenerateHeadlines: () => void;
-    onSummarizeBio: () => void;
-}
-
-const AICopilot: React.FC<AICopilotProps> = ({ 
-    isLoading, onGenerate, suggestions, areSuggestionsLoading,
-    headlineIdeas, isGeneratingHeadlines, headlineError, onGenerateHeadlines, onSummarizeBio
-}) => {
+const AICopilot: React.FC = () => {
+    const { 
+        isCopilotLoading, 
+        handleCopilotGenerate, 
+        copilotSuggestions, 
+        areSuggestionsLoading,
+        headlineIdeas, 
+        isGeneratingHeadlines, 
+        headlineError, 
+        handleGenerateHeadlines,
+        handleSummarizeBio
+    } = useDeckEditor();
+    
     const [prompt, setPrompt] = useState('');
 
     const handleGenerateClick = () => {
         if (prompt.trim()) {
-            onGenerate(prompt);
+            handleCopilotGenerate(prompt);
         }
     };
 
     const handleSuggestionClick = (suggestion: string) => {
         setPrompt(suggestion);
-        onGenerate(suggestion);
+        handleCopilotGenerate(suggestion);
     };
 
     const handleApplyHeadline = (idea: string) => {
-        onGenerate(`Set the title to "${idea}"`, idea);
+        handleCopilotGenerate(`Set the title to "${idea}"`, idea);
     };
 
     return (
@@ -43,14 +40,14 @@ const AICopilot: React.FC<AICopilotProps> = ({
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#E87C4D] focus:border-transparent transition disabled:bg-gray-200"
                 rows={4}
                 placeholder="Ask AI to improve this slide... e.g., 'Make it more concise' or 'Add a compelling statistic about AI startups'"
-                disabled={isLoading}
+                disabled={isCopilotLoading}
             />
             <button
                 onClick={handleGenerateClick}
-                disabled={isLoading || !prompt.trim()}
+                disabled={isCopilotLoading || !prompt.trim()}
                 className="mt-2 w-full bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
             >
-                {isLoading ? (
+                {isCopilotLoading ? (
                     <>
                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -73,11 +70,11 @@ const AICopilot: React.FC<AICopilotProps> = ({
                     </div>
                 ) : (
                     <div className="flex flex-wrap gap-2">
-                        {suggestions.map((s, i) => (
+                        {copilotSuggestions.map((s, i) => (
                             <button
                                 key={i}
                                 onClick={() => handleSuggestionClick(s)}
-                                disabled={isLoading}
+                                disabled={isCopilotLoading}
                                 className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {s}
@@ -91,8 +88,8 @@ const AICopilot: React.FC<AICopilotProps> = ({
             <div className="border-t border-gray-200 mt-4 pt-3">
                 <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Headline Studio</h4>
                 <button
-                    onClick={onGenerateHeadlines}
-                    disabled={isGeneratingHeadlines || isLoading}
+                    onClick={handleGenerateHeadlines}
+                    disabled={isGeneratingHeadlines || isCopilotLoading}
                     className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 disabled:bg-gray-200 disabled:cursor-not-allowed"
                 >
                     {isGeneratingHeadlines ? 'Generating Ideas...' : 'Generate Headline Ideas'}
@@ -120,10 +117,10 @@ const AICopilot: React.FC<AICopilotProps> = ({
                 <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Team Bio Tools</h4>
                 <p className="text-sm text-gray-500 mb-2">Paste a full bio in the slide content area and use this tool.</p>
                 <button 
-                    onClick={onSummarizeBio} 
-                    disabled={isLoading} 
+                    onClick={handleSummarizeBio} 
+                    disabled={isCopilotLoading} 
                     className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 disabled:bg-gray-200 disabled:cursor-not-allowed">
-                    {isLoading ? 'Summarizing...' : 'Summarize Bio & Get Highlights'}
+                    {isCopilotLoading ? 'Summarizing...' : 'Summarize Bio & Get Highlights'}
                 </button>
             </div>
         </div>
