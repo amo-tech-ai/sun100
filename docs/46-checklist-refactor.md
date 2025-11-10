@@ -9,18 +9,18 @@
 
 This phase prepares the codebase for the migration by creating the necessary files and centralizing shared types.
 
-- [ ] **Create Shared Types File:**
-    - [ ] Create a new file: `services/ai.models.ts`.
-- [ ] **Migrate Shared Types:**
-    - [ ] Move all shared type and interface definitions (`DeckGenerationResult`, `SlideAnalysis`, `ResearchResult`, `ExtractedMetric`, `BioSummary`) from `geminiService.ts` into `services/ai.models.ts`.
-    - [ ] Verify that all moved types are correctly exported from `ai.models.ts`.
-- [ ] **Create New Service Files:**
-    - [ ] Create empty placeholder files for the new services:
-        - [ ] `services/deckGenerationService.ts`
-        - [ ] `services/contentService.ts`
-        - [ ] `services/visualService.ts`
-        - [ ] `services/analysisService.ts`
-        - [ ] `services/suggestionService.ts`
+- [x] **Create Shared Types File:**
+    - [x] Create a new file: `services/ai.models.ts`.
+- [x] **Migrate Shared Types:**
+    - [x] Move all shared type and interface definitions (`DeckGenerationResult`, `SlideAnalysis`, `ResearchResult`, `ExtractedMetric`, `BioSummary`) from `geminiService.ts` into `services/ai.models.ts`.
+    - [x] Verify that all moved types are correctly exported from `ai.models.ts`.
+- [x] **Create New Service Files:**
+    - [x] Create empty placeholder files for the new services:
+        - [x] `services/deckGenerationService.ts`
+        - [x] `services/contentService.ts`
+        - [x] `services/visualService.ts`
+        - [x] `services/analysisService.ts`
+        - [x] `services/suggestionService.ts`
 
 ---
 
@@ -28,28 +28,28 @@ This phase prepares the codebase for the migration by creating the necessary fil
 
 This phase involves the systematic migration of functions and their corresponding `FunctionDeclaration` constants to their new, domain-specific homes.
 
-- [ ] **`deckGenerationService.ts`:**
-    - [ ] Move `generateDeckContent` and `generateDeckFromUrls` functions.
-    - [ ] Move `generateDeckOutlineFunctionDeclaration`.
-    - [ ] Update all internal imports (e.g., to use types from `ai.models.ts`).
-- [ ] **`contentService.ts`:**
-    - [ ] Move `modifySlideContent`, `generateHeadlineVariations`, `extractMetrics`, `generatePricingTable`, and `summarizeBio`.
-    - [ ] Move their corresponding `FunctionDeclaration` constants.
-    - [ ] Update all internal imports.
-- [ ] **`visualService.ts`:**
-    - [ ] Move `generateSlideImage`, `editSlideImage`, and `generateRoadmapSlide`.
-    - [ ] Move `generateRoadmapSlideFunctionDeclaration`.
-    - [ ] Update all internal imports.
-- [ ] **`analysisService.ts`:**
-    - [ ] Move `analyzeSlide`, `researchTopic`, `suggestLayout`, `suggestChart`, and `suggestPieChart`.
-    - [ ] Move their corresponding `FunctionDeclaration` constants.
-    - [ ] Update all internal imports.
-- [ ] **`suggestionService.ts`:**
-    - [ ] Move `fetchAllSuggestions`.
-    - [ ] Move `getSuggestionsFunctionDeclaration`.
-    - [ ] Update all internal imports.
-- [ ] **Verification:**
-    - [ ] Confirm that `geminiService.ts` is now empty of all the functions and declarations listed above.
+- [x] **`deckGenerationService.ts`:**
+    - [x] Move `generateDeckContent` and `generateDeckFromUrls` functions.
+    - [x] Move `generateDeckOutlineFunctionDeclaration`.
+    - [x] Update all internal imports (e.g., to use types from `ai.models.ts`).
+- [x] **`contentService.ts`:**
+    - [x] Move `modifySlideContent`, `generateHeadlineVariations`, `extractMetrics`, `generatePricingTable`, and `summarizeBio`.
+    - [x] Move their corresponding `FunctionDeclaration` constants.
+    - [x] Update all internal imports.
+- [x] **`visualService.ts`:**
+    - [x] Move `generateSlideImage`, `editSlideImage`, and `generateRoadmapSlide`.
+    - [x] Move `generateRoadmapSlideFunctionDeclaration`.
+    - [x] Update all internal imports.
+- [x] **`analysisService.ts`:**
+    - [x] Move `analyzeSlide`, `researchTopic`, `suggestLayout`, `suggestChart`, and `suggestPieChart`.
+    - [x] Move their corresponding `FunctionDeclaration` constants.
+    - [x] Update all internal imports.
+- [x] **`suggestionService.ts`:**
+    - [x] Move `fetchAllSuggestions`.
+    - [x] Move `getSuggestionsFunctionDeclaration`.
+    - [x] Update all internal imports.
+- [x] **Verification:**
+    - [x] Confirm that `geminiService.ts` is now empty of all the functions and declarations listed above.
 
 ---
 
@@ -57,16 +57,16 @@ This phase involves the systematic migration of functions and their correspondin
 
 This phase updates all components that were using the old `geminiService.ts` to use the new, modular services.
 
-- [ ] **`screens/DeckEditor.tsx`:**
-    - [ ] Remove the single, large import from `geminiService.ts`.
-    - [ ] Add new, specific imports from each of the new service files (e.g., `import { ... } from '../services/visualService'`).
-    - [ ] Verify that all function calls within `DeckEditor.tsx` (e.g., in `handle...` callbacks) correctly point to the newly imported functions.
-    - [ ] Ensure the application compiles without errors.
-- [ ] **`screens/GeneratingScreen.tsx`:**
-    - [ ] Remove the import from `geminiService.ts`.
-    - [ ] Add new imports from `services/deckGenerationService.ts`.
-    - [ ] Verify that the `generateDeckContent` and `generateDeckFromUrls` calls are correct.
-    - [ ] Ensure the application compiles without errors.
+- [x] **`screens/DeckEditor.tsx`:**
+    - [x] Remove the single, large import from `geminiService.ts`.
+    - [x] Add new, specific imports from each of the new service files (e.g., `import { ... } from '../services/visualService'`).
+    - [x] Verify that all function calls within `DeckEditor.tsx` (e.g., in `handle...` callbacks) correctly point to the newly imported functions.
+    - [x] Ensure the application compiles without errors.
+- [x] **`screens/GeneratingScreen.tsx`:**
+    - [x] Remove the import from `geminiService.ts`.
+    - [x] Add new imports from `services/deckGenerationService.ts`.
+    - [x] Verify that the `generateDeckContent` and `generateDeckFromUrls` calls are correct.
+    - [x] Ensure the application compiles without errors.
 
 ---
 
@@ -74,16 +74,16 @@ This phase updates all components that were using the old `geminiService.ts` to 
 
 This final phase removes the old file and performs a full regression test to confirm the application is healthy.
 
-- [ ] **Delete Old Service:**
-    - [ ] Delete the file `services/geminiService.ts`.
-- [ ] **Full Application Regression Test:**
-    - [ ] Perform an end-to-end test of the deck creation and editing process.
-    - [ ] Test deck generation from text details.
-    - [ ] Test deck generation from URLs.
-    - [ ] In the editor, validate at least one key feature from each new service:
-        - [ ] Test "Generate Image" (`visualService`).
-        - [ ] Test "AI Copilot" rewrite (`contentService`).
-        - [ ] Test "Slide Analysis" (`analysisService`).
-        - [ ] Test that AI suggestions load on slide select (`suggestionService`).
-- [ ] **Documentation:**
-    - [ ] Update `CHANGELOG.md` with an entry noting the major architectural refactor of the service layer.
+- [x] **Delete Old Service:**
+    - [x] Delete the file `services/geminiService.ts`.
+- [x] **Full Application Regression Test:**
+    - [x] Perform an end-to-end test of the deck creation and editing process.
+    - [x] Test deck generation from text details.
+    - [x] Test deck generation from URLs.
+    - [x] In the editor, validate at least one key feature from each new service:
+        - [x] Test "Generate Image" (`visualService`).
+        - [x] Test "AI Copilot" rewrite (`contentService`).
+        - [x] Test "Slide Analysis" (`analysisService`).
+        - [x] Test that AI suggestions load on slide select (`suggestionService`).
+- [x] **Documentation:**
+    - [x] Update `CHANGELOG.md` with an entry noting the major architectural refactor of the service layer.
