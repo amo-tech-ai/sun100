@@ -22,6 +22,10 @@ import JobDetail from './screens/JobDetail';
 import HowItWorks from './screens/HowItWorks';
 import Blogs from './screens/Blogs';
 import BlogDetail from './screens/BlogDetail';
+import Services from './screens/Services';
+import WebDesign from './screens/WebDesign';
+import LogoBranding from './screens/LogoBranding';
+import MvpDevelopment from './screens/MvpDevelopment';
 
 // App Screens
 import Dashboard from './screens/Dashboard';
@@ -58,6 +62,10 @@ const App: React.FC = () => {
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/blogs/:id" element={<BlogDetail />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/services/web-design" element={<WebDesign />} />
+          <Route path="/services/logo-branding" element={<LogoBranding />} />
+          <Route path="/services/mvp-development" element={<MvpDevelopment />} />
           
           {/* Redirect auth pages to the dashboard for development */}
           <Route path="/login" element={<Navigate to="/dashboard" />} />

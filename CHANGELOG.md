@@ -5,22 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.3.0] - 2024-08-19
-
-### Added
-- **Sitemap & Navigation Expansion:** Expanded the application into a full community platform by adding placeholder pages and routes for `About`, `Perks`, `Events`, `Jobs`, `Blogs`, and their respective detail views.
-- **Public Layout:** Updated the main public-facing layout with comprehensive header and footer navigation to reflect the new sitemap structure.
-
-## [2.2.0] - 2024-08-18
-
-### Added
-- **URL-based Deck Generation:** Implemented a new "From URL" feature in the Pitch Deck Wizard. Users can now provide up to 5 website URLs. The application uses the Gemini API's `urlContext` tool to crawl the sites, extract business context, and automatically generate a 10-slide pitch deck outline.
-
-## [2.1.0] - 2024-08-15
-
-### Added
-- **Collapsible Main Sidebar:** Implemented a collapsible desktop sidebar to maximize content space. The sidebar state is persisted in `localStorage`, it can be toggled with a `Cmd/Ctrl + B` keyboard shortcut, and includes accessibility features like tooltips and ARIA attributes.
-
 ## [2.0.0] - 2024-08-13
 
 ### Changed
