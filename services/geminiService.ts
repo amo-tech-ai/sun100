@@ -360,9 +360,11 @@ export const generateDeckFromUrls = async (urls: string[]): Promise<DeckGenerati
     const metadata = response.candidates?.[0]?.urlContextMetadata;
     // FIX: The `urlContextMetadata` object contains a `urlMetadata` array property. The property name was misspelled as `urlMetadatas`.
     if (metadata && metadata.urlMetadata) {
+        // FIX: Corrected property 'status' to 'urlRetrievalStatus' to match Gemini API response.
         const failedUrls = metadata.urlMetadata
-            .filter(meta => meta.status !== 'URL_RETRIEVAL_STATUS_SUCCESS')
-            .map(meta => meta.url);
+            .filter(meta => meta.urlRetrievalStatus !== 'URL_RETRIEVAL_STATUS_SUCCESS')
+            // FIX: Corrected property `meta.url` to `meta.uri` to align with the Gemini API's UrlMetadata type.
+            .map(meta => meta.uri);
 
         if (failedUrls.length > 0) {
             throw new Error(`Failed to retrieve content from the following URLs: ${failedUrls.join(', ')}. Please ensure they are public and accessible.`);
