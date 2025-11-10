@@ -9,7 +9,16 @@ const MyEvents: React.FC = () => {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <h1 className="text-2xl lg:text-3xl font-bold font-heading text-gray-800 mb-6">My Events</h1>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+                <h1 className="text-2xl lg:text-3xl font-bold font-heading text-gray-800">My Events</h1>
+                 <Link 
+                    to="/events/new"
+                    className="inline-block bg-[#E87C4D] text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors text-center"
+                >
+                    + Create New Event
+                </Link>
+            </div>
+
 
             {/* --- Tabs --- */}
             <div className="border-b border-gray-200 mb-8">
@@ -34,29 +43,46 @@ const MyEvents: React.FC = () => {
                     >
                         Past (0)
                     </button>
+                     <button
+                         onClick={() => setActiveTab('drafts')}
+                        className={`whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm ${
+                            activeTab === 'drafts'
+                                ? 'border-[#E87C4D] text-[#E87C4D]'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                        Drafts (0)
+                    </button>
                 </nav>
             </div>
 
             {/* --- Content Area --- */}
             <div>
                 {activeTab === 'upcoming' && (
-                    <div className="bg-white p-12 rounded-lg shadow-md border border-gray-200/80 text-center">
+                    <div className="bg-white p-12 rounded-lg shadow-md border-2 border-dashed border-gray-300 text-center">
                         <div className="text-gray-300 w-16 h-16 mx-auto mb-4"><CalendarPlusIcon/></div>
                         <h3 className="text-lg font-bold text-gray-800">No upcoming events yet</h3>
-                        <p className="text-gray-500 mt-1 mb-6">You haven’t registered for any upcoming events yet.</p>
+                        <p className="text-gray-500 mt-1 mb-6">You haven’t registered for any upcoming events.</p>
                         <Link 
                             to="/events"
-                            className="inline-block bg-[#E87C4D] text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors"
+                            className="inline-block bg-gray-100 text-gray-800 font-bold py-2 px-5 rounded-lg hover:bg-gray-200 transition-colors"
                         >
-                            Browse Events
+                            Browse Public Events
                         </Link>
                     </div>
                 )}
                  {activeTab === 'past' && (
-                    <div className="bg-white p-12 rounded-lg shadow-md border border-gray-200/80 text-center">
+                    <div className="bg-white p-12 rounded-lg shadow-md border-2 border-dashed border-gray-300 text-center">
                         <div className="text-gray-300 w-16 h-16 mx-auto mb-4"><CalendarPlusIcon/></div>
                         <h3 className="text-lg font-bold text-gray-800">No past events</h3>
                         <p className="text-gray-500 mt-1">Events you've attended will appear here.</p>
+                    </div>
+                )}
+                 {activeTab === 'drafts' && (
+                    <div className="bg-white p-12 rounded-lg shadow-md border-2 border-dashed border-gray-300 text-center">
+                        <div className="text-gray-300 w-16 h-16 mx-auto mb-4"><CalendarPlusIcon/></div>
+                        <h3 className="text-lg font-bold text-gray-800">No drafts saved</h3>
+                        <p className="text-gray-500 mt-1">Start creating an event to save a draft.</p>
                     </div>
                 )}
             </div>

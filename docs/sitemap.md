@@ -36,8 +36,12 @@ These routes are accessible to all visitors and are wrapped in a public-facing l
 These routes are intended for logged-in users and are wrapped in the main application layout which includes the `Sidebar`.
 
 -   **`/dashboard`**: `Dashboard.tsx` - The main user dashboard.
--   **`/pitch-deck`**: `WizardSteps.tsx` - The guided wizard for creating a new deck.
--   **`/pitch-deck/generating`**: `GeneratingScreen.tsx` - The loading screen shown during AI generation.
+-   **`/startup-wizard`**: The wizard for creating a startup profile.
+-   **`/pitch-decks`**: The main hub for managing pitch decks.
+-   **`/pitch-decks/new`**: `WizardSteps.tsx` - The guided wizard for creating a new deck.
+-   **`/pitch-decks/generating`**: `GeneratingScreen.tsx` - The loading screen shown during AI generation.
+-   **`/my-events`**: The user's personal event dashboard.
+-   **`/events/new`**: `EventWizard.tsx` - The new wizard for creating a community event.
 -   **`/dashboard/decks/:id/edit`**: `DeckEditor.tsx` - The core editor for modifying a specific deck.
 -   **`/sitemap`**: `Sitemap.tsx` - A developer-facing page that visualizes this sitemap.
 
