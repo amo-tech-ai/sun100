@@ -2,81 +2,71 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UrlInput from '../components/UrlInput';
 
-type InputMode = 'context' | 'url';
-
 const WizardSteps: React.FC = () => {
   const [companyDetails, setCompanyDetails] = useState('');
   const [urls, setUrls] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<InputMode>('context');
   const navigate = useNavigate();
 
   const handleGenerate = () => {
-    if (activeTab === 'context' && companyDetails.trim().length > 0) {
+    // Prioritize company details if provided, otherwise use URLs.
+    if (companyDetails.trim().length > 0) {
       navigate('/pitch-deck/generating', { state: { companyDetails } });
-    } else if (activeTab === 'url' && urls.length > 0) {
+    } else if (urls.length > 0) {
       navigate('/pitch-deck/generating', { state: { urls } });
     }
   };
 
-  const isGenerateDisabled = activeTab === 'context' ? !companyDetails.trim() : urls.length === 0;
-
-  const tabClass = (mode: InputMode) =>
-    `px-4 py-2 font-semibold rounded-t-md cursor-pointer transition-colors ${
-      activeTab === mode
-        ? 'bg-white text-[#E87C4D] border-b-2 border-transparent'
-        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-    }`;
+  const isGenerateDisabled = !companyDetails.trim() && urls.length === 0;
 
   return (
     <div className="max-w-3xl mx-auto">
-       <div className="flex border-b border-gray-200 mb-[-1px]">
-          <button onClick={() => setActiveTab('context')} className={tabClass('context')}>
-            From Business Context
-          </button>
-          <button onClick={() => setActiveTab('url')} className={tabClass('url')}>
-            From Website URL
-          </button>
-      </div>
-
-      <div className="bg-white p-6 md:p-8 rounded-b-lg rounded-r-lg shadow-md">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2 text-center">Pitch Deck Wizard</h1>
-        <p className="text-center text-gray-500 mb-6">
-          {activeTab === 'context'
-            ? "Let's start with the core of your business."
-            : "Let our AI analyze your website for pitch deck content."
-          }
+      <div className="bg-white p-6 md:p-8 rounded-lg shadow-md">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2 text-center">Create Your Pitch Deck</h1>
+        <p className="text-center text-gray-500 mb-8">
+          Provide business context or enter website URLs. If both are provided, the business context will be used for generation.
         </p>
         
-        {activeTab === 'context' ? (
-          <div className="mb-6">
-            <label htmlFor="company-details" className="block text-lg lg:text-xl font-semibold mb-2 text-gray-700">
-              Provide Business Context
-            </label>
-            <p className="text-gray-600 mb-3">
-              Provide a brief, business plan, or any details about your company. The more information you provide, the better the AI can tailor your pitch deck.
-            </p>
-            <textarea
-              id="company-details"
-              value={companyDetails}
-              onChange={(e) => setCompanyDetails(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#E87C4D] focus:border-transparent transition-shadow duration-200"
-              rows={10}
-              placeholder="e.g., Sun AI is a startup that uses generative AI to create pitch decks..."
-            />
-          </div>
-        ) : (
-          <div className="mb-6">
-            <label htmlFor="company-urls" className="block text-lg lg:text-xl font-semibold mb-2 text-gray-700">
-              Enter Your Website URLs
-            </label>
-            <p className="text-gray-600 mb-3">
-              Provide up to 5 URLs (e.g., homepage, about us, pricing). Our AI will crawl these pages to gather context for your pitch deck.
-            </p>
-            <UrlInput urls={urls} setUrls={setUrls} />
-          </div>
-        )}
-        
+        {/* Business Context Section */}
+        <div className="mb-6">
+          <label htmlFor="company-details" className="block text-lg lg:text-xl font-semibold mb-2 text-gray-700">
+            Provide Business Context
+          </label>
+          <p className="text-gray-600 mb-3">
+            Provide a brief, business plan, or any details about your company. The more information you provide, the better the AI can tailor your pitch deck.
+          </p>
+          <textarea
+            id="company-details"
+            value={companyDetails}
+            onChange={(e) => setCompanyDetails(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#E87C4D] focus:border-transparent transition-shadow duration-200"
+            rows={10}
+            placeholder="e.g., Sun AI is a startup that uses generative AI to create pitch decks..."
+          />
+        </div>
 
+        {/* Separator */}
+        <div className="relative my-10">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center">
+                <span className="bg-white px-3 text-lg font-medium text-gray-500">
+                    OR
+                </span>
+            </div>
+        </div>
+
+        {/* Website URL Section */}
+        <div className="mb-6">
+          <label htmlFor="company-urls" className="block text-lg lg:text-xl font-semibold mb-2 text-gray-700">
+            Enter Your Website URLs
+          </label>
+          <p className="text-gray-600 mb-3">
+            Provide up to 5 URLs (e.g., homepage, about us, pricing). Our AI will crawl these pages to gather context for your pitch deck.
+          </p>
+          <UrlInput urls={urls} setUrls={setUrls} />
+        </div>
+        
         <div className="flex justify-center sm:justify-end mt-8">
           <button
             onClick={handleGenerate}

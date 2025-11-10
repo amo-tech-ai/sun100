@@ -31,6 +31,7 @@ interface DeckEditorContextType {
     selectedSlide: Slide | null;
     isGeneratingImage: boolean;
     isEditingImage: boolean;
+
     imageError: string | null;
     isCopilotLoading: boolean;
     isAnalyzing: boolean;
@@ -476,10 +477,7 @@ const DeckEditor: React.FC = () => {
             <div className="flex flex-col lg:flex-row h-full w-full bg-[#FBF8F5] text-gray-800">
                 <div className="hidden lg:flex flex-shrink-0">
                   <SlideOutline
-                      deckId={deck.id}
-                      deckTitle={deck.title}
-                      slides={deck.slides}
-                      template={deck.template}
+                      deck={deck}
                       selectedSlideId={selectedSlide.id}
                       onSlideSelect={handleSlideSelect}
                       onTitleSave={handleTitleSave}
