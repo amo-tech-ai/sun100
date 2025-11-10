@@ -12,10 +12,7 @@ const RoadmapIcon = () => (
 
 
 interface SlideOutlineProps {
-    deckId: string;
-    deckTitle: string;
-    slides: Slide[];
-    template: Deck['template'];
+    deck: Deck;
     selectedSlideId: string;
     onSlideSelect: (slide: Slide) => void;
     onTitleSave: (newTitle: string) => void;
@@ -54,7 +51,8 @@ const SlideOutlineItem: React.FC<SlideOutlineItemProps> = React.memo(({ slide, i
 SlideOutlineItem.displayName = 'SlideOutlineItem';
 
 
-const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, template, selectedSlideId, onSlideSelect, onTitleSave, onGenerateRoadmapSlide, isGeneratingRoadmap, isCollapsed }) => {
+const SlideOutline: React.FC<SlideOutlineProps> = ({ deck, selectedSlideId, onSlideSelect, onTitleSave, onGenerateRoadmapSlide, isGeneratingRoadmap, isCollapsed }) => {
+    const { id: deckId, title: deckTitle, slides, template } = deck;
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState(deckTitle);
 
@@ -131,7 +129,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, 
                 </button>
                  <Link
                     to={`/dashboard/decks/${deckId}/present`}
-                    state={{deck: {id: deckId, title: deckTitle, slides: slides, template: template}}}
+                    state={{ deck }}
                     className="block w-full text-center bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
                 >
                     Present
