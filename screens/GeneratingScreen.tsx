@@ -1,7 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { generateDeckContent, generateDeckFromUrls, DeckGenerationResult } from '../services/geminiService';
+import { generateDeckContent, generateDeckFromUrls } from '../services/deckGenerationService';
+import type { DeckGenerationResult } from '../services/ai.models';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();

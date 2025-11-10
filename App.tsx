@@ -40,6 +40,7 @@ const PresentationScreen = lazy(() => import('./screens/PresentationScreen'));
 const StartupWizard = lazy(() => import('./screens/StartupWizard'));
 const PitchDecks = lazy(() => import('./screens/PitchDecks'));
 const MyEvents = lazy(() => import('./screens/MyEvents'));
+const EventWizard = lazy(() => import('./screens/EventWizard'));
 
 
 // Loading fallback component
@@ -88,6 +89,7 @@ const App: React.FC = () => {
           <Route path="/startup-wizard" element={<StartupWizard />} />
           <Route path="/pitch-decks" element={<PitchDecks />} />
           <Route path="/my-events" element={<MyEvents />} />
+          <Route path="/events/new" element={<EventWizard />} />
 
           {/* UPDATED: Pitch deck creation flow nested under pitch-decks */}
           <Route path="/pitch-decks/new" element={<WizardSteps />} />

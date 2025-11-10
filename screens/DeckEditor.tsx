@@ -1,27 +1,13 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { mockDeck, Deck, Slide, ChartData, TableData } from '../data/decks';
+import { mockDeck, Deck, Slide } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
-import {
-    generateSlideImage,
-    editSlideImage,
-    modifySlideContent,
-    analyzeSlide,
-    researchTopic,
-    suggestLayout,
-    fetchAllSuggestions,
-    suggestChart,
-    generateRoadmapSlide,
-    generateHeadlineVariations,
-    extractMetrics,
-    ExtractedMetric,
-    generatePricingTable,
-    summarizeBio,
-    suggestPieChart,
-    SlideAnalysis,
-    ResearchResult,
-} from '../services/geminiService';
+import { modifySlideContent, generateHeadlineVariations, extractMetrics, generatePricingTable, summarizeBio } from '../services/contentService';
+import { generateSlideImage, editSlideImage, generateRoadmapSlide } from '../services/visualService';
+import { analyzeSlide, researchTopic, suggestLayout, suggestChart, suggestPieChart } from '../services/analysisService';
+import { fetchAllSuggestions } from '../services/suggestionService';
+import type { ExtractedMetric, SlideAnalysis, ResearchResult } from '../services/ai.models';
 
 
 // --- CONTEXT DEFINITION ---

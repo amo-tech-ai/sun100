@@ -35,6 +35,7 @@ const Sitemap: React.FC = () => {
     { path: '/startup-wizard', name: 'Startup Profile Wizard', description: 'Guided flow to create a public startup profile.' },
     { path: '/pitch-decks', name: 'Pitch Decks Hub', description: 'Workspace to manage and create new pitch decks.' },
     { path: '/my-events', name: 'My Events', description: 'Personal dashboard for registered events.' },
+    { path: '/events/new', name: 'New Event Wizard', description: 'Guided flow to create a new community event.' },
     { path: '/pitch-decks/new', name: 'New Deck Wizard', description: 'Start the guided process to create a new presentation.' },
     { path: '/pitch-decks/generating', name: 'Generating Screen', description: 'Intermediate screen shown while the AI creates your deck.' },
     { path: '/dashboard/decks/:id/edit', name: 'Deck Editor', description: 'The core editor for a specific deck.' },

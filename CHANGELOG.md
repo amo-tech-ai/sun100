@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2024-08-22
+
+### Added
+- **Event Creation Wizard:** Implemented a new multi-step Event Creation Wizard (`/events/new`) that allows users to create and publish community events. The wizard's UI and layout are consistent with existing wizards on the platform for a unified user experience.
+- **My Events Page Update:** The "My Events" page (`/my-events`) now features a primary "Create New Event" button and a new "Drafts" tab in preparation for persistent draft functionality.
+
 ## [4.0.0] - 2024-08-20
 
 ### Added
@@ -79,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Collapsible Sidebar:** The left slide outline panel can now be collapsed to a minimal view, maximizing editor space.
 - **Full-Screen Editing:** The editor panel expands to fill the available area when the sidebar is collapsed, creating a more focused workspace.
 - **Slide Navigation Controls:** Added "Previous" and "Next" arrow buttons to the editor panel for easier navigation between slides.
-- **Keyboard Shortcuts:** Implemented keyboard shortcuts for navigating slides (Arrow Keys) and toggling the sidebar (Cmd/Ctrl + [).
+- **Keyboard Shortcuts:** Implemented keyboard shortcuts for navigating slides (Arrow keys) and toggling the sidebar (Cmd/Ctrl + [).
 
 ### Changed
 - **Editor Layout:** The main `DeckEditor` now uses a dynamic layout to support the new collapsible sidebar and full-screen view.
