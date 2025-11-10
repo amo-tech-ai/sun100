@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 
 // --- Icons ---
@@ -49,16 +50,16 @@ const EventWizard: React.FC = () => {
         <div className="max-w-7xl mx-auto">
             {/* --- Progress Header --- */}
             <div className="mb-8">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                     {steps.map((step, index) => (
                         <React.Fragment key={step}>
-                            <div className="flex flex-col items-center text-center">
+                            <div className="flex flex-col items-center text-center w-20">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-2 ${index <= currentStep ? 'bg-[#E87C4D] border-[#E87C4D] text-white' : 'bg-white border-gray-300 text-gray-500'}`}>
                                     {index < currentStep ? '✓' : index + 1}
                                 </div>
-                                <p className={`mt-2 text-sm font-semibold ${index <= currentStep ? 'text-gray-800' : 'text-gray-500'}`}>{step}</p>
+                                <p className={`mt-2 text-xs sm:text-sm font-semibold ${index <= currentStep ? 'text-gray-800' : 'text-gray-500'}`}>{step}</p>
                             </div>
-                            {index < steps.length - 1 && <div className={`flex-1 h-0.5 mx-2 ${index < currentStep ? 'bg-[#E87C4D]' : 'bg-gray-300'}`}></div>}
+                            {index < steps.length - 1 && <div className={`flex-1 h-0.5 mt-5 mx-2 ${index < currentStep ? 'bg-[#E87C4D]' : 'bg-gray-300'}`}></div>}
                         </React.Fragment>
                     ))}
                 </div>
@@ -69,9 +70,9 @@ const EventWizard: React.FC = () => {
                 {/* --- Form Section (2/3) --- */}
                 <div className="w-full lg:w-2/3 bg-white p-6 md:p-8 rounded-lg shadow-md border border-gray-200/80">
                     {renderStepContent()}
-                    <div className="flex justify-between pt-8 mt-8 border-t">
-                        <button type="button" onClick={handleBack} disabled={currentStep === 0} className="bg-gray-200 text-gray-700 font-bold py-3 px-8 rounded-lg hover:bg-gray-300 disabled:opacity-50">Back</button>
-                        <button type="button" onClick={handleNext} className="bg-[#E87C4D] text-white font-bold py-3 px-8 rounded-lg hover:bg-opacity-90">
+                    <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-4 pt-8 mt-8 border-t">
+                        <button type="button" onClick={handleBack} disabled={currentStep === 0} className="w-full sm:w-auto bg-gray-200 text-gray-700 font-bold py-3 px-8 rounded-lg hover:bg-gray-300 disabled:opacity-50">Back</button>
+                        <button type="button" onClick={handleNext} className="w-full sm:w-auto bg-[#E87C4D] text-white font-bold py-3 px-8 rounded-lg hover:bg-opacity-90">
                             {currentStep === steps.length - 1 ? 'Publish Event' : 'Next Step →'}
                         </button>
                     </div>
@@ -85,7 +86,7 @@ const EventWizard: React.FC = () => {
                             <EyeIcon />
                             <h3 className="font-bold text-lg">Live Preview</h3>
                         </div>
-                        <div className="aspect-[4/3] bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
+                        <div className="aspect-[4/3] bg-gray-100 rounded-md flex items-center justify-center text-gray-400 text-center p-4">
                            <p>Your event card preview will appear here.</p>
                         </div>
                     </div>
