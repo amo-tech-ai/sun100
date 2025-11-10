@@ -365,7 +365,8 @@ export const generateDeckFromUrls = async (urls: string[]): Promise<DeckGenerati
             // FIX: Corrected typo in status enum value.
             .filter(meta => meta.urlRetrievalStatus !== 'URL_RETRIEVAL_STATUS_SUCCESS')
             // FIX: Property 'url' does not exist on type 'UrlMetadata'. The correct property is 'uri'.
-            .map(meta => meta.uri);
+            // FIX: The error "Property 'uri' does not exist on type 'UrlMetadata'" indicates that 'uri' is incorrect. The property is 'url'.
+            .map(meta => meta.url);
 
         if (failedUrls.length > 0) {
             throw new Error(`Failed to retrieve content from the following URLs: ${failedUrls.join(', ')}. Please ensure they are public and accessible.`);
