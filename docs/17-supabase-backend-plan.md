@@ -1,7 +1,6 @@
-
 # 🏛️ Supabase Backend: Architecture & Implementation Plan
 
-**Document Status:** Published - 2024-08-10
+**Document Status:** Published - 2024-08-16 (Revised)
 **System Goal:** To provide a complete backend design and implementation plan for migrating the Sun AI Pitch Deck Engine to a secure, scalable, and production-ready Supabase architecture.
 
 ---
@@ -10,7 +9,7 @@ This document outlines the entire backend, from the database schema and security
 
 ### 1. ERD & Data Model
 
-The data model is designed to be multi-tenant, with `orgs` as the primary data boundary. All user-generated content is tied to an organization.
+The data model is designed to be multi-tenant, with `orgs` as the primary data boundary. All user-generated content is tied to an organization. The `slides` table has been updated to match the frontend data model precisely.
 
 ```mermaid
 erDiagram
@@ -61,7 +60,13 @@ erDiagram
         uuid id PK
         uuid deck_id FK
         int position
-        jsonb content "Title, bullet points, notes"
+        text title
+        text content
+        text image_url
+        text template
+        jsonb chart_data
+        jsonb table_data
+        text type
         timestampz created_at
         timestampz updated_at
     }
@@ -114,7 +119,7 @@ erDiagram
 
 ### 2. Postgres DDL (SQL)
 
-These SQL statements define the core tables, indexes, and relationships.
+These SQL statements define the core tables, indexes, and relationships. The `slides` table is now fully specified.
 
 ```sql
 -- Helper function to get a user's role in an organization
@@ -171,19 +176,26 @@ create index idx_decks_org_id on decks(org_id);
 create index idx_decks_title_fts on decks using gin (to_tsvector('english', title));
 
 
--- SLIDES
+-- SLIDES (Corrected Schema)
 create table slides (
   id uuid primary key default gen_random_uuid(),
   deck_id uuid not null references decks(id) on delete cascade,
   position integer not null,
-  content jsonb,
+  title text not null,
+  content text,
+  image_url text,
+  template text,
+  chart_data jsonb,
+  table_data jsonb,
+  type text check (type in ('vision', 'problem', 'solution', 'market', 'product', 'traction', 'competition', 'team', 'ask', 'roadmap', 'generic')),
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now(),
   unique(deck_id, position)
 );
 alter table slides enable row level security;
 create index idx_slides_deck_id_position on slides(deck_id, position);
-create index idx_slides_content_gin on slides using gin(content);
+create index idx_slides_content_fts on slides using gin (to_tsvector('english', title || ' ' || content));
+
 
 -- AI_RUNS (for observability)
 create table ai_runs (
@@ -197,11 +209,6 @@ create table ai_runs (
   created_at timestamp with time zone not null default now()
 );
 alter table ai_runs enable row level security;
-
--- Placeholder tables
-create table jobs (id uuid primary key);
-create table perks (id uuid primary key);
-create table events (id uuid primary key);
 ```
 
 ### 3. Row-Level Security (RLS) Policies
@@ -309,6 +316,7 @@ import { GoogleGenAI } from '@google/genai';
 
 const InputSchema = z.object({
   orgId: z.string().uuid(),
+  deckId: z.string().uuid(), // ID for the new deck
   companyDetails: z.string().min(50),
 });
 
@@ -319,27 +327,23 @@ serve(async (req) => {
   if (!user) return new Response('Unauthorized', { status: 401 });
 
   const body = await req.json();
-  const { orgId, companyDetails } = InputSchema.parse(body);
+  const { orgId, deckId, companyDetails } = InputSchema.parse(body);
 
   // 2. Business Logic: Verify user is in the org
-  const { data: member, error } = await supabase
-    .from('org_members')
-    .select('role')
-    .eq('org_id', orgId)
-    .eq('user_id', user.id)
-    .single();
-
-  if (error || !['owner', 'admin', 'editor'].includes(member.role)) {
-    return new Response('Forbidden', { status: 403 });
-  }
+  // ... (omitted for brevity)
 
   // 3. Core Action: Call Gemini API
   const ai = new GoogleGenAI({ apiKey: Deno.env.get('GEMINI_API_KEY') });
   // ... logic to call ai.models.generateContent ...
   // ... using the `generateDeckOutline` function declaration ...
+  const deckData = response.functionCalls?.[0]?.args;
 
-  // 4. Return response
-  return new Response(JSON.stringify({ deck: "..." }), {
+  // 4. IMPORTANT: Persist the generated deck and slides to the database
+  //    This should be done in a transaction.
+  //    Example: await supabase.from('slides').insert(deckData.slides.map(...));
+
+  // 5. Return response
+  return new Response(JSON.stringify({ deck: deckData }), {
     headers: { 'Content-Type': 'application/json' },
   });
 });
@@ -348,14 +352,17 @@ serve(async (req) => {
 
 ### 7. RPCs (Postgres functions)
 
-RPCs are useful for complex, transactional database operations.
+RPCs are useful for complex, transactional database operations. This is a more robust reordering pattern.
 
 ```sql
 -- Reorders slides within a deck transactionally
-create or replace function reorder_slides(deck_id_input uuid, from_pos int, to_pos int)
+create or replace function reorder_slides(deck_id_input uuid, ordered_slide_ids uuid[])
 returns void
 language plpgsql
 as $$
+declare
+  slide_id uuid;
+  new_position int;
 begin
   -- First, check if the user has permission on the deck
   if not exists (
@@ -366,11 +373,13 @@ begin
     raise exception 'Permission denied';
   end if;
 
-  -- Logic to shift positions of other slides and update the target slide
-  -- This would be wrapped in a transaction block
-  update slides set position = -1 where deck_id = deck_id_input and position = from_pos;
-  -- ... shift other slides ...
-  update slides set position = to_pos where deck_id = deck_id_input and position = -1;
+  -- Update positions based on the order in the input array
+  for new_position in 1..array_length(ordered_slide_ids, 1) loop
+    slide_id := ordered_slide_ids[new_position];
+    update slides
+    set position = new_position
+    where id = slide_id and deck_id = deck_id_input;
+  end loop;
 end;
 $$;
 ```
@@ -434,10 +443,10 @@ insert into org_members (org_id, user_id, role) values ('<org_uuid>', '<user_id_
 -- Create a deck
 insert into decks (id, org_id, title) values ('<deck_uuid>', '<org_uuid>', 'Q3 Investor Update');
 
--- Create slides
-insert into slides (deck_id, position, content) values
-  ('<deck_uuid>', 1, '{ "title": "The Big Problem", "content": "Founders waste time and money..." }'),
-  ('<deck_uuid>', 2, '{ "title": "Our Solution", "content": "A unified AI-native platform..." }');
+-- Create slides (New Schema)
+insert into slides (deck_id, position, title, content, type) values
+  ('<deck_uuid>', 1, 'The Big Problem', 'Founders waste time and money creating pitch decks from scratch.', 'problem'),
+  ('<deck_uuid>', 2, 'Our Solution', 'A unified AI-native platform for guided creation, generation, and editing.', 'solution');
 ```
 
 ### 12. RLS Tests (SQL)
@@ -468,7 +477,7 @@ set role postgres;
 
 ### 13. Performance Plan
 
--   **Indexes:** B-tree indexes are on all foreign keys and high-cardinality columns used in `WHERE` clauses. A GIN index on `slides.content` allows for fast, deep searching of JSONB data.
+-   **Indexes:** B-tree indexes are on all foreign keys and high-cardinality columns used in `WHERE` clauses. A GIN index on `slides.title` and `slides.content` allows for fast full-text searching.
 -   **Maintenance:** Standard `VACUUM` and `ANALYZE` will be handled by Supabase's managed Postgres. No manual intervention is needed on standard plans.
 -   **p95 Targets:**
     -   `generate_outline` / `rewrite_slide`: < 5 seconds
@@ -494,4 +503,3 @@ set role postgres;
 3.  [ ] **Configure Secrets:** Set `GEMINI_API_KEY` and other secrets using `supabase secrets set`.
 4.  [ ] **Deploy Functions:** Deploy all Edge Functions with `supabase functions deploy`.
 5.  [ ] **Update Frontend:** Update frontend environment variables (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) and deploy the new client application.
-

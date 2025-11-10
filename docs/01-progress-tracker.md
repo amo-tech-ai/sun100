@@ -47,8 +47,8 @@ This phase focuses on integrating Gemini API to bring intelligent features to th
   - [x] Create the `AnalysisPanel.tsx` UI to display strategic feedback.
   - [x] Create the `ResearchResultPanel.tsx` UI for the AI research assistant.
 - [x] **Deck Generation Agent (Core)**
-    - [x] **Wizard Data Input:** Implement a form in `WizardSteps.tsx` to capture user input.
-    - [x] **AI Generation Trigger:** Connect the wizard to `GeneratingScreen.tsx` to call the `generateDeckContent` service.
+    - [x] **Wizard Data Input:** Implement a form in `WizardSteps.tsx` to capture user input via text or URLs.
+    - [x] **AI Generation Trigger:** Connect the wizard to `GeneratingScreen.tsx` to call the appropriate generation service (`generateDeckContent` or `generateDeckFromUrls`).
     - [x] **Dynamic Deck Loading:** Update `DeckEditor.tsx` to load and display the AI-generated content instead of mock data.
 - [x] **Visual Agent (Image Generation)**
     - [x] Implement `geminiService` function to generate images from a text prompt.

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { generateDeckContent, DeckGenerationResult } from '../services/geminiService';
+import { generateDeckContent, generateDeckFromUrls, DeckGenerationResult } from '../services/geminiService';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { companyDetails } = location.state || {};
+    const { companyDetails, urls } = location.state || {};
     
     const [dots, setDots] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -16,13 +16,22 @@ const GeneratingScreen: React.FC = () => {
         }, 500);
 
         const generateDeck = async () => {
-            if (!companyDetails) {
-                setError("No company details provided. Please go back and fill out the wizard.");
+            const hasUrls = urls && Array.isArray(urls) && urls.length > 0;
+            const hasDetails = companyDetails && typeof companyDetails === 'string' && companyDetails.trim().length > 0;
+
+            if (!hasUrls && !hasDetails) {
+                setError("No company details or URLs provided. Please go back and fill out the wizard.");
                 return;
             }
 
             try {
-                const deckData: DeckGenerationResult = await generateDeckContent(companyDetails);
+                let deckData: DeckGenerationResult;
+
+                if (hasUrls) {
+                    deckData = await generateDeckFromUrls(urls);
+                } else {
+                    deckData = await generateDeckContent(companyDetails);
+                }
                 
                 // Construct a Deck object compatible with the editor
                 const newDeck = {
