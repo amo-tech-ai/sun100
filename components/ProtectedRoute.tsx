@@ -6,12 +6,12 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const location = useLocation();
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    // const location = useLocation();
+    // const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-    if (!isLoggedIn) {
-        return <Navigate to="/login" state={{ from: location }} replace />;
-    }
+    // if (!isLoggedIn) {
+    //     return <Navigate to="/login" state={{ from: location }} replace />;
+    // }
 
     return children;
 };

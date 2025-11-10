@@ -7,8 +7,9 @@ import PublicLayout from './screens/PublicLayout';
 
 // Public Screens
 import Landing from './screens/Landing';
-import Login from './screens/Login';
-import Signup from './screens/Signup';
+// Login and Signup are no longer needed for dev flow
+// import Login from './screens/Login';
+// import Signup from './screens/Signup';
 import Terms from './screens/Terms';
 import Privacy from './screens/Privacy';
 import NotFound from './screens/NotFound';
@@ -23,7 +24,8 @@ const DeckEditor = lazy(() => import('./screens/DeckEditor'));
 const PresentationScreen = lazy(() => import('./screens/PresentationScreen'));
 
 // Components
-import ProtectedRoute from './components/ProtectedRoute';
+// ProtectedRoute is disabled for development
+// import ProtectedRoute from './components/ProtectedRoute';
 
 // Loading fallback component
 const LoadingSpinner: React.FC = () => (
@@ -40,27 +42,26 @@ const App: React.FC = () => {
           {/* --- Public Routes --- */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+            {/* Redirect auth pages to the dashboard for development */}
+            <Route path="/login" element={<Navigate to="/dashboard" />} />
+            <Route path="/signup" element={<Navigate to="/dashboard" />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
           </Route>
 
-          {/* --- Protected App Routes --- */}
-          <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+          {/* --- App Routes (No longer protected for dev) --- */}
+          <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/pitch-deck" element={<WizardSteps />} />
             <Route path="/pitch-deck/generating" element={<GeneratingScreen />} />
             <Route path="/dashboard/decks/:id/edit" element={<DeckEditor />} />
           </Route>
 
-          {/* --- Full-screen Protected Route (No Layout) --- */}
+          {/* --- Full-screen Route (No longer protected for dev) --- */}
           <Route
             path="/dashboard/decks/:id/present"
             element={
-              <ProtectedRoute>
-                <PresentationScreen />
-              </ProtectedRoute>
+              <PresentationScreen />
             }
           />
 
