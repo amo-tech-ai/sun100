@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2024-08-15
+
+### Added
+- **Collapsible Main Sidebar:** Implemented a collapsible desktop sidebar to maximize content space. The sidebar state is persisted in `localStorage`, it can be toggled with a `Cmd/Ctrl + B` keyboard shortcut, and includes accessibility features like tooltips and ARIA attributes.
+
 ## [2.0.0] - 2024-08-13
 
 ### Changed

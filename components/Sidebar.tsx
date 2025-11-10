@@ -7,26 +7,60 @@ const SunIcon = () => (
     </svg>
 );
 
-const Sidebar: React.FC = () => {
-    const navLinkClasses = "flex items-center px-4 py-3 mt-2 text-gray-100 transition-colors duration-200 transform rounded-md hover:bg-gray-700";
+const ChevronsLeftIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
+);
+
+const ChevronsRightIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/></svg>
+);
+
+const DashboardIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+);
+
+interface SidebarProps {
+    isCollapsed: boolean;
+    onToggle?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
+    const navLinkClasses = "flex items-center px-4 py-3 text-gray-100 transition-colors duration-200 transform rounded-md hover:bg-gray-700";
     const activeNavLinkClasses = "bg-[#E87C4D]";
 
     return (
-        <aside className="w-64 bg-gray-800 text-white flex flex-col flex-shrink-0 h-full">
-            <div className="flex items-center justify-center h-20 border-b border-gray-700">
+        <aside className={`bg-gray-800 text-white flex flex-col flex-shrink-0 h-full motion-safe:transition-width duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-64'}`} aria-expanded={!isCollapsed}>
+            <div className={`flex items-center h-20 border-b border-gray-700 ${isCollapsed ? 'justify-center' : 'justify-center px-4'}`}>
                 <SunIcon />
-                <span className="ml-2 text-2xl font-bold">Sun AI</span>
+                <span className={`ml-2 text-2xl font-bold whitespace-nowrap overflow-hidden ${isCollapsed ? 'hidden' : 'block'}`}>Sun AI</span>
             </div>
-            <nav className="flex-1 px-4 py-4">
+            <nav className="flex-1 px-2 py-4 space-y-2">
                 <NavLink
                     to="/dashboard"
-                    className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ""}`}
+                    className={({ isActive }) => `${navLinkClasses} ${isActive ? activeNavLinkClasses : ""} ${isCollapsed ? 'justify-center' : ''}`}
+                    title={isCollapsed ? "Dashboard" : undefined}
+                    aria-label="Dashboard"
                 >
-                    <span className="mx-4 font-medium">Dashboard</span>
+                    <DashboardIcon />
+                    <span className={`mx-4 font-medium whitespace-nowrap overflow-hidden ${isCollapsed ? 'hidden' : 'block'}`}>Dashboard</span>
                 </NavLink>
                  {/* Add more links here later */}
             </nav>
-            <div className="p-4 border-t border-gray-700">
+
+            {onToggle && (
+                <div className="p-2 border-t border-gray-700">
+                    <button
+                        onClick={onToggle}
+                        className="w-full flex items-center justify-center p-3 text-gray-300 rounded-md hover:bg-gray-700"
+                        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    >
+                        {isCollapsed ? <ChevronsRightIcon /> : <ChevronsLeftIcon />}
+                        <span className="sr-only">{isCollapsed ? "Expand sidebar" : "Collapse sidebar"}</span>
+                    </button>
+                </div>
+            )}
+            
+            <div className={`p-4 border-t border-gray-700 whitespace-nowrap overflow-hidden ${isCollapsed ? 'hidden' : 'block'}`}>
                 <p className="text-sm text-gray-400">© 2024 Sun AI, Inc.</p>
             </div>
         </aside>
