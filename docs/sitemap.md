@@ -11,6 +11,18 @@ These routes are accessible to all visitors and are wrapped in a public-facing l
 -   **`/`**: `Landing.tsx` - The main landing page for the application.
 -   **`/terms`**: `Terms.tsx` - The Terms of Service page.
 -   **`/privacy`**: `Privacy.tsx` - The Privacy Policy page.
+-   **`/about`**: `About.tsx` - Information about the Sun AI community.
+-   **`/perks`**: `Perks.tsx` - List of available perks for members.
+-   **`/perks/:id`**: `PerkDetail.tsx` - Details for a specific perk.
+-   **`/events`**: `Events.tsx` - List of upcoming community events.
+-   **`/events/:id`**: `EventDetail.tsx` - Details for a specific event.
+-   **`/jobs`**: `Jobs.tsx` - Career board for AI startups.
+-   **`/jobs/:id`**: `JobDetail.tsx` - Details for a specific job posting.
+-   **`/how-it-works`**: `HowItWorks.tsx` - Explanation of the community platform.
+-   **`/blogs`**: `Blogs.tsx` - Community blog and articles.
+-   **`/blogs/:id`**: `BlogDetail.tsx` - A single blog post.
+-   **`/login`**: Redirects to `/dashboard`.
+-   **`/signup`**: Redirects to `/dashboard`.
 
 ---
 
@@ -18,10 +30,10 @@ These routes are accessible to all visitors and are wrapped in a public-facing l
 
 These routes are intended for logged-in users and are wrapped in the main application layout which includes the `Sidebar`.
 
--   **`/dashboard`**: `Dashboard.tsx` - The main user dashboard, listing their pitch decks.
--   **`/decks/new`**: `WizardSteps.tsx` - The guided wizard for creating a new deck.
--   **`/decks/generating`**: `GeneratingScreen.tsx` - The loading screen shown during AI generation.
--   **`/decks/:id/edit`**: `DeckEditor.tsx` - The core editor for modifying a specific deck.
+-   **`/dashboard`**: `Dashboard.tsx` - The main user dashboard.
+-   **`/pitch-deck`**: `WizardSteps.tsx` - The guided wizard for creating a new deck.
+-   **`/pitch-deck/generating`**: `GeneratingScreen.tsx` - The loading screen shown during AI generation.
+-   **`/dashboard/decks/:id/edit`**: `DeckEditor.tsx` - The core editor for modifying a specific deck.
 -   **`/sitemap`**: `Sitemap.tsx` - A developer-facing page that visualizes this sitemap.
 
 ---
@@ -30,7 +42,7 @@ These routes are intended for logged-in users and are wrapped in the main applic
 
 These routes render without the standard application layouts for a specialized, full-screen experience.
 
--   **`/decks/:id/present`**: `PresentationScreen.tsx` - The distraction-free, full-screen presentation mode.
+-   **`/dashboard/decks/:id/present`**: `PresentationScreen.tsx` - The distraction-free, full-screen presentation mode.
 
 ---
 

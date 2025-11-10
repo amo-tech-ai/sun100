@@ -363,7 +363,7 @@ export const generateDeckFromUrls = async (urls: string[]): Promise<DeckGenerati
         // FIX: Corrected property 'status' to 'urlRetrievalStatus' to match Gemini API response.
         const failedUrls = metadata.urlMetadata
             .filter(meta => meta.urlRetrievalStatus !== 'URL_RETRIEVAL_STATUS_SUCCESS')
-            // FIX: Corrected property `meta.url` to `meta.uri` to align with the Gemini API's UrlMetadata type.
+            // FIX: The property for the URL on UrlMetadata is `uri`, not `url`.
             .map(meta => meta.uri);
 
         if (failedUrls.length > 0) {

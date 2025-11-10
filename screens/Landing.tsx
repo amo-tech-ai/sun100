@@ -33,10 +33,10 @@ const Landing: React.FC = () => {
                             Join the Community
                         </Link>
                          <Link
-                            to="/dashboard"
+                            to="/how-it-works"
                             className="inline-block bg-white/10 backdrop-blur-sm border border-white/20 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-white/20 transition-colors duration-200"
                         >
-                            Explore Opportunities
+                            How It Works
                         </Link>
                     </div>
                 </div>
@@ -71,17 +71,17 @@ const Landing: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         {[
-                            { title: "Submit Startup", desc: "Get feedback, find co-founders, and connect with investors." },
-                            { title: "Join Community", desc: "Access a global network of AI builders and innovators." },
-                            { title: "AI Events", desc: "Participate in workshops, hackathons, and demo days." },
-                            { title: "AI Projects", desc: "Collaborate on cutting-edge projects and build your portfolio." },
+                            { title: "For Founders", desc: "Get feedback, find co-founders, and connect with investors.", link: "/dashboard" },
+                            { title: "Community Perks", desc: "Access a global network of AI builders and innovators.", link: "/perks" },
+                            { title: "AI Events", desc: "Participate in workshops, hackathons, and demo days.", link: "/events" },
+                            { title: "Career Board", desc: "Find your next role at a breakout AI startup.", link: "/jobs" },
                         ].map(path => (
                              <div key={path.title} className="bg-white p-8 rounded-xl shadow-sm border border-gray-200/80 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                                 <h3 className="text-xl font-bold font-heading text-slate-800 mb-2">{path.title}</h3>
                                 <p className="text-slate-600 mb-4">{path.desc}</p>
-                                <a href="/dashboard" className="font-bold text-brand-orange group-hover:underline flex items-center gap-2">
-                                    Get Started <ArrowRight />
-                                </a>
+                                <Link to={path.link} className="font-bold text-brand-orange group-hover:underline flex items-center gap-2">
+                                    Learn More <ArrowRight />
+                                </Link>
                             </div>
                         ))}
                     </div>
