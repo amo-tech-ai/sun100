@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2024-08-13
+
+### Changed
+- **Major Architectural Refactor:** Implemented React Context API (`DeckEditorContext`) to eliminate prop drilling and resolve the "God Component" issue in `DeckEditor.tsx`. This significantly improves maintainability and scalability.
+- **Consolidated Event Handlers:** All AI-related event handlers are now centralized in `DeckEditor.tsx` and defined with `useCallback` for improved performance and consistency.
+- **Robust Slide Typing:** Replaced brittle, title-based slide context detection with a dedicated `type` property in the `Slide` data model, making context-aware features more reliable.
+
+### Fixed
+- **Documentation Drift:** Updated all progress trackers (`docs/26-enhancement-progress-tracker.md`, `docs/34-progress-tracker.md`) to accurately reflect the application's feature-complete state, resolving a critical process failure.
+
 ## [1.9.0] - 2024-08-12
 
 ### Added

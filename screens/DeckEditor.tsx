@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { mockDeck, Deck, Slide, ChartData, TableData } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
@@ -13,7 +13,6 @@ import {
     fetchAllSuggestions,
     suggestChart,
     generateRoadmapSlide,
-    // New imports for strategic enhancements
     generateHeadlineVariations,
     extractMetrics,
     ExtractedMetric,
@@ -23,6 +22,62 @@ import {
     SlideAnalysis,
     ResearchResult,
 } from '../services/geminiService';
+
+
+// --- CONTEXT DEFINITION ---
+
+interface DeckEditorContextType {
+    deck: Deck | null;
+    selectedSlide: Slide | null;
+    isGeneratingImage: boolean;
+    isEditingImage: boolean;
+    imageError: string | null;
+    isCopilotLoading: boolean;
+    isAnalyzing: boolean;
+    analysisResult: SlideAnalysis | null;
+    isResearching: boolean;
+    researchResult: ResearchResult | null;
+    isSuggestingLayout: boolean;
+    layoutError: string | null;
+    isSuggestingChart: boolean;
+    chartError: string | null;
+    isGeneratingRoadmap: boolean;
+    headlineIdeas: string[];
+    isGeneratingHeadlines: boolean;
+    headlineError: string | null;
+    extractedMetrics: ExtractedMetric[];
+    isExtractingMetrics: boolean;
+    metricError: string | null;
+    isGeneratingTable: boolean;
+    tableError: string | null;
+    isSuggestingPieChart: boolean;
+    pieChartError: string | null;
+    copilotSuggestions: string[];
+    imageSuggestions: string[];
+    researchSuggestions: string[];
+    areSuggestionsLoading: boolean;
+    handleSlideSelect: (slide: Slide) => void;
+    handleTitleSave: (newTitle: string) => void;
+    handleGenerateRoadmapSlide: () => void;
+    handleGenerateImage: () => void;
+    handleEditImage: (prompt: string) => void;
+    handleCopilotGenerate: (prompt: string, newTitle?: string) => void;
+    handleAnalyzeSlide: () => void;
+    handleResearch: (query: string) => void;
+    handleSuggestLayout: () => void;
+    handleSuggestChart: () => void;
+    handleGenerateHeadlines: () => void;
+    handleExtractMetrics: () => void;
+    handleMarketResearch: () => void;
+    handleGenerateTable: () => void;
+    handleCompetitorResearch: () => void;
+    handleSummarizeBio: () => void;
+    handleSuggestPieChart: () => void;
+    handleSocialProofSearch: () => void;
+}
+
+const DeckEditorContext = createContext<DeckEditorContextType>(null!);
+export const useDeckEditor = () => useContext(DeckEditorContext);
 
 
 // ICONS
@@ -42,8 +97,6 @@ const DeckEditor: React.FC = () => {
     const [deck, setDeck] = useState<Deck | null>(null);
     const [selectedSlide, setSelectedSlide] = useState<Slide | null>(null);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-    // AI Tool States
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
     const [isEditingImage, setIsEditingImage] = useState(false);
     const [imageError, setImageError] = useState<string | null>(null);
@@ -57,8 +110,6 @@ const DeckEditor: React.FC = () => {
     const [isSuggestingChart, setIsSuggestingChart] = useState(false);
     const [chartError, setChartError] = useState<string | null>(null);
     const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState(false);
-
-    // New states for strategic enhancements
     const [headlineIdeas, setHeadlineIdeas] = useState<string[]>([]);
     const [isGeneratingHeadlines, setIsGeneratingHeadlines] = useState(false);
     const [headlineError, setHeadlineError] = useState<string | null>(null);
@@ -69,8 +120,6 @@ const DeckEditor: React.FC = () => {
     const [tableError, setTableError] = useState<string | null>(null);
     const [isSuggestingPieChart, setIsSuggestingPieChart] = useState(false);
     const [pieChartError, setPieChartError] = useState<string | null>(null);
-
-    // AI Suggestion States
     const [copilotSuggestions, setCopilotSuggestions] = useState<string[]>([]);
     const [imageSuggestions, setImageSuggestions] = useState<string[]>([]);
     const [researchSuggestions, setResearchSuggestions] = useState<string[]>([]);
@@ -93,7 +142,6 @@ const DeckEditor: React.FC = () => {
         }
     }, [deck]);
 
-    // Fetch suggestions when the selected slide changes
     useEffect(() => {
         if (!selectedSlide) return;
 
@@ -104,10 +152,7 @@ const DeckEditor: React.FC = () => {
             setResearchSuggestions([]);
             
             try {
-                const { copilotSuggestions, imageSuggestions, researchSuggestions } = await fetchAllSuggestions(
-                    selectedSlide.title,
-                    selectedSlide.content
-                );
+                const { copilotSuggestions, imageSuggestions, researchSuggestions } = await fetchAllSuggestions(selectedSlide);
                 setCopilotSuggestions(copilotSuggestions);
                 setImageSuggestions(imageSuggestions);
                 setResearchSuggestions(researchSuggestions);
@@ -140,25 +185,15 @@ const DeckEditor: React.FC = () => {
         }
     }, [deck]);
 
-    const handlePrevSlide = useCallback(() => {
-        if (!deck || !selectedSlide) return;
-        const currentIndex = deck.slides.findIndex(s => s.id === selectedSlide.id);
-        if (currentIndex > 0) {
-            handleSlideSelect(deck.slides[currentIndex - 1]);
-        }
-    }, [deck, selectedSlide, handleSlideSelect]);
-
-    const handleNextSlide = useCallback(() => {
-        if (!deck || !selectedSlide) return;
-        const currentIndex = deck.slides.findIndex(s => s.id === selectedSlide.id);
-        if (currentIndex < deck.slides.length - 1) {
-            handleSlideSelect(deck.slides[currentIndex + 1]);
-        }
-    }, [deck, selectedSlide, handleSlideSelect]);
-    
-    const toggleSidebar = useCallback(() => {
-        setIsSidebarCollapsed(isCollapsed => !isCollapsed);
-    }, []);
+    const updateSlide = useCallback((slideId: string, updates: Partial<Slide>) => {
+        if (!deck) return;
+        const updatedSlides = deck.slides.map(slide =>
+            slide.id === slideId ? { ...slide, ...updates } : slide
+        );
+        const updatedDeck = { ...deck, slides: updatedSlides };
+        setDeck(updatedDeck);
+        setSelectedSlide(updatedSlides.find(s => s.id === slideId) || null);
+    }, [deck]);
 
     const handleGenerateRoadmapSlide = useCallback(async () => {
         if (!deck) return;
@@ -179,19 +214,8 @@ const DeckEditor: React.FC = () => {
         }
     }, [deck, handleSlideSelect]);
 
-    const updateSlide = useCallback((slideId: string, updates: Partial<Slide>) => {
-        if (!deck) return;
-        const updatedSlides = deck.slides.map(slide =>
-            slide.id === slideId ? { ...slide, ...updates } : slide
-        );
-        const updatedDeck = { ...deck, slides: updatedSlides };
-        setDeck(updatedDeck);
-        setSelectedSlide(updatedSlides.find(s => s.id === slideId) || null);
-    }, [deck]);
-
-    // --- AI HANDLERS ---
     const handleGenerateImage = useCallback(async () => {
-        if (!deck || !selectedSlide) {
+        if (!selectedSlide) {
             setImageError("No slide selected to generate an image for.");
             return;
         }
@@ -209,7 +233,7 @@ const DeckEditor: React.FC = () => {
     }, [selectedSlide, updateSlide]);
 
     const handleEditImage = useCallback(async (prompt: string) => {
-        if (!deck || !selectedSlide || !selectedSlide.imageUrl || !selectedSlide.imageUrl.startsWith('data:image')) {
+        if (!selectedSlide || !selectedSlide.imageUrl || !selectedSlide.imageUrl.startsWith('data:image')) {
             setImageError("No image selected to edit.");
             return;
         }
@@ -230,7 +254,7 @@ const DeckEditor: React.FC = () => {
     }, [selectedSlide, updateSlide]);
 
     const handleCopilotGenerate = useCallback(async (prompt: string, newTitle?: string) => {
-        if (!deck || !selectedSlide) return;
+        if (!selectedSlide) return;
         setIsCopilotLoading(true);
         try {
             const contentToUse = newTitle ? selectedSlide.content : prompt;
@@ -246,10 +270,10 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsCopilotLoading(false);
         }
-    }, [deck, selectedSlide, updateSlide]);
+    }, [selectedSlide, updateSlide]);
 
     const handleAnalyzeSlide = useCallback(async () => {
-        if (!deck || !selectedSlide) return;
+        if (!selectedSlide) return;
         setIsAnalyzing(true);
         setAnalysisResult(null);
         try {
@@ -260,7 +284,7 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsAnalyzing(false);
         }
-    }, [deck, selectedSlide]);
+    }, [selectedSlide]);
 
     const handleResearch = useCallback(async (query: string) => {
         if (!query.trim()) return;
@@ -277,7 +301,7 @@ const DeckEditor: React.FC = () => {
     }, []);
 
     const handleSuggestLayout = useCallback(async () => {
-        if (!deck || !selectedSlide) return;
+        if (!selectedSlide) return;
         setIsSuggestingLayout(true);
         setLayoutError(null);
         try {
@@ -289,10 +313,10 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsSuggestingLayout(false);
         }
-    }, [deck, selectedSlide, updateSlide]);
+    }, [selectedSlide, updateSlide]);
     
     const handleSuggestChart = useCallback(async () => {
-        if (!deck || !selectedSlide) return;
+        if (!selectedSlide) return;
         setIsSuggestingChart(true);
         setChartError(null);
         try {
@@ -304,9 +328,8 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsSuggestingChart(false);
         }
-    }, [deck, selectedSlide, updateSlide]);
+    }, [selectedSlide, updateSlide]);
     
-    // --- NEW HANDLERS FOR ENHANCEMENTS ---
     const handleGenerateHeadlines = useCallback(async () => {
         if (!selectedSlide) return;
         setIsGeneratingHeadlines(true);
@@ -345,7 +368,7 @@ const DeckEditor: React.FC = () => {
     }, [deck, handleResearch]);
 
     const handleGenerateTable = useCallback(async () => {
-        if (!deck || !selectedSlide) return;
+        if (!selectedSlide) return;
         setIsGeneratingTable(true);
         setTableError(null);
         try {
@@ -356,7 +379,7 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsGeneratingTable(false);
         }
-    }, [deck, selectedSlide, updateSlide]);
+    }, [selectedSlide, updateSlide]);
     
     const handleCompetitorResearch = useCallback(async () => {
         if (!selectedSlide) return;
@@ -369,22 +392,21 @@ const DeckEditor: React.FC = () => {
     }, [selectedSlide, handleResearch]);
 
     const handleSummarizeBio = useCallback(async () => {
-        if (!deck || !selectedSlide) return;
+        if (!selectedSlide) return;
         setIsCopilotLoading(true);
         try {
             const { summary, highlights } = await summarizeBio(selectedSlide.content);
             const newContent = `${summary}\n\n**Key Highlights:**\n- ${highlights.join('\n- ')}`;
-            const { newTitle, newContent: finalContent } = await modifySlideContent(selectedSlide.title, selectedSlide.content, `Replace the content with the following summary:\n${newContent}`);
-            updateSlide(selectedSlide.id, { title: newTitle, content: finalContent });
+            await handleCopilotGenerate(`Replace the content with the following summary:\n${newContent}`);
         } catch (err) {
             console.error("Bio summarization error:", err);
         } finally {
             setIsCopilotLoading(false);
         }
-    }, [deck, selectedSlide, updateSlide]);
+    }, [selectedSlide, handleCopilotGenerate]);
 
     const handleSuggestPieChart = useCallback(async () => {
-        if (!deck || !selectedSlide) return;
+        if (!selectedSlide) return;
         setIsSuggestingPieChart(true);
         setPieChartError(null);
         try {
@@ -395,9 +417,32 @@ const DeckEditor: React.FC = () => {
         } finally {
             setIsSuggestingPieChart(false);
         }
-    }, [deck, selectedSlide, updateSlide]);
+    }, [selectedSlide, updateSlide]);
 
-    // --- END AI HANDLERS ---
+     const handleSocialProofSearch = useCallback(() => {
+        if (!selectedSlide) return;
+        handleResearch(`quotes or testimonials about the problem of ${selectedSlide.title}`);
+    }, [selectedSlide, handleResearch]);
+
+    const handlePrevSlide = useCallback(() => {
+        if (!deck || !selectedSlide) return;
+        const currentIndex = deck.slides.findIndex(s => s.id === selectedSlide.id);
+        if (currentIndex > 0) {
+            handleSlideSelect(deck.slides[currentIndex - 1]);
+        }
+    }, [deck, selectedSlide, handleSlideSelect]);
+
+    const handleNextSlide = useCallback(() => {
+        if (!deck || !selectedSlide) return;
+        const currentIndex = deck.slides.findIndex(s => s.id === selectedSlide.id);
+        if (currentIndex < deck.slides.length - 1) {
+            handleSlideSelect(deck.slides[currentIndex + 1]);
+        }
+    }, [deck, selectedSlide, handleSlideSelect]);
+    
+    const toggleSidebar = useCallback(() => {
+        setIsSidebarCollapsed(isCollapsed => !isCollapsed);
+    }, []);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -409,88 +454,56 @@ const DeckEditor: React.FC = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleNextSlide, handlePrevSlide, toggleSidebar]);
 
-
     if (!deck || !selectedSlide) {
         return <div className="p-8">Loading deck...</div>;
     }
     
-    const selectedSlideIndex = deck.slides.findIndex(s => s.id === selectedSlide.id);
+    const contextValue: DeckEditorContextType = {
+        deck, selectedSlide, isGeneratingImage, isEditingImage, imageError, isCopilotLoading,
+        isAnalyzing, analysisResult, isResearching, researchResult, isSuggestingLayout, layoutError,
+        isSuggestingChart, chartError, isGeneratingRoadmap, headlineIdeas, isGeneratingHeadlines,
+        headlineError, extractedMetrics, isExtractingMetrics, metricError, isGeneratingTable, tableError,
+        isSuggestingPieChart, pieChartError, copilotSuggestions, imageSuggestions, researchSuggestions,
+        areSuggestionsLoading, handleSlideSelect, handleTitleSave, handleGenerateRoadmapSlide,
+        handleGenerateImage, handleEditImage, handleCopilotGenerate, handleAnalyzeSlide, handleResearch,
+        handleSuggestLayout, handleSuggestChart, handleGenerateHeadlines, handleExtractMetrics,
+        handleMarketResearch, handleGenerateTable, handleCompetitorResearch, handleSummarizeBio,
+        handleSuggestPieChart, handleSocialProofSearch
+    };
 
     return (
-        <div className="flex h-screen bg-[#FBF8F5] overflow-hidden text-gray-800">
-             <SlideOutline
-                deckId={deck.id}
-                deckTitle={deck.title}
-                slides={deck.slides}
-                template={deck.template}
-                selectedSlideId={selectedSlide.id}
-                onSlideSelect={handleSlideSelect}
-                onTitleSave={handleTitleSave}
-                onGenerateRoadmapSlide={handleGenerateRoadmapSlide}
-                isGeneratingRoadmap={isGeneratingRoadmap}
-                isCollapsed={isSidebarCollapsed}
-            />
-            <div className="flex-1 flex flex-col relative">
-                 <button 
-                    onClick={toggleSidebar}
-                    className="absolute top-4 -left-4 z-20 p-2 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 shadow-sm hover:bg-gray-100 transition-all"
-                    aria-label="Toggle sidebar"
-                    aria-expanded={!isSidebarCollapsed}
-                >
-                    {isSidebarCollapsed ? <PanelLeftOpenIcon /> : <PanelLeftCloseIcon />}
-                 </button>
-                 <EditorPanel
-                    deck={deck}
-                    selectedSlide={selectedSlide}
-                    selectedSlideIndex={selectedSlideIndex}
-                    totalSlides={deck.slides.length}
-                    // Pass all state and handlers
-                    isGeneratingImage={isGeneratingImage}
-                    isEditingImage={isEditingImage}
-                    imageError={imageError}
-                    isCopilotLoading={isCopilotLoading}
-                    isAnalyzing={isAnalyzing}
-                    analysisResult={analysisResult}
-                    isResearching={isResearching}
-                    researchResult={researchResult}
-                    isSuggestingLayout={isSuggestingLayout}
-                    layoutError={layoutError}
-                    isSuggestingChart={isSuggestingChart}
-                    chartError={chartError}
-                    areSuggestionsLoading={areSuggestionsLoading}
-                    copilotSuggestions={copilotSuggestions}
-                    imageSuggestions={imageSuggestions}
-                    researchSuggestions={researchSuggestions}
-                    handleGenerateImage={handleGenerateImage}
-                    handleEditImage={handleEditImage}
-                    handleCopilotGenerate={handleCopilotGenerate}
-                    handleAnalyzeSlide={handleAnalyzeSlide}
-                    handleResearch={handleResearch}
-                    handleSuggestLayout={handleSuggestLayout}
-                    handleSuggestChart={handleSuggestChart}
-                    onPrevSlide={handlePrevSlide}
-                    onNextSlide={handleNextSlide}
-                    // New props for enhancements
-                    headlineIdeas={headlineIdeas}
-                    isGeneratingHeadlines={isGeneratingHeadlines}
-                    headlineError={headlineError}
-                    handleGenerateHeadlines={handleGenerateHeadlines}
-                    extractedMetrics={extractedMetrics}
-                    isExtractingMetrics={isExtractingMetrics}
-                    metricError={metricError}
-                    handleExtractMetrics={handleExtractMetrics}
-                    handleMarketResearch={handleMarketResearch}
-                    isGeneratingTable={isGeneratingTable}
-                    tableError={tableError}
-                    handleGenerateTable={handleGenerateTable}
-                    handleCompetitorResearch={handleCompetitorResearch}
-                    handleSummarizeBio={handleSummarizeBio}
-                    isSuggestingPieChart={isSuggestingPieChart}
-                    pieChartError={pieChartError}
-                    handleSuggestPieChart={handleSuggestPieChart}
-                />
+        <DeckEditorContext.Provider value={contextValue}>
+            <div className="flex flex-col lg:flex-row h-full w-full bg-[#FBF8F5] text-gray-800">
+                <div className="hidden lg:flex flex-shrink-0">
+                  <SlideOutline
+                      deckId={deck.id}
+                      deckTitle={deck.title}
+                      slides={deck.slides}
+                      template={deck.template}
+                      selectedSlideId={selectedSlide.id}
+                      onSlideSelect={handleSlideSelect}
+                      onTitleSave={handleTitleSave}
+                      onGenerateRoadmapSlide={handleGenerateRoadmapSlide}
+                      isGeneratingRoadmap={isGeneratingRoadmap}
+                      isCollapsed={isSidebarCollapsed}
+                  />
+                </div>
+                <div className="flex-1 flex flex-col relative">
+                    <button 
+                        onClick={toggleSidebar}
+                        className="absolute top-4 -left-4 z-20 p-2 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200 shadow-sm hover:bg-gray-100 transition-all hidden lg:flex"
+                        aria-label="Toggle sidebar"
+                        aria-expanded={!isSidebarCollapsed}
+                    >
+                        {isSidebarCollapsed ? <PanelLeftOpenIcon /> : <PanelLeftCloseIcon />}
+                    </button>
+                    <EditorPanel
+                        onPrevSlide={handlePrevSlide}
+                        onNextSlide={handleNextSlide}
+                    />
+                </div>
             </div>
-        </div>
+        </DeckEditorContext.Provider>
     );
 };
 
