@@ -21,9 +21,9 @@ const Sitemap: React.FC = () => {
     { path: '/pitch-decks', name: 'Pitch Decks Hub', description: 'Main hub for managing pitch decks.' },
     { path: '/pitch-decks/new', name: 'New Deck Wizard', description: 'Start the guided process to create a new presentation.' },
     { path: '/pitch-decks/generating', name: 'Generating Screen', description: 'Intermediate screen shown while the AI creates your deck.' },
-    { path: '/pitch-decks/mock-deck-123/edit', name: 'Deck Editor', description: 'The core editor for a specific deck.' },
-    { path: '/pitch-decks/mock-deck-123/present', name: 'Presentation View', description: 'The full-screen presentation mode for a deck.' },
-    { path: '/pitch-decks/mock-deck-123/publish-success', name: 'Publish Success', description: 'Confirmation screen after publishing a deck.' },
+    { path: '/pitch-decks/:id/edit', name: 'Deck Editor', description: 'The core editor for a specific deck.' },
+    { path: '/pitch-decks/:id/present', name: 'Presentation View', description: 'The full-screen presentation mode for a deck.' },
+    { path: '/pitch-decks/:id/publish-success', name: 'Publish Success', description: 'Confirmation screen after publishing a deck.' },
     { path: '/dashboard/my-events', name: 'My Events', description: "The user's personal event dashboard." },
     { path: '/dashboard/events/new', name: 'New Event Wizard', description: 'The new wizard for creating a community event.' },
   ];
@@ -37,7 +37,7 @@ const Sitemap: React.FC = () => {
      <ul className="space-y-4">
         {routes.map((route) => (
           <li key={route.path}>
-            <Link to={route.path.includes('mock') ? '#' : route.path} className={`font-bold ${route.path.includes('mock') ? 'text-gray-400 cursor-not-allowed' : 'text-[#E87C4D] hover:underline'}`}>
+            <Link to={route.path.includes(':id') ? '#' : route.path} className={`font-bold ${route.path.includes(':id') ? 'text-gray-400 cursor-not-allowed' : 'text-[#E87C4D] hover:underline'}`}>
               {route.name} <code className="text-sm font-mono bg-gray-100 p-1 rounded-md">{route.path}</code>
             </Link>
             <p className="text-gray-600 ml-4">{route.description}</p>
