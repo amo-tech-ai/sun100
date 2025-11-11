@@ -10,8 +10,6 @@ const Signup: React.FC = () => {
         e.preventDefault();
         // Mock authentication
         if (email && password) {
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userEmail', email);
             navigate('/dashboard');
         }
     };

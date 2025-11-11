@@ -8,11 +8,20 @@ const Sitemap: React.FC = () => {
     { path: '/privacy', name: 'Privacy Policy', description: 'Information on data handling.' },
     { path: '/about', name: 'About', description: 'Information about the Sun AI community.' },
     { path: '/perks', name: 'Perks', description: 'List of available perks for members.' },
+    { path: '/perks/:id', name: 'Perk Detail', description: 'Details for a specific perk.' },
     { path: '/events', name: 'Events', description: 'List of upcoming community events.' },
+    { path: '/events/:id', name: 'Event Detail', description: 'Details for a specific event.' },
     { path: '/jobs', name: 'Jobs', description: 'Career board for AI startups.' },
+    { path: '/jobs/:id', name: 'Job Detail', description: 'Details for a specific job.' },
     { path: '/how-it-works', name: 'How It Works', description: 'Explanation of the community platform.' },
     { path: '/blogs', name: 'Blogs', description: 'Community blog and articles.' },
+    { path: '/blogs/:id', name: 'Blog Detail', description: 'A single blog post.' },
     { path: '/services', name: 'Services', description: 'Overview of agency service offerings.' },
+    { path: '/services/web-design', name: 'Web Design Service', description: 'Detail page for web design services.' },
+    { path: '/services/logo-branding', name: 'Logo & Branding Service', description: 'Detail page for branding services.' },
+    { path: '/services/mvp-development', name: 'MVP Development Service', description: 'Detail page for MVP development.' },
+    { path: '/login', name: 'Login', description: 'User login page.' },
+    { path: '/signup', name: 'Sign Up', description: 'User registration page.' },
   ];
   
   const appRoutes = [

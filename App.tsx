@@ -37,6 +37,9 @@ const Services = lazy(() => import('./screens/Services'));
 const WebDesign = lazy(() => import('./screens/WebDesign'));
 const LogoBranding = lazy(() => import('./screens/LogoBranding'));
 const MvpDevelopment = lazy(() => import('./screens/MvpDevelopment'));
+const Login = lazy(() => import('./screens/Login'));
+const Signup = lazy(() => import('./screens/Signup'));
+
 
 // --- Restored App Screens ---
 const StartupWizard = lazy(() => import('./screens/StartupWizard'));
@@ -77,8 +80,8 @@ const App: React.FC = () => {
             <Route path="/services/logo-branding" element={<LogoBranding />} />
             <Route path="/services/mvp-development" element={<MvpDevelopment />} />
             {/* Redirect auth pages to the dashboard for development */}
-            <Route path="/login" element={<Navigate to="/dashboard" />} />
-            <Route path="/signup" element={<Navigate to="/dashboard" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
           </Route>
 
           {/* --- App Routes (No longer protected for dev) --- */}
