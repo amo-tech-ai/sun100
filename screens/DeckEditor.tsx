@@ -137,30 +137,21 @@ const DeckEditor: React.FC = () => {
         const fetchInitialDeck = async () => {
             setLoading(true);
             try {
-                // 1. Try to load from sessionStorage
-                const storedDeckJson = sessionStorage.getItem(`deck-${id}`);
-                if (storedDeckJson) {
-                    const storedDeck = JSON.parse(storedDeckJson);
-                    setDeck(storedDeck);
-                    if (storedDeck.slides && storedDeck.slides.length > 0) {
-                        setSelectedSlide(storedDeck.slides[0]);
-                    }
-                    return; // Successfully loaded from session
-                }
-
-                // 2. If not found, fetch from the service
                 const fetchedDeck = await getDeckById(id);
                 if (fetchedDeck) {
                     setDeck(fetchedDeck);
                     if (fetchedDeck.slides && fetchedDeck.slides.length > 0) {
                         setSelectedSlide(fetchedDeck.slides[0]);
+                    } else {
+                        // Handle case with a deck but no slides
+                        setSelectedSlide(null);
                     }
                 } else {
                     navigate('/404');
                 }
             } catch (err) {
                 console.error("Error loading deck:", err);
-                // Handle error display for the user
+                navigate('/404'); // Or show an error page
             } finally {
                 setLoading(false);
             }
@@ -168,13 +159,6 @@ const DeckEditor: React.FC = () => {
 
         fetchInitialDeck();
     }, [id, navigate]);
-
-    // Save deck to sessionStorage whenever it changes
-    useEffect(() => {
-        if (deck && id) {
-            sessionStorage.setItem(`deck-${id}`, JSON.stringify(deck));
-        }
-    }, [deck, id]);
 
     useEffect(() => {
         if (!selectedSlide) return;
@@ -542,10 +526,21 @@ const DeckEditor: React.FC = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleNextSlide, handlePrevSlide, toggleSidebar]);
 
-    if (loading || !deck || !selectedSlide) {
+    if (loading) {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-[#FBF8F5]">
                 <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-[#E87C4D]"></div>
+            </div>
+        );
+    }
+    
+    if (!deck || !selectedSlide) {
+         return (
+            <div className="flex h-screen w-full items-center justify-center bg-[#FBF8F5] text-center">
+                <div>
+                    <h2 className="text-2xl font-bold text-brand-blue">Deck loaded, but no slide selected.</h2>
+                    <p className="text-gray-600">Please select a slide from the outline to begin editing.</p>
+                </div>
             </div>
         );
     }

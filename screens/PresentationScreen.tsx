@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { mockDeck, Deck } from '../data/decks';
+import { Deck } from '../data/decks';
+import { getDeckById } from '../services/deckService';
 import { templates } from '../styles/templates';
 import Chart from '../components/Chart';
 import Table from '../components/Table'; // Import Table component
@@ -25,14 +26,37 @@ const PresentationScreen: React.FC = () => {
     const { deck: deckFromState } = location.state || {};
     
     const [deck, setDeck] = useState<Deck | null>(null);
+    const [loading, setLoading] = useState(true);
     const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
     useEffect(() => {
-        const storedDeckJson = sessionStorage.getItem(`deck-${id}`);
-        const storedDeck = storedDeckJson ? JSON.parse(storedDeckJson) : null;
-        const deckToLoad = deckFromState || storedDeck || mockDeck;
-        setDeck(deckToLoad);
-    }, [id, deckFromState]);
+        const loadDeck = async () => {
+            setLoading(true);
+            if (deckFromState) {
+                setDeck(deckFromState);
+                setLoading(false);
+                return;
+            }
+
+            if (id) {
+                try {
+                    const fetchedDeck = await getDeckById(id);
+                    if (fetchedDeck) {
+                        setDeck(fetchedDeck);
+                    } else {
+                        navigate('/404');
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch presentation deck:", error);
+                    navigate(`/pitch-decks/${id}/edit`); // Go back to editor on failure
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+        
+        loadDeck();
+    }, [id, deckFromState, navigate]);
 
     const handlePrev = useCallback(() => {
         if (!deck) return;
@@ -80,10 +104,10 @@ const PresentationScreen: React.FC = () => {
     }, [deck, currentSlideIndex]);
 
 
-    if (!deck) {
+    if (loading || !deck) {
         return (
             <div className="bg-gray-900 text-white h-screen w-screen flex items-center justify-center">
-                <p>Loading Presentation...</p>
+                 <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-white/50"></div>
             </div>
         );
     }
