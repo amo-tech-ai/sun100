@@ -133,25 +133,48 @@ const DeckEditor: React.FC = () => {
 
     useEffect(() => {
         if (!id) return;
-        setLoading(true);
-        getDeckById(id)
-            .then(fetchedDeck => {
+
+        const fetchInitialDeck = async () => {
+            setLoading(true);
+            try {
+                // 1. Try to load from sessionStorage
+                const storedDeckJson = sessionStorage.getItem(`deck-${id}`);
+                if (storedDeckJson) {
+                    const storedDeck = JSON.parse(storedDeckJson);
+                    setDeck(storedDeck);
+                    if (storedDeck.slides && storedDeck.slides.length > 0) {
+                        setSelectedSlide(storedDeck.slides[0]);
+                    }
+                    return; // Successfully loaded from session
+                }
+
+                // 2. If not found, fetch from the service
+                const fetchedDeck = await getDeckById(id);
                 if (fetchedDeck) {
                     setDeck(fetchedDeck);
                     if (fetchedDeck.slides && fetchedDeck.slides.length > 0) {
                         setSelectedSlide(fetchedDeck.slides[0]);
                     }
                 } else {
-                    // Handle deck not found, maybe navigate away
                     navigate('/404');
                 }
-            })
-            .catch(err => {
-                console.error("Error fetching deck:", err);
-                // Handle error display
-            })
-            .finally(() => setLoading(false));
+            } catch (err) {
+                console.error("Error loading deck:", err);
+                // Handle error display for the user
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchInitialDeck();
     }, [id, navigate]);
+
+    // Save deck to sessionStorage whenever it changes
+    useEffect(() => {
+        if (deck && id) {
+            sessionStorage.setItem(`deck-${id}`, JSON.stringify(deck));
+        }
+    }, [deck, id]);
 
     useEffect(() => {
         if (!selectedSlide) return;

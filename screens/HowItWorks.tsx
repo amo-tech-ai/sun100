@@ -18,7 +18,7 @@ const StepIcon: React.FC<{ icon: React.ReactNode; title: string; description: st
 
 const HowItWorks: React.FC = () => {
     return (
-        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md max-w-4xl mx-auto">
+        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md">
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold text-gray-800">How It Works</h1>
                 <p className="text-xl text-gray-600 mt-4">Transform your idea into a professional pitch deck in three simple steps.</p>

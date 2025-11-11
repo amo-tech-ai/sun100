@@ -29,7 +29,7 @@ const Blogs: React.FC = () => {
         : mockPosts.filter(post => post.category === selectedCategory);
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div>
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold text-gray-800">From the Blog</h1>
                 <p className="text-xl text-gray-600 mt-4">Insights on startups, AI, and presentation design from the sun ai startup team.</p>

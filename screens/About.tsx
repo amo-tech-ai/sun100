@@ -10,7 +10,7 @@ const TeamMember: React.FC<{ name: string; title: string; imageUrl: string; }> =
 
 const About: React.FC = () => {
     return (
-        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md max-w-4xl mx-auto">
+        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md">
             <div className="text-center">
                 <h1 className="text-4xl font-bold text-gray-800">Our Mission</h1>
                 <p className="text-xl text-gray-600 mt-4 max-w-3xl mx-auto">

@@ -49,6 +49,7 @@ const Sitemap: React.FC = () => {
     { path: '/pitch-decks/:id/publish-success', name: 'Publish Success', description: 'Confirmation screen after publishing a deck.' },
     { path: '/dashboard/my-events', name: 'My Events', description: "The user's personal event dashboard." },
     { path: '/dashboard/events/new', name: 'New Event Wizard', description: 'The new wizard for creating a community event.' },
+    { path: '/dashboard/video-generator', name: 'Video Generator', description: 'Tool for generating videos with the Veo AI model.' },
   ];
 
   const utilityRoutes = [

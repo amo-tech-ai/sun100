@@ -36,6 +36,7 @@ These routes are intended for logged-in users and are wrapped in the main applic
 -   **`/dashboard/startup-wizard`**: `StartupWizard.tsx` - The wizard for creating a startup profile.
 -   **`/dashboard/my-events`**: `MyEvents.tsx` - The user's personal event dashboard.
 -   **`/dashboard/events/new`**: `EventWizard.tsx` - The new wizard for creating a community event.
+-   **`/dashboard/video-generator`**: `VideoGenerator.tsx` - The tool for generating videos with AI.
 -   **`/dashboard/sitemap`**: `Sitemap.tsx` - A developer-facing page that visualizes this sitemap.
 
 ### Pitch Deck Specific Routes (`/pitch-decks`)
