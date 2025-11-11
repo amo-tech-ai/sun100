@@ -29,6 +29,28 @@ const Landing: React.FC = () => {
                     </div>
                 </div>
             </div>
+             <div className="py-16">
+                <div className="text-center">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-8">Explore Our Platform</h2>
+                    <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                            <h3 className="text-xl font-semibold mb-3">How It Works</h3>
+                            <p className="text-gray-600 mb-4">Learn about our intelligent, multi-step process for generating pitch decks.</p>
+                            <Link to="/how-it-works" className="font-semibold text-[#E87C4D] hover:underline">Learn More &rarr;</Link>
+                        </div>
+                        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                            <h3 className="text-xl font-semibold mb-3">Our Services</h3>
+                            <p className="text-gray-600 mb-4">Beyond our AI tool, discover the bespoke services our agency offers.</p>
+                            <Link to="/services" className="font-semibold text-[#E87C4D] hover:underline">View Services &rarr;</Link>
+                        </div>
+                        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                            <h3 className="text-xl font-semibold mb-3">From the Blog</h3>
+                            <p className="text-gray-600 mb-4">Read our latest insights on startups, AI, and presentation design.</p>
+                            <Link to="/blogs" className="font-semibold text-[#E87C4D] hover:underline">Read Now &rarr;</Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </>
     );
 };
