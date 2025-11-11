@@ -40,7 +40,7 @@ const GeneratingScreen: React.FC = () => {
                 // Persist the generated deck to session storage to prevent data loss on refresh
                 sessionStorage.setItem(`deck-${newDeck.id}`, JSON.stringify(newDeck));
                 
-                navigate(`/dashboard/decks/${newDeck.id}/edit`, { state: { generatedDeck: newDeck } });
+                navigate(`/pitch-decks/${newDeck.id}/edit`, { state: { generatedDeck: newDeck } });
             } catch (err) {
                 setError(err instanceof Error ? err.message : "An unknown error occurred.");
             }
@@ -61,7 +61,7 @@ const GeneratingScreen: React.FC = () => {
                     <h1 className="text-2xl font-bold text-red-600 mb-4">Generation Failed</h1>
                     <p className="text-gray-600 mb-6">{error}</p>
                     <button 
-                        onClick={() => navigate('/dashboard/new')}
+                        onClick={() => navigate('/pitch-decks/new')}
                         className="bg-[#E87C4D] text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90"
                     >
                         Try Again

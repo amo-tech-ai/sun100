@@ -11,7 +11,7 @@ const Dashboard: React.FC = () => {
           Ready to create a compelling pitch deck? Start by clicking the button below to launch the guided wizard.
         </p>
         <Link
-          to="/dashboard/new"
+          to="/pitch-decks/new"
           className="inline-block w-full sm:w-auto bg-[#E87C4D] text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors duration-200 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E87C4D]"
         >
           Create New Deck

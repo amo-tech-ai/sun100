@@ -12,9 +12,9 @@ const WizardSteps: React.FC = () => {
 
   const handleGenerate = () => {
     if (activeTab === 'context' && companyDetails.trim().length > 0) {
-      navigate('/dashboard/generating', { state: { companyDetails } });
+      navigate('/pitch-decks/generating', { state: { companyDetails } });
     } else if (activeTab === 'url' && urls.length > 0) {
-      navigate('/dashboard/generating', { state: { urls } });
+      navigate('/pitch-decks/generating', { state: { urls } });
     }
   };
 

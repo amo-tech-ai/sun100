@@ -58,7 +58,7 @@ const PresentationScreen: React.FC = () => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'ArrowRight' || e.key === ' ') handleNext();
             else if (e.key === 'ArrowLeft') handlePrev();
-            else if (e.key === 'Escape') navigate(`/dashboard/decks/${id}/edit`);
+            else if (e.key === 'Escape') navigate(`/pitch-decks/${id}/edit`);
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
@@ -95,7 +95,7 @@ const PresentationScreen: React.FC = () => {
         <div className="bg-gray-900 text-white h-screen w-screen flex flex-col items-center justify-center relative p-4 select-none">
             <div className="absolute top-4 right-4 z-20">
                 <button
-                    onClick={() => navigate(`/dashboard/decks/${id}/edit`)}
+                    onClick={() => navigate(`/pitch-decks/${id}/edit`)}
                     className="bg-gray-700 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors text-sm opacity-80 hover:opacity-100"
                 >
                     Exit (Esc)
