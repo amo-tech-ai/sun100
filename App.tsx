@@ -13,6 +13,7 @@ import Landing from './screens/Landing';
 import Terms from './screens/Terms';
 import Privacy from './screens/Privacy';
 import NotFound from './screens/NotFound';
+import Sitemap from './screens/Sitemap';
 
 // App Screens
 import Dashboard from './screens/Dashboard';
@@ -53,10 +54,11 @@ const App: React.FC = () => {
           {/* --- App Routes (No longer protected for dev) --- */}
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/pitch-deck" element={<WizardSteps />} />
-            <Route path="/pitch-deck/generating" element={<GeneratingScreen />} />
+            <Route path="/dashboard/new" element={<WizardSteps />} />
+            <Route path="/dashboard/generating" element={<GeneratingScreen />} />
             <Route path="/dashboard/decks/:id/edit" element={<DeckEditor />} />
             <Route path="/dashboard/decks/:id/publish-success" element={<PublishSuccessScreen />} />
+            <Route path="/dashboard/sitemap" element={<Sitemap />} />
           </Route>
 
           {/* --- Full-screen Route (No longer protected for dev) --- */}

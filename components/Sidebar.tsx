@@ -37,13 +37,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             <nav className="flex-1 px-4 py-4 space-y-2">
                 <NavLink
                     to="/dashboard"
+                    end
                     className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
                 >
                     <HomeIcon />
                     {!isCollapsed && <span className="ml-3 font-semibold">Dashboard</span>}
                 </NavLink>
                 <NavLink
-                    to="/pitch-deck"
+                    to="/dashboard/new"
                     className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
                 >
                     <PlusIcon />
