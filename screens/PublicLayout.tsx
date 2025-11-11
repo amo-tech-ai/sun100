@@ -25,7 +25,7 @@ const PublicLayout: React.FC = () => {
                     <div className="flex justify-between items-center h-20">
                         <Link to="/" className="flex items-center gap-2">
                             <SunIcon />
-                            <span className="font-bold text-2xl">Sun AI</span>
+                            <span className="font-bold text-2xl">sun ai startup</span>
                         </Link>
                         <nav className="hidden md:flex items-center space-x-6">
                             {navLinks.map(link => (
@@ -91,7 +91,7 @@ const PublicLayout: React.FC = () => {
                         </div>
                     </div>
                     <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center">
-                        <p className="text-gray-500">&copy; {new Date().getFullYear()} Sun AI. Empowering founders through intelligent design.</p>
+                        <p className="text-gray-500">&copy; {new Date().getFullYear()} sun ai startup. Empowering founders through intelligent design.</p>
                         <div className="flex space-x-6 mt-4 sm:mt-0">
                            {/* Social Icons Placeholder */}
                         </div>

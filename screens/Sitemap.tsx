@@ -13,7 +13,7 @@ const Sitemap: React.FC = () => {
     { path: '/', name: 'Landing Page', description: 'Public-facing homepage for the application.' },
     { path: '/terms', name: 'Terms of Service', description: 'Legal terms and conditions.' },
     { path: '/privacy', name: 'Privacy Policy', description: 'Information on data handling.' },
-    { path: '/about', name: 'About', description: 'Information about the Sun AI community.' },
+    { path: '/about', name: 'About', description: 'Information about the sun ai startup community.' },
     { path: '/perks', name: 'Perks', description: 'List of available perks for members.' },
     { path: '/perks/:id', name: 'Perk Detail', description: 'Details for a specific perk.' },
     { path: '/events', name: 'Events', description: 'List of upcoming community events.' },
@@ -28,6 +28,7 @@ const Sitemap: React.FC = () => {
     { path: '/services/web-design', name: 'Web Design Service', description: 'Detail page for web design services.' },
     { path: '/services/logo-branding', name: 'Logo & Branding Service', description: 'Detail page for branding services.' },
     { path: '/services/mvp-development', name: 'MVP Development Service', description: 'Detail page for MVP development.' },
+    { path: '/community/profile/:username', name: 'Founder Profile', description: 'Public profile page for a founder and their startup.' },
     { path: '/login', name: 'Login', description: 'User login page.' },
     { path: '/signup', name: 'Sign Up', description: 'User registration page.' },
     { path: '/sunaistartup-deck', name: 'Startup Deck Overview', description: 'Overview of the sponsorship program.' },
@@ -61,7 +62,7 @@ const Sitemap: React.FC = () => {
           <li key={route.path} className="border-l-4 border-green-500 pl-4 py-2">
             <div className="flex items-center justify-between">
               <div>
-                <Link to={route.path.includes(':id') ? '#' : route.path} className={`font-bold ${route.path.includes(':id') ? 'text-gray-400 cursor-not-allowed' : 'text-[#E87C4D] hover:underline'}`}>
+                <Link to={route.path.includes(':id') || route.path.includes(':username') ? '#' : route.path} className={`font-bold ${route.path.includes(':id') || route.path.includes(':username') ? 'text-gray-400 cursor-not-allowed' : 'text-[#E87C4D] hover:underline'}`}>
                   {route.name} <code className="text-sm font-mono bg-gray-100 p-1 rounded-md">{route.path}</code>
                 </Link>
                 <p className="text-gray-600 ml-4">{route.description}</p>

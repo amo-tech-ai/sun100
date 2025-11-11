@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             <div className={`h-20 flex items-center border-b border-gray-200 ${isCollapsed ? 'justify-center' : 'px-6'}`}>
                 <Link to="/" className="flex items-center gap-2">
                     <SunIcon />
-                    {!isCollapsed && <span className="font-bold text-xl">Sun AI</span>}
+                    {!isCollapsed && <span className="font-bold text-xl">sun ai startup</span>}
                 </Link>
             </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { mockDeck, Deck, Slide, ChartData, TableData } from '../data/decks';
+import { mockDeck, Deck, Slide } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
 import {
@@ -21,7 +21,7 @@ import {
     suggestPieChart,
     SlideAnalysis,
     ResearchResult,
-} from '../services/geminiService';
+} from '../services/apiService';
 
 
 // --- CONTEXT DEFINITION ---
@@ -74,6 +74,8 @@ interface DeckEditorContextType {
     handleSummarizeBio: () => void;
     handleSuggestPieChart: () => void;
     handleSocialProofSearch: () => void;
+    handlePrevSlide: () => void;
+    handleNextSlide: () => void;
 }
 
 const DeckEditorContext = createContext<DeckEditorContextType>(null!);
@@ -149,13 +151,14 @@ const DeckEditor: React.FC = () => {
     useEffect(() => {
         if (!selectedSlide) return;
 
-        const fetchSuggestions = async () => {
+        const fetchSuggestionsForSlide = async () => {
             setAreSuggestionsLoading(true);
             setCopilotSuggestions([]);
             setImageSuggestions([]);
             setResearchSuggestions([]);
             
             try {
+                // Now calling the new apiService
                 const { copilotSuggestions, imageSuggestions, researchSuggestions } = await fetchAllSuggestions(selectedSlide);
                 setCopilotSuggestions(copilotSuggestions);
                 setImageSuggestions(imageSuggestions);
@@ -167,7 +170,7 @@ const DeckEditor: React.FC = () => {
             }
         };
 
-        fetchSuggestions();
+        fetchSuggestionsForSlide();
     }, [selectedSlide]);
 
     const handleSlideSelect = useCallback((slide: Slide) => {
@@ -204,6 +207,7 @@ const DeckEditor: React.FC = () => {
         setIsGeneratingRoadmap(true);
         try {
             const companyContext = deck.slides[0]?.content || deck.title;
+            // Now calling the new apiService
             const newSlide = await generateRoadmapSlide(companyContext, deck.template);
             
             const updatedSlides = [...deck.slides, newSlide];
@@ -227,6 +231,7 @@ const DeckEditor: React.FC = () => {
         setImageError(null);
         try {
             const imagePrompt = (typeof selectedSlide.imageUrl === 'string' && !selectedSlide.imageUrl.startsWith('data:image')) ? selectedSlide.imageUrl : undefined;
+            // Now calling the new apiService
             const newBase64Data = await generateSlideImage(selectedSlide.title, selectedSlide.content, imagePrompt);
             updateSlide(selectedSlide.id, { imageUrl: `data:image/png;base64,${newBase64Data}` });
         } catch (err) {
@@ -248,6 +253,7 @@ const DeckEditor: React.FC = () => {
             if (!imageParts || imageParts.length !== 3) throw new Error("Invalid image format.");
             const mimeType = imageParts[1];
             const base64Data = imageParts[2];
+            // Now calling the new apiService
             const newBase64Data = await editSlideImage(base64Data, mimeType, prompt);
             updateSlide(selectedSlide.id, { imageUrl: `data:${mimeType};base64,${newBase64Data}` });
         } catch (err) {
@@ -265,6 +271,7 @@ const DeckEditor: React.FC = () => {
             const titleToUse = newTitle || selectedSlide.title;
             const instruction = newTitle ? `Set the title to "${newTitle}" and keep the content.` : prompt;
             
+            // Now calling the new apiService
             const { newTitle: updatedTitle, newContent } = await modifySlideContent(titleToUse, contentToUse, instruction);
             const finalTitle = newTitle || updatedTitle;
 
@@ -281,6 +288,7 @@ const DeckEditor: React.FC = () => {
         setIsAnalyzing(true);
         setAnalysisResult(null);
         try {
+            // Now calling the new apiService
             const result = await analyzeSlide(selectedSlide.title, selectedSlide.content);
             setAnalysisResult(result);
         } catch (err) {
@@ -295,6 +303,7 @@ const DeckEditor: React.FC = () => {
         setIsResearching(true);
         setResearchResult(null);
         try {
+            // Now calling the new apiService
             const result = await researchTopic(query);
             setResearchResult(result);
         } catch (err) {
@@ -309,6 +318,7 @@ const DeckEditor: React.FC = () => {
         setIsSuggestingLayout(true);
         setLayoutError(null);
         try {
+            // Now calling the new apiService
             const newLayout = await suggestLayout(selectedSlide.title, selectedSlide.content);
             updateSlide(selectedSlide.id, { template: newLayout });
         } catch (err) {
@@ -324,6 +334,7 @@ const DeckEditor: React.FC = () => {
         setIsSuggestingChart(true);
         setChartError(null);
         try {
+            // Now calling the new apiService
             const chartData = await suggestChart(selectedSlide.title, selectedSlide.content);
             updateSlide(selectedSlide.id, { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined });
         } catch (err) {
@@ -340,6 +351,7 @@ const DeckEditor: React.FC = () => {
         setHeadlineError(null);
         setHeadlineIdeas([]);
         try {
+            // Now calling the new apiService
             const ideas = await generateHeadlineVariations(selectedSlide.title);
             setHeadlineIdeas(ideas);
         } catch (err) {
@@ -355,6 +367,7 @@ const DeckEditor: React.FC = () => {
         setMetricError(null);
         setExtractedMetrics([]);
         try {
+            // Now calling the new apiService
             const metrics = await extractMetrics(selectedSlide.content);
             setExtractedMetrics(metrics);
         } catch (err) {
@@ -376,6 +389,7 @@ const DeckEditor: React.FC = () => {
         setIsGeneratingTable(true);
         setTableError(null);
         try {
+            // Now calling the new apiService
             const tableData = await generatePricingTable(selectedSlide.content);
             updateSlide(selectedSlide.id, { content: '', tableData, chartData: undefined });
         } catch (err) {
@@ -399,6 +413,7 @@ const DeckEditor: React.FC = () => {
         if (!selectedSlide) return;
         setIsCopilotLoading(true);
         try {
+            // Now calling the new apiService
             const { summary, highlights } = await summarizeBio(selectedSlide.content);
             const newContent = `${summary}\n\n**Key Highlights:**\n- ${highlights.join('\n- ')}`;
             await handleCopilotGenerate(`Replace the content with the following summary:\n${newContent}`);
@@ -414,6 +429,7 @@ const DeckEditor: React.FC = () => {
         setIsSuggestingPieChart(true);
         setPieChartError(null);
         try {
+            // Now calling the new apiService
             const chartData = await suggestPieChart(selectedSlide.content);
             updateSlide(selectedSlide.id, { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined });
         } catch (err) {
@@ -509,7 +525,7 @@ const DeckEditor: React.FC = () => {
         handleGenerateImage, handleEditImage, handleCopilotGenerate, handleAnalyzeSlide, handleResearch,
         handleSuggestLayout, handleSuggestChart, handleGenerateHeadlines, handleExtractMetrics,
         handleMarketResearch, handleGenerateTable, handleCompetitorResearch, handleSummarizeBio,
-        handleSuggestPieChart, handleSocialProofSearch
+        handleSuggestPieChart, handleSocialProofSearch, handlePrevSlide, handleNextSlide
     };
 
     return (
@@ -541,10 +557,7 @@ const DeckEditor: React.FC = () => {
                     >
                         {isSidebarCollapsed ? <PanelLeftOpenIcon /> : <PanelLeftCloseIcon />}
                     </button>
-                    <EditorPanel
-                        onPrevSlide={handlePrevSlide}
-                        onNextSlide={handleNextSlide}
-                    />
+                    <EditorPanel />
                 </div>
             </div>
         </DeckEditorContext.Provider>

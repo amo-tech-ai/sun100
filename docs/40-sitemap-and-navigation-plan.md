@@ -3,7 +3,7 @@
 
 **Document Status:** Published - 2024-08-17 (Revised & Approved)
 **Author:** Senior UX Architect & Product Strategist
-**Goal:** To provide a comprehensive, production-ready sitemap and navigation plan that evolves the Sun AI Pitch Deck Engine from a core functional tool into a complete, user-friendly, and commercially viable platform.
+**Goal:** To provide a comprehensive, production-ready sitemap and navigation plan that evolves the sun ai startup platform from a core functional tool into a complete, user-friendly, and commercially viable platform.
 
 ---
 

@@ -40,6 +40,7 @@ const MvpDevelopment = lazy(() => import('./screens/MvpDevelopment'));
 const Login = lazy(() => import('./screens/Login'));
 const Signup = lazy(() => import('./screens/Signup'));
 const BusinessModel = lazy(() => import('./screens/BusinessModel'));
+const FounderProfile = lazy(() => import('./screens/FounderProfile'));
 
 
 // --- Renamed SunAIStartupDeck Screens ---
@@ -90,6 +91,7 @@ const App: React.FC = () => {
             <Route path="/services/web-design" element={<WebDesign />} />
             <Route path="/services/logo-branding" element={<LogoBranding />} />
             <Route path="/services/mvp-development" element={<MvpDevelopment />} />
+            <Route path="/community/profile/:username" element={<FounderProfile />} />
             {/* Redirect auth pages to the dashboard for development */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />

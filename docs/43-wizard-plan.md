@@ -1,6 +1,6 @@
 # 🚀 Strategic Plan: The Full-Stack Pitch Deck Wizard
 
-**Document Status:** Published - 2024-08-18
+**Document Status:** Published - 2024-08-18 (Revised for Custom Backend)
 **Author:** Lead Product Architect
 **Goal:** To provide a clear, easy-to-understand guide that explains the "why" behind the Pitch Deck Wizard's design. This document outlines the features, the technology choices, and the step-by-step plan to build a secure, intelligent, and production-ready tool.
 
@@ -22,9 +22,9 @@ To understand why this is important, let's use a real-world example.
 
 *   **Where We Are Going (Full-Stack Application):** This is like a **professional design studio with a secure vault**.
     1.  You submit your request at the front desk (the UI).
-    2.  The request is sent to a secure back office (our Supabase Edge Function).
+    2.  The request is sent to a secure back office (our custom backend on Google Cloud Run).
     3.  In the back office, we use our valuable tools (the secret Gemini API key) to create your design.
-    4.  The finished design (your pitch deck) is stored in your personal, secure vault (our Supabase Database).
+    4.  The finished design (your pitch deck) is stored in your personal, secure vault (our Cloud SQL Database).
     5.  You can log in from anywhere to access your saved work.
 
 This approach is the **best practice** because it's **secure** (secrets are never exposed), **scalable** (your data is safely stored), and **professional**.
@@ -64,8 +64,8 @@ This plan is currently being executed. Here is a high-level summary of what has 
 | Phase | Task | Status | Next Action |
 | :--- | :--- | :--- | :--- |
 | **1. UI Prototyping** | Build the user interface for the wizard, including the text area and URL input. | ✅ **Completed** | The components `WizardSteps.tsx` and `UrlInput.tsx` exist and are functional in a client-side context. |
-| **2. Backend Foundation** | Set up the secure "back office" and "vault." | 🔴 **Not Started** | Implement the Supabase schema (`decks`, `slides` tables) and create the secure `/generate-deck` Edge Function. |
-| **3. Full-Stack Connection** | Connect the frontend UI to the new backend. | 🔴 **Not Started** | Refactor `WizardSteps.tsx` to call the `/generate-deck` Edge Function instead of the client-side `geminiService`. |
-| **4. Polling & Completion** | Make the `GeneratingScreen` check the database for the finished deck. | 🔴 **Not Started** | Implement polling logic in `GeneratingScreen.tsx` to wait for the backend process to complete. |
+| **2. Backend Foundation** | Set up the secure "back office" and "vault." | 🔴 **Not Started** | Implement the Cloud SQL schema (`decks`, `slides` tables) and create the secure `/api/ai/generate-deck` endpoint in a Node.js application. |
+| **3. Full-Stack Connection** | Connect the frontend UI to the new backend. | 🔴 **Not Started** | Refactor `WizardSteps.tsx` to call the `/api/ai/generate-deck` backend endpoint instead of the client-side `geminiService`. |
+| **4. Polling & Completion** | Make the `GeneratingScreen` check the database for the finished deck. | 🔴 Not Started | Implement polling logic in `GeneratingScreen.tsx` to wait for the backend process to complete. |
 
 By following this strategic plan, we will successfully migrate the wizard from a powerful prototype into a secure, scalable, and commercially-ready feature that delivers immense value to our users.

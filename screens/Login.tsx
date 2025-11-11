@@ -16,8 +16,8 @@ const Login: React.FC = () => {
 
     return (
         <>
-            <title>Login - Sun AI</title>
-            <meta name="description" content="Log in to your Sun AI account." />
+            <title>Login - sun ai startup</title>
+            <meta name="description" content="Log in to your sun ai startup account." />
             <div className="bg-white p-6 md:p-10 rounded-lg shadow-md max-w-md mx-auto">
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-6 text-center">Log In</h1>
                 <form onSubmit={handleLogin} className="space-y-6">

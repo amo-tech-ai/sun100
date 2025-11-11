@@ -2,7 +2,7 @@
 
 **Document Status:** Planning - 2024-08-06
 
-This document provides a comprehensive set of diagrams illustrating the complete user journey, system architecture, and detailed AI agent workflows for the Sun AI Pitch Deck Engine. It visually represents the function-calling architecture that powers the application's intelligent features.
+This document provides a comprehensive set of diagrams illustrating the complete user journey, system architecture, and detailed AI agent workflows for the sun ai startup platform. It visually represents the function-calling architecture that powers the application's intelligent features.
 
 ---
 
@@ -169,7 +169,7 @@ sequenceDiagram
 
 ### 9. Overall System Architecture
 
-This diagram provides a master map of how all the components of the Sun AI Pitch Deck Engine interact.
+This diagram provides a master map of how all the components of the sun ai startup platform interact.
 
 ```mermaid
 graph TD

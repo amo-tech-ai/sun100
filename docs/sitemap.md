@@ -1,6 +1,6 @@
 # Application Sitemap
 
-This document outlines the routing structure of the Sun AI Pitch Deck Engine, organized by the layout components that wrap the routes. This reflects the architecture in `App.tsx`.
+This document outlines the routing structure of the sun ai startup platform, organized by the layout components that wrap the routes. This reflects the architecture in `App.tsx`.
 
 ---
 

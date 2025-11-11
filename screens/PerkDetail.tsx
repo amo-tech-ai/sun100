@@ -14,9 +14,9 @@ const PerkDetail: React.FC = () => {
                 </div>
             </div>
             <div className="prose prose-lg mt-6">
-                <p>This is placeholder content for perk #{id}. Eligible startups in the Sun AI community can receive up to $10,000 in AWS Activate credits to build and scale their business.</p>
+                <p>This is placeholder content for perk #{id}. Eligible startups in the sun ai startup community can receive up to $10,000 in AWS Activate credits to build and scale their business.</p>
                 <h3>How to Claim</h3>
-                <p>Click the button below and fill out the application form. You will need to provide your company details and your Sun AI community membership ID.</p>
+                <p>Click the button below and fill out the application form. You will need to provide your company details and your sun ai startup community membership ID.</p>
             </div>
              <button className="mt-8 inline-block bg-[#E87C4D] text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-colors duration-200">
                 Claim Perk

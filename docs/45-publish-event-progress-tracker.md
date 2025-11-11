@@ -1,6 +1,6 @@
 # 🚀 Progress Tracker: The "Publish Event" Flow
 
-**Document Status:** Planning - 2024-08-19 (Revised)
+**Document Status:** Planning - 2024-08-19 (Revised for Custom Backend)
 **Author:** Lead Full-Stack Architect
 **Goal:** To track the complete, end-to-end development of the "Publish Event" feature, ensuring all best practices from the engineering blueprint (`docs/44-publish-event-plan.md`) are implemented, tested, and validated.
 
@@ -48,20 +48,20 @@
 
 ## Phase 2: Secure Backend Endpoint
 
-**Goal:** To create the secure Supabase Edge Function that will orchestrate the entire publish workflow, ensuring all secret keys and business logic remain on the server.
+**Goal:** To create the secure backend endpoint (e.g., on Cloud Run) that will orchestrate the entire publish workflow, ensuring all secret keys and business logic remain on the server.
 
 | Task | Description | Status |
 | :--- | :--- | :--- |
-| **Create `/api/events/publish` Endpoint** | Initialize a new Supabase Edge Function that will serve as the single entry point for the publish action. | 🔴 Not Started |
+| **Create `/api/events/publish` Endpoint** | Initialize a new backend endpoint that will serve as the single entry point for the publish action. | 🔴 Not Started |
 | **Implement Authentication** | Secure the endpoint by requiring a valid user JWT. The function should reject any unauthenticated requests with a `401 Unauthorized` error. | 🔴 Not Started |
 | **Implement Server-Side Validation** | Reuse the shared Zod schema to validate the incoming event payload on the server. This is a critical security step to ensure data integrity. | 🔴 Not Started |
-| **Configure API Key as Secret** | Store the `GEMINI_API_KEY` as a Supabase secret and ensure the Edge Function can securely access it. The key must never be exposed to the client. | 🔴 Not Started |
+| **Configure API Key as Secret** | Store the `GEMINI_API_KEY` as a secret (e.g., in Google Secret Manager) and ensure the backend service can securely access it. The key must never be exposed to the client. | 🔴 Not Started |
 
 #### ✅ Success Criteria
 - The `/api/events/publish` endpoint is deployed and accessible.
 - Requests without a valid JWT are rejected with a `401` status.
 - Requests with a malformed payload are rejected with a `400` status due to Zod validation failure.
-- The Edge Function can successfully read the `GEMINI_API_KEY` from its environment secrets.
+- The backend service can successfully read the `GEMINI_API_KEY` from its environment secrets.
 
 #### 🧪 Testing
 - **Authentication Test:** Use `curl` to call the endpoint without an `Authorization` header and verify it returns a `401`.
@@ -70,7 +70,7 @@
 
 #### 📋 Production-Ready Checklist
 - [ ] **Security:** RLS policies are planned and will be applied to all database interactions within the function.
-- [ ] **Configuration:** The function's secrets are configured in `supabase/config.toml` for local development and in the Supabase dashboard for production.
+- [ ] **Configuration:** The service's secrets are configured for local development and in the cloud provider for production.
 - [ ] **Logging:** Basic logging is set up to capture the start and end of function invocations.
 
 ---
@@ -81,7 +81,7 @@
 
 | Task | Description | Status |
 | :--- | :--- | :--- |
-| **Implement Idempotency Check** | In the Edge Function, check for the `Idempotency-Key`. If the key has been seen before for a successful request, return the original `event_id` without processing again. | 🔴 Not Started |
+| **Implement Idempotency Check** | In the backend endpoint, check for the `Idempotency-Key`. If the key has been seen before for a successful request, return the original `event_id` without processing again. | 🔴 Not Started |
 | **Implement Atomic Database Transaction** | Wrap all database write operations (`INSERT`/`UPDATE` for events, tickets, etc.) within a single `BEGIN/COMMIT` transaction block. | 🔴 Not Started |
 | **Implement `ROLLBACK` on Error** | If any step within the transaction fails (e.g., a database error, an issue with an AI call), the entire transaction must be rolled back to prevent partial or corrupt data. | 🔴 Not Started |
 | **Generate Public Slug & URL** | After a successful commit, generate a unique, URL-friendly slug for the event and construct the final `public_url`. | 🔴 Not Started |
@@ -115,7 +115,7 @@
 
 #### ✅ Success Criteria
 - Events created without a cover image have a high-quality, AI-generated image assigned to them.
-- All event cover images in Supabase Storage are in WebP format and under a target file size (e.g., 300KB).
+- All event cover images in cloud storage are in WebP format and under a target file size (e.g., 300KB).
 - The public event page's HTML contains correct `og:title`, `og:description`, and `og:image` meta tags.
 - The `/publish` function completes successfully even if the `/emails.send` endpoint is slow or fails.
 
@@ -143,7 +143,7 @@
 | **Perform Accessibility & Performance Audit** | Run an automated accessibility check (`axe`) on the success screen. Measure the P95 latency of the publish endpoint to ensure it meets performance targets (≤ 5-10s). | 🔴 Not Started |
 
 #### ✅ Success Criteria
-- Logs for a successful publish event appear correctly in the Supabase Logflare dashboard.
+- Logs for a successful publish event appear correctly in the logging dashboard.
 - An `event_published` event is visible in the analytics platform.
 - The response headers for the public event page include the correct `Cache-Control` value.
 - The P95 latency for the publish endpoint is within the defined target.

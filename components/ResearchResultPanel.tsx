@@ -8,7 +8,6 @@ const ResearchResultPanel: React.FC = () => {
         researchResult, 
         researchSuggestions, 
         areSuggestionsLoading,
-        handleMarketResearch, 
         handleCompetitorResearch, 
         handleSocialProofSearch
     } = useDeckEditor();
@@ -57,9 +56,8 @@ const ResearchResultPanel: React.FC = () => {
             <div className="border-t border-gray-200 pt-3">
                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">One-Click Research</h4>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-                     <button onClick={handleMarketResearch} disabled={isResearching} className="text-sm text-center w-full bg-white border border-[#E87C4D] text-[#E87C4D] font-semibold py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors duration-200">Find Market Size</button>
                      <button onClick={handleCompetitorResearch} disabled={isResearching} className="text-sm text-center w-full bg-white border border-[#E87C4D] text-[#E87C4D] font-semibold py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors duration-200">Research Competitors</button>
-                     <button onClick={handleSocialProofSearch} disabled={isResearching} className="text-sm text-center w-full bg-white border border-[#E87C4D] text-[#E87C4D] font-semibold py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors duration-200 col-span-1 md:col-span-2">Find Social Proof</button>
+                     <button onClick={handleSocialProofSearch} disabled={isResearching} className="text-sm text-center w-full bg-white border border-[#E87C4D] text-[#E87C4D] font-semibold py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors duration-200">Find Social Proof</button>
                  </div>
                  <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Suggestions</h4>
                 {areSuggestionsLoading ? (
