@@ -156,7 +156,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, 
                     )}
                 </button>
                  <Link
-                    to={`/dashboard/decks/${deckId}/present`}
+                    to={`/pitch-decks/${deckId}/present`}
                     state={{deck: {id: deckId, title: deckTitle, slides: slides, template: template}}}
                     className="block w-full text-center bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
                 >
