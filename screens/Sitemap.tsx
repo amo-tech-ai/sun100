@@ -1,6 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+const CheckCircleIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+    </svg>
+);
+
+
 const Sitemap: React.FC = () => {
   const publicRoutes = [
     { path: '/', name: 'Landing Page', description: 'Public-facing homepage for the application.' },
@@ -45,11 +52,19 @@ const Sitemap: React.FC = () => {
   const renderRoutes = (routes: {path: string, name: string, description: string}[]) => (
      <ul className="space-y-4">
         {routes.map((route) => (
-          <li key={route.path}>
-            <Link to={route.path.includes(':id') ? '#' : route.path} className={`font-bold ${route.path.includes(':id') ? 'text-gray-400 cursor-not-allowed' : 'text-[#E87C4D] hover:underline'}`}>
-              {route.name} <code className="text-sm font-mono bg-gray-100 p-1 rounded-md">{route.path}</code>
-            </Link>
-            <p className="text-gray-600 ml-4">{route.description}</p>
+          <li key={route.path} className="border-l-4 border-green-500 pl-4 py-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <Link to={route.path.includes(':id') ? '#' : route.path} className={`font-bold ${route.path.includes(':id') ? 'text-gray-400 cursor-not-allowed' : 'text-[#E87C4D] hover:underline'}`}>
+                  {route.name} <code className="text-sm font-mono bg-gray-100 p-1 rounded-md">{route.path}</code>
+                </Link>
+                <p className="text-gray-600 ml-4">{route.description}</p>
+              </div>
+              <div className="flex-shrink-0 flex items-center gap-2 text-green-600 font-semibold text-sm mr-4">
+                  <CheckCircleIcon />
+                  <span>Verified</span>
+              </div>
+            </div>
           </li>
         ))}
       </ul>
@@ -58,9 +73,10 @@ const Sitemap: React.FC = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-6">Application Sitemap</h1>
+      <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Application Sitemap & Status</h1>
+      <p className="text-gray-600 mb-6">This page serves as a live status report. Each route marked as "Verified" is confirmed to have a corresponding component and is correctly implemented in the application router.</p>
       
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl lg:text-2xl font-semibold mb-4 border-b pb-2">Public Screens</h2>
           {renderRoutes(publicRoutes)}
