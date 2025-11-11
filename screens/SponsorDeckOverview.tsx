@@ -1,69 +1,9 @@
-import React, { useState, useEffect, useRef, forwardRef, ReactNode } from 'react';
+import React, { forwardRef, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-
-// Custom hook for detecting when an element is on screen
-const useOnScreen = (options: IntersectionObserverInit) => {
-    // FIX: Use a more generic HTMLElement for the ref, as it can be attached to sections, divs, etc.
-    const ref = useRef<HTMLElement>(null);
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) {
-                setIsVisible(true);
-                if(ref.current) {
-                    observer.unobserve(ref.current);
-                }
-            }
-        }, options);
-
-        if (ref.current) {
-            observer.observe(ref.current);
-        }
-
-        return () => {
-            if (ref.current) {
-                // eslint-disable-next-line react-hooks/exhaustive-deps
-                observer.unobserve(ref.current);
-            }
-        };
-    }, [options]);
-
-    return [ref, isVisible] as const;
-};
-
-const AnimatedCounter: React.FC<{ value: number, duration?: number, suffix?: string, prefix?: string }> = ({ value, duration = 2000, suffix = '', prefix = '' }) => {
-    const [count, setCount] = useState(0);
-    const [ref, isVisible] = useOnScreen({ threshold: 0.5 });
-    const hasAnimated = useRef(false);
-
-    useEffect(() => {
-        if (isVisible && !hasAnimated.current) {
-            hasAnimated.current = true;
-            let start = 0;
-            const end = value;
-            if (start === end) return;
-
-            let startTime: number | null = null;
-            const step = (timestamp: number) => {
-                if (!startTime) startTime = timestamp;
-                const progress = Math.min((timestamp - startTime) / duration, 1);
-                setCount(Math.floor(progress * (end - start) + start));
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
-    }, [isVisible, value, duration]);
-
-    // FIX: Added type assertion for the ref to match the <span> element's expected ref type.
-    return <span ref={ref as React.RefObject<HTMLSpanElement>}>{prefix}{count.toLocaleString()}{suffix}</span>;
-};
+import useOnScreen from '../hooks/useOnScreen';
+import AnimatedCounter from '../components/AnimatedCounter';
 
 
-// FIX: The Section component was updated to use React.forwardRef. This allows it to
-// accept a 'ref' prop and forward it to the underlying <section> element, resolving the error.
 const Section = forwardRef<HTMLElement, { children: ReactNode, className?: string }>(({ children, className = '' }, ref) => (
     <section ref={ref} className={`py-20 sm:py-28 ${className}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -74,10 +14,9 @@ const Section = forwardRef<HTMLElement, { children: ReactNode, className?: strin
 Section.displayName = 'Section';
 
 const FeatureCard: React.FC<{ title: string, description: string, icon: React.ReactNode, delay: number }> = ({ title, description, icon, delay }) => {
-    const [ref, isVisible] = useOnScreen({ threshold: 0.1 });
-    // FIX: Added type assertion for the ref to match the <div> element's expected ref type.
+    const [ref, isVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.1 });
     return (
-        <div ref={ref as React.RefObject<HTMLDivElement>} className={`bg-white/50 p-8 rounded-lg border border-gray-200/50 shadow-sm hover:shadow-xl hover:shadow-brand-orange/10 transform hover:-translate-y-1 transition-all duration-300 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: `${delay}ms`}}>
+        <div ref={ref} className={`bg-white/50 p-8 rounded-lg border border-gray-200/50 shadow-sm hover:shadow-xl hover:shadow-brand-orange/10 transform hover:-translate-y-1 transition-all duration-300 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: `${delay}ms`}}>
             <div className="flex items-center justify-center h-12 w-12 rounded-full bg-brand-orange/10 text-brand-orange mb-4">
                 {icon}
             </div>
@@ -97,10 +36,9 @@ const MetricCounter: React.FC<{ value: number; suffix: string; label: string }> 
 );
 
 const SponsorLogoPlaceholder: React.FC<{delay: number}> = ({delay}) => {
-    const [ref, isVisible] = useOnScreen({ threshold: 0.1 });
-    // FIX: Added type assertion for the ref to match the <div> element's expected ref type.
+    const [ref, isVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.1 });
     return (
-        <div ref={ref as React.RefObject<HTMLDivElement>} className={`aspect-[16/9] bg-gray-100 rounded-lg flex items-center justify-center p-4 transition-all duration-300 ease-in-out hover:shadow-lg hover:bg-white border border-transparent hover:border-gray-200 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: `${delay}ms`}}>
+        <div ref={ref} className={`aspect-[16/9] bg-gray-100 rounded-lg flex items-center justify-center p-4 transition-all duration-300 ease-in-out hover:shadow-lg hover:bg-white border border-transparent hover:border-gray-200 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: `${delay}ms`}}>
             <div className="w-3/4 h-1/4 bg-gray-200 rounded-md"></div>
         </div>
     );
@@ -108,7 +46,7 @@ const SponsorLogoPlaceholder: React.FC<{delay: number}> = ({delay}) => {
 
 
 const SunAIStartupDeckOverview: React.FC = () => {
-    const ecosystemRef = useOnScreen({ threshold: 0.3 });
+    const [ecosystemRef, isEcosystemVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.3 });
 
     return (
         <div className="bg-brand-off-white">
@@ -173,7 +111,7 @@ const SunAIStartupDeckOverview: React.FC = () => {
                             <div className="orbit-item absolute bottom-0 left-0 w-20 h-20 bg-brand-mustard/5 rounded-full flex items-center justify-center p-2 shadow-sm animate-pulse-slow" style={{animationDelay: '1.5s'}}><span className="text-xs font-bold text-brand-mustard">Investors</span></div>
                             <div className="orbit-item absolute bottom-0 right-0 w-20 h-20 bg-brand-orange/5 rounded-full flex items-center justify-center p-2 shadow-sm animate-pulse-slow" style={{animationDelay: '3s'}}><span className="text-xs font-bold text-brand-orange">Sponsors</span></div>
                         </div>
-                        <div className="w-40 h-40 rounded-full bg-white shadow-inner flex items-center justify-center font-bold text-brand-blue text-2xl">Sun AI</div>
+                        <div className="w-40 h-40 rounded-full bg-white shadow-inner flex items-center justify-center font-bold text-brand-blue text-center text-xl">sun ai<br/>startup</div>
                     </div>
                 </div>
             </Section>
@@ -181,7 +119,7 @@ const SunAIStartupDeckOverview: React.FC = () => {
             {/* Section 2: Why Partner */}
             <Section>
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold text-brand-blue">Why Partner With Sun AI</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-brand-blue">Why Partner With sun ai startup</h2>
                     <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Gain unparalleled access to a pipeline of high-potential AI startups, co-create solutions to industry challenges, and position your brand at the forefront of innovation.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -192,23 +130,23 @@ const SunAIStartupDeckOverview: React.FC = () => {
             </Section>
 
             {/* Section 3: Ecosystem Flow */}
-             <Section ref={ecosystemRef[0]} className="bg-white">
+             <Section ref={ecosystemRef} className="bg-white">
                  <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-blue">A Self-Reinforcing Growth Engine</h2>
                     <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Our model creates a flywheel effect, where each part of the ecosystem strengthens the others, driving continuous value and growth for all participants.</p>
                 </div>
                 <div className="relative flex flex-col md:flex-row justify-center items-center gap-8 md:gap-0">
-                    <div className="flex flex-col items-center text-center p-4 w-52 opacity-0" style={ecosystemRef[1] ? {animation: 'fade-in-up 0.5s 0s forwards'} : {}}>
+                    <div className="flex flex-col items-center text-center p-4 w-52 opacity-0" style={isEcosystemVisible ? {animation: 'fade-in-up 0.5s 0s forwards'} : {}}>
                         <div className="w-24 h-24 rounded-full bg-brand-blue text-white flex items-center justify-center font-bold text-lg mx-auto shadow-lg">Founders</div>
                         <p className="text-sm text-gray-600 mt-2">Bring innovative ideas and technical talent.</p>
                     </div>
-                    <div className="w-px md:w-32 h-16 md:h-px bg-brand-orange/50" style={ecosystemRef[1] ? {animation: 'grow-width 0.8s 0.3s ease-out forwards', width: 0} : {width: 0}}></div>
-                     <div className="flex flex-col items-center text-center p-4 w-52 opacity-0" style={ecosystemRef[1] ? {animation: 'fade-in-up 0.5s 0.6s forwards'} : {}}>
+                    <div className="w-px md:w-32 h-16 md:h-px bg-brand-orange/50" style={isEcosystemVisible ? {animation: 'grow-width 0.8s 0.3s ease-out forwards', width: 0} : {width: 0}}></div>
+                     <div className="flex flex-col items-center text-center p-4 w-52 opacity-0" style={isEcosystemVisible ? {animation: 'fade-in-up 0.5s 0.6s forwards'} : {}}>
                         <div className="w-24 h-24 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-lg mx-auto shadow-lg">Sponsors</div>
                         <p className="text-sm text-gray-600 mt-2">Provide resources, mentorship, and market access.</p>
                     </div>
-                    <div className="w-px md:w-32 h-16 md:h-px bg-brand-mustard/50" style={ecosystemRef[1] ? {animation: 'grow-width 0.8s 0.9s ease-out forwards', width: 0} : {width: 0}}></div>
-                     <div className="flex flex-col items-center text-center p-4 w-52 opacity-0" style={ecosystemRef[1] ? {animation: 'fade-in-up 0.5s 1.2s forwards'} : {}}>
+                    <div className="w-px md:w-32 h-16 md:h-px bg-brand-mustard/50" style={isEcosystemVisible ? {animation: 'grow-width 0.8s 0.9s ease-out forwards', width: 0} : {width: 0}}></div>
+                     <div className="flex flex-col items-center text-center p-4 w-52 opacity-0" style={isEcosystemVisible ? {animation: 'fade-in-up 0.5s 1.2s forwards'} : {}}>
                         <div className="w-24 h-24 rounded-full bg-brand-mustard text-white flex items-center justify-center font-bold text-lg mx-auto shadow-lg">Value</div>
                         <p className="text-sm text-gray-600 mt-2">Results in growth, solutions, and a stronger ecosystem.</p>
                     </div>
@@ -253,7 +191,7 @@ const SunAIStartupDeckOverview: React.FC = () => {
             {/* Section 6: Final CTA */}
             <Section className="bg-brand-blue text-white">
                 <div className="text-center max-w-3xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-bold">Join the Sun AI Partner Network.</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold">Join the sun ai startup Partner Network.</h2>
                     <p className="text-lg text-blue-200 mt-4 mb-8">
                        Position your company at the center of the AI revolution. Let's build the future, together.
                     </p>

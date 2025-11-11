@@ -2,7 +2,7 @@
 
 **Document Status:** Verified and updated as of 2024-07-30.
 
-This document tracks the development progress of the Sun AI Pitch Deck Engine, aligned with the project's changelog and current codebase.
+This document tracks the development progress of the sun ai startup platform, aligned with the project's changelog and current codebase.
 
 ---
 

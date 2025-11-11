@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => (
     <header className="sticky top-0 z-30 bg-[#FBF8F5]/80 backdrop-blur-sm p-4 border-b border-gray-200 flex items-center justify-between lg:hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0) + 1rem)', paddingBottom: '1rem' }}>
         <div className="flex items-center gap-2">
             <SunIcon />
-            <span className="font-bold text-lg">Sun AI</span>
+            <span className="font-bold text-lg">sun ai startup</span>
         </div>
         <button onClick={onMenuClick} aria-label="Open menu" className="p-2 -mr-2">
             <MenuIcon />

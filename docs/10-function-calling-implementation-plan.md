@@ -2,7 +2,7 @@
 
 **Document Status:** Planning - 2024-08-06
 
-**System Goal:** To evolve the Sun AI Pitch Deck Engine from a prompt-driven content generator into an intelligent, action-oriented editor by strategically implementing function calling. This will make the application more reliable, powerful, and capable of complex, multi-step workflows.
+**System Goal:** To evolve the sun ai startup platform from a prompt-driven content generator into an intelligent, action-oriented editor by strategically implementing function calling. This will make the application more reliable, powerful, and capable of complex, multi-step workflows.
 
 ---
 

@@ -1,65 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-
-// Custom hook for detecting when an element is on screen
-const useOnScreen = (options: IntersectionObserverInit) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) {
-                setIsVisible(true);
-                if (ref.current) {
-                    observer.unobserve(ref.current);
-                }
-            }
-        }, options);
-
-        if (ref.current) {
-            observer.observe(ref.current);
-        }
-
-        return () => {
-            if (ref.current) {
-                // eslint-disable-next-line react-hooks/exhaustive-deps
-                observer.unobserve(ref.current);
-            }
-        };
-    }, [options]);
-
-    return [ref, isVisible] as const;
-};
-
-
-const AnimatedCounter: React.FC<{ value: number, duration?: number, suffix?: string, prefix?: string }> = ({ value, duration = 2000, suffix = '', prefix = '' }) => {
-    const [count, setCount] = useState(0);
-    const [ref, isVisible] = useOnScreen({ threshold: 0.5 });
-    const hasAnimated = useRef(false);
-
-    useEffect(() => {
-        if (isVisible && !hasAnimated.current) {
-            hasAnimated.current = true;
-            let start = 0;
-            const end = value;
-            if (start === end) return;
-
-            let startTime: number | null = null;
-            const step = (timestamp: number) => {
-                if (!startTime) startTime = timestamp;
-                const progress = Math.min((timestamp - startTime) / duration, 1);
-                setCount(Math.floor(progress * (end - start) + start));
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
-    }, [isVisible, value, duration]);
-
-    return <span ref={ref}>{prefix}{count.toLocaleString()}{suffix}</span>;
-};
-
+import useOnScreen from '../hooks/useOnScreen';
+import AnimatedCounter from '../components/AnimatedCounter';
 
 const Section: React.FC<{ children: React.ReactNode, className?: string }> = ({ children, className = '' }) => (
     <section className={`py-16 sm:py-24 ${className}`}>
@@ -75,7 +17,7 @@ const TagIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height=
 
 
 const RevenueStreamCard: React.FC<{ title: string; description: string; visual: React.ReactNode; delay: number }> = ({ title, description, visual, delay }) => {
-    const [ref, isVisible] = useOnScreen({ threshold: 0.1 });
+    const [ref, isVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.1 });
     return (
         <div ref={ref} className={`bg-white/50 p-8 rounded-lg border border-gray-200/50 shadow-sm hover:shadow-xl hover:shadow-brand-orange/10 transform hover:-translate-y-1 transition-all duration-300 ${isVisible ? 'animate-fade-in-up' : 'opacity-0'}`} style={{ animationDelay: `${delay}ms`}}>
             <h3 className="text-2xl font-bold text-brand-blue mb-2">{title}</h3>
@@ -86,42 +28,12 @@ const RevenueStreamCard: React.FC<{ title: string; description: string; visual: 
 };
 
 const BusinessModel: React.FC = () => {
-    const funnelRef = useRef<HTMLDivElement>(null);
-    const summaryRef = useRef<HTMLDivElement>(null);
-    const [isFunnelVisible, setIsFunnelVisible] = useState(false);
-    const [isSummaryVisible, setIsSummaryVisible] = useState(false);
-
-     useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsFunnelVisible(true);
-                    observer.unobserve(entry.target);
-                }
-            },
-            { threshold: 0.5 }
-        );
-        if (funnelRef.current) observer.observe(funnelRef.current);
-        return () => observer.disconnect();
-    }, []);
-
-     useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsSummaryVisible(true);
-                    observer.unobserve(entry.target);
-                }
-            },
-            { threshold: 0.8 }
-        );
-        if (summaryRef.current) observer.observe(summaryRef.current);
-        return () => observer.disconnect();
-    }, []);
+    const [funnelRef, isFunnelVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.5 });
+    const [summaryRef, isSummaryVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.8 });
 
     return (
         <>
-            <title>Business Model - Sun AI</title>
+            <title>Business Model - sun ai startup</title>
             <meta name="description" content="A scalable SaaS model combining subscriptions, partnerships, and marketplace commissions to create a sustainable financial engine." />
             <style>{`
                 @keyframes orbit {

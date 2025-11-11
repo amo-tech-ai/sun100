@@ -18,7 +18,7 @@ const AIToolbox: React.FC = () => {
         if (activeTab === 'image' && !showImageTab) {
             setActiveTab('copilot');
         }
-    }, [activeTab, showImageTab]);
+    }, [activeTab, showImageTab, selectedSlide]);
 
     const renderTabContent = () => {
         switch (activeTab) {

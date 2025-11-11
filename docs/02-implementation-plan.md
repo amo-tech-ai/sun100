@@ -2,7 +2,7 @@
 
 **Document Status:** Updated - 2024-07-30
 
-This document outlines the phased approach to implement the core AI functionality for the Sun AI Pitch Deck Engine. The initial generation and visual agents are complete, and this plan now details the next steps.
+This document outlines the phased approach to implement the core AI functionality for the sun ai startup platform. The initial generation and visual agents are complete, and this plan now details the next steps.
 
 ---
 

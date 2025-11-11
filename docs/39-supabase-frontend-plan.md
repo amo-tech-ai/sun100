@@ -1,140 +1,101 @@
-# 📲 Supabase Frontend: Architecture & Implementation Plan
+# 📲 Frontend Migration Plan: Connecting to a Custom Backend
 
-**Document Status:** Published - 2024-08-17
-**System Goal:** To provide a complete, production-ready implementation plan for migrating the Sun AI Pitch Deck Engine's frontend from a client-side, session-based application to a secure, full-stack architecture powered by Supabase.
+**Document Status:** Published - 2024-08-17 (Revised for Custom Backend)
+**System Goal:** To provide a complete, production-ready implementation plan for migrating the sun ai startup platform's frontend from a client-side, session-based application to a secure, full-stack architecture that communicates with a custom backend API.
 
 ---
 
 ### 1. Executive Summary & Goal
 
-The application currently operates in a client-only mode, using `sessionStorage` for persistence and calling the Gemini API directly from a service file. This architecture is not scalable, secure, or suitable for a multi-user production environment.
+This plan details the migration from a client-only model to a full-stack model where the frontend interacts with a custom backend API (e.g., a Node.js service on Cloud Run). This is a critical step for security, scalability, and persistence.
 
-This plan details the migration to a full-stack model. We will leverage Supabase for:
-1.  **Authentication:** Secure user sign-up, login, and session management.
-2.  **Database:** Persistent, multi-tenant storage for user-owned decks and slides.
-3.  **Edge Functions:** A secure backend layer to house our `GEMINI_API_KEY` and execute all AI-related business logic, replacing the client-side `geminiService.ts`.
+We will refactor the frontend to:
+1.  **Implement Token-Based Authentication:** Manage JWTs for secure communication with the backend.
+2.  **Abstract API Communication:** Create service layers that call our custom API endpoints instead of Supabase-specific functions or the client-side Gemini service.
+3.  **Handle Server State:** Replace `sessionStorage` with server-side data fetching, including loading and error states.
 
 ---
 
 ### 2. File Impact Analysis
 
-This section outlines the required file changes to execute the migration.
-
 #### Files to be Modified
 | File | Reason for Modification |
 | :--- | :--- |
-| `App.tsx` | Wrap the entire application in an `AuthProvider` and implement protected routes. |
-| `screens/Dashboard.tsx` | Fetch and display a list of the authenticated user's decks from the database. |
-| `screens/WizardSteps.tsx`| The "Generate" button will now call a Supabase Edge Function to create the deck. |
-| `screens/GeneratingScreen.tsx`| The logic will be simplified. It will now poll for the creation status of a deck in the database. |
-| `screens/DeckEditor.tsx` | **Complete Overhaul.** Will fetch the deck by ID from the database on load. All AI actions will call their respective Edge Functions. Local state will be replaced with data fetched from Supabase. |
+| `App.tsx` | Wrap the application in an `AuthProvider` and implement protected routes. |
+| `screens/Dashboard.tsx` | Fetch and display user's decks from the `/api/decks` endpoint. |
+| `screens/WizardSteps.tsx`| The "Generate" button will now call the `/api/ai/generate-deck` endpoint. |
+| `screens/GeneratingScreen.tsx`| Will poll for deck creation status using the `deckId` returned from the generation endpoint. |
+| `screens/DeckEditor.tsx` | **Complete Overhaul.** Will fetch deck data from `/api/decks/:id`. All AI actions will call their respective backend endpoints (e.g., `/api/ai/slides/:id/rewrite`). |
 
 #### Files to be Created
 | File | Purpose |
 | :--- | :--- |
-| `lib/supabaseClient.ts` | Initializes and exports a singleton Supabase client instance. |
-| `contexts/AuthContext.tsx` | A new React Context to provide authentication state (`user`, `session`) to the entire application. |
+| `lib/apiClient.ts` | A new Axios or Fetch-based client to handle all HTTP requests to our backend, automatically attaching the auth token. |
+| `contexts/AuthContext.tsx` | A React Context to provide user authentication state and manage JWT storage. |
 | `hooks/useAuth.ts` | A custom hook for easy access to the `AuthContext`. |
-| `services/deckService.ts` | A new service layer for all Supabase database interactions (CRUD for decks/slides). |
-| `services/aiService.ts` | A new service layer for invoking all AI-related Supabase Edge Functions. |
-| `screens/LoginScreen.tsx` | A new screen for user authentication. |
+| `services/deckService.ts` | A new service for all database interactions via the backend API (CRUD for decks/slides). |
+| `services/aiService.ts` | A new service for invoking all AI-related backend endpoints. |
+| `screens/Login.tsx` | A new screen for user login, calling the `/api/auth/login` endpoint. |
 
 #### Files to be Deprecated
 | File | Reason for Deprecation |
 | :--- | :--- |
-| `services/geminiService.ts` | **To be deleted.** All logic will be moved to secure Supabase Edge Functions. The frontend will no longer have direct access to the Gemini API. |
+| `services/geminiService.ts` | **To be deleted.** All AI logic is now on the backend. The frontend will no longer call the Gemini API directly. |
 
 ---
 
 ### 3. Step-by-Step Implementation Plan
 
-#### Step 1: Setup & Configuration
-1.  **Environment Variables:** Create a `.env` file and add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-2.  **Supabase Client:** Create `lib/supabaseClient.ts` to initialize and export the Supabase client.
-3.  **Authentication Provider:** Create `contexts/AuthContext.tsx` to manage user sessions and expose auth state to the application.
+#### Step 1: Setup & API Client
+1.  **Environment Variables:** Add `VITE_API_BASE_URL` to the `.env` file (e.g., the URL of your Cloud Run service).
+2.  **API Client:** Create `lib/apiClient.ts`. This client will be an instance of Axios (or a `fetch` wrapper) configured with the `baseURL`. It will use an interceptor to automatically add the `Authorization: Bearer <token>` header to every request if a token exists in `localStorage`.
 
 #### Step 2: Authentication & Protected Routes
-1.  **Wrap Application:** In `App.tsx`, wrap the `<Routes>` component with the new `<AuthProvider>`.
-2.  **Create Login Screen:** Build a simple `LoginScreen.tsx` that uses `supabase.auth.signInWithPassword()` or OAuth providers.
-3.  **Implement Protected Routes:** Create a `<ProtectedRoute>` component that checks for an active user session. If no session exists, it redirects to `/login`. Apply this to all authenticated routes (`/dashboard`, `/pitch-deck`, etc.).
+1.  **Auth Context:** Create `contexts/AuthContext.tsx`. This provider will manage the user state and JWT. It will expose `login`, `signup`, and `logout` functions.
+    -   `login(email, password)` will call `POST /api/auth/login`, and on success, store the returned JWT in `localStorage` and update the user state.
+    -   `logout()` will remove the JWT from `localStorage` and clear the user state.
+2.  **Protected Routes:** Create a `<ProtectedRoute>` component. It will use the `AuthContext` to check if a user is logged in. If not, it will redirect to the `/login` page.
+3.  **Refactor `App.tsx`:** Wrap the application in the `<AuthProvider>` and apply the `<ProtectedRoute>` to all authenticated routes (e.g., `/dashboard`, `/pitch-decks/*`).
 
 #### Step 3: New Service Layers
 1.  **`deckService.ts`:**
-    -   `getDecks(): Promise<Deck[]>` - Fetches all decks for the current user.
-    -   `getDeckById(id: string): Promise<Deck>` - Fetches a single deck and its slides.
-    -   `updateSlide(slideId: string, updates: Partial<Slide>): Promise<Slide>` - Updates a single slide.
-    -   `reorderSlides(deckId: string, slideIds: string[]): Promise<void>` - Calls the `reorder_slides` RPC.
+    -   `getDecks(): Promise<Deck[]>` - Calls `GET /api/decks`.
+    -   `getDeckById(id: string): Promise<Deck>` - Calls `GET /api/decks/:id`.
+    -   `updateSlide(slideId: string, updates: Partial<Slide>): Promise<Slide>` - Calls `PUT /api/slides/:id`.
 2.  **`aiService.ts`:**
-    -   This service will be a thin wrapper around `supabase.functions.invoke()`.
-    -   `generateDeckFromText(details: string): Promise<{ deckId: string }>`
-    -   `generateDeckFromUrls(urls: string[]): Promise<{ deckId: string }>`
-    -   `rewriteSlide(slideId: string, prompt: string): Promise<Slide>`
-    -   Each function will handle passing the auth token and parsing the response or error.
+    -   `generateDeckFromText(details: string): Promise<{ deckId: string }>` - Calls `POST /api/ai/generate-deck`.
+    -   `rewriteSlide(slideId: string, prompt: string): Promise<Slide>` - Calls `POST /api/ai/slides/:id/rewrite`.
 
 #### Step 4: Refactor Screens
-1.  **`Dashboard.tsx`:**
-    -   Use a `useEffect` hook to call `deckService.getDecks()` on load.
-    -   Map over the returned decks to render a dynamic list of links to `dashboard/decks/:id/edit`.
-2.  **`WizardSteps.tsx`:**
-    -   The `handleGenerate` function will now call `aiService.generateDeckFromText()` or `aiService.generateDeckFromUrls()`.
-    -   On success, it will receive a `deckId` and navigate to `pitch-deck/generating` with the `deckId` in the state.
-3.  **`GeneratingScreen.tsx`:**
-    -   On load, it will receive a `deckId`.
-    -   It will enter a polling loop, calling `deckService.getDeckById(deckId)` every 2 seconds.
-    -   It will continue polling until the fetched deck contains at least one slide.
-    -   Once slides are present, it will navigate to `dashboard/decks/:deckId/edit`.
-4.  **`DeckEditor.tsx`:**
-    -   **Remove `geminiService` calls:** Delete all direct imports and calls.
-    -   **Data Fetching:** On initial load, use the `id` from `useParams` to call `deckService.getDeckById(id)` and populate the `deck` state.
-    -   **AI Actions:** All `handle...` functions (e.g., `handleCopilotGenerate`, `handleGenerateImage`) will be refactored to call the new `aiService` functions.
-    -   **State Updates:** After a mutation (e.g., rewriting a slide), the component will either re-fetch the entire deck or perform an optimistic update on the local state with the returned data to keep the UI in sync.
+1.  **`Dashboard.tsx`:** Use a `useEffect` to call `deckService.getDecks()` and display the results, including a loading state.
+2.  **`WizardSteps.tsx`:** The `handleGenerate` function will now call the appropriate `aiService` function. On success, it will navigate to a generating/polling screen with the `deckId`.
+3.  **`DeckEditor.tsx`:**
+    -   **Data Fetching:** On load, use the `id` from `useParams` to call `deckService.getDeckById(id)`. Implement loading and error states.
+    -   **AI Actions:** Refactor all `handle...` functions to call the new `aiService` and `deckService` functions.
+    -   **State Updates:** On successful mutations, either re-fetch the deck or perform an optimistic update on the local state to keep the UI in sync.
 
 #### Step 5: Deprecate `geminiService.ts`
--   Once all screen components have been refactored to use `deckService.ts` and `aiService.ts`, the `services/geminiService.ts` file will be safely deleted from the project.
+-   Once all components are refactored to use the new service layers, the `services/geminiService.ts` file can be safely deleted.
 
 ---
 
-### 4. Data Flow Diagrams (Before vs. After)
+### 4. Data Flow Diagram (AI Action)
 
-#### Before: Client-Side Generation
+This diagram shows the new, secure flow for an AI action like rewriting a slide.
+
 ```mermaid
 sequenceDiagram
-    participant Client as Wizard
-    participant Service as geminiService
+    participant Client as DeckEditor
+    participant API as apiClient
+    participant Backend as Cloud Run API
     participant Gemini as Gemini API
 
-    Client->>Service: generateDeckContent(details)
-    Service->>Gemini: generateContent(...)
-    Gemini-->>Service: Returns full deck JSON
-    Service-->>Client: Returns full deck object
-    Client->>Client: Save to sessionStorage & navigate
+    Client->>API: aiService.rewriteSlide(slideId, "make it concise")
+    API->>Backend: POST /api/ai/slides/:id/rewrite (with JWT)
+    Backend->>Backend: Authenticate user via JWT
+    Backend->>Gemini: generateContent(...) (with server-side API key)
+    Gemini-->>Backend: Returns rewritten content
+    Backend->>Backend: Update slide in Cloud SQL DB
+    Backend-->>Client: Returns updated Slide object
+    Client->>Client: Updates local state with new slide content
 ```
-
-#### After: Secure Backend Generation
-```mermaid
-sequenceDiagram
-    participant Client as Wizard
-    participant Service as aiService
-    participant EdgeFn as Edge Function
-    participant DB as Supabase DB
-
-    Client->>Service: generateDeckFromText(details)
-    Service->>EdgeFn: invoke('generate-outline', ...)
-    EdgeFn->>DB: Creates initial deck record
-    EdgeFn-->>DB: Generates slides & saves them
-    EdgeFn-->>Client: Returns { deckId }
-    Client->>Client: Navigate to editor with deckId
-```
-
----
-
-### 5. Production Readiness Checklist
-
-| Category | Criteria |
-| :--- | :--- |
-| **Code Quality** | New services are strongly typed. All Supabase calls use `.select()` or `.rpc()` with typed returns. |
-| **UI/UX** | Add loading spinners/skeletons for all data fetching operations (deck list, editor loading). Display user-friendly error messages (e.g., using toasts) for failed API calls. |
-| **Error Handling** | Every `aiService` and `deckService` call is wrapped in a `try...catch` block. |
-| **Security**| The `anon` key is used on the client. All sensitive operations are delegated to Edge Functions. RLS policies are manually tested by attempting to fetch another user's deck. |
-| **Testing** | Manually test the full user lifecycle: Sign Up -> Create Deck -> Edit Deck -> Log Out -> Log In -> Verify Deck Persists. |
-| **Regressions**| Confirm that all existing AI features and UI interactions work as expected after the migration. |

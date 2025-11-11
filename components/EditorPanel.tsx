@@ -1,5 +1,4 @@
 import React from 'react';
-import { Deck, Slide } from '../data/decks';
 import { templates } from '../styles/templates';
 import AIToolbox from './AIToolbox';
 import Chart from './Chart';
@@ -8,14 +7,10 @@ import { useDeckEditor } from '../screens/DeckEditor';
 
 const ChevronLeftIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
 const ChevronRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
+const GlobeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>;
 
 
-interface EditorPanelProps {
-    onPrevSlide: () => void;
-    onNextSlide: () => void;
-}
-
-const EditorPanel: React.FC<EditorPanelProps> = ({ onPrevSlide, onNextSlide }) => {
+const EditorPanel: React.FC = () => {
     const { 
         deck, 
         selectedSlide,
@@ -30,7 +25,11 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ onPrevSlide, onNextSlide }) =
         chartError,
         handleSuggestPieChart,
         isSuggestingPieChart,
-        pieChartError
+        pieChartError,
+        handleMarketResearch,
+        isResearching,
+        handlePrevSlide,
+        handleNextSlide,
      } = useDeckEditor();
 
     if (!deck || !selectedSlide) {
@@ -108,11 +107,24 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ onPrevSlide, onNextSlide }) =
             </div>
 
              <div className="w-full max-w-4xl mt-4 flex items-center justify-center gap-4">
-                <button onClick={onPrevSlide} disabled={selectedSlideIndex === 0} className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-100 disabled:opacity-50 transition-colors" aria-label="Previous slide"><ChevronLeftIcon /></button>
+                <button onClick={handlePrevSlide} disabled={selectedSlideIndex === 0} className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-100 disabled:opacity-50 transition-colors" aria-label="Previous slide"><ChevronLeftIcon /></button>
                 <span className="font-medium text-gray-600 text-sm">Slide {selectedSlideIndex + 1} of {totalSlides}</span>
-                <button onClick={onNextSlide} disabled={selectedSlideIndex === totalSlides - 1} className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-100 disabled:opacity-50 transition-colors" aria-label="Next slide"><ChevronRightIcon /></button>
+                <button onClick={handleNextSlide} disabled={selectedSlideIndex === totalSlides - 1} className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-100 disabled:opacity-50 transition-colors" aria-label="Next slide"><ChevronRightIcon /></button>
                 
                  <div className="ml-auto hidden md:flex items-center gap-2">
+                    {selectedSlide.type === 'market' && (
+                        <div className="relative">
+                            <button 
+                                onClick={handleMarketResearch} 
+                                disabled={isResearching} 
+                                className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:bg-gray-200" 
+                                title="Research market size (TAM, SAM, SOM) and key trends for this industry"
+                            >
+                                <GlobeIcon />
+                                <span>Research Market</span>
+                            </button>
+                        </div>
+                    )}
                     <div className="relative">
                         <button onClick={handleSuggestPieChart} disabled={isSuggestingPieChart || !!selectedSlide.chartData || !!selectedSlide.tableData} className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:bg-gray-200" title="Suggest Allocation Chart">
                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>

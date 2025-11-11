@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { generateDeckContent, generateDeckFromUrls, DeckGenerationResult } from '../services/geminiService';
+import { generateDeckFromText, generateDeckFromUrls, DeckGenerationResult } from '../services/apiService';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
@@ -25,8 +25,9 @@ const GeneratingScreen: React.FC = () => {
             }
 
             try {
+                // Calls are now directed to the new apiService which simulates a backend
                 const deckData: DeckGenerationResult = hasDetails
-                    ? await generateDeckContent(companyDetails)
+                    ? await generateDeckFromText(companyDetails)
                     : await generateDeckFromUrls(urls);
                 
                 // Construct a Deck object compatible with the editor

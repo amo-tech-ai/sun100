@@ -15,6 +15,7 @@ const ImageEditorPanel: React.FC = () => {
     const handleEditClick = () => {
         if (prompt.trim()) {
             handleEditImage(prompt);
+            setPrompt('');
         }
     };
 
@@ -29,7 +30,7 @@ const ImageEditorPanel: React.FC = () => {
             <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !isEditingImage && handleEditClick()}
+                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && !isEditingImage && (e.preventDefault(), handleEditClick())}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#E87C4D] focus:border-transparent transition disabled:bg-gray-200"
                 rows={3}
                 placeholder="Describe your changes... e.g., 'Make the sky dark and stormy' or 'Add a red car'"
@@ -42,7 +43,7 @@ const ImageEditorPanel: React.FC = () => {
             >
                 {isEditingImage ? (
                     <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
