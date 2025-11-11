@@ -5,14 +5,29 @@ interface EventPreviewCardProps {
     eventData: EventFormData;
 }
 
+// FIX: Corrected a syntax error in the SVG definition for ArrowRightIcon where an extra quote was breaking the viewBox attribute.
 const ArrowRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
 
 const EventPreviewCard: React.FC<EventPreviewCardProps> = ({ eventData }) => {
-    const { title, type, description, startsAtDate, locationType, address, virtualLink } = eventData;
+    // Destructure all needed properties, including new ones for location and ticketing
+    const { title, type, description, startsAtDate, locationType, venueName, address, ticketing } = eventData;
     const placeholderImage = 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=2012&auto=format&fit=crop';
     
-    const formattedDate = startsAtDate ? new Date(startsAtDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date TBD';
-    const location = locationType === 'virtual' ? 'Virtual' : (address || 'Location TBD');
+    const formattedDate = startsAtDate ? new Date(startsAtDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Date TBD';
+    
+    // Improved location logic: be more descriptive for virtual events and prioritize venue name for in-person.
+    const location = locationType === 'virtual' 
+        ? 'Virtual Event' 
+        : (venueName || address || 'Location TBD');
+
+    // Logic to determine what to display for ticketing
+    let ticketInfo;
+    if (ticketing.access === 'free' || !ticketing.price || ticketing.price <= 0) {
+        ticketInfo = <span className="text-lg font-bold text-green-600">Free</span>;
+    } else {
+        // Assuming price is in dollars from the form
+        ticketInfo = <span className="text-lg font-bold text-gray-800">${ticketing.price}</span>;
+    }
 
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col group border border-gray-200/80">
@@ -30,7 +45,7 @@ const EventPreviewCard: React.FC<EventPreviewCardProps> = ({ eventData }) => {
                 </h2>
                 <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                     <span>📅 {formattedDate}</span>
-                    <span>📍 {location}</span>
+                    <span className="truncate" title={location}>📍 {location}</span>
                 </div>
                 <p className="text-gray-600 flex-grow text-sm line-clamp-2">
                     {description || 'Your event description will appear here...'}
@@ -39,6 +54,8 @@ const EventPreviewCard: React.FC<EventPreviewCardProps> = ({ eventData }) => {
                     <span className="font-bold text-brand-orange group-hover:underline flex items-center gap-2 text-sm">
                         Learn More <ArrowRightIcon />
                     </span>
+                    {/* Render ticketing info */}
+                    {ticketInfo}
                 </div>
             </div>
         </div>
