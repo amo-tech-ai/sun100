@@ -21,6 +21,7 @@ const Sitemap: React.FC = () => {
     { path: '/jobs', name: 'Jobs', description: 'Career board for AI startups.' },
     { path: '/jobs/:id', name: 'Job Detail', description: 'Details for a specific job.' },
     { path: '/how-it-works', name: 'How It Works', description: 'Explanation of the community platform.' },
+    { path: '/business-model', name: 'Business Model', description: 'Our sustainable SaaS business model.' },
     { path: '/blogs', name: 'Blogs', description: 'Community blog and articles.' },
     { path: '/blogs/:id', name: 'Blog Detail', description: 'A single blog post.' },
     { path: '/services', name: 'Services', description: 'Overview of agency service offerings.' },
@@ -29,11 +30,11 @@ const Sitemap: React.FC = () => {
     { path: '/services/mvp-development', name: 'MVP Development Service', description: 'Detail page for MVP development.' },
     { path: '/login', name: 'Login', description: 'User login page.' },
     { path: '/signup', name: 'Sign Up', description: 'User registration page.' },
-    { path: '/sponsor-deck', name: 'Sponsor Deck Overview', description: 'Overview of the sponsorship program.' },
-    { path: '/sponsor-deck/showcase', name: 'Sponsor Showcase', description: 'A grid of sponsor logos.' },
-    { path: '/sponsor-deck/categories', name: 'Sponsor Categories', description: 'Page to filter sponsors by category.' },
-    { path: '/sponsor-deck/apply', name: 'Apply to Sponsor', description: 'Application form for potential sponsors.' },
-    { path: '/sponsor-deck/stories', name: 'Sponsor Stories', description: 'Success stories from sponsors.' },
+    { path: '/sunaistartup-deck', name: 'Startup Deck Overview', description: 'Overview of the sponsorship program.' },
+    { path: '/sunaistartup-deck/showcase', name: 'Startup Deck Showcase', description: 'A grid of sponsor logos.' },
+    { path: '/sunaistartup-deck/categories', name: 'Startup Deck Categories', description: 'Page to filter sponsors by category.' },
+    { path: '/sunaistartup-deck/apply', name: 'Apply to Sponsor', description: 'Application form for potential sponsors.' },
+    { path: '/sunaistartup-deck/stories', name: 'Sponsor Stories', description: 'Success stories from sponsors.' },
   ];
   
   const appRoutes = [

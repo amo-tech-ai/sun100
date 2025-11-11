@@ -11,10 +11,11 @@ const PublicLayout: React.FC = () => {
     const navLinks = [
         { name: 'About', path: '/about'},
         { name: 'How It Works', path: '/how-it-works'},
+        { name: 'Business Model', path: '/business-model'},
         { name: 'Services', path: '/services'},
         { name: 'Blog', path: '/blogs'},
         { name: 'Events', path: '/events'},
-        { name: 'Sponsor Deck', path: '/sponsor-deck'},
+        { name: 'Startup Deck', path: '/sunaistartup-deck'},
     ];
 
     return (
