@@ -6,7 +6,7 @@ const Placeholder = ({ name }: { name: string }) => (
     </div>
 );
 
-const SponsorDeckShowcase: React.FC = () => {
+const SunAIStartupDeckShowcase: React.FC = () => {
     return (
         <div className="max-w-5xl mx-auto space-y-12">
             <div className="text-center">
@@ -21,4 +21,4 @@ const SponsorDeckShowcase: React.FC = () => {
     );
 };
 
-export default SponsorDeckShowcase;
+export default SunAIStartupDeckShowcase;

@@ -39,13 +39,16 @@ const LogoBranding = lazy(() => import('./screens/LogoBranding'));
 const MvpDevelopment = lazy(() => import('./screens/MvpDevelopment'));
 const Login = lazy(() => import('./screens/Login'));
 const Signup = lazy(() => import('./screens/Signup'));
+const BusinessModel = lazy(() => import('./screens/BusinessModel'));
 
-// --- Restored Sponsor Deck Screens ---
-const SponsorDeckOverview = lazy(() => import('./screens/SponsorDeckOverview'));
-const SponsorDeckShowcase = lazy(() => import('./screens/SponsorDeckShowcase'));
-const SponsorDeckCategories = lazy(() => import('./screens/SponsorDeckCategories'));
-const SponsorDeckApply = lazy(() => import('./screens/SponsorDeckApply'));
-const SponsorDeckStories = lazy(() => import('./screens/SponsorDeckStories'));
+
+// --- Renamed SunAIStartupDeck Screens ---
+const SunAIStartupDeckLayout = lazy(() => import('./screens/SponsorDeckLayout'));
+const SunAIStartupDeckOverview = lazy(() => import('./screens/SponsorDeckOverview'));
+const SunAIStartupDeckShowcase = lazy(() => import('./screens/SponsorDeckShowcase'));
+const SunAIStartupDeckCategories = lazy(() => import('./screens/SponsorDeckCategories'));
+const SunAIStartupDeckApply = lazy(() => import('./screens/SponsorDeckApply'));
+const SunAIStartupDeckStories = lazy(() => import('./screens/SponsorDeckStories'));
 
 
 // --- Restored App Screens ---
@@ -80,6 +83,7 @@ const App: React.FC = () => {
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/jobs/:id" element={<JobDetail />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/business-model" element={<BusinessModel />} />
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/blogs/:id" element={<BlogDetail />} />
             <Route path="/services" element={<Services />} />
@@ -89,11 +93,15 @@ const App: React.FC = () => {
             {/* Redirect auth pages to the dashboard for development */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/sponsor-deck" element={<SponsorDeckOverview />} />
-            <Route path="/sponsor-deck/showcase" element={<SponsorDeckShowcase />} />
-            <Route path="/sponsor-deck/categories" element={<SponsorDeckCategories />} />
-            <Route path="/sponsor-deck/apply" element={<SponsorDeckApply />} />
-            <Route path="/sponsor-deck/stories" element={<SponsorDeckStories />} />
+            
+            {/* SunAIStartupDeck routes now have their own nested layout for sub-navigation */}
+            <Route path="/sunaistartup-deck" element={<SunAIStartupDeckLayout />}>
+              <Route index element={<SunAIStartupDeckOverview />} />
+              <Route path="showcase" element={<SunAIStartupDeckShowcase />} />
+              <Route path="categories" element={<SunAIStartupDeckCategories />} />
+              <Route path="apply" element={<SunAIStartupDeckApply />} />
+              <Route path="stories" element={<SunAIStartupDeckStories />} />
+            </Route>
           </Route>
 
           {/* --- App Routes (No longer protected for dev) --- */}
