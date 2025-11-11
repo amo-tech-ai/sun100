@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, NavLink } from 'react-router-dom';
 
 const SunIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#E87C4D]" viewBox="0 0 20 20" fill="currentColor">
@@ -8,6 +8,14 @@ const SunIcon = () => (
 );
 
 const PublicLayout: React.FC = () => {
+    const navLinks = [
+        { name: 'About', path: '/about'},
+        { name: 'Services', path: '/services'},
+        { name: 'Blog', path: '/blogs'},
+        { name: 'Events', path: '/events'},
+        { name: 'How It Works', path: '/how-it-works'},
+    ];
+
     return (
         <div className="min-h-screen flex flex-col bg-[#FBF8F5]">
             <header className="w-full bg-white/80 backdrop-blur-sm sticky top-0 z-10 border-b border-gray-200">
@@ -17,14 +25,25 @@ const PublicLayout: React.FC = () => {
                             <SunIcon />
                             <span className="font-bold text-2xl text-gray-800">Sun AI</span>
                         </Link>
-                        <nav>
-                            <Link 
+                        <nav className="hidden md:flex items-center space-x-6">
+                            {navLinks.map(link => (
+                                <NavLink
+                                    key={link.name}
+                                    to={link.path}
+                                    className={({isActive}) => `text-sm font-semibold transition-colors ${isActive ? 'text-[#E87C4D]' : 'text-gray-600 hover:text-gray-900'}`}
+                                >
+                                    {link.name}
+                                </NavLink>
+                            ))}
+                        </nav>
+                        <div className="flex items-center">
+                             <Link 
                                 to="/dashboard"
-                                className="inline-block bg-[#E87C4D] text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors duration-200 shadow-md"
+                                className="inline-block bg-[#E87C4D] text-white font-bold py-2 px-5 rounded-lg hover:bg-opacity-90 transition-colors duration-200 shadow-md"
                             >
                                 Get Started
                             </Link>
-                        </nav>
+                        </div>
                     </div>
                 </div>
             </header>

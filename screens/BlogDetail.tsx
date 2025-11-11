@@ -1,12 +1,18 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 
 const BlogDetail: React.FC = () => {
     const { id } = useParams();
     return (
-        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md prose max-w-4xl mx-auto">
-            <h1>Blog Post: {id}</h1>
-            <p>This is a placeholder page for a single blog post. Content to be added soon.</p>
+        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md prose prose-lg max-w-4xl mx-auto">
+            <Link to="/blogs" className="text-[#E87C4D] no-underline hover:underline">&larr; Back to all posts</Link>
+            <h1 className="mt-4">5 Mistakes to Avoid in Your Investor Pitch Deck</h1>
+            <p className="text-base text-gray-500">By Alex Chen on August 1, 2024</p>
+            
+            <p>This is placeholder content for blog post #{id}.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi.</p>
+            <h2>The First Mistake: A Weak Opening</h2>
+            <p>Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue.</p>
         </div>
     );
 };
