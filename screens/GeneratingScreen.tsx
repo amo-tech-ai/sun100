@@ -1,8 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { generateDeckContent, generateDeckFromUrls } from '../services/deckGenerationService';
-import type { DeckGenerationResult } from '../services/ai.models';
+import { generateDeckContent, generateDeckFromUrls, DeckGenerationResult } from '../services/geminiService';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
@@ -63,7 +61,7 @@ const GeneratingScreen: React.FC = () => {
                     <h1 className="text-2xl font-bold text-red-600 mb-4">Generation Failed</h1>
                     <p className="text-gray-600 mb-6">{error}</p>
                     <button 
-                        onClick={() => navigate('/pitch-decks/new')}
+                        onClick={() => navigate('/pitch-deck')}
                         className="bg-[#E87C4D] text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90"
                     >
                         Try Again

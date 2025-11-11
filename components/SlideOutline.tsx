@@ -9,16 +9,25 @@ const EditIcon = () => (
 const RoadmapIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" x2="8" y1="2" y2="18"/><line x1="16" x2="16" y1="6" y2="22"/></svg>
 );
+const PublishIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+);
 
 
 interface SlideOutlineProps {
-    deck: Deck;
+    deckId: string;
+    deckTitle: string;
+    slides: Slide[];
+    template: Deck['template'];
     selectedSlideId: string;
     onSlideSelect: (slide: Slide) => void;
     onTitleSave: (newTitle: string) => void;
     onGenerateRoadmapSlide: () => void;
     isGeneratingRoadmap: boolean;
     isCollapsed: boolean;
+    onPublish: () => void;
+    isPublishing: boolean;
+    publishProgressMessage: string;
 }
 
 interface SlideOutlineItemProps {
@@ -51,8 +60,7 @@ const SlideOutlineItem: React.FC<SlideOutlineItemProps> = React.memo(({ slide, i
 SlideOutlineItem.displayName = 'SlideOutlineItem';
 
 
-const SlideOutline: React.FC<SlideOutlineProps> = ({ deck, selectedSlideId, onSlideSelect, onTitleSave, onGenerateRoadmapSlide, isGeneratingRoadmap, isCollapsed }) => {
-    const { id: deckId, title: deckTitle, slides, template } = deck;
+const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, template, selectedSlideId, onSlideSelect, onTitleSave, onGenerateRoadmapSlide, isGeneratingRoadmap, isCollapsed, onPublish, isPublishing, publishProgressMessage }) => {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState(deckTitle);
 
@@ -127,9 +135,29 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deck, selectedSlideId, onSl
                         </>
                     )}
                 </button>
+                <button
+                    onClick={onPublish}
+                    disabled={isPublishing}
+                    className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2 disabled:bg-gray-200 disabled:cursor-not-allowed"
+                >
+                    {isPublishing ? (
+                        <>
+                             <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-[#E87C4D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>{publishProgressMessage}...</span>
+                        </>
+                    ) : (
+                        <>
+                            <PublishIcon />
+                            <span>Publish</span>
+                        </>
+                    )}
+                </button>
                  <Link
                     to={`/dashboard/decks/${deckId}/present`}
-                    state={{ deck }}
+                    state={{deck: {id: deckId, title: deckTitle, slides: slides, template: template}}}
                     className="block w-full text-center bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
                 >
                     Present

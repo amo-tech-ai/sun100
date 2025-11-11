@@ -1,13 +1,27 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import { mockDeck, Deck, Slide } from '../data/decks';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { mockDeck, Deck, Slide, ChartData, TableData } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
-import { modifySlideContent, generateHeadlineVariations, extractMetrics, generatePricingTable, summarizeBio } from '../services/contentService';
-import { generateSlideImage, editSlideImage, generateRoadmapSlide } from '../services/visualService';
-import { analyzeSlide, researchTopic, suggestLayout, suggestChart, suggestPieChart } from '../services/analysisService';
-import { fetchAllSuggestions } from '../services/suggestionService';
-import type { ExtractedMetric, SlideAnalysis, ResearchResult } from '../services/ai.models';
+import {
+    generateSlideImage,
+    editSlideImage,
+    modifySlideContent,
+    analyzeSlide,
+    researchTopic,
+    suggestLayout,
+    fetchAllSuggestions,
+    suggestChart,
+    generateRoadmapSlide,
+    generateHeadlineVariations,
+    extractMetrics,
+    ExtractedMetric,
+    generatePricingTable,
+    summarizeBio,
+    suggestPieChart,
+    SlideAnalysis,
+    ResearchResult,
+} from '../services/geminiService';
 
 
 // --- CONTEXT DEFINITION ---
@@ -17,7 +31,6 @@ interface DeckEditorContextType {
     selectedSlide: Slide | null;
     isGeneratingImage: boolean;
     isEditingImage: boolean;
-
     imageError: string | null;
     isCopilotLoading: boolean;
     isAnalyzing: boolean;
@@ -79,6 +92,7 @@ const PanelLeftCloseIcon = () => (
 const DeckEditor: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const location = useLocation();
+    const navigate = useNavigate();
     const { generatedDeck } = location.state || {};
 
     const [deck, setDeck] = useState<Deck | null>(null);
@@ -111,6 +125,9 @@ const DeckEditor: React.FC = () => {
     const [imageSuggestions, setImageSuggestions] = useState<string[]>([]);
     const [researchSuggestions, setResearchSuggestions] = useState<string[]>([]);
     const [areSuggestionsLoading, setAreSuggestionsLoading] = useState(false);
+    const [isPublishing, setIsPublishing] = useState(false);
+    const [publishProgressMessage, setPublishProgressMessage] = useState('');
+    const [publishError, setPublishError] = useState<string | null>(null);
 
     useEffect(() => {
         const storedDeckJson = sessionStorage.getItem(`deck-${id}`);
@@ -411,6 +428,43 @@ const DeckEditor: React.FC = () => {
         handleResearch(`quotes or testimonials about the problem of ${selectedSlide.title}`);
     }, [selectedSlide, handleResearch]);
 
+    const handlePublishDeck = useCallback(async () => {
+        if (!deck) return;
+
+        setIsPublishing(true);
+        setPublishError(null);
+
+        try {
+            setPublishProgressMessage('Validating');
+            await new Promise(res => setTimeout(res, 500)); 
+            if (!deck.title.trim()) {
+                throw new Error("Deck must have a title to be published.");
+            }
+            if (deck.slides.length === 0) {
+                throw new Error("Deck must have at least one slide to be published.");
+            }
+            
+            const idempotencyKey = `publish-${deck.id}-${Date.now()}`;
+            console.log('Using Idempotency Key:', idempotencyKey);
+
+            setPublishProgressMessage('Saving');
+            await new Promise(res => setTimeout(res, 1500));
+
+            setPublishProgressMessage('Finalizing');
+            await new Promise(res => setTimeout(res, 1000));
+
+            navigate(`/dashboard/decks/${deck.id}/publish-success`, { state: { deckTitle: deck.title } });
+
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during publishing.";
+            setPublishError(errorMessage);
+            alert(`Publish failed: ${errorMessage}`);
+        } finally {
+            setIsPublishing(false);
+            setPublishProgressMessage('');
+        }
+    }, [deck, navigate]);
+
     const handlePrevSlide = useCallback(() => {
         if (!deck || !selectedSlide) return;
         const currentIndex = deck.slides.findIndex(s => s.id === selectedSlide.id);
@@ -463,13 +517,19 @@ const DeckEditor: React.FC = () => {
             <div className="flex flex-col lg:flex-row h-full w-full bg-[#FBF8F5] text-gray-800">
                 <div className="hidden lg:flex flex-shrink-0">
                   <SlideOutline
-                      deck={deck}
+                      deckId={deck.id}
+                      deckTitle={deck.title}
+                      slides={deck.slides}
+                      template={deck.template}
                       selectedSlideId={selectedSlide.id}
                       onSlideSelect={handleSlideSelect}
                       onTitleSave={handleTitleSave}
                       onGenerateRoadmapSlide={handleGenerateRoadmapSlide}
                       isGeneratingRoadmap={isGeneratingRoadmap}
                       isCollapsed={isSidebarCollapsed}
+                      onPublish={handlePublishDeck}
+                      isPublishing={isPublishing}
+                      publishProgressMessage={publishProgressMessage}
                   />
                 </div>
                 <div className="flex-1 flex flex-col relative">
