@@ -1,59 +1,62 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { generateDeckFromText, generateDeckFromUrls, DeckGenerationResult } from '../services/apiService';
+import { supabase } from '../lib/supabaseClient';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { companyDetails, urls } = location.state || {};
+    const { deckId } = location.state || {};
     
     const [dots, setDots] = useState('');
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const interval = setInterval(() => {
+        const dotsInterval = setInterval(() => {
             setDots(prev => (prev.length >= 3 ? '' : prev + '.'));
         }, 500);
 
-        const generateDeck = async () => {
-            const hasDetails = companyDetails && typeof companyDetails === 'string' && companyDetails.trim().length > 0;
-            const hasUrls = urls && Array.isArray(urls) && urls.length > 0;
+        if (!deckId) {
+            setError("No deck ID provided. Please go back and start the wizard again.");
+            clearInterval(dotsInterval);
+            return;
+        }
 
-            if (!hasDetails && !hasUrls) {
-                setError("No company details or URLs provided. Please go back and fill out the wizard.");
-                return;
-            }
-
+        const pollForDeck = async () => {
             try {
-                // Calls are now directed to the new apiService which simulates a backend
-                const deckData: DeckGenerationResult = hasDetails
-                    ? await generateDeckFromText(companyDetails)
-                    : await generateDeckFromUrls(urls);
-                
-                // Construct a Deck object compatible with the editor
-                const newDeck = {
-                    id: `deck-${Date.now()}`,
-                    title: deckData.title,
-                    template: 'default', // default template for now
-                    slides: deckData.slides,
-                };
+                const { data, error } = await supabase
+                    .from('slides')
+                    .select('id')
+                    .eq('deck_id', deckId)
+                    .limit(1);
 
-                // Persist the generated deck to session storage to prevent data loss on refresh
-                sessionStorage.setItem(`deck-${newDeck.id}`, JSON.stringify(newDeck));
-                
-                navigate(`/pitch-decks/${newDeck.id}/edit`, { state: { generatedDeck: newDeck } });
+                if (error) {
+                    // Don't throw, just log. We'll keep polling.
+                    console.error('Polling error:', error);
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    // Success! Slides exist.
+                    clearInterval(pollingInterval);
+                    clearInterval(dotsInterval);
+                    navigate(`/pitch-decks/${deckId}/edit`);
+                }
             } catch (err) {
-                setError(err instanceof Error ? err.message : "An unknown error occurred.");
+                // Catch unexpected errors
+                setError(err instanceof Error ? err.message : "An unknown error occurred during polling.");
+                clearInterval(pollingInterval);
+                clearInterval(dotsInterval);
             }
         };
-        
-        generateDeck();
 
+        const pollingInterval = setInterval(pollForDeck, 3000); // Poll every 3 seconds
+
+        // Cleanup function
         return () => {
-            clearInterval(interval);
+            clearInterval(dotsInterval);
+            clearInterval(pollingInterval);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [deckId, navigate]);
 
     if (error) {
         return (
@@ -82,6 +85,7 @@ const GeneratingScreen: React.FC = () => {
                 <p className="text-gray-600">
                     Our AI is crafting your story. This might take a moment.
                 </p>
+                <p className="text-sm text-gray-500 mt-2">(We'll redirect you automatically when it's ready)</p>
             </div>
         </div>
     );

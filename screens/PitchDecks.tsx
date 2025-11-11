@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
+import { Deck } from '../data/decks';
 
 // --- ICONS ---
 const Wand2Icon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
@@ -10,14 +12,6 @@ const SearchIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://ww
 const FilterIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
 const PresentationIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></svg>;
 const ChevronDownIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m6 9 6 6 6-6"/></svg>;
-
-// --- DATA ---
-const recommendedTemplates = [
-    { title: "Startup Pitch", description: "Perfect for seed-stage fundraising.", tag: "Fundraising", imageUrl: "https://storage.googleapis.com/aistudio-hosting/docs/service-web.png" },
-    { title: "Product Demo", description: "Showcase your product features.", tag: "Product", imageUrl: "https://storage.googleapis.com/aistudio-hosting/docs/service-mvp.png", isPremium: true },
-    { title: "Sales Proposal", description: "Win more deals with clarity.", tag: "Sales", imageUrl: "https://storage.googleapis.com/aistudio-hosting/docs/service-brand.png" },
-    { title: "Quarterly Review", description: "Share progress with stakeholders.", tag: "Internal", imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop" },
-]
 
 // --- SUB-COMPONENTS ---
 const CreationCard: React.FC<{ title: string; description: string; buttonText: string; link: string; icon: React.ReactNode }> = ({ title, description, buttonText, link, icon }) => (
@@ -31,30 +25,57 @@ const CreationCard: React.FC<{ title: string; description: string; buttonText: s
     </div>
 );
 
-const TemplateCard: React.FC<typeof recommendedTemplates[0]> = ({ title, description, tag, imageUrl, isPremium }) => (
-     <div className="bg-white rounded-lg border border-gray-200/80 shadow-sm overflow-hidden group">
+const DeckCard: React.FC<{ deck: Deck }> = ({ deck }) => (
+    <Link to={`/pitch-decks/${deck.id}/edit`} className="block bg-white rounded-lg border border-gray-200/80 shadow-sm overflow-hidden group">
         <div className="aspect-video bg-gray-100 relative">
-            <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
-            {isPremium && <span className="absolute top-2 right-2 bg-brand-mustard text-brand-blue text-xs font-bold px-2 py-1 rounded-full">Premium</span>}
+            {/* You could fetch the first slide's image here */}
+            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                <PresentationIcon className="w-12 h-12"/>
+            </div>
         </div>
         <div className="p-4">
-             <h3 className="font-bold text-brand-blue">{title}</h3>
-             <p className="text-sm text-gray-500 mt-1 mb-3">{description}</p>
-             <span className="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded-full">{tag}</span>
+            <h3 className="font-bold text-brand-blue truncate group-hover:text-brand-orange">{deck.title}</h3>
+            <p className="text-sm text-gray-500 mt-1">{deck.slides?.length || 0} slides</p>
         </div>
-     </div>
+    </Link>
 );
 
 
 // --- MAIN COMPONENT ---
 const PitchDecks: React.FC = () => {
+    const [decks, setDecks] = useState<Deck[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchDecks = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const { data, error } = await supabase
+                    .from('decks')
+                    .select('*, slides(*)')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                setDecks(data || []);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to fetch decks');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDecks();
+    }, []);
+
   return (
     <div className="space-y-12">
       {/* 1. Header */}
       <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-brand-blue">Good morning, There</h1>
-            <p className="text-gray-500 mt-1">0 decks ready</p>
+            <h1 className="text-3xl lg:text-4xl font-bold text-brand-blue">My Presentations</h1>
+            <p className="text-gray-500 mt-1">{decks.length} deck{decks.length !== 1 && 's'} created</p>
         </div>
         <Link
           to="/pitch-decks/new"
@@ -64,21 +85,10 @@ const PitchDecks: React.FC = () => {
         </Link>
       </header>
 
-      {/* 2. Create New Presentation */}
-      <section>
-        <h2 className="text-2xl font-bold text-brand-blue mb-6">Create New Presentation</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <CreationCard title="AI Generate" description="Create with artificial intelligence" buttonText="Get Started" link="/pitch-decks/new" icon={<Wand2Icon />} />
-            <CreationCard title="Template Library" description="Browse 50+ professional templates" buttonText="Browse" link="#" icon={<LayoutTemplateIcon />} />
-            <CreationCard title="Start Blank" description="Build from scratch with full control" buttonText="Create" link="/pitch-decks/new" icon={<FilePlus2Icon />} />
-            <CreationCard title="Budget Deck" description="Quick financial presentation" buttonText="Start" link="#" icon={<BarChart3Icon />} />
-        </div>
-      </section>
-
-      {/* 3. My Presentations */}
+      {/* 2. My Presentations */}
       <section>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-brand-blue">My Presentations</h2>
+            <h2 className="text-2xl font-bold text-brand-blue">All Decks</h2>
             <div className="flex items-center gap-4">
                 <div className="relative flex-grow">
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -91,34 +101,55 @@ const PitchDecks: React.FC = () => {
                 </button>
             </div>
         </div>
-
-        <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-12 text-center flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center">
-                <PresentationIcon />
-            </div>
-            <h3 className="text-xl font-bold text-brand-blue mt-4">No presentations yet</h3>
-            <p className="text-gray-500 mt-2 max-w-sm">Create your first deck to get started. Use our AI wizard or start from a template.</p>
-            <Link to="/pitch-decks/new" className="mt-6 inline-block bg-brand-orange text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors duration-200 shadow-md">
-                + Create First Deck
-            </Link>
-        </div>
-      </section>
-
-      {/* 4. Recommended Templates */}
-       <section>
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-brand-blue">Recommended Templates</h2>
-                <Link to="#" className="font-semibold text-brand-orange hover:underline">
-                    Browse All &rarr;
-                </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {recommendedTemplates.map(template => (
-                    <TemplateCard key={template.title} {...template} />
+        
+        {loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-white rounded-lg border border-gray-200/80 shadow-sm overflow-hidden">
+                        <div className="aspect-video bg-gray-200"></div>
+                        <div className="p-4 space-y-2">
+                            <div className="h-5 bg-gray-300 rounded w-3/4"></div>
+                            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                    </div>
                 ))}
             </div>
-        </section>
+        )}
 
+        {!loading && error && <p className="text-red-500">{error}</p>}
+
+        {!loading && !error && decks.length === 0 && (
+            <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-12 text-center flex flex-col items-center">
+                <div className="w-20 h-20 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center">
+                    <PresentationIcon />
+                </div>
+                <h3 className="text-xl font-bold text-brand-blue mt-4">No presentations yet</h3>
+                <p className="text-gray-500 mt-2 max-w-sm">Create your first deck to get started. Use our AI wizard or start from a template.</p>
+                <Link to="/pitch-decks/new" className="mt-6 inline-block bg-brand-orange text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors duration-200 shadow-md">
+                    + Create First Deck
+                </Link>
+            </div>
+        )}
+        
+        {!loading && !error && decks.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {decks.map(deck => (
+                    <DeckCard key={deck.id} deck={deck} />
+                ))}
+            </div>
+        )}
+      </section>
+
+      {/* 3. Create New Presentation */}
+      <section>
+        <h2 className="text-2xl font-bold text-brand-blue mb-6">Start from Scratch</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <CreationCard title="AI Generate" description="Create with artificial intelligence" buttonText="Get Started" link="/pitch-decks/new" icon={<Wand2Icon />} />
+            <CreationCard title="Template Library" description="Browse 50+ professional templates" buttonText="Browse" link="#" icon={<LayoutTemplateIcon />} />
+            <CreationCard title="Start Blank" description="Build from scratch with full control" buttonText="Create" link="/pitch-decks/new" icon={<FilePlus2Icon />} />
+            <CreationCard title="Budget Deck" description="Quick financial presentation" buttonText="Start" link="#" icon={<BarChart3Icon />} />
+        </div>
+      </section>
     </div>
   );
 };

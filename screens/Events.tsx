@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getEvents, Event } from '../services/eventService';
+import { supabase } from '../lib/supabaseClient';
 
-const EventCard: React.FC<Event> = ({ id, title, date, location, description }) => {
-    const eventDate = new Date(date);
+export interface Event {
+    id: number | string;
+    title: string;
+    start_date: string; // ISO string format from backend
+    location: string;
+    description: string;
+}
+
+const EventCard: React.FC<Event> = ({ id, title, start_date, location, description }) => {
+    const eventDate = new Date(start_date);
     const month = eventDate.toLocaleString('default', { month: 'short' }).toUpperCase();
     const day = eventDate.getDate();
 
@@ -36,10 +44,15 @@ const Events: React.FC = () => {
             try {
                 setIsLoading(true);
                 setError(null);
-                const fetchedEvents = await getEvents();
-                setEvents(fetchedEvents);
+                const { data, error } = await supabase
+                    .from('events')
+                    .select('*')
+                    .order('start_date', { ascending: true });
+
+                if (error) throw error;
+                setEvents(data || []);
             } catch (err) {
-                setError(err instanceof Error ? err.message : "An unknown error occurred.");
+                setError(err instanceof Error ? `Database Error: ${err.message}` : "An unknown error occurred.");
             } finally {
                 setIsLoading(false);
             }

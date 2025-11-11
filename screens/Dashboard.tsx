@@ -207,9 +207,11 @@ const Dashboard: React.FC = () => {
                  <h3 className="font-bold text-lg text-brand-blue mb-4">Quick Actions</h3>
                  <div className="grid grid-cols-2 gap-4">
                      <ActionCard icon={<WandIcon />} title="Create New Deck" link="/pitch-decks/new" delay={100} />
-                     <ActionCard icon={<CalendarIcon />} title="Find AI Events" link="/events" delay={200} />
-                     <ActionCard icon={<UsersIcon />} title="Join a Founder Circle" link="#" delay={300} />
-                     <ActionCard icon={<GiftIcon />} title="Claim Startup Perks" link="/perks" delay={400} />
+                     <ActionCard icon={<PresentationIcon />} title="My Decks" link="/pitch-decks" delay={200} />
+                     <ActionCard icon={<CalendarIcon />} title="Event Calendar" link="/dashboard/my-events" delay={300} />
+                     <ActionCard icon={<BriefcaseIcon />} title="Community Jobs" link="/jobs" delay={400} />
+                     <ActionCard icon={<GiftIcon />} title="Claim Startup Perks" link="/perks" delay={500} />
+                     <ActionCard icon={<UsersIcon />} title="Join a Founder Circle" link="#" delay={600} />
                  </div>
             </section>
             
