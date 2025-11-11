@@ -453,7 +453,7 @@ const DeckEditor: React.FC = () => {
             setPublishProgressMessage('Finalizing');
             await new Promise(res => setTimeout(res, 1000));
 
-            navigate(`/dashboard/decks/${deck.id}/publish-success`, { state: { deckTitle: deck.title } });
+            navigate(`/pitch-decks/${deck.id}/publish-success`, { state: { deckTitle: deck.title } });
 
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during publishing.";

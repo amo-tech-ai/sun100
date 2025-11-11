@@ -61,7 +61,7 @@ const PublishSuccessScreen: React.FC = () => {
                         View Dashboard
                     </Link>
                     <Link
-                        to={`/dashboard/decks/${id}/edit`}
+                        to={`/pitch-decks/${id}/edit`}
                         className="w-full sm:w-auto bg-[#E87C4D] text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors"
                     >
                         Continue Editing
