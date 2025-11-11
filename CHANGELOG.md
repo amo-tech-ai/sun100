@@ -5,35 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [5.1.0] - 2024-08-23
-
-### Changed
-- **Major Architectural Refactor:** Refactored the monolithic `services/geminiService.ts` into five domain-specific services (`deckGenerationService`, `contentService`, `visualService`, `analysisService`, `suggestionService`) to improve modularity, maintainability, and scalability. All components have been updated to use the new service modules.
-
-## [5.0.0] - 2024-08-22
+## [2.2.0] - 2024-08-18
 
 ### Added
-- **Event Creation Wizard:** Implemented a new multi-step Event Creation Wizard (`/events/new`) that allows users to create and publish community events. The wizard's UI and layout are consistent with existing wizards on the platform for a unified user experience.
-- **My Events Page Update:** The "My Events" page (`/my-events`) now features a primary "Create New Event" button and a new "Drafts" tab in preparation for persistent draft functionality.
+- **URL-based Deck Generation:** Implemented a new "From URL" feature in the Pitch Deck Wizard. Users can now provide up to 5 website URLs. The application uses the Gemini API's `urlContext` tool to crawl the sites, extract business context, and automatically generate a 10-slide pitch deck outline.
 
-## [4.0.0] - 2024-08-20
-
-### Added
-- **Founder Dashboard Implementation (Phase 2):** Completed the implementation of the new Founder Dashboard experience as outlined in the engineering blueprint.
-  - **Main Dashboard (`/dashboard`):** The new dashboard UI is live, providing a personalized hub for founders.
-  - **Startup Profile Wizard (`/startup-wizard`):** Implemented the multi-step wizard for creating a public startup profile.
-  - **Pitch Decks Hub (`/pitch-decks`):** Implemented the dedicated workspace for managing and creating presentations.
-  - **My Events (`/my-events`):** Implemented the personal dashboard for tracking event registrations.
-- **Sitemap Update:** The application sitemap has been updated to reflect all new dashboard routes.
-
-## [3.0.0] - 2024-08-19
+## [2.1.0] - 2024-08-15
 
 ### Added
-- **Founder Dashboard Expansion (Phase 1):** Implemented the first stage of the new Founder Dashboard experience.
-  - **Dashboard Redesign:** Completely overhauled the main `/dashboard` page into a dynamic hub featuring a hero welcome with a progress tracker, a row of key metric cards, a grid of quick actions, and modules for upcoming events and recommended jobs.
-  - **New Information Architecture:** Restructured the application's routing in `App.tsx` to support the expanded dashboard.
-  - **Placeholder Pages:** Created placeholder pages and routes for upcoming features (`/startup-wizard`, `/pitch-decks`, `/my-events`) to establish the full sitemap.
-  - **Updated Navigation:** The main sidebar (`Sidebar.tsx`) has been updated with new links to the expanded dashboard sections.
+- **Collapsible Main Sidebar:** Implemented a collapsible desktop sidebar to maximize content space. The sidebar state is persisted in `localStorage`, it can be toggled with a `Cmd/Ctrl + B` keyboard shortcut, and includes accessibility features like tooltips and ARIA attributes.
 
 ## [2.0.0] - 2024-08-13
 
@@ -90,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Collapsible Sidebar:** The left slide outline panel can now be collapsed to a minimal view, maximizing editor space.
 - **Full-Screen Editing:** The editor panel expands to fill the available area when the sidebar is collapsed, creating a more focused workspace.
 - **Slide Navigation Controls:** Added "Previous" and "Next" arrow buttons to the editor panel for easier navigation between slides.
-- **Keyboard Shortcuts:** Implemented keyboard shortcuts for navigating slides (Arrow keys) and toggling the sidebar (Cmd/Ctrl + [).
+- **Keyboard Shortcuts:** Implemented keyboard shortcuts for navigating slides (Arrow Keys) and toggling the sidebar (Cmd/Ctrl + [).
 
 ### Changed
 - **Editor Layout:** The main `DeckEditor` now uses a dynamic layout to support the new collapsible sidebar and full-screen view.
