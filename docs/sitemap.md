@@ -19,10 +19,11 @@ These routes are accessible to all visitors and are wrapped in a public-facing l
 These routes are intended for logged-in users and are wrapped in the main application layout which includes the `Sidebar`.
 
 -   **`/dashboard`**: `Dashboard.tsx` - The main user dashboard, listing their pitch decks.
--   **`/decks/new`**: `WizardSteps.tsx` - The guided wizard for creating a new deck.
--   **`/decks/generating`**: `GeneratingScreen.tsx` - The loading screen shown during AI generation.
--   **`/decks/:id/edit`**: `DeckEditor.tsx` - The core editor for modifying a specific deck.
--   **`/sitemap`**: `Sitemap.tsx` - A developer-facing page that visualizes this sitemap.
+-   **`/dashboard/new`**: `WizardSteps.tsx` - The guided wizard for creating a new deck.
+-   **`/dashboard/generating`**: `GeneratingScreen.tsx` - The loading screen shown during AI generation.
+-   **`/dashboard/decks/:id/edit`**: `DeckEditor.tsx` - The core editor for modifying a specific deck.
+-   **`/dashboard/decks/:id/publish-success`**: `PublishSuccessScreen.tsx` - Confirmation screen after publishing.
+-   **`/dashboard/sitemap`**: `Sitemap.tsx` - A developer-facing page that visualizes this sitemap.
 
 ---
 
@@ -30,7 +31,7 @@ These routes are intended for logged-in users and are wrapped in the main applic
 
 These routes render without the standard application layouts for a specialized, full-screen experience.
 
--   **`/decks/:id/present`**: `PresentationScreen.tsx` - The distraction-free, full-screen presentation mode.
+-   **`/dashboard/decks/:id/present`**: `PresentationScreen.tsx` - The distraction-free, full-screen presentation mode.
 
 ---
 

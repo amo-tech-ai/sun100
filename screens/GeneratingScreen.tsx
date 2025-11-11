@@ -61,7 +61,7 @@ const GeneratingScreen: React.FC = () => {
                     <h1 className="text-2xl font-bold text-red-600 mb-4">Generation Failed</h1>
                     <p className="text-gray-600 mb-6">{error}</p>
                     <button 
-                        onClick={() => navigate('/pitch-deck')}
+                        onClick={() => navigate('/dashboard/new')}
                         className="bg-[#E87C4D] text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90"
                     >
                         Try Again
