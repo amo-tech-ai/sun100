@@ -7,7 +7,6 @@ const EyeIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www
 const UploadIcon = (props: React.SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
 const GlobeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>;
 const MapPinIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
-const TicketIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v1a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-1a3 3 0 0 1 0-6V8a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>;
 
 const steps = ["Overview", "Details", "Media", "Tickets", "Review"];
 
@@ -157,8 +156,8 @@ const EventWizard: React.FC = () => {
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
                                 <div className="flex gap-4">
-                                    <label className="flex items-center gap-2 p-3 border rounded-md flex-1 cursor-pointer"><input type="radio" name="locationType" value="virtual" checked={eventData.locationType === 'virtual'} onChange={handleChange} className="form-radio" /><GlobeIcon /> Virtual</label>
-                                    <label className="flex items-center gap-2 p-3 border rounded-md flex-1 cursor-pointer"><input type="radio" name="locationType" value="in-person" checked={eventData.locationType === 'in-person'} onChange={handleChange} className="form-radio" /><MapPinIcon /> In-Person</label>
+                                    <label className="flex items-center gap-2 p-3 border rounded-md flex-1 cursor-pointer"><input type="radio" name="locationType" value="virtual" checked={eventData.locationType === 'virtual'} onChange={handleChange} className="form-radio text-[#E87C4D] focus:ring-[#E87C4D]" /><GlobeIcon /> Virtual</label>
+                                    <label className="flex items-center gap-2 p-3 border rounded-md flex-1 cursor-pointer"><input type="radio" name="locationType" value="in-person" checked={eventData.locationType === 'in-person'} onChange={handleChange} className="form-radio text-[#E87C4D] focus:ring-[#E87C4D]" /><MapPinIcon /> In-Person</label>
                                 </div>
                             </div>
                             {eventData.locationType === 'virtual' ? (
@@ -209,8 +208,8 @@ const EventWizard: React.FC = () => {
                              <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Ticket Access</label>
                                 <div className="flex gap-4">
-                                     <label className="flex items-center gap-2 p-3 border rounded-md flex-1 cursor-pointer"><input type="radio" name="ticketing.access" value="free" checked={eventData.ticketing.access === 'free'} onChange={handleChange} className="form-radio" />Free Event</label>
-                                     <label className="flex items-center gap-2 p-3 border rounded-md flex-1 cursor-pointer"><input type="radio" name="ticketing.access" value="paid" checked={eventData.ticketing.access === 'paid'} onChange={handleChange} className="form-radio" />Paid Event</label>
+                                     <label className="flex items-center gap-2 p-3 border rounded-md flex-1 cursor-pointer"><input type="radio" name="ticketing.access" value="free" checked={eventData.ticketing.access === 'free'} onChange={handleChange} className="form-radio text-[#E87C4D] focus:ring-[#E87C4D]" />Free Event</label>
+                                     <label className="flex items-center gap-2 p-3 border rounded-md flex-1 cursor-pointer"><input type="radio" name="ticketing.access" value="paid" checked={eventData.ticketing.access === 'paid'} onChange={handleChange} className="form-radio text-[#E87C4D] focus:ring-[#E87C4D]" />Paid Event</label>
                                 </div>
                             </div>
                             {eventData.ticketing.access === 'paid' && (
@@ -235,11 +234,12 @@ const EventWizard: React.FC = () => {
                 return (
                     <div>
                         <h1 className="text-2xl font-bold font-heading mb-6">Review & Publish</h1>
-                        <div className="space-y-4 text-gray-700 bg-gray-50 p-4 rounded-md">
-                           <p><strong>Title:</strong> {eventData.title || '...'}</p>
-                           <p><strong>Date:</strong> {eventData.startsAtDate ? new Date(eventData.startsAtDate).toLocaleDateString() : '...'}</p>
-                           <p><strong>Location:</strong> {eventData.locationType === 'virtual' ? eventData.virtualLink : eventData.address}</p>
+                        <div className="space-y-4 text-gray-700 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                           <p><strong>Title:</strong> {eventData.title || 'N/A'}</p>
+                           <p><strong>Date:</strong> {eventData.startsAtDate ? new Date(eventData.startsAtDate).toLocaleDateString() : 'N/A'}</p>
+                           <p><strong>Location:</strong> {eventData.locationType === 'virtual' ? eventData.virtualLink || 'N/A' : eventData.address || 'N/A'}</p>
                            <p><strong>Tickets:</strong> {eventData.ticketing.access === 'free' ? 'Free' : `$${eventData.ticketing.price} - ${eventData.ticketing.quantity} available`}</p>
+                           <p><strong>Description:</strong> {eventData.description || 'N/A'}</p>
                         </div>
                     </div>
                 );
