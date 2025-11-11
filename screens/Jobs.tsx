@@ -58,7 +58,7 @@ const Jobs: React.FC = () => {
     }, [sortOrder]);
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div>
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold text-gray-800">Join a Top AI Startup</h1>
                 <p className="text-xl text-gray-600 mt-4">Find your next role at a company in the sun ai startup community.</p>

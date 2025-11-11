@@ -20,7 +20,11 @@ const Signup: React.FC = () => {
             if (error) {
                 throw error;
             }
-            navigate('/dashboard');
+            // On successful signup, Supabase sends a confirmation email.
+            // You might want to navigate to a "Please check your email" page here.
+            // For now, navigating to dashboard assumes auto-confirmation is enabled.
+            alert('Signup successful! Please check your email to confirm your account.');
+            navigate('/login');
         } catch (err) {
             setError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {

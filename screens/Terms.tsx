@@ -5,7 +5,7 @@ const Terms: React.FC = () => {
         <>
             <title>Terms of Service - sun ai startup</title>
             <meta name="description" content="Read the Terms of Service for using the sun ai startup platform." />
-            <div className="bg-white p-6 md:p-10 rounded-lg shadow-md prose max-w-4xl mx-auto">
+            <div className="bg-white p-6 md:p-10 rounded-lg shadow-md prose">
                 <h1>Terms of Service</h1>
                 <p>Last updated: {new Date().toLocaleDateString()}</p>
 

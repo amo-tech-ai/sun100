@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 const PerkDetail: React.FC = () => {
     const { id } = useParams();
     return (
-        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md max-w-4xl mx-auto">
+        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md">
              <Link to="/perks" className="text-[#E87C4D] hover:underline">&larr; Back to all perks</Link>
             <div className="flex items-center gap-6 mt-4">
                 <img src="https://storage.googleapis.com/aistudio-hosting/docs/aws-logo.svg" alt="AWS logo" className="h-16"/>

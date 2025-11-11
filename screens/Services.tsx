@@ -16,7 +16,7 @@ const ServiceCard: React.FC<{ title: string; description: string; link: string; 
 
 const Services: React.FC = () => {
     return (
-        <div className="max-w-5xl mx-auto">
+        <div>
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold text-gray-800">Agency Services</h1>
                 <p className="text-xl text-gray-600 mt-4">Beyond our AI tools, our expert team offers bespoke services to bring your vision to life.</p>

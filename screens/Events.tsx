@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
-
-export interface Event {
-    id: number | string;
-    title: string;
-    start_date: string; // ISO string format from backend
-    location: string;
-    description: string;
-}
+import { getEvents, Event } from '../services/eventService';
 
 const EventCard: React.FC<Event> = ({ id, title, start_date, location, description }) => {
     const eventDate = new Date(start_date);
@@ -44,22 +36,17 @@ const Events: React.FC = () => {
             try {
                 setIsLoading(true);
                 setError(null);
-                const { data, error } = await supabase
-                    .from('events')
-                    .select('*')
-                    .order('start_date', { ascending: true });
-
-                if (error) throw error;
-                setEvents(data || []);
+                const fetchedEvents = await getEvents();
+                setEvents(fetchedEvents);
             } catch (err) {
-                setError(err instanceof Error ? `Database Error: ${err.message}` : "An unknown error occurred.");
+                setError(err instanceof Error ? err.message : "An unknown error occurred.");
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchEvents();
-    }, []); // Empty dependency array means this runs once on mount
+    }, []);
 
     const renderContent = () => {
         if (isLoading) {
@@ -111,7 +98,7 @@ const Events: React.FC = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div>
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold text-gray-800">Community Events</h1>
                 <p className="text-xl text-gray-600 mt-4">Join our workshops, networking sessions, and talks.</p>

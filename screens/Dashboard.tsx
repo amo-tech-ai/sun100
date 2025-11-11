@@ -107,7 +107,7 @@ const Dashboard: React.FC = () => {
   };
   
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-7xl mx-auto">
        <style>{`
         @keyframes fade-in-up {
             from { opacity: 0; transform: translateY(10px); }
