@@ -76,12 +76,25 @@ This checklist verifies the functionality of the wizard from initiation to compl
 
 ---
 
-### 4. Conclusion & Next Steps
+### 4. Conclusion & Next Steps (Backend)
 
 -   **Current Status:** The client-side implementation of the Event Creation Wizard is **feature-complete**. The UI, multi-step logic, state management, live preview, and session-based draft persistence are all fully functional and validated.
 
--   **Next Steps:** The immediate priority is to build out the backend integration:
+-   **Next Steps (Backend):** The immediate priority is to build out the backend integration:
     1.  Create a Supabase Edge Function to handle the `upsertDraft` logic for persistent drafts.
     2.  Create a `publishEvent` Edge Function that performs final validation and inserts the event into the database.
     3.  Integrate these function calls into `EventWizard.tsx`.
     4.  Implement the post-publication redirect and user feedback notifications.
+
+---
+
+### 5. Frontend Polish & Pre-Handoff Tasks
+
+This section outlines crucial client-side improvements that can be implemented before the backend handoff. Completing these tasks will ensure a more robust, user-friendly, and maintainable frontend.
+
+| Status | Task | Description & Rationale |
+| :---: | :--- | :--- |
+| 🔴 | **Implement Robust Client-Side Validation** | **Action:** Create a Zod schema for the event form and integrate it to provide real-time, inline error messages for each field. **Rationale:** This provides immediate, clear feedback to the user, improving the UX and ensuring data integrity before it's ever sent to the backend. |
+| 🔴 | **Enhance UI/UX and User Feedback** | **Action:** Implement clear `disabled`, `loading`, and `error` states for all buttons. Add an image preview for the cover image upload. Add tooltips to disabled buttons explaining why they are inactive. **Rationale:** These visual cues make the application feel more responsive and professional, reducing user confusion. |
+| 🔴 | **Improve Data Integrity** | **Action:** Automatically combine date and time inputs into a single UTC ISO string. Ensure the price input for paid events is correctly converted and stored as an integer (cents). **Rationale:** This ensures data is timezone-agnostic, prevents floating-point errors, and aligns the frontend data model with backend best practices. |
+| 🔴 | **Code Quality & Maintainability** | **Action:** Refactor the `renderStepContent` switch statement into smaller, dedicated components for each wizard step (e.g., `EventOverviewStep.tsx`). **Rationale:** This improves code readability, makes the wizard easier to debug, and isolates concerns, following the single-responsibility principle. |

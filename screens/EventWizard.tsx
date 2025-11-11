@@ -85,7 +85,7 @@ const EventWizard: React.FC = () => {
         switch (currentStep) {
             case 0: return eventData.title.trim() && eventData.type.trim() && eventData.description.trim();
             case 1: return eventData.startsAtDate && eventData.startsAtTime && eventData.endsAtDate && eventData.endsAtTime && (eventData.locationType === 'virtual' ? eventData.virtualLink.trim() : eventData.venueName.trim() && eventData.address.trim());
-            case 2: return eventData.coverImageName.trim();
+            case 2: return true;
             case 3: return eventData.ticketing.access === 'free' || (eventData.ticketing.price > 0 && eventData.ticketing.quantity > 0);
             default: return true;
         }
