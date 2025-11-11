@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../hooks/useAuth';
+import { Event } from './Events';
 
 const CheckCircleIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -10,50 +13,96 @@ const CheckCircleIcon = () => (
 
 const EventDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const registrationKey = `event-registration-${id}`;
-
+    const { user } = useAuth();
+    
+    const [event, setEvent] = useState<Event | null>(null);
     const [isRegistered, setIsRegistered] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-    // Check registration status on mount
-    useEffect(() => {
-        const storedStatus = localStorage.getItem(registrationKey);
-        if (storedStatus === 'true') {
-            setIsRegistered(true);
+    const checkRegistration = useCallback(async () => {
+        if (!user || !id) return;
+        try {
+            const { data, error } = await supabase
+                .from('event_registrations')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('event_id', id)
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error; // PGRST116: no rows found
+            setIsRegistered(!!data);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Could not check registration status.");
         }
-    }, [registrationKey]);
+    }, [user, id]);
+
+    useEffect(() => {
+        const fetchEvent = async () => {
+            if (!id) return;
+            setIsLoading(true);
+            try {
+                const { data, error } = await supabase.from('events').select('*').eq('id', id).single();
+                if (error) throw error;
+                setEvent(data);
+                await checkRegistration();
+            } catch (err) {
+                 setError(err instanceof Error ? err.message : "Could not fetch event details.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchEvent();
+    }, [id, checkRegistration]);
+
 
     const handleRegister = async () => {
+        if (!user || !id) {
+            setError("You must be logged in to register.");
+            return;
+        }
         setIsLoading(true);
         setError(null);
-        await new Promise(resolve => setTimeout(resolve, 1500));
         try {
-            localStorage.setItem(registrationKey, 'true');
+            const { error } = await supabase.from('event_registrations').insert({ user_id: user.id, event_id: id });
+            if (error) throw error;
             setIsRegistered(true);
             setShowSuccessMessage(true);
             setTimeout(() => setShowSuccessMessage(false), 3000); // Hide after 3 seconds
         } catch (err) {
-            setError("Failed to save registration. Please try again.");
+            setError(err instanceof Error ? `Registration failed: ${err.message}` : "An unknown error occurred.");
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleUnregister = async () => {
+         if (!user || !id) return;
         setIsLoading(true);
         setError(null);
-        await new Promise(resolve => setTimeout(resolve, 1500));
         try {
-            localStorage.removeItem(registrationKey);
+            const { error } = await supabase.from('event_registrations').delete().match({ user_id: user.id, event_id: id });
+            if (error) throw error;
             setIsRegistered(false);
         } catch (err) {
-            setError("Failed to unregister. Please try again.");
+            setError(err instanceof Error ? `Failed to unregister: ${err.message}` : "An unknown error occurred.");
         } finally {
             setIsLoading(false);
         }
     };
+
+    if (isLoading && !event) {
+        return <div className="text-center p-10">Loading event...</div>;
+    }
+
+    if (error) {
+        return <div className="text-center p-10 text-red-600">Error: {error}</div>;
+    }
+    
+    if (!event) {
+        return <div className="text-center p-10">Event not found.</div>
+    }
 
     const renderActionArea = () => {
         if (showSuccessMessage) {
@@ -106,14 +155,14 @@ const EventDetail: React.FC = () => {
     return (
         <div className="bg-white p-6 md:p-10 rounded-lg shadow-md max-w-4xl mx-auto">
             <Link to="/events" className="text-[#E87C4D] hover:underline">&larr; Back to all events</Link>
-            <h1 className="text-3xl font-bold text-gray-800 mt-4">Pitch Deck Masterclass: From Idea to Investment</h1>
-            <p className="text-lg text-gray-500 mt-2">Date: September 15, 2024</p>
-            <p className="text-lg text-gray-500">Location: Virtual</p>
+            <h1 className="text-3xl font-bold text-gray-800 mt-4">{event.title}</h1>
+            <p className="text-lg text-gray-500 mt-2">Date: {new Date(event.start_date).toLocaleString()}</p>
+            <p className="text-lg text-gray-500">Location: {event.location}</p>
             <div className="prose prose-lg mt-6">
-                 <p>This is placeholder content for event #{id}. Join us for a deep-dive workshop on crafting a narrative that investors can't ignore.</p>
-                <p>In this session, we will cover the 10 essential slides, how to tell a compelling story with data, and common mistakes to avoid when pitching.</p>
+                 <p>{event.description}</p>
             </div>
-            {renderActionArea()}
+            {user && renderActionArea()}
+            {!user && <p className="mt-8 text-lg font-semibold text-gray-700">Please <Link to="/login" className="text-brand-orange underline">log in</Link> to register for this event.</p>}
             {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
         </div>
     );

@@ -1,16 +1,33 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const from = location.state?.from?.pathname || '/dashboard';
+
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock authentication
-        if (email && password) {
-            navigate('/dashboard');
+        setError(null);
+        setLoading(true);
+        try {
+            // FIX: The Supabase `signInWithPassword` function expects a single object with email and password properties.
+            const { error } = await login({ email, password });
+            if (error) {
+                throw error;
+            }
+            navigate(from, { replace: true });
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "An unknown error occurred.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -20,6 +37,7 @@ const Login: React.FC = () => {
             <meta name="description" content="Log in to your sun ai startup account." />
             <div className="bg-white p-6 md:p-10 rounded-lg shadow-md max-w-md mx-auto">
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-6 text-center">Log In</h1>
+                {error && <p className="bg-red-100 text-red-700 p-3 rounded-md mb-4">{error}</p>}
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
@@ -50,9 +68,10 @@ const Login: React.FC = () => {
                     <div>
                         <button
                             type="submit"
-                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#E87C4D] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E87C4D]"
+                            disabled={loading}
+                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#E87C4D] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E87C4D] disabled:bg-gray-400"
                         >
-                            Log In
+                            {loading ? 'Logging in...' : 'Log In'}
                         </button>
                     </div>
                 </form>

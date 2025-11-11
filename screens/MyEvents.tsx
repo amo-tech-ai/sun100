@@ -66,11 +66,12 @@ const statusConfig = {
 const TaskCard: React.FC<{ task: Task }> = ({ task }) => {
     const config = statusConfig[task.status];
     const Icon = config.icon;
+    const isCompleted = task.status === 'completed';
 
     return (
-        <div className={`bg-white p-4 rounded-lg shadow-sm border-l-4 ${config.borderColor} flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4`}>
+        <div className={`p-4 rounded-lg shadow-sm border-l-4 ${config.borderColor} flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-opacity ${isCompleted ? 'bg-gray-50 opacity-70' : 'bg-white'}`}>
             <div>
-                <h3 className="font-bold text-lg text-brand-blue">{task.title}</h3>
+                <h3 className={`font-bold text-lg text-brand-blue ${isCompleted ? 'line-through' : ''}`}>{task.title}</h3>
                 <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
                     <span className="flex items-center gap-1.5"><CalendarDaysIcon /> Due: {formatDate(task.dueDate)}</span>
                     <span className="flex items-center gap-1.5"><ClockIcon /> Created: {formatDate(task.creationDate)}</span>
@@ -92,8 +93,17 @@ const MyEvents: React.FC = () => {
 
     const sortedTasks = useMemo(() => {
         return [...tasks].sort((a, b) => {
+            // Primary sort: completed tasks go to the bottom
+            if (a.status === 'completed' && b.status !== 'completed') {
+                return 1;
+            }
+            if (a.status !== 'completed' && b.status === 'completed') {
+                return -1;
+            }
+
+            // Secondary sort: based on user's selection
             if (sortOrder === 'dueDate') {
-                return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(); // Ascending
+                return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(); // Ascending for upcoming/overdue
             }
             if (sortOrder === 'creationDate') {
                 return new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime(); // Descending

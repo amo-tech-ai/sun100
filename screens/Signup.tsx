@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const Signup: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const { signup } = useAuth();
     const navigate = useNavigate();
 
-    const handleSignup = (e: React.FormEvent) => {
+    const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock authentication
-        if (email && password) {
+        setError(null);
+        setLoading(true);
+        try {
+            // FIX: The Supabase `signUp` function expects a single object with email and password properties.
+            const { error } = await signup({ email, password });
+            if (error) {
+                throw error;
+            }
             navigate('/dashboard');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "An unknown error occurred.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -20,6 +34,7 @@ const Signup: React.FC = () => {
             <meta name="description" content="Create a new sun ai startup account." />
             <div className="bg-white p-6 md:p-10 rounded-lg shadow-md max-w-md mx-auto">
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-6 text-center">Create an Account</h1>
+                {error && <p className="bg-red-100 text-red-700 p-3 rounded-md mb-4">{error}</p>}
                 <form onSubmit={handleSignup} className="space-y-6">
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
@@ -50,9 +65,10 @@ const Signup: React.FC = () => {
                     <div>
                         <button
                             type="submit"
-                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#E87C4D] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E87C4D]"
+                            disabled={loading}
+                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#E87C4D] hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E87C4D] disabled:bg-gray-400"
                         >
-                            Sign Up
+                            {loading ? 'Signing up...' : 'Sign Up'}
                         </button>
                     </div>
                 </form>

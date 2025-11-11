@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { mockDeck, Deck, Slide } from '../data/decks';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Deck, Slide } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
+import { getDeckById, updateDeck, updateSlide } from '../services/deckService';
 import {
     generateSlideImage,
     editSlideImage,
@@ -21,7 +22,7 @@ import {
     suggestPieChart,
     SlideAnalysis,
     ResearchResult,
-} from '../services/apiService';
+} from '../services/aiService';
 
 
 // --- CONTEXT DEFINITION ---
@@ -93,12 +94,11 @@ const PanelLeftCloseIcon = () => (
 
 const DeckEditor: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const location = useLocation();
     const navigate = useNavigate();
-    const { generatedDeck } = location.state || {};
 
     const [deck, setDeck] = useState<Deck | null>(null);
     const [selectedSlide, setSelectedSlide] = useState<Slide | null>(null);
+    const [loading, setLoading] = useState(true);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
     const [isEditingImage, setIsEditingImage] = useState(false);
@@ -132,21 +132,26 @@ const DeckEditor: React.FC = () => {
     const [publishError, setPublishError] = useState<string | null>(null);
 
     useEffect(() => {
-        const storedDeckJson = sessionStorage.getItem(`deck-${id}`);
-        const storedDeck = storedDeckJson ? JSON.parse(storedDeckJson) : null;
-        const initialDeck = generatedDeck || storedDeck || mockDeck;
-        
-        setDeck(initialDeck);
-        if (initialDeck.slides.length > 0) {
-            setSelectedSlide(initialDeck.slides[0]);
-        }
-    }, [id, generatedDeck]);
-
-    useEffect(() => {
-        if (deck) {
-            sessionStorage.setItem(`deck-${deck.id}`, JSON.stringify(deck));
-        }
-    }, [deck]);
+        if (!id) return;
+        setLoading(true);
+        getDeckById(id)
+            .then(fetchedDeck => {
+                if (fetchedDeck) {
+                    setDeck(fetchedDeck);
+                    if (fetchedDeck.slides && fetchedDeck.slides.length > 0) {
+                        setSelectedSlide(fetchedDeck.slides[0]);
+                    }
+                } else {
+                    // Handle deck not found, maybe navigate away
+                    navigate('/404');
+                }
+            })
+            .catch(err => {
+                console.error("Error fetching deck:", err);
+                // Handle error display
+            })
+            .finally(() => setLoading(false));
+    }, [id, navigate]);
 
     useEffect(() => {
         if (!selectedSlide) return;
@@ -158,7 +163,6 @@ const DeckEditor: React.FC = () => {
             setResearchSuggestions([]);
             
             try {
-                // Now calling the new apiService
                 const { copilotSuggestions, imageSuggestions, researchSuggestions } = await fetchAllSuggestions(selectedSlide);
                 setCopilotSuggestions(copilotSuggestions);
                 setImageSuggestions(imageSuggestions);
@@ -186,33 +190,37 @@ const DeckEditor: React.FC = () => {
         setExtractedMetrics([]);
     }, []);
 
-    const handleTitleSave = useCallback((newTitle: string) => {
-        if (deck) {
-            setDeck({ ...deck, title: newTitle });
+    const handleTitleSave = useCallback(async (newTitle: string) => {
+        if (deck && deck.title !== newTitle) {
+            try {
+                await updateDeck(deck.id, { title: newTitle });
+                setDeck(prev => prev ? { ...prev, title: newTitle } : null);
+            } catch (err) {
+                console.error("Failed to save title:", err);
+            }
         }
     }, [deck]);
 
-    const updateSlide = useCallback((slideId: string, updates: Partial<Slide>) => {
-        if (!deck) return;
-        const updatedSlides = deck.slides.map(slide =>
-            slide.id === slideId ? { ...slide, ...updates } : slide
-        );
-        const updatedDeck = { ...deck, slides: updatedSlides };
-        setDeck(updatedDeck);
-        setSelectedSlide(updatedSlides.find(s => s.id === slideId) || null);
-    }, [deck]);
+    const updateLocalSlideState = useCallback((slideId: string, updates: Partial<Slide>) => {
+        setDeck(prevDeck => {
+            if (!prevDeck) return null;
+            const updatedSlides = prevDeck.slides.map(s => s.id === slideId ? { ...s, ...updates } : s);
+            return { ...prevDeck, slides: updatedSlides };
+        });
+        setSelectedSlide(prevSlide => prevSlide && prevSlide.id === slideId ? { ...prevSlide, ...updates } : prevSlide);
+    }, []);
+
 
     const handleGenerateRoadmapSlide = useCallback(async () => {
         if (!deck) return;
         setIsGeneratingRoadmap(true);
         try {
             const companyContext = deck.slides[0]?.content || deck.title;
-            // Now calling the new apiService
-            const newSlide = await generateRoadmapSlide(companyContext, deck.template);
-            
+            const { slide: newSlide } = await generateRoadmapSlide(companyContext);
+            // This would need a backend function to add the slide to the deck and return the updated deck
+            // For now, we optimistically update the UI. A real implementation would re-fetch or get the updated deck back.
             const updatedSlides = [...deck.slides, newSlide];
             const updatedDeck = { ...deck, slides: updatedSlides };
-
             setDeck(updatedDeck);
             handleSlideSelect(newSlide);
         } catch (err) {
@@ -231,15 +239,16 @@ const DeckEditor: React.FC = () => {
         setImageError(null);
         try {
             const imagePrompt = (typeof selectedSlide.imageUrl === 'string' && !selectedSlide.imageUrl.startsWith('data:image')) ? selectedSlide.imageUrl : undefined;
-            // Now calling the new apiService
-            const newBase64Data = await generateSlideImage(selectedSlide.title, selectedSlide.content, imagePrompt);
-            updateSlide(selectedSlide.id, { imageUrl: `data:image/png;base64,${newBase64Data}` });
+            const { base64Image } = await generateSlideImage(selectedSlide.title, selectedSlide.content, imagePrompt);
+            const imageUrl = `data:image/png;base64,${base64Image}`;
+            await updateSlide(selectedSlide.id, { imageUrl });
+            updateLocalSlideState(selectedSlide.id, { imageUrl });
         } catch (err) {
             setImageError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
             setIsGeneratingImage(false);
         }
-    }, [selectedSlide, updateSlide]);
+    }, [selectedSlide, updateLocalSlideState]);
 
     const handleEditImage = useCallback(async (prompt: string) => {
         if (!selectedSlide || !selectedSlide.imageUrl || !selectedSlide.imageUrl.startsWith('data:image')) {
@@ -253,15 +262,16 @@ const DeckEditor: React.FC = () => {
             if (!imageParts || imageParts.length !== 3) throw new Error("Invalid image format.");
             const mimeType = imageParts[1];
             const base64Data = imageParts[2];
-            // Now calling the new apiService
-            const newBase64Data = await editSlideImage(base64Data, mimeType, prompt);
-            updateSlide(selectedSlide.id, { imageUrl: `data:${mimeType};base64,${newBase64Data}` });
+            const { base64Image } = await editSlideImage(base64Data, mimeType, prompt);
+            const imageUrl = `data:${mimeType};base64,${base64Image}`;
+            await updateSlide(selectedSlide.id, { imageUrl });
+            updateLocalSlideState(selectedSlide.id, { imageUrl });
         } catch (err) {
             setImageError(err instanceof Error ? err.message : "An unknown error occurred during image editing.");
         } finally {
             setIsEditingImage(false);
         }
-    }, [selectedSlide, updateSlide]);
+    }, [selectedSlide, updateLocalSlideState]);
 
     const handleCopilotGenerate = useCallback(async (prompt: string, newTitle?: string) => {
         if (!selectedSlide) return;
@@ -271,24 +281,23 @@ const DeckEditor: React.FC = () => {
             const titleToUse = newTitle || selectedSlide.title;
             const instruction = newTitle ? `Set the title to "${newTitle}" and keep the content.` : prompt;
             
-            // Now calling the new apiService
             const { newTitle: updatedTitle, newContent } = await modifySlideContent(titleToUse, contentToUse, instruction);
-            const finalTitle = newTitle || updatedTitle;
+            const finalUpdates = { title: newTitle || updatedTitle, content: newContent, chartData: undefined, tableData: undefined };
 
-            updateSlide(selectedSlide.id, { title: finalTitle, content: newContent, chartData: undefined, tableData: undefined });
+            await updateSlide(selectedSlide.id, finalUpdates);
+            updateLocalSlideState(selectedSlide.id, finalUpdates);
         } catch (err) {
             console.error("Copilot error:", err);
         } finally {
             setIsCopilotLoading(false);
         }
-    }, [selectedSlide, updateSlide]);
+    }, [selectedSlide, updateLocalSlideState]);
 
     const handleAnalyzeSlide = useCallback(async () => {
         if (!selectedSlide) return;
         setIsAnalyzing(true);
         setAnalysisResult(null);
         try {
-            // Now calling the new apiService
             const result = await analyzeSlide(selectedSlide.title, selectedSlide.content);
             setAnalysisResult(result);
         } catch (err) {
@@ -303,7 +312,6 @@ const DeckEditor: React.FC = () => {
         setIsResearching(true);
         setResearchResult(null);
         try {
-            // Now calling the new apiService
             const result = await researchTopic(query);
             setResearchResult(result);
         } catch (err) {
@@ -318,32 +326,33 @@ const DeckEditor: React.FC = () => {
         setIsSuggestingLayout(true);
         setLayoutError(null);
         try {
-            // Now calling the new apiService
-            const newLayout = await suggestLayout(selectedSlide.title, selectedSlide.content);
-            updateSlide(selectedSlide.id, { template: newLayout });
+            const { layout: newLayout } = await suggestLayout(selectedSlide.title, selectedSlide.content);
+            await updateSlide(selectedSlide.id, { template: newLayout });
+            updateLocalSlideState(selectedSlide.id, { template: newLayout });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
             setLayoutError(errorMessage);
         } finally {
             setIsSuggestingLayout(false);
         }
-    }, [selectedSlide, updateSlide]);
+    }, [selectedSlide, updateLocalSlideState]);
     
     const handleSuggestChart = useCallback(async () => {
         if (!selectedSlide) return;
         setIsSuggestingChart(true);
         setChartError(null);
         try {
-            // Now calling the new apiService
-            const chartData = await suggestChart(selectedSlide.title, selectedSlide.content);
-            updateSlide(selectedSlide.id, { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined });
+            const { chartData } = await suggestChart(selectedSlide.title, selectedSlide.content);
+            const updates = { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined };
+            await updateSlide(selectedSlide.id, updates);
+            updateLocalSlideState(selectedSlide.id, updates);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
             setChartError(errorMessage);
         } finally {
             setIsSuggestingChart(false);
         }
-    }, [selectedSlide, updateSlide]);
+    }, [selectedSlide, updateLocalSlideState]);
     
     const handleGenerateHeadlines = useCallback(async () => {
         if (!selectedSlide) return;
@@ -351,9 +360,8 @@ const DeckEditor: React.FC = () => {
         setHeadlineError(null);
         setHeadlineIdeas([]);
         try {
-            // Now calling the new apiService
-            const ideas = await generateHeadlineVariations(selectedSlide.title);
-            setHeadlineIdeas(ideas);
+            const { headlines } = await generateHeadlineVariations(selectedSlide.title);
+            setHeadlineIdeas(headlines);
         } catch (err) {
             setHeadlineError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
@@ -367,8 +375,7 @@ const DeckEditor: React.FC = () => {
         setMetricError(null);
         setExtractedMetrics([]);
         try {
-            // Now calling the new apiService
-            const metrics = await extractMetrics(selectedSlide.content);
+            const { metrics } = await extractMetrics(selectedSlide.content);
             setExtractedMetrics(metrics);
         } catch (err) {
             setMetricError(err instanceof Error ? err.message : "An unknown error occurred.");
@@ -389,15 +396,16 @@ const DeckEditor: React.FC = () => {
         setIsGeneratingTable(true);
         setTableError(null);
         try {
-            // Now calling the new apiService
-            const tableData = await generatePricingTable(selectedSlide.content);
-            updateSlide(selectedSlide.id, { content: '', tableData, chartData: undefined });
+            const { tableData } = await generatePricingTable(selectedSlide.content);
+            const updates = { content: '', tableData, chartData: undefined };
+            await updateSlide(selectedSlide.id, updates);
+            updateLocalSlideState(selectedSlide.id, updates);
         } catch (err) {
             setTableError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
             setIsGeneratingTable(false);
         }
-    }, [selectedSlide, updateSlide]);
+    }, [selectedSlide, updateLocalSlideState]);
     
     const handleCompetitorResearch = useCallback(async () => {
         if (!selectedSlide) return;
@@ -413,7 +421,6 @@ const DeckEditor: React.FC = () => {
         if (!selectedSlide) return;
         setIsCopilotLoading(true);
         try {
-            // Now calling the new apiService
             const { summary, highlights } = await summarizeBio(selectedSlide.content);
             const newContent = `${summary}\n\n**Key Highlights:**\n- ${highlights.join('\n- ')}`;
             await handleCopilotGenerate(`Replace the content with the following summary:\n${newContent}`);
@@ -429,15 +436,16 @@ const DeckEditor: React.FC = () => {
         setIsSuggestingPieChart(true);
         setPieChartError(null);
         try {
-            // Now calling the new apiService
-            const chartData = await suggestPieChart(selectedSlide.content);
-            updateSlide(selectedSlide.id, { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined });
+            const { chartData } = await suggestPieChart(selectedSlide.content);
+            const updates = { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined };
+            await updateSlide(selectedSlide.id, updates);
+            updateLocalSlideState(selectedSlide.id, updates);
         } catch (err) {
             setPieChartError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
             setIsSuggestingPieChart(false);
         }
-    }, [selectedSlide, updateSlide]);
+    }, [selectedSlide, updateLocalSlideState]);
 
      const handleSocialProofSearch = useCallback(() => {
         if (!selectedSlide) return;
@@ -511,8 +519,12 @@ const DeckEditor: React.FC = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleNextSlide, handlePrevSlide, toggleSidebar]);
 
-    if (!deck || !selectedSlide) {
-        return <div className="p-8">Loading deck...</div>;
+    if (loading || !deck || !selectedSlide) {
+        return (
+            <div className="flex h-screen w-full items-center justify-center bg-[#FBF8F5]">
+                <div className="h-16 w-16 animate-spin rounded-full border-4 border-dashed border-[#E87C4D]"></div>
+            </div>
+        );
     }
     
     const contextValue: DeckEditorContextType = {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UrlInput from '../components/UrlInput';
+import { generateDeck } from '../services/aiService';
 
 type InputMode = 'context' | 'url';
 
@@ -8,17 +9,33 @@ const WizardSteps: React.FC = () => {
   const [companyDetails, setCompanyDetails] = useState('');
   const [urls, setUrls] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<InputMode>('context');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleGenerate = () => {
-    if (activeTab === 'context' && companyDetails.trim().length > 0) {
-      navigate('/pitch-decks/generating', { state: { companyDetails } });
-    } else if (activeTab === 'url' && urls.length > 0) {
-      navigate('/pitch-decks/generating', { state: { urls } });
+  const handleGenerate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let deckId: string;
+      if (activeTab === 'context' && companyDetails.trim().length > 0) {
+        const result = await generateDeck({ mode: 'text', content: companyDetails });
+        deckId = result.deckId;
+      } else if (activeTab === 'url' && urls.length > 0) {
+        const result = await generateDeck({ mode: 'url', content: urls });
+        deckId = result.deckId;
+      } else {
+        throw new Error("No input provided.");
+      }
+      navigate('/pitch-decks/generating', { state: { deckId } });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred during generation.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const isGenerateDisabled = activeTab === 'context' ? !companyDetails.trim() : urls.length === 0;
+  const isGenerateDisabled = loading || (activeTab === 'context' ? !companyDetails.trim() : urls.length === 0);
 
   const tabClass = (mode: InputMode) =>
     `px-4 py-2 font-semibold rounded-t-md cursor-pointer transition-colors ${
@@ -46,6 +63,8 @@ const WizardSteps: React.FC = () => {
             : "Let our AI analyze your website for pitch deck content."
           }
         </p>
+        
+        {error && <p className="bg-red-100 text-red-700 p-3 rounded-md mb-4">{error}</p>}
         
         {activeTab === 'context' ? (
           <div className="mb-6">
@@ -81,9 +100,19 @@ const WizardSteps: React.FC = () => {
           <button
             onClick={handleGenerate}
             disabled={isGenerateDisabled}
-            className="w-full sm:w-auto bg-[#E87C4D] text-white font-bold py-3 px-8 rounded-lg hover:bg-opacity-90 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md disabled:shadow-none"
+            className="w-full sm:w-auto bg-[#E87C4D] text-white font-bold py-3 px-8 rounded-lg hover:bg-opacity-90 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md disabled:shadow-none flex items-center justify-center"
           >
-            Generate Deck &rarr;
+            {loading ? (
+                <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Generating...
+                </>
+            ) : (
+                'Generate Deck →'
+            )}
           </button>
         </div>
       </div>
