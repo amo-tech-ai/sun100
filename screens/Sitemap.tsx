@@ -29,6 +29,11 @@ const Sitemap: React.FC = () => {
     { path: '/services/mvp-development', name: 'MVP Development Service', description: 'Detail page for MVP development.' },
     { path: '/login', name: 'Login', description: 'User login page.' },
     { path: '/signup', name: 'Sign Up', description: 'User registration page.' },
+    { path: '/sponsor-deck', name: 'Sponsor Deck Overview', description: 'Overview of the sponsorship program.' },
+    { path: '/sponsor-deck/showcase', name: 'Sponsor Showcase', description: 'A grid of sponsor logos.' },
+    { path: '/sponsor-deck/categories', name: 'Sponsor Categories', description: 'Page to filter sponsors by category.' },
+    { path: '/sponsor-deck/apply', name: 'Apply to Sponsor', description: 'Application form for potential sponsors.' },
+    { path: '/sponsor-deck/stories', name: 'Sponsor Stories', description: 'Success stories from sponsors.' },
   ];
   
   const appRoutes = [

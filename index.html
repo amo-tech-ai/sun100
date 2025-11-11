@@ -1,11 +1,30 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sun AI: Pitch Deck Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            manrope: ['Manrope', 'sans-serif'],
+          },
+          colors: {
+            'brand-blue': '#00334F',
+            'brand-orange': '#E97A41',
+            'brand-mustard': '#F3B93C',
+            'brand-off-white': '#FBF6F1',
+          }
+        }
+      }
+    }
+  </script>
 <script type="importmap">
 {
   "imports": {
@@ -18,7 +37,7 @@
 }
 </script>
 </head>
-<body class="bg-[#FBF8F5]">
+<body class="bg-brand-off-white font-manrope text-brand-blue">
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

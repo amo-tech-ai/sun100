@@ -40,6 +40,13 @@ const MvpDevelopment = lazy(() => import('./screens/MvpDevelopment'));
 const Login = lazy(() => import('./screens/Login'));
 const Signup = lazy(() => import('./screens/Signup'));
 
+// --- Restored Sponsor Deck Screens ---
+const SponsorDeckOverview = lazy(() => import('./screens/SponsorDeckOverview'));
+const SponsorDeckShowcase = lazy(() => import('./screens/SponsorDeckShowcase'));
+const SponsorDeckCategories = lazy(() => import('./screens/SponsorDeckCategories'));
+const SponsorDeckApply = lazy(() => import('./screens/SponsorDeckApply'));
+const SponsorDeckStories = lazy(() => import('./screens/SponsorDeckStories'));
+
 
 // --- Restored App Screens ---
 const StartupWizard = lazy(() => import('./screens/StartupWizard'));
@@ -82,6 +89,11 @@ const App: React.FC = () => {
             {/* Redirect auth pages to the dashboard for development */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/sponsor-deck" element={<SponsorDeckOverview />} />
+            <Route path="/sponsor-deck/showcase" element={<SponsorDeckShowcase />} />
+            <Route path="/sponsor-deck/categories" element={<SponsorDeckCategories />} />
+            <Route path="/sponsor-deck/apply" element={<SponsorDeckApply />} />
+            <Route path="/sponsor-deck/stories" element={<SponsorDeckStories />} />
           </Route>
 
           {/* --- App Routes (No longer protected for dev) --- */}
