@@ -1,17 +1,17 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Session, User } from '@supabase/supabase-js';
+import { Session, User, AuthError, SignUpWithPasswordCredentials, SignInWithPasswordCredentials } from '@supabase/supabase-js';
 
 interface AuthContextType {
     user: User | null;
     session: Session | null;
     loading: boolean;
-    login: typeof supabase.auth.signInWithPassword;
-    signup: typeof supabase.auth.signUp;
-    logout: typeof supabase.auth.signOut;
+    login: (credentials: SignInWithPasswordCredentials) => Promise<{ error: AuthError | null }>;
+    signup: (credentials: SignUpWithPasswordCredentials) => Promise<{ error: AuthError | null }>;
+    logout: () => Promise<{ error: AuthError | null }>;
 }
 
-export const AuthContext = createContext<AuthContextType>(null!);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -23,9 +23,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
                 
-                // FIX: If there's an error or no session (e.g., Supabase not configured),
-                // provide a mock user. This bypasses the auth wall on protected routes,
-                // allowing the layout to be rendered for review.
                 if (error || !session) {
                     console.warn("Supabase not configured or no session found. Providing mock user for layout review.");
                     setUser({ id: 'mock-user-id', email: 'review@example.com', aud: 'authenticated' } as User);
@@ -58,9 +55,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         user,
         session,
         loading,
-        login: supabase.auth.signInWithPassword,
-        signup: supabase.auth.signUp,
-        logout: supabase.auth.signOut,
+        login: (credentials: SignInWithPasswordCredentials) => supabase.auth.signInWithPassword(credentials),
+        signup: (credentials: SignUpWithPasswordCredentials) => supabase.auth.signUp(credentials),
+        logout: () => supabase.auth.signOut(),
     };
 
     return (

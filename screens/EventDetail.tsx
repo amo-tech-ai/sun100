@@ -20,7 +20,7 @@ const EventDetail: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const checkRsvp = useCallback(async () => {
-        if (!user || !id) return;
+        if (!user || !id || !supabase) return;
         try {
             const { data, error } = await supabase
                 .from('rsvps')
@@ -32,9 +32,8 @@ const EventDetail: React.FC = () => {
                 setIsRsvpd(true);
             }
         } catch(e) {
-            // .single() throws if no rows are found, which is an expected state.
-            // FIX: Also check if supabase client is null.
-            if (!supabase) console.warn("Supabase client not available for RSVP check.");
+            // .single() throws if no rows are found, which is an expected state, not an error.
+            // We can safely ignore this exception.
         }
     }, [user, id]);
 
@@ -64,10 +63,13 @@ const EventDetail: React.FC = () => {
         };
 
         fetchEvent();
-        if (user) {
+    }, [id]);
+    
+    useEffect(() => {
+        if (user && event) {
             checkRsvp();
         }
-    }, [id, user, checkRsvp]);
+    }, [user, event, checkRsvp]);
 
     const handleRsvp = async () => {
         if (!user) {
@@ -80,16 +82,19 @@ const EventDetail: React.FC = () => {
         };
         
         setIsSubmitting(true);
-        const { error } = await supabase
-            .from('rsvps')
-            .insert({ user_id: user.id, event_id: event.id });
-        
-        if (error) {
-            alert(`Error RSVPing: ${error.message}`);
-        } else {
+        try {
+            const { error } = await supabase
+                .from('rsvps')
+                .insert({ user_id: user.id, event_id: event.id });
+            
+            if (error) throw error;
+
             setIsRsvpd(true);
+        } catch (err) {
+             alert(`Error RSVPing: ${err instanceof Error ? err.message : 'An unknown error occurred.'}`);
+        } finally {
+            setIsSubmitting(false);
         }
-        setIsSubmitting(false);
     };
 
     if (isLoading) {
@@ -109,7 +114,12 @@ const EventDetail: React.FC = () => {
     }
 
     if (!event) {
-        return null;
+        return (
+             <div className="text-center p-10">
+                <p>Event not found.</p>
+                <Link to="/events" className="text-[#E87C4D] hover:underline mt-4 inline-block">&larr; Back to all events</Link>
+            </div>
+        );
     }
 
     const eventDate = new Date(event.start_date);
@@ -142,6 +152,11 @@ const EventDetail: React.FC = () => {
                     {isSubmitting ? 'Submitting...' : 'RSVP Now'}
                 </button>
             ))}
+             {!user && (
+                 <p className="mt-8 text-gray-600">
+                    <Link to="/login" className="font-semibold text-brand-orange hover:underline">Log in</Link> or <Link to="/signup" className="font-semibold text-brand-orange hover:underline">sign up</Link> to RSVP.
+                 </p>
+            )}
         </div>
     );
 };
