@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Deck, Slide } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
+import AICopilot from '../components/AICopilot';
 import { getDeckById, updateDeck, updateSlide } from '../services/deckService';
 import {
     generateSlideImage,
@@ -23,6 +24,7 @@ import {
     SlideAnalysis,
     ResearchResult,
 } from '../services/aiService';
+import { templates } from '../styles/templates';
 
 
 // --- CONTEXT DEFINITION ---
@@ -57,6 +59,8 @@ interface DeckEditorContextType {
     imageSuggestions: string[];
     researchSuggestions: string[];
     areSuggestionsLoading: boolean;
+    isPublishing: boolean;
+    publishProgressMessage: string;
     handleSlideSelect: (slide: Slide) => void;
     handleTitleSave: (newTitle: string) => void;
     handleGenerateRoadmapSlide: () => void;
@@ -75,8 +79,10 @@ interface DeckEditorContextType {
     handleSummarizeBio: () => void;
     handleSuggestPieChart: () => void;
     handleSocialProofSearch: () => void;
+    handlePublishDeck: () => void;
     handlePrevSlide: () => void;
     handleNextSlide: () => void;
+    handleTemplateChange: (newTemplate: keyof typeof templates) => void;
 }
 
 const DeckEditorContext = createContext<DeckEditorContextType>(null!);
@@ -99,7 +105,9 @@ const DeckEditor: React.FC = () => {
     const [deck, setDeck] = useState<Deck | null>(null);
     const [selectedSlide, setSelectedSlide] = useState<Slide | null>(null);
     const [loading, setLoading] = useState(true);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        return localStorage.getItem('editorSidebarCollapsed') === 'true';
+    });
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
     const [isEditingImage, setIsEditingImage] = useState(false);
     const [imageError, setImageError] = useState<string | null>(null);
@@ -159,6 +167,10 @@ const DeckEditor: React.FC = () => {
 
         fetchInitialDeck();
     }, [id, navigate]);
+    
+    useEffect(() => {
+        localStorage.setItem('editorSidebarCollapsed', String(isSidebarCollapsed));
+    }, [isSidebarCollapsed]);
 
     useEffect(() => {
         if (!selectedSlide) return;
@@ -204,6 +216,18 @@ const DeckEditor: React.FC = () => {
                 setDeck(prev => prev ? { ...prev, title: newTitle } : null);
             } catch (err) {
                 console.error("Failed to save title:", err);
+            }
+        }
+    }, [deck]);
+
+    const handleTemplateChange = useCallback(async (newTemplate: keyof typeof templates) => {
+        if (deck && deck.template !== newTemplate) {
+            try {
+                setDeck(prev => prev ? { ...prev, template: newTemplate } : null);
+                await updateDeck(deck.id, { template: newTemplate });
+            } catch (err) {
+                console.error("Failed to save template:", err);
+                setDeck(prev => prev ? { ...prev, template: deck.template } : null); // Revert on error
             }
         }
     }, [deck]);
@@ -284,17 +308,29 @@ const DeckEditor: React.FC = () => {
         if (!selectedSlide) return;
         setIsCopilotLoading(true);
         try {
-            const contentToUse = newTitle ? selectedSlide.content : prompt;
-            const titleToUse = newTitle || selectedSlide.title;
-            const instruction = newTitle ? `Set the title to "${newTitle}" and keep the content.` : prompt;
+            // The instruction is either the user's typed prompt, or a specific command to change the title.
+            const instruction = newTitle ? `Set the title to "${newTitle}" and keep the content the same.` : prompt;
             
-            const { newTitle: updatedTitle, newContent } = await modifySlideContent(titleToUse, contentToUse, instruction);
-            const finalUpdates = { title: newTitle || updatedTitle, content: newContent, chartData: undefined, tableData: undefined };
-
+            // Always use the current slide's title and content as the source material for the AI.
+            const { newTitle: updatedTitle, newContent } = await modifySlideContent(
+                selectedSlide.title,
+                selectedSlide.content,
+                instruction
+            );
+    
+            // When content is rewritten, any existing chart/table based on the old content is invalidated and removed.
+            const finalUpdates: Partial<Slide> = { 
+                title: newTitle || updatedTitle, 
+                content: newContent, 
+                chartData: undefined, 
+                tableData: undefined 
+            };
+    
             await updateSlide(selectedSlide.id, finalUpdates);
             updateLocalSlideState(selectedSlide.id, finalUpdates);
         } catch (err) {
             console.error("Copilot error:", err);
+            // TODO: Set an error state to display in the UI
         } finally {
             setIsCopilotLoading(false);
         }
@@ -551,11 +587,12 @@ const DeckEditor: React.FC = () => {
         isSuggestingChart, chartError, isGeneratingRoadmap, headlineIdeas, isGeneratingHeadlines,
         headlineError, extractedMetrics, isExtractingMetrics, metricError, isGeneratingTable, tableError,
         isSuggestingPieChart, pieChartError, copilotSuggestions, imageSuggestions, researchSuggestions,
-        areSuggestionsLoading, handleSlideSelect, handleTitleSave, handleGenerateRoadmapSlide,
-        handleGenerateImage, handleEditImage, handleCopilotGenerate, handleAnalyzeSlide, handleResearch,
-        handleSuggestLayout, handleSuggestChart, handleGenerateHeadlines, handleExtractMetrics,
-        handleMarketResearch, handleGenerateTable, handleCompetitorResearch, handleSummarizeBio,
-        handleSuggestPieChart, handleSocialProofSearch, handlePrevSlide, handleNextSlide
+        areSuggestionsLoading, isPublishing, publishProgressMessage, handleSlideSelect, handleTitleSave, 
+        handleGenerateRoadmapSlide, handleGenerateImage, handleEditImage, handleCopilotGenerate, 
+        handleAnalyzeSlide, handleResearch, handleSuggestLayout, handleSuggestChart, handleGenerateHeadlines, 
+        handleExtractMetrics, handleMarketResearch, handleGenerateTable, handleCompetitorResearch, 
+        handleSummarizeBio, handleSuggestPieChart, handleSocialProofSearch, handlePublishDeck, 
+        handlePrevSlide, handleNextSlide, handleTemplateChange
     };
 
     return (
@@ -563,19 +600,7 @@ const DeckEditor: React.FC = () => {
             <div className="flex flex-col lg:flex-row h-full w-full bg-[#FBF8F5] text-gray-800">
                 <div className="hidden lg:flex flex-shrink-0">
                   <SlideOutline
-                      deckId={deck.id}
-                      deckTitle={deck.title}
-                      slides={deck.slides}
-                      template={deck.template}
-                      selectedSlideId={selectedSlide.id}
-                      onSlideSelect={handleSlideSelect}
-                      onTitleSave={handleTitleSave}
-                      onGenerateRoadmapSlide={handleGenerateRoadmapSlide}
-                      isGeneratingRoadmap={isGeneratingRoadmap}
                       isCollapsed={isSidebarCollapsed}
-                      onPublish={handlePublishDeck}
-                      isPublishing={isPublishing}
-                      publishProgressMessage={publishProgressMessage}
                   />
                 </div>
                 <div className="flex-1 flex flex-col relative">

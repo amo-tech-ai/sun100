@@ -46,6 +46,10 @@ export const generateDeck = async (payload: { mode: 'text' | 'url', content: str
     return invokeFunction<{ deckId: string }>('generate-deck', payload);
 };
 
+export const generateEventDescription = (details: { title: string; date: string; location: string }): Promise<{ description: string }> => {
+    return invokeFunction('generate-event-description', details);
+};
+
 export const generateSlideImage = (slideTitle: string, slideContent: string, promptOverride?: string): Promise<{ base64Image: string }> => {
     return invokeFunction('generate-slide-image', { slideTitle, slideContent, promptOverride });
 };

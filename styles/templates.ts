@@ -14,8 +14,8 @@ interface Templates {
 
 export const templates: Templates = {
   default: {
-    slide: 'bg-white p-16 flex flex-row items-center justify-center gap-12 font-sans text-gray-800',
-    imageContainer: 'w-2/5 h-full flex-shrink-0',
+    slide: 'bg-white p-16 flex flex-col md:flex-row items-center justify-center gap-12 font-manrope text-gray-800',
+    imageContainer: 'w-full md:w-2/5 h-full flex-shrink-0',
     image: 'w-full h-full object-cover rounded-xl shadow-md',
     textContainer: 'flex-1 flex flex-col justify-center text-left',
     title: 'text-4xl font-bold mb-4 text-slate-900',
@@ -30,5 +30,23 @@ export const templates: Templates = {
     imageContainer: 'w-full h-1/3 mb-6',
     image: 'w-full h-full object-cover rounded-lg',
     textContainer: 'w-full',
+  },
+  minimalist: {
+    slide: 'bg-white p-16 flex flex-col items-center justify-center text-center font-manrope',
+    imageContainer: 'w-full h-1/2 mb-8',
+    image: 'w-full h-full object-contain',
+    textContainer: 'w-full max-w-3xl',
+    title: 'text-5xl font-extrabold mb-4 text-gray-900 tracking-tight',
+    content: 'text-xl text-gray-500 list-none p-0 space-y-2',
+    bullet: '',
+  },
+  startup: {
+    slide: 'bg-gray-900 p-16 flex flex-col md:flex-row items-center justify-center gap-12 font-manrope text-white',
+    imageContainer: 'w-full md:w-1/2 h-full',
+    image: 'w-full h-full object-cover rounded-xl shadow-lg shadow-brand-orange/20',
+    textContainer: 'w-full md:w-1/2',
+    title: 'text-5xl font-bold mb-6 text-white leading-tight',
+    content: 'text-xl text-gray-300 list-disc pl-6 space-y-3',
+    bullet: 'text-brand-orange',
   }
 };

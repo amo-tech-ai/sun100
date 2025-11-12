@@ -5,6 +5,7 @@ import { GoogleGenAI, GenerateVideosOperation } from '@google/genai';
 const VideoIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22 10.78v3.44a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7.78a2 2 0 0 1 2-2h12.58"/><path d="m22 8-6 4 6 4V8Z"/></svg>;
 const UploadIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
 const XIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+const FilmIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>;
 
 const progressMessages = [
     "Initializing video generation...",
@@ -31,13 +32,15 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 const VideoGenerator: React.FC = () => {
     const [apiKeySelected, setApiKeySelected] = useState(false);
     const [prompt, setPrompt] = useState('A neon hologram of a cat driving at top speed');
+    const [extensionPrompt, setExtensionPrompt] = useState('something unexpected happens');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16'>('16:9');
-    const [resolution, setResolution] = useState<'720p' | '1080p'>('1080p');
+    const [resolution, setResolution] = useState<'720p' | '1080p'>('720p');
     
     const [isGenerating, setIsGenerating] = useState(false);
     const [generationStatus, setGenerationStatus] = useState('');
     const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
+    const [lastOperation, setLastOperation] = useState<GenerateVideosOperation | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const statusIntervalRef = useRef<number | null>(null);
@@ -87,6 +90,7 @@ const VideoGenerator: React.FC = () => {
         setIsGenerating(true);
         setError(null);
         setGeneratedVideoUrl(null);
+        setLastOperation(null);
         
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -122,6 +126,7 @@ const VideoGenerator: React.FC = () => {
             if (!downloadLink) {
                 throw new Error("Video generation completed, but no download link was found.");
             }
+            setLastOperation(operation);
 
             setGenerationStatus("Generation complete! Downloading video...");
             const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
@@ -146,6 +151,65 @@ const VideoGenerator: React.FC = () => {
             setIsGenerating(false);
         }
     };
+
+    const handleExtendVideo = async () => {
+        if (!lastOperation || !lastOperation.response?.generatedVideos?.[0]?.video) {
+            setError("Cannot extend video: previous generation data not found.");
+            return;
+        }
+
+        setIsGenerating(true);
+        setError(null);
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+            let operation: GenerateVideosOperation = await ai.models.generateVideos({
+                model: 'veo-3.1-generate-preview',
+                prompt: extensionPrompt,
+                video: lastOperation.response.generatedVideos[0].video,
+                config: {
+                    numberOfVideos: 1,
+                    resolution: '720p',
+                    aspectRatio: aspectRatio,
+                }
+            });
+
+            setGenerationStatus("Extending video. Polling for results...");
+            while (!operation.done) {
+                await new Promise(resolve => setTimeout(resolve, 10000));
+                operation = await ai.operations.getVideosOperation({ operation: operation });
+            }
+
+            const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+            if (!downloadLink) {
+                throw new Error("Video extension completed, but no download link was found.");
+            }
+            setLastOperation(operation);
+
+            setGenerationStatus("Extension complete! Downloading new video...");
+            const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+             if (!response.ok) {
+                 const errorText = await response.text();
+                 throw new Error(`Failed to download video: ${response.status} ${response.statusText}. Details: ${errorText}`);
+            }
+
+            const videoBlob = await response.blob();
+            const videoObjectUrl = URL.createObjectURL(videoBlob);
+            setGeneratedVideoUrl(videoObjectUrl);
+
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+             if(errorMessage.includes("Requested entity was not found.")){
+                 setError("API Key error. Please re-select your API key and try again.");
+                 setApiKeySelected(false);
+             } else {
+                setError(errorMessage);
+             }
+        } finally {
+            setIsGenerating(false);
+        }
+    }
     
     if (!apiKeySelected) {
         return (
@@ -187,14 +251,46 @@ const VideoGenerator: React.FC = () => {
                 {error && <div className="bg-red-100 text-red-700 p-4 rounded-md">{error}</div>}
 
                 {generatedVideoUrl && (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <h2 className="text-xl font-semibold text-brand-blue">Your Generated Video</h2>
                         <video src={generatedVideoUrl} controls autoPlay loop className="w-full rounded-lg shadow-md"></video>
+                        
+                        {/* Extension Section */}
+                        {lastOperation && resolution === '720p' && (
+                            <div className="border-t border-gray-200 pt-6 space-y-4">
+                                <h2 className="text-xl font-semibold text-brand-blue">Extend Video (add 7s)</h2>
+                                <div>
+                                    <label htmlFor="extension-prompt" className="block text-lg font-semibold mb-2 text-gray-700">Extension Prompt</label>
+                                    <textarea
+                                        id="extension-prompt"
+                                        value={extensionPrompt}
+                                        onChange={(e) => setExtensionPrompt(e.target.value)}
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-orange focus:border-transparent transition"
+                                        rows={2}
+                                        placeholder="Describe what happens next..."
+                                    />
+                                </div>
+                                <button
+                                    onClick={handleExtendVideo}
+                                    disabled={isGenerating || !extensionPrompt.trim()}
+                                    className="w-full bg-brand-blue text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400"
+                                >
+                                    <FilmIcon />
+                                    Extend Video
+                                </button>
+                            </div>
+                        )}
+                        {resolution === '1080p' && <p className="text-sm text-gray-500 text-center">Video extension is only available for 720p videos.</p>}
+
                         <button
-                            onClick={() => setGeneratedVideoUrl(null)}
-                            className="w-full bg-brand-orange text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors"
+                            onClick={() => {
+                                setGeneratedVideoUrl(null);
+                                setLastOperation(null);
+                                setError(null);
+                            }}
+                            className="w-full bg-gray-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors"
                         >
-                            Create Another Video
+                            Create a New Video
                         </button>
                     </div>
                 )}

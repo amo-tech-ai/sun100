@@ -33,6 +33,8 @@ const EventDetail: React.FC = () => {
             }
         } catch(e) {
             // .single() throws if no rows are found, which is an expected state.
+            // FIX: Also check if supabase client is null.
+            if (!supabase) console.warn("Supabase client not available for RSVP check.");
         }
     }, [user, id]);
 
@@ -54,7 +56,8 @@ const EventDetail: React.FC = () => {
                     setError("Event not found.");
                 }
             } catch (err) {
-                setError(err instanceof Error ? err.message : "An unknown error occurred.");
+                console.error("Failed to fetch event:", err);
+                setError(err instanceof Error ? err.message : "An unknown error occurred. Supabase may not be configured.");
             } finally {
                 setIsLoading(false);
             }
@@ -71,7 +74,10 @@ const EventDetail: React.FC = () => {
             alert("You must be logged in to RSVP.");
             return;
         }
-        if (!event) return;
+        if (!event || !supabase) {
+            alert("Could not RSVP. Supabase client not available.")
+            return;
+        };
         
         setIsSubmitting(true);
         const { error } = await supabase
