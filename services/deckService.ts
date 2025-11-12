@@ -19,11 +19,14 @@ export const getDeckById = async (id: string): Promise<Deck | null> => {
         .order('position', { referencedTable: 'slides', ascending: true })
         .single();
     
-    if (error) throw error;
+    if (error && error.code !== 'PGRST116') { // Don't throw error if just no rows found
+        console.error("Error fetching deck by ID:", error);
+        throw error;
+    };
     return data;
 };
 
-export const updateDeck = async (id: string, updates: Partial<Deck>): Promise<Deck> => {
+export const updateDeck = async (id: string, updates: Partial<Deck>): Promise<Deck | null> => {
     const { data, error } = await supabase
         .from('decks')
         .update(updates)
@@ -35,7 +38,7 @@ export const updateDeck = async (id: string, updates: Partial<Deck>): Promise<De
     return data;
 };
 
-export const updateSlide = async (id: string, updates: Partial<Slide>): Promise<Slide> => {
+export const updateSlide = async (id: string, updates: Partial<Slide>): Promise<Slide | null> => {
     const { data, error } = await supabase
         .from('slides')
         .update(updates)
@@ -45,4 +48,19 @@ export const updateSlide = async (id: string, updates: Partial<Slide>): Promise<
         
     if (error) throw error;
     return data;
+};
+
+export const pollForDeckSlides = async (deckId: string): Promise<boolean> => {
+    const { data, error } = await supabase
+        .from('slides')
+        .select('id')
+        .eq('deck_id', deckId)
+        .limit(1);
+
+    if (error) {
+        console.error('Polling error:', error);
+        return false; // Continue polling on error
+    }
+
+    return data && data.length > 0;
 };

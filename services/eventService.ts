@@ -10,34 +10,32 @@ export interface Event {
 
 // Fetch live data from Supabase
 export const getEvents = async (): Promise<Event[]> => {
-    const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .order('start_date', { ascending: true });
+    try {
+        const { data, error } = await supabase
+            .from('events')
+            .select('*')
+            .order('start_date', { ascending: true });
 
-    if (error) {
-        console.error("Error fetching events:", error);
-        throw new Error(`Failed to fetch events: ${error.message}`);
+        if (error) throw error;
+        return data || [];
+    } catch (err) {
+        console.warn("Could not fetch events, Supabase might not be configured.", err)
+        return []; // Return empty array on failure
     }
-    
-    return data || [];
 };
 
 export const getEventById = async (id: string): Promise<Event | null> => {
-    const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', id)
-        .single();
+    try {
+        const { data, error } = await supabase
+            .from('events')
+            .select('*')
+            .eq('id', id)
+            .single();
 
-    if (error) {
-        console.error(`Error fetching event ${id}:`, error);
-        // Don't throw for "not found", just return null
-        if (error.code === 'PGRST116') {
-            return null;
-        }
-        throw new Error(`Failed to fetch event: ${error.message}`);
+        if (error && error.code !== 'PGRST116') throw error;
+        return data;
+    } catch (err) {
+        console.warn(`Could not fetch event ${id}, Supabase might not be configured.`, err);
+        return null;
     }
-
-    return data;
 };

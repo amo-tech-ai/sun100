@@ -31,7 +31,6 @@ const BarChartIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="32" he
 
 
 const PathCard: React.FC<{ icon: React.ReactNode, title: string, description: string, delay?: number }> = ({ icon, title, description, delay = 0 }) => {
-    // FIX: Specified HTMLDivElement for useOnScreen hook to match the div element it's attached to.
     const [ref, isVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.1 });
     const animationClass = isVisible ? 'animate-fade-in-up' : 'opacity-0';
     return (
@@ -46,7 +45,6 @@ const PathCard: React.FC<{ icon: React.ReactNode, title: string, description: st
 }
 
 const TestimonialCard: React.FC<{ quote: string, name: string, title: string, imageUrl: string, delay?: number }> = ({ quote, name, title, imageUrl, delay = 0 }) => {
-     // FIX: Specified HTMLDivElement for useOnScreen hook to match the div element it's attached to.
      const [ref, isVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.2 });
      const animationClass = isVisible ? 'animate-fade-in-up' : 'opacity-0';
     return (
@@ -65,7 +63,6 @@ const TestimonialCard: React.FC<{ quote: string, name: string, title: string, im
 
 // New component for the animated ecosystem flowchart
 const EcosystemFlowchart: React.FC = () => {
-    // FIX: Specified HTMLDivElement for useOnScreen hook to match the div element it's attached to.
     const [ref, isVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.2 });
 
     const ecosystemSteps = [

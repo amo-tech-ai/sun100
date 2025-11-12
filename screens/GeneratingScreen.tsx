@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { pollForDeckSlides } from '../services/deckService';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
@@ -21,35 +21,22 @@ const GeneratingScreen: React.FC = () => {
             return;
         }
 
-        const pollForDeck = async () => {
+        const poll = async () => {
             try {
-                const { data, error } = await supabase
-                    .from('slides')
-                    .select('id')
-                    .eq('deck_id', deckId)
-                    .limit(1);
-
-                if (error) {
-                    // Don't throw, just log. We'll keep polling.
-                    console.error('Polling error:', error);
-                    return;
-                }
-
-                if (data && data.length > 0) {
-                    // Success! Slides exist.
+                const isReady = await pollForDeckSlides(deckId);
+                if (isReady) {
                     clearInterval(pollingInterval);
                     clearInterval(dotsInterval);
                     navigate(`/pitch-decks/${deckId}/edit`);
                 }
             } catch (err) {
-                // Catch unexpected errors
                 setError(err instanceof Error ? err.message : "An unknown error occurred during polling.");
                 clearInterval(pollingInterval);
                 clearInterval(dotsInterval);
             }
         };
 
-        const pollingInterval = setInterval(pollForDeck, 3000); // Poll every 3 seconds
+        const pollingInterval = setInterval(poll, 3000); // Poll every 3 seconds
 
         // Cleanup function
         return () => {

@@ -22,7 +22,7 @@ const Signup: React.FC = () => {
             }
             // On successful signup, Supabase sends a confirmation email.
             // You might want to navigate to a "Please check your email" page here.
-            // For now, navigating to dashboard assumes auto-confirmation is enabled.
+            // For now, navigating to login is a safe default.
             alert('Signup successful! Please check your email to confirm your account.');
             navigate('/login');
         } catch (err) {

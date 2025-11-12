@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 // Custom hook for detecting when an element is on screen
 // FIX: Made the hook generic to support different HTML element types.
-const useOnScreen = <T extends HTMLElement>(options: IntersectionObserverInit) => {
+const useOnScreen = <T extends Element>(options: IntersectionObserverInit) => {
     const ref = useRef<T>(null);
     const [isVisible, setIsVisible] = useState(false);
 
@@ -26,7 +26,7 @@ const useOnScreen = <T extends HTMLElement>(options: IntersectionObserverInit) =
                 observer.unobserve(currentElement);
             }
         };
-    }, [options]);
+    }, [options, ref]);
 
     return [ref, isVisible] as const;
 };

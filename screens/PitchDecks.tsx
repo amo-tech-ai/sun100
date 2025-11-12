@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
 import { Deck } from '../data/decks';
+import { getDecks } from '../services/deckService';
+
 
 // --- ICONS ---
 const Wand2Icon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
@@ -55,15 +56,9 @@ const PitchDecks: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const { data, error } = await supabase
-                    .from('decks')
-                    .select('*, slides(*)')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-                setDecks(data || []);
+                const fetchedDecks = await getDecks();
+                setDecks(fetchedDecks);
             } catch (err) {
-                // FIX: Catch the error to prevent a component crash.
                 console.error("Failed to fetch decks:", err);
                 setError(err instanceof Error ? err.message : 'Failed to fetch decks. Supabase may not be configured.');
             } finally {
@@ -121,7 +116,7 @@ const PitchDecks: React.FC = () => {
             </div>
         )}
 
-        {!loading && error && <p className="text-red-500">{error}</p>}
+        {!loading && error && <p className="text-red-500 bg-red-100 p-4 rounded-md">{error}</p>}
 
         {!loading && !error && decks.length === 0 && (
             <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-12 text-center flex flex-col items-center">
