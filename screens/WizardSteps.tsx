@@ -1,17 +1,35 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import UrlInput from '../components/UrlInput';
 import { generateDeck } from '../services/aiService';
 
 type InputMode = 'context' | 'url';
 
 const WizardSteps: React.FC = () => {
+  const location = useLocation();
   const [companyDetails, setCompanyDetails] = useState('');
   const [urls, setUrls] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<InputMode>('context');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.fundingGoal) {
+        const goal = location.state.fundingGoal.trim();
+        if (goal) {
+            // Format the number if it's just digits, otherwise use as is
+            const formattedGoal = /^\d+$/.test(goal.replace(/,/g, '')) 
+                ? `$${parseInt(goal.replace(/,/g, ''), 10).toLocaleString()}` 
+                : goal;
+            
+            setCompanyDetails(prev => `Our primary goal for this pitch is to secure funding of ${formattedGoal}.\n\n` + prev);
+            // Switch to the context tab so the user sees the change
+            setActiveTab('context');
+        }
+    }
+  }, [location.state]);
+
 
   const handleGenerate = async () => {
     setLoading(true);

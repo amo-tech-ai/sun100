@@ -12,6 +12,8 @@ const SearchIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://ww
 const FilterIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
 const PresentationIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></svg>;
 const ChevronDownIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m6 9 6 6 6-6"/></svg>;
+const DollarSignIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+
 
 // --- SUB-COMPONENTS ---
 const CreationCard: React.FC<{ title: string; description: string; buttonText: string; link: string; icon: React.ReactNode }> = ({ title, description, buttonText, link, icon }) => (
@@ -46,6 +48,7 @@ const PitchDecks: React.FC = () => {
     const [decks, setDecks] = useState<Deck[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [fundingGoal, setFundingGoal] = useState('');
 
     useEffect(() => {
         const fetchDecks = async () => {
@@ -60,7 +63,9 @@ const PitchDecks: React.FC = () => {
                 if (error) throw error;
                 setDecks(data || []);
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to fetch decks');
+                // FIX: Catch the error to prevent a component crash.
+                console.error("Failed to fetch decks:", err);
+                setError(err instanceof Error ? err.message : 'Failed to fetch decks. Supabase may not be configured.');
             } finally {
                 setLoading(false);
             }
@@ -147,7 +152,37 @@ const PitchDecks: React.FC = () => {
             <CreationCard title="AI Generate" description="Create with artificial intelligence" buttonText="Get Started" link="/pitch-decks/new" icon={<Wand2Icon />} />
             <CreationCard title="Template Library" description="Browse 50+ professional templates" buttonText="Browse" link="#" icon={<LayoutTemplateIcon />} />
             <CreationCard title="Start Blank" description="Build from scratch with full control" buttonText="Create" link="/pitch-decks/new" icon={<FilePlus2Icon />} />
-            <CreationCard title="Budget Deck" description="Quick financial presentation" buttonText="Start" link="#" icon={<BarChart3Icon />} />
+            
+            <div className="bg-white p-6 rounded-lg border border-gray-200/80 shadow-sm flex flex-col">
+                <div className="text-brand-blue mb-4"><BarChart3Icon /></div>
+                <h3 className="font-bold text-lg text-brand-blue">Financial Deck</h3>
+                <p className="text-gray-500 text-sm mt-1 mb-4 flex-grow">Start a new deck with a specific funding goal in mind.</p>
+                
+                <div className="mb-4">
+                    <label htmlFor="funding-goal" className="block text-sm font-medium text-gray-700 mb-1">Funding Goal</label>
+                    <div className="relative">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <DollarSignIcon className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                            id="funding-goal"
+                            type="text"
+                            value={fundingGoal}
+                            onChange={(e) => setFundingGoal(e.target.value)}
+                            placeholder="1,500,000"
+                            className="block w-full rounded-md border border-gray-300 py-2 pl-10 shadow-sm focus:border-brand-orange focus:ring-brand-orange sm:text-sm"
+                        />
+                    </div>
+                </div>
+
+                <Link
+                    to="/pitch-decks/new"
+                    state={{ fundingGoal: fundingGoal }}
+                    className="w-full mt-auto text-center bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                >
+                    Start with Goal
+                </Link>
+            </div>
         </div>
       </section>
     </div>

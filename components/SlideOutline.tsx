@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Slide, Deck } from '../data/decks';
 import { templates } from '../styles/templates';
+import { useDeckEditor } from '../screens/DeckEditor';
 
 const EditIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
@@ -12,22 +13,13 @@ const RoadmapIcon = () => (
 const PublishIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
 );
+const ThemeIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+);
 
 
 interface SlideOutlineProps {
-    deckId: string;
-    deckTitle: string;
-    slides: Slide[];
-    template: Deck['template'];
-    selectedSlideId: string;
-    onSlideSelect: (slide: Slide) => void;
-    onTitleSave: (newTitle: string) => void;
-    onGenerateRoadmapSlide: () => void;
-    isGeneratingRoadmap: boolean;
     isCollapsed: boolean;
-    onPublish: () => void;
-    isPublishing: boolean;
-    publishProgressMessage: string;
 }
 
 interface SlideOutlineItemProps {
@@ -46,7 +38,7 @@ const SlideOutlineItem: React.FC<SlideOutlineItemProps> = React.memo(({ slide, i
             onClick={handleSelect}
             className={`p-2 rounded-md cursor-pointer border-2 transition-colors flex items-center ${isCollapsed ? '' : 'gap-3'} ${isSelected ? 'border-[#E87C4D] bg-orange-50' : 'border-transparent hover:border-gray-300'}`}
         >
-            <span className={`text-sm font-medium text-gray-500 transition-all ${isCollapsed ? 'w-full text-center' : ''}`}>{index + 1}</span>
+            <span className={`text-sm font-medium text-gray-500 transition-opacity ${isCollapsed ? 'w-full text-center' : ''}`}>{index + 1}</span>
             {!isCollapsed && (
                 <div className="w-full aspect-video bg-gray-200 rounded-sm overflow-hidden">
                     <div className={`w-full h-full text-[4px] p-1 ${templates[template]?.slide || templates.default.slide}`}>
@@ -60,27 +52,44 @@ const SlideOutlineItem: React.FC<SlideOutlineItemProps> = React.memo(({ slide, i
 SlideOutlineItem.displayName = 'SlideOutlineItem';
 
 
-const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, template, selectedSlideId, onSlideSelect, onTitleSave, onGenerateRoadmapSlide, isGeneratingRoadmap, isCollapsed, onPublish, isPublishing, publishProgressMessage }) => {
+const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
+    const {
+        deck,
+        selectedSlide,
+        handleSlideSelect,
+        handleTitleSave,
+        handleGenerateRoadmapSlide,
+        isGeneratingRoadmap,
+        handlePublishDeck,
+        isPublishing,
+        publishProgressMessage,
+        handleTemplateChange
+    } = useDeckEditor();
+
     const [isEditingTitle, setIsEditingTitle] = useState(false);
-    const [editedTitle, setEditedTitle] = useState(deckTitle);
+    const [editedTitle, setEditedTitle] = useState(deck?.title || '');
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditedTitle(e.target.value);
     };
 
     const handleTitleSaveInternal = () => {
-        if(editedTitle.trim() !== deckTitle) {
-            onTitleSave(editedTitle.trim());
+        if(deck && editedTitle.trim() !== deck.title) {
+            handleTitleSave(editedTitle.trim());
         }
         setIsEditingTitle(false);
     };
     
     React.useEffect(() => {
-        setEditedTitle(deckTitle);
-    }, [deckTitle]);
+        if(deck) setEditedTitle(deck.title);
+    }, [deck?.title]);
+
+    if (!deck || !selectedSlide) {
+        return null;
+    }
 
     return (
-        <aside className={`flex-shrink-0 bg-white border-r border-gray-200 flex flex-col p-4 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-16' : 'w-[320px]'}`}>
+        <aside className={`flex-shrink-0 bg-white border-r border-gray-200 flex flex-col p-4 transition-width duration-300 ease-in-out ${isCollapsed ? 'w-16' : 'w-[320px]'}`}>
             <div className={`mb-4 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 {isEditingTitle ? (
                     <div className="flex items-center">
@@ -96,72 +105,107 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ deckId, deckTitle, slides, 
                     </div>
                 ) : (
                     <div className="flex items-center group">
-                        <h2 className="text-lg font-bold text-gray-800 truncate">{deckTitle}</h2>
+                        <h2 className="text-lg font-bold text-gray-800 truncate">{deck.title}</h2>
                         <button onClick={() => setIsEditingTitle(true)} className="ml-2 opacity-0 group-hover:opacity-100"><EditIcon /></button>
                     </div>
                 )}
             </div>
             <div className="flex-1 overflow-y-auto space-y-2 -mr-2 pr-2">
-                {slides.map((slide, index) => (
+                {deck.slides.map((slide, index) => (
                     <SlideOutlineItem
                         key={slide.id}
                         slide={slide}
                         index={index}
-                        isSelected={selectedSlideId === slide.id}
+                        isSelected={selectedSlide.id === slide.id}
                         isCollapsed={isCollapsed}
-                        template={template}
-                        onSelect={onSlideSelect}
+                        template={deck.template}
+                        onSelect={handleSlideSelect}
                     />
                 ))}
             </div>
-            <div className={`mt-4 flex flex-col space-y-2 transition-opacity duration-300 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                <button
-                    onClick={onGenerateRoadmapSlide}
-                    disabled={isGeneratingRoadmap}
-                    className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2 disabled:bg-gray-200 disabled:cursor-not-allowed"
-                >
-                    {isGeneratingRoadmap ? (
-                        <>
-                            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-[#E87C4D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>Generating...</span>
-                        </>
-                    ) : (
-                         <>
-                            <RoadmapIcon />
-                            <span>Generate Roadmap</span>
-                        </>
-                    )}
-                </button>
-                <button
-                    onClick={onPublish}
-                    disabled={isPublishing}
-                    className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2 disabled:bg-gray-200 disabled:cursor-not-allowed"
-                >
-                    {isPublishing ? (
-                        <>
-                             <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-[#E87C4D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>{publishProgressMessage}...</span>
-                        </>
-                    ) : (
-                        <>
-                            <PublishIcon />
-                            <span>Publish</span>
-                        </>
-                    )}
-                </button>
-                 <Link
-                    to={`/pitch-decks/${deckId}/present`}
-                    state={{deck: {id: deckId, title: deckTitle, slides: slides, template: template}}}
-                    className="block w-full text-center bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
-                >
-                    Present
-                </Link>
+            <div className={`mt-auto pt-4 border-t border-gray-200 space-y-4 transition-opacity duration-300 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                 <div>
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3 flex items-center gap-2">
+                        <ThemeIcon />
+                        <span>Deck Theme</span>
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                        {Object.keys(templates).map(templateKey => {
+                            const template = templates[templateKey as keyof typeof templates];
+                            const isSelected = deck.template === templateKey;
+                            return (
+                                <button
+                                    key={templateKey}
+                                    onClick={() => handleTemplateChange(templateKey as keyof typeof templates)}
+                                    className={`relative aspect-[16/9] rounded-md border-2 p-1 overflow-hidden transition-all ${isSelected ? 'border-brand-orange shadow-md' : 'border-gray-200 hover:border-gray-400'}`}
+                                    aria-label={`Select ${templateKey} theme`}
+                                >
+                                    <div className={`w-full h-full text-[3px] leading-tight flex flex-col justify-center ${template.slide}`}>
+                                        <div className={`font-bold truncate ${template.title}`}>Title</div>
+                                        <div className={`p-0 ${template.content}`}>
+                                            <li className="list-none">Bullet point 1</li>
+                                            <li className="list-none">Bullet point 2</li>
+                                        </div>
+                                    </div>
+                                    {isSelected && (
+                                        <div className="absolute top-1 right-1 bg-brand-orange text-white rounded-full p-0.5">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                                        </div>
+                                    )}
+                                </button>
+                            )
+                        })}
+                    </div>
+                </div>
+                <div className="flex flex-col space-y-2">
+                    <button
+                        onClick={handleGenerateRoadmapSlide}
+                        disabled={isGeneratingRoadmap}
+                        className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2 disabled:bg-gray-200 disabled:cursor-not-allowed"
+                    >
+                        {isGeneratingRoadmap ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-[#E87C4D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Generating...</span>
+                            </>
+                        ) : (
+                             <>
+                                <RoadmapIcon />
+                                <span>Generate Roadmap</span>
+                            </>
+                        )}
+                    </button>
+                    <button
+                        onClick={handlePublishDeck}
+                        disabled={isPublishing}
+                        className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2 disabled:bg-gray-200 disabled:cursor-not-allowed"
+                    >
+                        {isPublishing ? (
+                            <>
+                                 <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-[#E87C4D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>{publishProgressMessage}...</span>
+                            </>
+                        ) : (
+                            <>
+                                <PublishIcon />
+                                <span>Publish</span>
+                            </>
+                        )}
+                    </button>
+                     <Link
+                        to={`/pitch-decks/${deck.id}/present`}
+                        state={{deck}}
+                        className="block w-full text-center bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
+                    >
+                        Present
+                    </Link>
+                </div>
             </div>
         </aside>
     );
