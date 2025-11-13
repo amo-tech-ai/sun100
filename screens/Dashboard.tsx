@@ -1,280 +1,87 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 // --- ICONS ---
+const Wand2Icon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
 const CalendarIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
-const TicketIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 9a3 3 0 0 1 0 6v1a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-1a3 3 0 0 1 0-6V8a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>;
-const CheckSquareIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>;
-const ChevronLeftIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m15 18-6-6 6-6"/></svg>;
-const ChevronRightIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m9 18 6-6-6-6"/></svg>;
-const SearchIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
-const BellIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>;
-const SettingsIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1 0 2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
+const BriefcaseIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
+const GiftIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>;
+const PresentationIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></svg>;
+const VideoIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect y="4" x="2" width="20" height="16" rx="2"/><path d="m22 8-6 4 6 4V8Z"/></svg>;
 
-// --- MOCK DATA ---
-const revenueData = [34805, 56320, 45000, 51000, 48000, 58000, 62000, 55000];
-const popularEvents = [
-    { name: 'Music', percentage: 40, events: 20000 },
-    { name: 'Sports', percentage: 35, events: 17500 },
-    { name: 'Fashion', percentage: 15, events: 12500 },
-];
-const allEvents = [
-    { title: "Champions League Screening Night", location: "SkyDome Stadium, Toronto, ON", date: "Apr 20, 2029", price: 30, category: "Sport", image: "https://images.unsplash.com/photo-1593321598482-f67f52c1032b?q=80&w=800" },
-    { title: "Culinary Delights Festival", location: "Gourmet Plaza, San Francisco, CA", date: "Mar 3, 2029", price: 40, category: "Food & Culinary", image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800" },
-    { title: "Artistry Unveiled: Modern Art Expo", location: "Vogue Hall, Los Angeles, CA", date: "Mar 10, 2029", price: 110, category: "Fashion", image: "https://images.unsplash.com/photo-1501430654243-c934cec2e1c0?q=80&w=800" },
-];
-const recentBookings = [
-    { id: 'INV10011', date: '2029/02/15 10:30 AM', name: 'Jackson Moore', event: 'Symphony Under the Stars', qty: 2, amount: 100, status: 'Confirmed' },
-    { id: 'INV10012', date: '2029/02/16 01:45 PM', name: 'Alicia Smithson', event: 'Runway Revolution 2024', qty: 1, amount: 120, status: 'Pending' },
-    { id: 'INV10013', date: '2029/02/17 01:15 PM', name: 'Marcus Rawless', event: 'Global Wellness Summit', qty: 3, amount: 240, status: 'Confirmed' },
-    { id: 'INV10014', date: '2029/02/18 09:00 AM', name: 'Patrick Cooper', event: 'Champions League Screening Night', qty: 4, amount: 120, status: 'Cancelled' },
-];
-const recentActivity = [
-    { action: "reviewed a refund request", user: "Admin Stefanus Weber", details: "for Invoice ID: 'INV1004'", time: "05:30 PM" },
-    { action: "updated ticket prices for the event", user: "Wella McGrath", details: "'Runway Revolution 2024' under the category 'Fashion'", time: "02:00 PM" },
-    { action: "canceled a booking with Invoice ID", user: "Patrick Cooper", details: "'INV10014'", time: "11:15 AM" },
-    { action: "created a new event", user: "Andrew Shaw", details: "'Symphony Under the Stars' under the category 'Music'", time: "09:30 AM" },
-];
 
-// --- SUB-COMPONENTS ---
-
-const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string | number; }> = ({ icon, label, value }) => (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0">
+const ActionCard: React.FC<{ title: string; description: string; link: string; icon: React.ReactNode; }> = ({ title, description, link, icon }) => (
+    <Link to={link} className="block bg-white p-8 rounded-lg border border-gray-200 shadow-sm hover:shadow-lg hover:border-brand-orange/50 transform hover:-translate-y-1 transition-all duration-300">
+        <div className="w-12 h-12 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center mb-4">
             {icon}
         </div>
-        <div>
-            <p className="text-sm font-medium text-gray-500">{label}</p>
-            <p className="text-2xl font-bold text-brand-blue">{typeof value === 'number' ? value.toLocaleString() : value}</p>
-        </div>
-    </div>
+        <h3 className="text-xl font-bold text-brand-blue">{title}</h3>
+        <p className="text-gray-500 mt-2">{description}</p>
+    </Link>
 );
 
-const DonutChart: React.FC = () => {
-    // Mock data for the donut chart
-    const total = 2780;
-    const soldOut = 1251;
-    const fullyBooked = 834;
-    const available = 695;
-    
-    const soldOutPercent = (soldOut / total) * 100;
-    const fullyBookedPercent = (fullyBooked / total) * 100;
-
-    return (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="font-bold text-lg text-brand-blue mb-4">Ticket Sales</h3>
-            <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="relative w-36 h-36">
-                    <svg className="w-full h-full" viewBox="0 0 36 36">
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e6e6e6" strokeWidth="3" />
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#4F46E5" strokeWidth="3" strokeDasharray={`${fullyBookedPercent}, 100`} transform="rotate(-90 18 18)" />
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E87C4D" strokeWidth="3" strokeDasharray={`${soldOutPercent}, 100`} />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-xs text-gray-500">Total Ticket</span>
-                        <span className="font-bold text-xl text-brand-blue">{total.toLocaleString()}</span>
-                    </div>
-                </div>
-                <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-[#E87C4D]"></div>Sold Out: <span className="font-semibold">{soldOut.toLocaleString()} (45%)</span></div>
-                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-[#4F46E5]"></div>Fully Booked: <span className="font-semibold">{fullyBooked.toLocaleString()} (30%)</span></div>
-                    <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-[#e6e6e6]"></div>Available: <span className="font-semibold">{available.toLocaleString()} (25%)</span></div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const RevenueChart: React.FC = () => {
-    const maxRevenue = Math.max(...revenueData) * 1.2;
-    return (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-lg text-brand-blue">Sales Revenue</h3>
-                <span className="text-sm font-semibold text-gray-500">Last 8 Months</span>
-            </div>
-            <div className="h-40 flex items-end gap-2">
-                {revenueData.map((value, i) => (
-                    <div key={i} className="flex-1 h-full flex items-end">
-                        <div className="w-full bg-brand-orange/20 hover:bg-brand-orange/50 rounded-t-md transition-colors" style={{ height: `${(value/maxRevenue) * 100}%` }}></div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )
-}
-
-const statusColors: { [key: string]: string } = {
-    Confirmed: 'bg-green-100 text-green-700',
-    Pending: 'bg-yellow-100 text-yellow-700',
-    Cancelled: 'bg-red-100 text-red-700',
-}
-
-// --- MAIN DASHBOARD COMPONENT ---
 
 const Dashboard: React.FC = () => {
-  return (
-    <div className="space-y-8">
-      {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-            <h1 className="text-3xl font-bold text-brand-blue">Dashboard</h1>
-            <p className="text-gray-500 mt-1">Hello Orlando, welcome back!</p>
+    return (
+        <div className="space-y-12">
+            {/* Header */}
+            <header>
+                <h1 className="text-3xl lg:text-4xl font-bold text-brand-blue">Welcome back, Founder!</h1>
+                <p className="text-gray-500 mt-2 text-lg">What will you build today?</p>
+            </header>
+
+            {/* Quick Actions */}
+            <section>
+                <h2 className="text-2xl font-bold text-brand-blue mb-6">Quick Actions</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <ActionCard 
+                        title="Create New Deck"
+                        description="Use our AI wizard to generate a professional pitch deck in minutes."
+                        link="/pitch-decks/new"
+                        icon={<Wand2Icon />}
+                    />
+                    <ActionCard 
+                        title="Manage Decks"
+                        description="View, edit, and present all of your saved pitch decks."
+                        link="/pitch-decks"
+                        icon={<PresentationIcon />}
+                    />
+                     <ActionCard 
+                        title="Generate Video"
+                        description="Create stunning short videos from text prompts with our AI video tool."
+                        link="/dashboard/video-generator"
+                        icon={<VideoIcon />}
+                    />
+                </div>
+            </section>
+            
+             {/* Community & Resources */}
+            <section>
+                <h2 className="text-2xl font-bold text-brand-blue mb-6">Community & Resources</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <ActionCard 
+                        title="My Events Dashboard"
+                        description="Manage your created events, track bookings, and see analytics."
+                        link="/dashboard/my-events"
+                        icon={<CalendarIcon />}
+                    />
+                    <ActionCard 
+                        title="Find a Job"
+                        description="Explore career opportunities at top AI startups in our community."
+                        link="/jobs"
+                        icon={<BriefcaseIcon />}
+                    />
+                    <ActionCard 
+                        title="Explore Perks"
+                        description="Access exclusive deals and credits on essential startup software."
+                        link="/perks"
+                        icon={<GiftIcon />}
+                    />
+                </div>
+            </section>
         </div>
-        <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="relative flex-grow">
-                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"/>
-                <input type="search" placeholder="Search anything..." className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-full focus:ring-2 focus:ring-brand-orange" />
-            </div>
-            <button className="p-3 bg-white border border-gray-200 rounded-full text-gray-500 hover:text-brand-blue" aria-label="Notifications"><BellIcon/></button>
-            <button className="p-3 bg-white border border-gray-200 rounded-full text-gray-500 hover:text-brand-blue" aria-label="Settings"><SettingsIcon/></button>
-            <img src="https://picsum.photos/seed/sunai-user/40/40" alt="Orlando Laurentius" className="w-12 h-12 rounded-full"/>
-        </div>
-      </header>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content Column */}
-        <main className="lg:col-span-2 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <StatCard icon={<CalendarIcon />} label="Upcoming Events" value={345} />
-                <StatCard icon={<CheckSquareIcon />} label="Total Bookings" value={1798} />
-                <StatCard icon={<TicketIcon />} label="Tickets Sold" value={1250} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-                <div className="md:col-span-2"><DonutChart /></div>
-                <div className="md:col-span-3"><RevenueChart /></div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 className="font-bold text-lg text-brand-blue mb-4">Popular Events</h3>
-                {popularEvents.map(event => (
-                    <div key={event.name} className="flex items-center gap-4 py-2">
-                        <span className="w-1/4 font-semibold text-gray-600">{event.name}</span>
-                        <div className="w-2/4 bg-gray-200 rounded-full h-2.5">
-                            <div className="bg-brand-orange h-2.5 rounded-full" style={{width: `${event.percentage}%`}}></div>
-                        </div>
-                        <span className="w-1/4 text-right font-semibold text-gray-800">{event.events.toLocaleString()} Events</span>
-                    </div>
-                ))}
-            </div>
-
-            <div>
-                <h3 className="font-bold text-lg text-brand-blue mb-4">All Events</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {allEvents.map(event => (
-                        <div key={event.title} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group">
-                            <img src={event.image} alt={event.title} className="w-full h-32 object-cover" />
-                            <div className="p-4">
-                                <span className="text-xs font-semibold bg-brand-orange/10 text-brand-orange py-1 px-2 rounded-md">{event.category}</span>
-                                <h4 className="font-bold text-brand-blue mt-2">{event.title}</h4>
-                                <p className="text-sm text-gray-500">{event.location}</p>
-                                <div className="flex justify-between items-center mt-4">
-                                    <span className="text-sm text-gray-500">{event.date}</span>
-                                    <span className="font-bold text-lg text-brand-blue">${event.price}</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 className="font-bold text-lg text-brand-blue mb-4">Recent Bookings</h3>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-gray-500 uppercase">
-                            <tr>
-                                <th className="py-2 px-4">Invoice ID</th>
-                                <th className="py-2 px-4">Date</th>
-                                <th className="py-2 px-4">Name</th>
-                                <th className="py-2 px-4">Event</th>
-                                <th className="py-2 px-4 text-right">Qty</th>
-                                <th className="py-2 px-4 text-right">Amount</th>
-                                <th className="py-2 px-4 text-center">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {recentBookings.map(booking => (
-                                <tr key={booking.id} className="border-b border-gray-100">
-                                    <td className="py-3 px-4 font-semibold text-gray-800">{booking.id}</td>
-                                    <td className="py-3 px-4 text-gray-600">{booking.date}</td>
-                                    <td className="py-3 px-4 text-gray-600">{booking.name}</td>
-                                    <td className="py-3 px-4 text-gray-600">{booking.event}</td>
-                                    <td className="py-3 px-4 text-right text-gray-600">{booking.qty}</td>
-                                    <td className="py-3 px-4 text-right font-semibold text-gray-800">${booking.amount}</td>
-                                    <td className="py-3 px-4 text-center">
-                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusColors[booking.status]}`}>{booking.status}</span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-
-        {/* Right Sidebar Column */}
-        <aside className="lg:col-span-1 space-y-8">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 className="font-bold text-lg text-brand-blue mb-4">Upcoming Event</h3>
-                <div className="rounded-lg overflow-hidden mb-4">
-                    <img src="https://images.unsplash.com/photo-1578736641334-6493a52f461a?q=80&w=800" alt="Rhythm & Beats Music Festival" className="w-full h-40 object-cover" />
-                </div>
-                <h4 className="font-bold text-brand-blue">Rhythm & Beats Music Festival</h4>
-                <p className="text-sm text-gray-500 mt-1">Sunset Park, Los Angeles, CA</p>
-                <p className="text-sm text-gray-600 my-2">Immerse yourself in electrifying performances by top pop, rock, EDM, and hip-hop artists.</p>
-                <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500">Apr 20, 2029</span>
-                    <Link to="#" className="font-bold text-brand-orange hover:underline">View Details</Link>
-                </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-lg text-brand-blue">March 2029</h3>
-                    <div className="flex gap-2">
-                        <button className="p-1.5 rounded-md hover:bg-gray-100"><ChevronLeftIcon /></button>
-                        <button className="p-1.5 rounded-md hover:bg-gray-100"><ChevronRightIcon /></button>
-                    </div>
-                </div>
-                <div className="grid grid-cols-7 text-center text-sm text-gray-500 font-semibold mb-2">
-                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                </div>
-                <div className="grid grid-cols-7 text-center text-sm">
-                    {[...Array(31)].map((_, i) => <span key={i} className={`py-1.5 rounded-full ${i+1 === 14 ? 'bg-brand-orange text-white' : ''} ${[3,5,23].includes(i+1) ? 'font-bold text-brand-blue' : 'text-gray-700'}`}>{i+1}</span>)}
-                </div>
-                 <div className="border-t border-gray-100 mt-4 pt-4 space-y-3">
-                    <div className="p-3 bg-brand-orange/10 rounded-lg">
-                        <p className="font-semibold text-brand-blue text-sm">Panel Discussion</p>
-                        <p className="text-xs text-gray-500">Technology &bull; 10:00 AM - 12:00 PM</p>
-                    </div>
-                     <div className="p-3">
-                        <p className="font-semibold text-brand-blue text-sm">Live Concert</p>
-                        <p className="text-xs text-gray-500">Echo Beats Festival &bull; 6:00 PM - 11:00 PM</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 className="font-bold text-lg text-brand-blue mb-4">Recent Activity</h3>
-                <div className="space-y-4">
-                    {recentActivity.map((activity, i) => (
-                        <div key={i} className="flex gap-4">
-                            <div className="w-10 h-10 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center flex-shrink-0 text-xs font-bold">{activity.user.split(' ').map(n => n[0]).join('')}</div>
-                            <div>
-                                <p className="text-sm text-gray-800"><span className="font-semibold">{activity.user}</span> {activity.action} {activity.details}</p>
-                                <p className="text-xs text-gray-400 mt-0.5">{activity.time}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </aside>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Dashboard;
