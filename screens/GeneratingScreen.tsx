@@ -5,7 +5,7 @@ import { generateFullDeck } from '../services/aiService';
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { mode, content } = location.state || {};
+    const { textContext, urlContext } = location.state || {};
     
     const [dots, setDots] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -15,7 +15,10 @@ const GeneratingScreen: React.FC = () => {
             setDots(prev => (prev.length >= 3 ? '' : prev + '.'));
         }, 500);
 
-        if (!mode || !content || (Array.isArray(content) && content.length === 0)) {
+        const hasText = textContext && textContext.trim().length > 0;
+        const hasUrls = urlContext && urlContext.length > 0;
+
+        if (!hasText && !hasUrls) {
             setError("No generation context provided. Please go back and start the wizard again.");
             clearInterval(dotsInterval);
             return;
@@ -23,13 +26,10 @@ const GeneratingScreen: React.FC = () => {
 
         const performGeneration = async () => {
             try {
-                // This new service function does the full AI call and returns a complete Deck object
-                const generatedDeck = await generateFullDeck({ mode, content });
+                const generatedDeck = await generateFullDeck({ text: textContext, urls: urlContext });
                 
-                // Save the full deck to session storage for persistence across reloads
                 sessionStorage.setItem(`deck-${generatedDeck.id}`, JSON.stringify(generatedDeck));
 
-                // Navigate to the editor for the new deck
                 navigate(`/pitch-decks/${generatedDeck.id}/edit`);
 
             } catch (err) {
@@ -44,7 +44,7 @@ const GeneratingScreen: React.FC = () => {
         return () => {
             clearInterval(dotsInterval);
         };
-    }, [mode, content, navigate]);
+    }, [textContext, urlContext, navigate]);
 
     if (error) {
         return (
