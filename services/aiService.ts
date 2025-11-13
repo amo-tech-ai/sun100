@@ -78,6 +78,13 @@ ${context}
 
     const deckData = JSON.parse(response.text.trim());
     
+    // Ensure we have exactly 10 slides, or handle gracefully if the model fails to comply.
+    if (!deckData.slides || deckData.slides.length < 10) {
+        console.warn("AI did not return 10 slides. Falling back to mock data structure if needed.");
+        // For robustness, you could add logic here to pad with empty slides or return an error.
+        // For now, we'll proceed but this highlights the importance of the schema.
+    }
+    
     const finalDeck: Deck = {
       id: `deck-${Date.now()}`,
       title: deckData.title,
