@@ -15,7 +15,7 @@ This tracker outlines the development lifecycle for getting the Pitch Deck Wizar
 | **1. Frontend Scaffolding** | **Wizard UI (`WizardSteps.tsx`)** | ✅ Completed | 100% | The core UI exists and correctly passes user input to the next step via navigation state. |
 | | **URL Input Component (`UrlInput.tsx`)** | ✅ Completed | 100% | The component for adding, validating, and removing URLs is functional. |
 | | **Generating Screen UI (`GeneratingScreen.tsx`)** | ✅ Completed | 100% | The loading screen UI is implemented. Its logic was updated to orchestrate the generation call. |
-| **2. Core AI Engine (Client-Side)** | **Consolidate AI Services** | ✅ Completed | 100% | Renamed `geminiService.ts` to `aiService.ts` and deleted the empty `apiService.ts` to create a single source of truth. |
+| **2. Core AI Engine (Client-Side)** | **Consolidate AI Services** | ✅ Completed | 100% | Created a single `aiService.ts` to be the single source of truth for all AI logic. |
 | | **Implement Deck Generation** | ✅ Completed | 100% | Implemented the missing `generateFullDeck` function in `aiService.ts`. This function uses Gemini with a JSON schema for reliable output and includes a mock fallback, fixing the core application bug. |
 | | **Input Method: Text Generation** | ✅ Completed | 100% | The wizard now fully supports generating a deck from a user's written business context. |
 | | **Input Method: URL Context** | 🟡 In Progress | 50% | The UI supports URL input, but the `generateFullDeck` function does not yet use the `urlContext` tool. This is a future enhancement. |
@@ -27,7 +27,7 @@ This tracker outlines the development lifecycle for getting the Pitch Deck Wizar
 
 ### 1. System Analysis
 
--   **Current State:** The application is a feature-rich, client-side React app. The wizard exists in `WizardSteps.tsx` and calls a client-side `geminiService.ts`. This is excellent for prototyping but poses two major production risks: **security** (API key exposure) and **scalability** (no persistent user data).
+-   **Current State:** The application is a feature-rich, client-side React app. The wizard exists in `WizardSteps.tsx` and now correctly calls a client-side `aiService.ts`. This is excellent for prototyping but poses two major production risks: **security** (API key exposure) and **scalability** (no persistent user data).
 -   **Target State:** A secure full-stack application where the frontend is the presentation layer, and all business logic, data persistence, and AI communication are handled by a custom backend (e.g., Node.js on Cloud Run). This plan aligns with the previously defined backend and frontend migration plans.
 
 ---
@@ -77,7 +77,7 @@ The wizard will be a single, powerful screen with a responsive two-column layout
 -   **State Management:** A React Context (`WizardContext`) will manage the wizard's state.
 -   **Transitions & Loading:** All backend calls will trigger loading states.
 -   **Service Layers:**
-    -   **`services/aiService.ts`:** Will replace `geminiService.ts`. It will contain wrappers for calling our backend's AI endpoints.
+    -   **`services/aiService.ts`:** Will contain wrappers for calling our backend's AI endpoints.
     -   **`services/deckService.ts`:** Will handle all database interactions via our backend API.
 
 ---
