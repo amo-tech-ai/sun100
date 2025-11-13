@@ -42,6 +42,15 @@ const disabledAiService = <T>(defaultValue: T) => async (..._args: any[]): Promi
     return defaultValue;
 };
 
+// Specific mock for generateDeck to ensure a valid, non-empty ID is always returned for the UI flow.
+const mockGenerateDeck = async (payload: { mode: 'text' | 'url', content: string | string[] }): Promise<{ deckId: string }> => {
+    console.warn("AI service is disabled. Simulating deck generation with payload:", payload);
+    await new Promise(res => setTimeout(res, 1000));
+    // In a real mock, you might even add this to sessionStorage to make polling succeed.
+    return { deckId: `mock-deck-${Date.now()}` };
+};
+
+
 // --- Service Implementations ---
 export const generateDeck = apiKey ? async (payload: { mode: 'text' | 'url', content: string | string[] }): Promise<{ deckId: string }> => {
     // In a real app, this would call a backend which creates the deck and returns an ID.
@@ -49,7 +58,7 @@ export const generateDeck = apiKey ? async (payload: { mode: 'text' | 'url', con
     console.log("Simulating deck generation with payload:", payload);
     await new Promise(res => setTimeout(res, 1000));
     return { deckId: `new-deck-${Date.now()}` };
-} : disabledAiService({ deckId: '' });
+} : mockGenerateDeck;
 
 
 export const generateEventDescription = apiKey ? async (details: { title: string; date: string; location: string }): Promise<{ description: string }> => {

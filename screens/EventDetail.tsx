@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
@@ -84,7 +85,7 @@ const EventDetail: React.FC = () => {
         setIsSubmitting(true);
         try {
             const { error } = await supabase
-                .from('rsvps')
+                .from('event_registrations') // Corrected table name from rsvps to event_registrations
                 .insert({ user_id: user.id, event_id: event.id });
             
             if (error) throw error;

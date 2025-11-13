@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -15,7 +16,6 @@ const Signup: React.FC = () => {
         setError(null);
         setLoading(true);
         try {
-            // FIX: The Supabase `signUp` function expects a single object with email and password properties.
             const { error } = await signup({ email, password });
             if (error) {
                 throw error;

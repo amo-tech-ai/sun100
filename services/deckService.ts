@@ -1,3 +1,4 @@
+
 import { supabase } from '../lib/supabaseClient';
 import { Deck, Slide } from '../data/decks';
 
@@ -51,6 +52,14 @@ export const updateSlide = async (id: string, updates: Partial<Slide>): Promise<
 };
 
 export const pollForDeckSlides = async (deckId: string): Promise<boolean> => {
+    // If we're in mock mode (no Supabase configured), simulate success after a delay.
+    if (deckId.startsWith('mock-deck-')) {
+        console.log("Polling mock deck. Simulating success...");
+        // This simulates the time it takes for a real generation to complete.
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        return true;
+    }
+
     const { data, error } = await supabase
         .from('slides')
         .select('id')
