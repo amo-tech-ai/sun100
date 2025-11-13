@@ -74,7 +74,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
     };
 
     const handleTitleSaveInternal = () => {
-        if(deck && editedTitle.trim() !== deck.title) {
+        if(deck && editedTitle.trim() && editedTitle.trim() !== deck.title) {
             handleTitleSave(editedTitle.trim());
         }
         setIsEditingTitle(false);
@@ -89,7 +89,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
     }
 
     return (
-        <aside className={`flex-shrink-0 bg-white border-r border-gray-200 flex flex-col p-4 transition-width duration-300 ease-in-out ${isCollapsed ? 'w-16' : 'w-[320px]'}`}>
+        <aside className={`flex-shrink-0 bg-white border-r border-gray-200 flex flex-col p-4 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-16' : 'w-[320px]'}`}>
             <div className={`mb-4 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 {isEditingTitle ? (
                     <div className="flex items-center">
@@ -200,7 +200,6 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
                     </button>
                      <Link
                         to={`/pitch-decks/${deck.id}/present`}
-                        state={{deck}}
                         className="block w-full text-center bg-[#E87C4D] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200"
                     >
                         Present

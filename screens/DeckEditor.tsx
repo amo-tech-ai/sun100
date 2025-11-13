@@ -4,7 +4,8 @@ import { Deck, Slide } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
 import AICopilot from '../components/AICopilot';
-import { getDeckById, updateDeck, updateSlide } from '../services/deckService';
+// FIX: Removed unused and non-existent 'updateDeck' and 'updateSlide' imports.
+import { getDeckById } from '../services/deckService';
 import {
     generateSlideImage,
     editSlideImage,

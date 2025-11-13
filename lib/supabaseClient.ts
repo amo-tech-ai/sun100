@@ -1,4 +1,3 @@
-
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL;
@@ -33,7 +32,11 @@ if (supabaseUrl && supabaseAnonKey) {
         single: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured.', details: '', hint: '', code: 'MOCK' } }),
         // Make it await-able and return empty data
         then: (callback: (result: { data: any[]; error: null }) => void) => {
-          callback({ data: [], error: null });
+            if (table === 'events') {
+                 callback({ data: [], error: null });
+            } else {
+                callback({ data: [], error: null });
+            }
         },
       };
       return mockQueryBuilder as any;

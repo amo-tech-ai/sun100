@@ -7,8 +7,6 @@ import { useDeckEditor } from '../screens/DeckEditor';
 
 const ChevronLeftIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
 const ChevronRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
-const GlobeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>;
-
 
 const EditorPanel: React.FC = () => {
     const { 
@@ -26,8 +24,9 @@ const EditorPanel: React.FC = () => {
         handleSuggestPieChart,
         isSuggestingPieChart,
         pieChartError,
-        handleMarketResearch,
-        isResearching,
+        handleGenerateTable,
+        isGeneratingTable,
+        tableError,
         handlePrevSlide,
         handleNextSlide,
      } = useDeckEditor();
@@ -98,7 +97,7 @@ const EditorPanel: React.FC = () => {
                         ) : (
                             <ul className={templateStyles.content}>
                                 {selectedSlide.content.split('\n').map((point, i) => (
-                                    <li key={i} className={templateStyles.bullet}>{renderWithMarkdown(point)}</li>
+                                    point && <li key={i} className={templateStyles.bullet}>{renderWithMarkdown(point)}</li>
                                 ))}
                             </ul>
                         )}
@@ -112,19 +111,13 @@ const EditorPanel: React.FC = () => {
                 <button onClick={handleNextSlide} disabled={selectedSlideIndex === totalSlides - 1} className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-100 disabled:opacity-50 transition-colors" aria-label="Next slide"><ChevronRightIcon /></button>
                 
                  <div className="ml-auto hidden md:flex items-center gap-2">
-                    {selectedSlide.type === 'market' && (
-                        <div className="relative">
-                            <button 
-                                onClick={handleMarketResearch} 
-                                disabled={isResearching} 
-                                className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:bg-gray-200" 
-                                title="Research market size (TAM, SAM, SOM) and key trends for this industry"
-                            >
-                                <GlobeIcon />
-                                <span>Research Market</span>
-                            </button>
-                        </div>
-                    )}
+                     <div className="relative">
+                        <button onClick={handleGenerateTable} disabled={isGeneratingTable || !!selectedSlide.chartData || !!selectedSlide.tableData} className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:bg-gray-200" title="Format as Pricing Table">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                           <span>Pricing Table</span>
+                        </button>
+                        {tableError && <p className="absolute top-full mt-1 text-xs text-red-600">{tableError}</p>}
+                    </div>
                     <div className="relative">
                         <button onClick={handleSuggestPieChart} disabled={isSuggestingPieChart || !!selectedSlide.chartData || !!selectedSlide.tableData} className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:bg-gray-200" title="Suggest Allocation Chart">
                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>

@@ -51,7 +51,7 @@ const AIToolbox: React.FC = () => {
                 <button onClick={() => setActiveTab('analysis')} className={getTabClass('analysis')}>Analysis</button>
                 <button onClick={() => setActiveTab('research')} className={getTabClass('research')}>Research</button>
             </div>
-            <div>
+            <div className="max-h-[60vh] overflow-y-auto">
                 {renderTabContent()}
             </div>
         </div>
