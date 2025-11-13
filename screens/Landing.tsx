@@ -47,7 +47,7 @@ const Landing: React.FC = () => {
         `}</style>
         
         {/* Section 1: Hero */}
-        <section className="bg-brand-blue text-white py-20 md:py-32 relative overflow-hidden">
+        <section className="bg-brand-blue text-white pt-32 pb-20 md:pt-48 md:pb-32 relative overflow-hidden">
             <div className="absolute inset-0 bg-grid opacity-50"></div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -174,7 +174,7 @@ const Landing: React.FC = () => {
                         quote="It's the first platform that understands the entire founder journey, from pitching to product-market fit."
                         name="Chen Wei"
                         title="CEO, NextLayer"
-                        avatar="https://lh3.googleusercontent.com/aida-public/AB6AXuD91z1jOzow1ZHS1VbQbH3qwrYp3Kv0t9oXBZF0-AZ86pKCW88K-KSfltfWrQiQ8oECc8-7knImh8bbp1Z0HI9DUOOFJXDSb8jNJSzxJQWdgJkvHIYWCgoYtjPEMolrZPmkjOPkNyZB8ZNaVffFwyd78iiJHCiCLby_qUOiHBE_wNJkM987QZffxnd0_NiuNqzSLvTIgi2j6mHZlFlRI5lD1IaALbflk9iQyGr5H9QoICxTC58R0V-ONsa_vZnbEd-GYWiXhqMSZ5g"
+                        avatar="https://lh3.googleusercontent.com/aida-public/AB6AXuD91z1jOzow1ZHS1VbQbH3qwrYp3Kv0t9oXBZF0-AZ86pKCW88K-KSfltfWrQiQ8oECc8-7knImh8bbp1Z0HI9DUOOFJXDSb8jNJSzxJQWdgJkvHIYWCgoYtjPEMolrZPmkjOPkNyZB8ZNaVffFwyd78iiJHCiCLby_qUOiHBE_wNJkM987QZffxnd0_NiuNqzSLvTIgi2j6mHZlFlRI5lD1aALbflk9iQyGr5H9QoICxTC58R0V-ONsa_vZnbEd-GYWiXhqMSZ5g"
                     />
                 </div>
             </div>

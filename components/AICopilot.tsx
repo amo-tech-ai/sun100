@@ -6,6 +6,7 @@ const AICopilot: React.FC = () => {
         handleCopilotGenerate, 
         isCopilotLoading, 
         copilotSuggestions,
+        areSuggestionsLoading,
         handleGenerateHeadlines,
         isGeneratingHeadlines,
         headlineError,
@@ -63,18 +64,26 @@ const AICopilot: React.FC = () => {
 
                 <div className="border-t border-gray-200 mt-4 pt-3">
                     <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Suggestions</h4>
-                    <div className="flex flex-wrap gap-2">
-                        {copilotSuggestions.map((s, i) => (
-                            <button
-                                key={i}
-                                onClick={() => handleSuggestionClick(s)}
-                                disabled={isCopilotLoading}
-                                className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {s}
-                            </button>
-                        ))}
-                    </div>
+                    {areSuggestionsLoading ? (
+                        <div className="flex flex-wrap gap-2">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="h-7 w-28 bg-gray-200 rounded-full animate-pulse"></div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-wrap gap-2">
+                            {copilotSuggestions.map((s, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => handleSuggestionClick(s)}
+                                    disabled={isCopilotLoading}
+                                    className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {s}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {selectedSlide?.type === 'vision' && (
@@ -112,4 +121,4 @@ const AICopilot: React.FC = () => {
     );
 };
 
-export default AICopilot;
+export default React.memo(AICopilot);

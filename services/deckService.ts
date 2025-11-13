@@ -1,33 +1,111 @@
 import { Deck, Slide, mockDeck } from '../data/decks';
+import { supabase } from '../lib/supabaseClient';
+
 
 export const getDecks = async (): Promise<Deck[]> => {
-    const decks: Deck[] = [];
-    // Await a Promise to simulate async behavior
-    await new Promise(resolve => setTimeout(resolve, 100));
-    for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i);
-        if (key && key.startsWith('deck-')) {
-            const deck = JSON.parse(sessionStorage.getItem(key)!);
-            decks.push(deck);
-        }
-    }
-    // If no decks in session storage, return the mock deck for demo purposes
-    if (decks.length === 0) {
+    // Check if we are in mock mode by checking for a mock-specific property
+    if (!(supabase as any).realtime) {
+        console.warn("Supabase not configured. Returning mock decks.");
         return [mockDeck];
     }
-    return decks.sort((a, b) => b.id.localeCompare(a.id)); // Sort by creation time desc
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        console.log("No user session. Returning empty array for decks.");
+        return [];
+    }
+
+    const { data, error } = await supabase
+        .from('decks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching decks:', error);
+        throw error;
+    }
+
+    // In Supabase, slides are a nested relation, so we don't need to fetch them here.
+    // The 'slides' property might not exist on the top-level deck object from this query.
+    return (data as any[]) || [];
 };
 
 export const getDeckById = async (id: string): Promise<Deck | null> => {
-    // Await a Promise to simulate async behavior
-    await new Promise(resolve => setTimeout(resolve, 50));
-    const storedDeck = sessionStorage.getItem(`deck-${id}`);
-    if (storedDeck) {
-        return JSON.parse(storedDeck);
+     if (!(supabase as any).realtime) {
+        console.warn("Supabase not configured. Returning mock deck.");
+        return id === mockDeck.id ? mockDeck : null;
     }
-    // Fallback for mock environment if sessionStorage is empty
-    if (id === mockDeck.id) {
-         return mockDeck;
+    
+    const { data, error } = await supabase
+        .from('decks')
+        .select('*, slides(*)')
+        .eq('id', id)
+        .single();
+        
+    if (error) {
+        console.error(`Error fetching deck ${id}:`, error);
+        if (error.code !== 'PGRST116') { // Ignore "No rows found" for .single()
+             throw error;
+        }
     }
-    return null;
+    
+    if (data && Array.isArray(data.slides)) {
+        // Sort slides by position client-side
+        data.slides.sort((a: any, b: any) => a.position - b.position);
+    }
+
+    return data as Deck | null;
+};
+
+export const createDeck = async (deckData: Omit<Deck, 'id'>, userId: string): Promise<Deck> => {
+    // Insert deck metadata
+    const { data: newDeck, error: deckError } = await supabase
+        .from('decks')
+        .insert({
+            user_id: userId,
+            title: deckData.title,
+            template: deckData.template,
+        })
+        .select()
+        .single();
+        
+    if (deckError) throw deckError;
+
+    // Prepare and insert slides
+    const slidesToInsert = deckData.slides.map((slide, index) => ({
+        deck_id: newDeck.id,
+        position: index,
+        title: slide.title,
+        content: slide.content,
+        imageUrl: slide.imageUrl,
+        template: slide.template,
+        type: slide.type,
+    }));
+
+    const { error: slidesError } = await supabase
+        .from('slides')
+        .insert(slidesToInsert);
+
+    if (slidesError) throw slidesError;
+
+    const finalDeck = await getDeckById(newDeck.id);
+    if (!finalDeck) throw new Error("Failed to retrieve newly created deck.");
+    return finalDeck;
+};
+
+export const updateDeck = async (deckId: string, updates: Partial<Omit<Deck, 'id' | 'slides'>>) => {
+    const { error } = await supabase
+        .from('decks')
+        .update(updates)
+        .eq('id', deckId);
+    if (error) throw error;
+};
+
+export const updateSlide = async (slideId: string, updates: Partial<Omit<Slide, 'id'>>) => {
+    const { error } = await supabase
+        .from('slides')
+        .update(updates)
+        .eq('id', slideId);
+    if (error) throw error;
 };

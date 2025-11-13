@@ -13,71 +13,71 @@ const PublicLayout: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen flex flex-col relative overflow-hidden">
+        <div className="min-h-screen flex flex-col relative overflow-hidden bg-brand-off-white">
             <header className="absolute top-0 left-0 right-0 z-20 py-6 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <Link className="flex items-center space-x-2" to="/">
-                        <span className="material-symbols-outlined text-primary text-3xl">flare</span>
-                        <span className="font-bold text-xl">sun AI startup</span>
+                        <span className="material-symbols-outlined text-brand-orange text-3xl">flare</span>
+                        <span className="font-bold text-xl text-brand-blue">sun AI startup</span>
                     </Link>
-                    <nav className="hidden md:flex items-center space-x-8 text-sm">
+                    <nav className="hidden md:flex items-center space-x-8 text-sm text-gray-700">
                          {navLinks.map(link => (
                             <NavLink
                                 key={link.name}
                                 to={link.path}
-                                className={({isActive}) => `transition-colors ${isActive ? 'text-primary' : 'hover:text-primary'}`}
+                                className={({isActive}) => `transition-colors font-medium ${isActive ? 'text-brand-orange' : 'hover:text-brand-orange'}`}
                             >
                                 {link.name}
                             </NavLink>
                         ))}
                     </nav>
-                    <Link to="/dashboard" className="bg-primary text-white font-semibold py-2 px-5 rounded-lg text-sm hover:opacity-90 transition-opacity">Get Started</Link>
+                    <Link to="/dashboard" className="bg-brand-orange text-white font-semibold py-2 px-5 rounded-lg text-sm hover:bg-opacity-90 transition-opacity">Get Started</Link>
                 </div>
             </header>
             
-            <main className="flex-1 w-full">
+            <main className="flex-1 w-full pt-20">
                 <Outlet />
             </main>
 
-            <footer className="bg-card-light dark:bg-card-dark border-t border-border-light dark:border-border-dark">
+            <footer className="bg-white dark:bg-card-dark border-t border-border-light dark:border-border-dark">
                 <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
                         <div className="col-span-2 md:col-span-1">
                             <Link className="flex items-center space-x-2" to="/">
-                                <span className="material-symbols-outlined text-primary text-3xl">flare</span>
-                                <span className="font-bold text-xl">sun AI startup</span>
+                                <span className="material-symbols-outlined text-brand-orange text-3xl">flare</span>
+                                <span className="font-bold text-xl text-brand-blue">sun AI startup</span>
                             </Link>
                         </div>
                         <div>
-                            <h4 className="font-bold tracking-wider uppercase text-sm">Product</h4>
+                            <h4 className="font-bold tracking-wider uppercase text-sm text-gray-800">Product</h4>
                             <ul className="mt-4 space-y-2 text-sm text-subtext-light dark:text-subtext-dark">
-                                <li><Link className="hover:text-primary" to="/pitch-decks/new">AI Pitch Deck Wizard</Link></li>
-                                <li><Link className="hover:text-primary" to="/jobs">AI Jobs</Link></li>
-                                <li><Link className="hover:text-primary" to="/events">Events</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="/pitch-decks/new">AI Pitch Deck Wizard</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="/jobs">AI Jobs</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="/events">Events</Link></li>
                             </ul>
                         </div>
                         <div>
-                            <h4 className="font-bold tracking-wider uppercase text-sm">Resources</h4>
+                            <h4 className="font-bold tracking-wider uppercase text-sm text-gray-800">Resources</h4>
                             <ul className="mt-4 space-y-2 text-sm text-subtext-light dark:text-subtext-dark">
-                                <li><Link className="hover:text-primary" to="/blogs">Blog</Link></li>
-                                <li><Link className="hover:text-primary" to="#">Docs</Link></li>
-                                <li><Link className="hover:text-primary" to="#">API</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="/blogs">Blog</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="#">Docs</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="#">API</Link></li>
                             </ul>
                         </div>
                         <div>
-                            <h4 className="font-bold tracking-wider uppercase text-sm">Community</h4>
+                            <h4 className="font-bold tracking-wider uppercase text-sm text-gray-800">Community</h4>
                             <ul className="mt-4 space-y-2 text-sm text-subtext-light dark:text-subtext-dark">
-                                <li><Link className="hover:text-primary" to="/events">Events</Link></li>
-                                <li><Link className="hover:text-primary" to="#">Founders Circle</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="/events">Events</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="#">Founders Circle</Link></li>
                             </ul>
                         </div>
                         <div>
-                            <h4 className="font-bold tracking-wider uppercase text-sm">Company</h4>
+                            <h4 className="font-bold tracking-wider uppercase text-sm text-gray-800">Company</h4>
                             <ul className="mt-4 space-y-2 text-sm text-subtext-light dark:text-subtext-dark">
-                                <li><Link className="hover:text-primary" to="/about">About</Link></li>
-                                <li><Link className="hover:text-primary" to="#">Contact</Link></li>
-                                <li><Link className="hover:text-primary" to="#">Careers</Link></li>
-                                <li><Link className="hover:text-primary" to="/privacy">Privacy</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="/about">About</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="#">Contact</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="#">Careers</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="/privacy">Privacy</Link></li>
                             </ul>
                         </div>
                     </div>
