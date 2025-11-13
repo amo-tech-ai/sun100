@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
@@ -24,17 +23,17 @@ const EventDetail: React.FC = () => {
         if (!user || !id || !supabase) return;
         try {
             const { data, error } = await supabase
-                .from('rsvps')
+                .from('event_registregistrations')
                 .select('id')
                 .eq('user_id', user.id)
                 .eq('event_id', id)
-                .single();
+                .maybeSingle();
+
             if (data && !error) {
                 setIsRsvpd(true);
             }
         } catch(e) {
-            // .single() throws if no rows are found, which is an expected state, not an error.
-            // We can safely ignore this exception.
+            console.error("Error checking RSVP status:", e);
         }
     }, [user, id]);
 
@@ -57,7 +56,7 @@ const EventDetail: React.FC = () => {
                 }
             } catch (err) {
                 console.error("Failed to fetch event:", err);
-                setError(err instanceof Error ? err.message : "An unknown error occurred. Supabase may not be configured.");
+                setError(err instanceof Error ? err.message : "An unknown error occurred.");
             } finally {
                 setIsLoading(false);
             }
@@ -85,7 +84,7 @@ const EventDetail: React.FC = () => {
         setIsSubmitting(true);
         try {
             const { error } = await supabase
-                .from('event_registrations') // Corrected table name from rsvps to event_registrations
+                .from('event_registrations')
                 .insert({ user_id: user.id, event_id: event.id });
             
             if (error) throw error;

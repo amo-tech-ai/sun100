@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { getEvents, Event } from '../services/eventService';
@@ -41,9 +40,12 @@ const Events: React.FC = () => {
                 setError(null);
                 const fetchedEvents = await getEvents();
                 setEvents(fetchedEvents);
+                 if (fetchedEvents.length === 0) {
+                    console.warn("No events found. This could be because Supabase is not configured or the 'events' table is empty. Mock data is being used as a fallback.");
+                }
             } catch (err) {
                 console.error("Failed to fetch events:", err);
-                setError(err instanceof Error ? err.message : "An unknown error occurred. Supabase may not be configured.");
+                setError(err instanceof Error ? err.message : "An unknown error occurred.");
             } finally {
                 setIsLoading(false);
             }
@@ -53,7 +55,6 @@ const Events: React.FC = () => {
     }, []);
 
     const filteredEvents = useMemo(() => {
-        let now = new Date();
         return events
             .filter(event => {
                 if (categoryFilter === 'all') return true;
@@ -121,15 +122,6 @@ const Events: React.FC = () => {
             );
         }
         
-        if (events.length === 0) {
-            return (
-                <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200 text-center">
-                    <h3 className="text-xl font-semibold text-gray-800">No Events Found</h3>
-                    <p className="text-gray-600 mt-2">There are no upcoming events at this time. Please check back later!</p>
-                </div>
-            );
-        }
-
         if (filteredEvents.length === 0) {
              return (
                 <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200 text-center">

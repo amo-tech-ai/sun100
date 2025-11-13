@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Deck } from '../data/decks';
@@ -61,7 +60,7 @@ const PitchDecks: React.FC = () => {
                 setDecks(fetchedDecks);
             } catch (err) {
                 console.error("Failed to fetch decks:", err);
-                setError(err instanceof Error ? err.message : 'Failed to fetch decks. Supabase may not be configured.');
+                setError(err instanceof Error ? err.message : 'Failed to fetch decks.');
             } finally {
                 setLoading(false);
             }

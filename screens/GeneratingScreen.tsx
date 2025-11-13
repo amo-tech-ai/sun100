@@ -15,7 +15,7 @@ const GeneratingScreen: React.FC = () => {
             setDots(prev => (prev.length >= 3 ? '' : prev + '.'));
         }, 500);
 
-        if (!mode || !content) {
+        if (!mode || !content || (Array.isArray(content) && content.length === 0)) {
             setError("No generation context provided. Please go back and start the wizard again.");
             clearInterval(dotsInterval);
             return;
