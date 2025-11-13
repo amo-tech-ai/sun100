@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import useOnScreen from '../hooks/useOnScreen';
@@ -91,6 +92,14 @@ const StartupHealthDonut: React.FC = () => {
                     <div className="flex justify-between"><span>Traction</span><span className="font-semibold">40%</span></div>
                     <div className="w-full bg-gray-200 rounded-full h-1.5"><div className="bg-yellow-500 h-1.5 rounded-full" style={{width: '40%'}}></div></div>
                 </div>
+                <div className="mt-4 border-t border-gray-100 pt-3 w-full">
+                    <div className="flex items-start gap-3 bg-orange-50/50 p-3 rounded-lg">
+                        <Wand2Icon className="w-4 h-4 text-brand-orange flex-shrink-0 mt-1" />
+                        <p className="text-xs text-gray-700">
+                            <span className="font-bold">AI Tip:</span> Your Traction score is low. Focus on adding recent user growth or engagement data to strengthen this section.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -117,6 +126,14 @@ const DeckPerformanceChart: React.FC = () => {
                         <p className="text-sm font-semibold text-gray-500 mt-2">{d.month}</p>
                     </div>
                 ))}
+            </div>
+            <div className="mt-4 border-t border-gray-100 pt-3">
+                <div className="flex items-start gap-3 bg-brand-blue/5 p-3 rounded-lg">
+                    <Wand2Icon className="w-4 h-4 text-brand-blue flex-shrink-0 mt-1" />
+                    <p className="text-xs text-gray-700">
+                        <span className="font-bold">AI Insight:</span> Your AI usage is trending up. Consider creating a new deck for your 'Q3 Product Update' to capitalize on this momentum.
+                    </p>
+                </div>
             </div>
         </div>
     );
