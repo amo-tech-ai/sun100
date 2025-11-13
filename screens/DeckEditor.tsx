@@ -4,8 +4,7 @@ import { Deck, Slide } from '../data/decks';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
 import AICopilot from '../components/AICopilot';
-// FIX: Removed unused and non-existent 'updateDeck' and 'updateSlide' imports.
-import { getDeckById } from '../services/deckService';
+import { getDeckById, updateDeck, updateSlide } from '../services/deckService';
 import {
     generateSlideImage,
     editSlideImage,
@@ -152,7 +151,6 @@ const DeckEditor: React.FC = () => {
                     if (fetchedDeck.slides && fetchedDeck.slides.length > 0) {
                         setSelectedSlide(fetchedDeck.slides[0]);
                     } else {
-                        // Handle case with a deck but no slides
                         setSelectedSlide(null);
                     }
                 } else {
@@ -168,13 +166,6 @@ const DeckEditor: React.FC = () => {
 
         fetchInitialDeck();
     }, [id, navigate]);
-    
-    // Save deck to session storage on any change to persist state without a backend
-    useEffect(() => {
-        if (deck) {
-            sessionStorage.setItem(`deck-${deck.id}`, JSON.stringify(deck));
-        }
-    }, [deck]);
 
     useEffect(() => {
         localStorage.setItem('editorSidebarCollapsed', String(isSidebarCollapsed));
@@ -217,27 +208,47 @@ const DeckEditor: React.FC = () => {
         setExtractedMetrics([]);
     }, []);
 
-    const handleTitleSave = useCallback(async (newTitle: string) => {
-        if (deck && deck.title !== newTitle) {
-            setDeck(prev => prev ? { ...prev, title: newTitle } : null);
-        }
-    }, [deck]);
-
-    const handleTemplateChange = useCallback(async (newTemplate: keyof typeof templates) => {
-        if (deck && deck.template !== newTemplate) {
-            setDeck(prev => prev ? { ...prev, template: newTemplate } : null);
-        }
-    }, [deck]);
-
-    const updateLocalSlideState = useCallback((slideId: string, updates: Partial<Slide>) => {
+    const updateSlideStateAndPersist = useCallback(async (slideId: string, updates: Partial<Slide>) => {
+        // Optimistic UI update
         setDeck(prevDeck => {
             if (!prevDeck) return null;
             const updatedSlides = prevDeck.slides.map(s => s.id === slideId ? { ...s, ...updates } : s);
             return { ...prevDeck, slides: updatedSlides };
         });
         setSelectedSlide(prevSlide => prevSlide && prevSlide.id === slideId ? { ...prevSlide, ...updates } : prevSlide);
+        
+        // Persist changes to the database
+        try {
+            await updateSlide(slideId, updates);
+        } catch (error) {
+            console.error("Failed to save slide changes:", error);
+            // In a real app, you would show a toast notification here and potentially revert the state
+        }
     }, []);
 
+    const handleTitleSave = useCallback(async (newTitle: string) => {
+        if (deck && deck.title !== newTitle) {
+            setDeck(prev => prev ? { ...prev, title: newTitle } : null); // Optimistic update
+            try {
+                await updateDeck(deck.id, { title: newTitle });
+            } catch (e) {
+                console.error("Failed to update deck title:", e);
+                // Revert or show error
+            }
+        }
+    }, [deck]);
+
+    const handleTemplateChange = useCallback(async (newTemplate: keyof typeof templates) => {
+        if (deck && deck.template !== newTemplate) {
+            setDeck(prev => prev ? { ...prev, template: newTemplate } : null); // Optimistic update
+             try {
+                await updateDeck(deck.id, { template: newTemplate });
+            } catch (e) {
+                console.error("Failed to update deck template:", e);
+                // Revert or show error
+            }
+        }
+    }, [deck]);
 
     const handleGenerateRoadmapSlide = useCallback(async () => {
         if (!deck) return;
@@ -245,9 +256,11 @@ const DeckEditor: React.FC = () => {
         try {
             const companyContext = deck.slides[0]?.content || deck.title;
             const { slide: newSlide } = await generateRoadmapSlide(companyContext);
+            // This needs a backend function to add a slide to a deck
+            console.warn("Roadmap slide generated but not saved. DB integration needed.");
+            // For now, update local state only
             const updatedSlides = [...deck.slides, newSlide];
-            const updatedDeck = { ...deck, slides: updatedSlides };
-            setDeck(updatedDeck);
+            setDeck({ ...deck, slides: updatedSlides });
             handleSlideSelect(newSlide);
         } catch (err) {
             console.error("Failed to generate roadmap slide:", err);
@@ -267,13 +280,13 @@ const DeckEditor: React.FC = () => {
             const imagePrompt = (typeof selectedSlide.imageUrl === 'string' && !selectedSlide.imageUrl.startsWith('data:image')) ? selectedSlide.imageUrl : undefined;
             const { base64Image } = await generateSlideImage(selectedSlide.title, selectedSlide.content, imagePrompt);
             const imageUrl = `data:image/png;base64,${base64Image}`;
-            updateLocalSlideState(selectedSlide.id, { imageUrl });
+            await updateSlideStateAndPersist(selectedSlide.id, { imageUrl });
         } catch (err) {
             setImageError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
             setIsGeneratingImage(false);
         }
-    }, [selectedSlide, updateLocalSlideState]);
+    }, [selectedSlide, updateSlideStateAndPersist]);
 
     const handleEditImage = useCallback(async (prompt: string) => {
         if (!selectedSlide || !selectedSlide.imageUrl || !selectedSlide.imageUrl.startsWith('data:image')) {
@@ -289,13 +302,13 @@ const DeckEditor: React.FC = () => {
             const base64Data = imageParts[2];
             const { base64Image } = await editSlideImage(base64Data, mimeType, prompt);
             const imageUrl = `data:${mimeType};base64,${base64Image}`;
-            updateLocalSlideState(selectedSlide.id, { imageUrl });
+            await updateSlideStateAndPersist(selectedSlide.id, { imageUrl });
         } catch (err) {
             setImageError(err instanceof Error ? err.message : "An unknown error occurred during image editing.");
         } finally {
             setIsEditingImage(false);
         }
-    }, [selectedSlide, updateLocalSlideState]);
+    }, [selectedSlide, updateSlideStateAndPersist]);
 
     const handleCopilotGenerate = useCallback(async (prompt: string, newTitle?: string) => {
         if (!selectedSlide) return;
@@ -315,13 +328,13 @@ const DeckEditor: React.FC = () => {
                 tableData: undefined 
             };
     
-            updateLocalSlideState(selectedSlide.id, finalUpdates);
+            await updateSlideStateAndPersist(selectedSlide.id, finalUpdates);
         } catch (err) {
             console.error("Copilot error:", err);
         } finally {
             setIsCopilotLoading(false);
         }
-    }, [selectedSlide, updateLocalSlideState]);
+    }, [selectedSlide, updateSlideStateAndPersist]);
 
     const handleAnalyzeSlide = useCallback(async () => {
         if (!selectedSlide) return;
@@ -357,14 +370,14 @@ const DeckEditor: React.FC = () => {
         setLayoutError(null);
         try {
             const { layout: newLayout } = await suggestLayout(selectedSlide.title, selectedSlide.content);
-            updateLocalSlideState(selectedSlide.id, { template: newLayout });
+            await updateSlideStateAndPersist(selectedSlide.id, { template: newLayout });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
             setLayoutError(errorMessage);
         } finally {
             setIsSuggestingLayout(false);
         }
-    }, [selectedSlide, updateLocalSlideState]);
+    }, [selectedSlide, updateSlideStateAndPersist]);
     
     const handleSuggestChart = useCallback(async () => {
         if (!selectedSlide) return;
@@ -373,14 +386,14 @@ const DeckEditor: React.FC = () => {
         try {
             const { chartData } = await suggestChart(selectedSlide.title, selectedSlide.content);
             const updates = { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined };
-            updateLocalSlideState(selectedSlide.id, updates);
+            await updateSlideStateAndPersist(selectedSlide.id, updates);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
             setChartError(errorMessage);
         } finally {
             setIsSuggestingChart(false);
         }
-    }, [selectedSlide, updateLocalSlideState]);
+    }, [selectedSlide, updateSlideStateAndPersist]);
     
     const handleGenerateHeadlines = useCallback(async () => {
         if (!selectedSlide) return;
@@ -426,13 +439,13 @@ const DeckEditor: React.FC = () => {
         try {
             const { tableData } = await generatePricingTable(selectedSlide.content);
             const updates = { content: '', tableData, chartData: undefined };
-            updateLocalSlideState(selectedSlide.id, updates);
+            await updateSlideStateAndPersist(selectedSlide.id, updates);
         } catch (err) {
             setTableError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
             setIsGeneratingTable(false);
         }
-    }, [selectedSlide, updateLocalSlideState]);
+    }, [selectedSlide, updateSlideStateAndPersist]);
     
     const handleCompetitorResearch = useCallback(async () => {
         if (!selectedSlide) return;
@@ -465,13 +478,13 @@ const DeckEditor: React.FC = () => {
         try {
             const { chartData } = await suggestPieChart(selectedSlide.content);
             const updates = { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined };
-            updateLocalSlideState(selectedSlide.id, updates);
+            await updateSlideStateAndPersist(selectedSlide.id, updates);
         } catch (err) {
             setPieChartError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
             setIsSuggestingPieChart(false);
         }
-    }, [selectedSlide, updateLocalSlideState]);
+    }, [selectedSlide, updateSlideStateAndPersist]);
 
      const handleSocialProofSearch = useCallback(() => {
         if (!selectedSlide) return;

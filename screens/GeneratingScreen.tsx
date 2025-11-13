@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { generateFullDeck } from '../services/aiService';
+import { createDeck } from '../services/deckService';
+import { useAuth } from '../hooks/useAuth';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { textContext, urlContext } = location.state || {};
+    const { user } = useAuth();
     
     const [dots, setDots] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -24,13 +27,22 @@ const GeneratingScreen: React.FC = () => {
             return;
         }
 
+        if (!user) {
+            setError("You must be logged in to create a deck. Please log in and try again.");
+            clearInterval(dotsInterval);
+            return;
+        }
+
         const performGeneration = async () => {
             try {
-                const generatedDeck = await generateFullDeck({ text: textContext, urls: urlContext });
+                // 1. Generate the deck structure with AI
+                const generatedDeckData = await generateFullDeck({ text: textContext, urls: urlContext });
                 
-                sessionStorage.setItem(`deck-${generatedDeck.id}`, JSON.stringify(generatedDeck));
+                // 2. Persist the new deck to the database
+                const newDeck = await createDeck(generatedDeckData, user.id);
 
-                navigate(`/pitch-decks/${generatedDeck.id}/edit`);
+                // 3. Navigate to the editor with the new database ID
+                navigate(`/pitch-decks/${newDeck.id}/edit`);
 
             } catch (err) {
                 console.error("Deck generation failed:", err);
@@ -44,7 +56,7 @@ const GeneratingScreen: React.FC = () => {
         return () => {
             clearInterval(dotsInterval);
         };
-    }, [textContext, urlContext, navigate]);
+    }, [textContext, urlContext, navigate, user]);
 
     if (error) {
         return (
