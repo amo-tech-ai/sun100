@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, GenerateContentResponse, Type, FunctionDeclaration, Modality } from '@google/genai';
 import { Slide, ChartData, TableData, Deck } from '../data/decks';
 import { templates } from '../styles/templates';

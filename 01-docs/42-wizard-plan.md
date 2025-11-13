@@ -6,34 +6,22 @@
 
 ---
 
-### 📊 **Progress Tracker: From Scratch Development**
+### 📊 **Progress Tracker: Client-Side First Implementation**
 
-This tracker outlines the complete development lifecycle for the Pitch Deck Wizard, starting from the initial frontend prototype and integrating a full suite of advanced Gemini capabilities.
+This tracker outlines the development lifecycle for getting the Pitch Deck Wizard working client-side first, without a backend dependency.
 
-| Phase | Feature / Task | Status | % Complete | Key Objective |
+| Phase | Feature / Task | Status | % Complete | Key Objective & Notes |
 | :---- | :--- | :--- | :--- | :--- |
-| **1. Frontend Scaffolding** | **Wizard UI Scaffolding (`WizardSteps.tsx`)** | 🔴 Not Started | 0% | Build the core UI, including tab switching for different input methods. |
-| | **URL Input Component (`UrlInput.tsx`)** | 🔴 Not Started | 0% | Create the reusable component for adding, validating, and removing URLs. |
-| | **File Input Component** | 🔴 Not Started | 0% | Create a UI for uploading documents (PDF, DOCX). |
-| | **Client-Side State Management** | 🔴 Not Started | 0% | Manage form state and button logic using React hooks. |
-| | **Generating Screen UI (`GeneratingScreen.tsx`)** | 🔴 Not Started | 0% | Build the loading screen with informative text for the user. |
-| **2. Core AI Engine** | **Backend Service (`/api/ai/generate-deck`)** | 🔴 Not Started | 0% | Create the secure endpoint in our custom backend for all AI logic, protecting the API key. |
-| | **AI Technique: Structured Outputs (Function Calling)** | 🔴 Not Started | 0% | Implement `generateDeckOutline` as a function call for 100% reliable JSON output. |
-| | **Input Method: Text Generation** | 🔴 Not Started | 0% | The baseline feature: generate a deck from a user's written business context. |
-| | **Input Method: URL Context** | 🔴 Not Started | 0% | Allow the AI to crawl up to 5 public URLs to gather context and generate the deck. |
-| | **Input Method: Document Understanding (File Search)** | 🔴 Not Started | 0% | Allow users to upload a business plan (PDF, DOCX) to be used as the primary source. |
-| | **Enrichment: Google Search** | 🔴 Not Started | 0% | Use Google Search to augment user-provided context or find relevant URLs if none are given. |
-| | **Output: Image Generation Prompts** | 🔴 Not Started | 0% | The AI will generate descriptive prompts for the `imageUrl` field, preparing slides for the Visual Agent. |
-| | **Output: Code Execution Snippets** | 🔴 Not Started | 0% | For technical decks, the AI can generate placeholder code snippets for product demo slides. |
-| | **Configuration: Gemini Thinking** | 🔴 Not Started | 0% | Utilize `thinkingConfig` for complex analysis of source documents to improve outline quality. |
-| **3. Full-Stack Integration** | **Database Schema (`decks`, `slides`)** | 🔴 Not Started | 0% | Define and migrate the core tables in Cloud SQL for persistent storage. |
-| | **Row-Level Security (RLS) Policies** | 🔴 Not Started | 0% | Implement security policies to ensure users can only access their own data. |
-| | **New Service Layers (`deckService`, `aiService`)** | 🔴 Not Started | 0% | Create frontend services to interact with the custom backend API and database. |
-| | **Refactor Wizard (`WizardSteps.tsx`)** | 🔴 Not Started | 0% | Replace any client-side generation with a call to the secure `/api/ai/generate-deck` endpoint. |
-| | **Refactor Generating Screen (`GeneratingScreen.tsx`)** | 🔴 Not Started | 0% | Implement polling logic to check for deck creation status in the database. |
-| **4. Validation & Polish** | **UI/UX Polish & Responsiveness** | 🔴 Not Started | 0% | Ensure the entire wizard flow is mobile-friendly and visually polished. |
-| | **End-to-End (E2E) Flow Validation** | 🔴 Not Started | 0% | Perform a full smoke test of the complete full-stack user journey for all input methods. |
-| | **Security & RLS Policy Testing** | 🔴 Not Started | 0% | Manually test that users cannot access or modify data from other accounts. |
+| **1. Frontend Scaffolding** | **Wizard UI (`WizardSteps.tsx`)** | ✅ Completed | 100% | The core UI exists and correctly passes user input to the next step via navigation state. |
+| | **URL Input Component (`UrlInput.tsx`)** | ✅ Completed | 100% | The component for adding, validating, and removing URLs is functional. |
+| | **Generating Screen UI (`GeneratingScreen.tsx`)** | ✅ Completed | 100% | The loading screen UI is implemented. Its logic was updated to orchestrate the generation call. |
+| **2. Core AI Engine (Client-Side)** | **Consolidate AI Services** | ✅ Completed | 100% | Renamed `geminiService.ts` to `aiService.ts` and deleted the empty `apiService.ts` to create a single source of truth. |
+| | **Implement Deck Generation** | ✅ Completed | 100% | Implemented the missing `generateFullDeck` function in `aiService.ts`. This function uses Gemini with a JSON schema for reliable output and includes a mock fallback, fixing the core application bug. |
+| | **Input Method: Text Generation** | ✅ Completed | 100% | The wizard now fully supports generating a deck from a user's written business context. |
+| | **Input Method: URL Context** | 🟡 In Progress | 50% | The UI supports URL input, but the `generateFullDeck` function does not yet use the `urlContext` tool. This is a future enhancement. |
+| **3. State Persistence** | **Session Storage Integration** | ✅ Completed | 100% | `GeneratingScreen` saves the new deck to `sessionStorage`. `DeckEditor` loads from and persists changes to `sessionStorage`. This provides a complete client-side data lifecycle. |
+| **4. Validation & Polish** | **End-to-End (E2E) Flow Validation** | ✅ Completed | 100% | The full user journey from `WizardSteps` -> `GeneratingScreen` -> `DeckEditor` is now functional without a backend, using `sessionStorage`. |
+
 
 ---
 
