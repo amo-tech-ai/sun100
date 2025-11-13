@@ -425,7 +425,7 @@ const DeckEditor: React.FC = () => {
         }
     }, [selectedSlide]);
 
-    const handleMarketResearch = useCallback(async () => {
+    const handleMarketResearch = useCallback(() => {
         if (!deck) return;
         const marketTopic = deck.title.replace("Pitch Deck", "").trim() || "the user's industry";
         const query = `Latest market size data (TAM, SAM, SOM) and key growth trends for ${marketTopic}`;
