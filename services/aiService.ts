@@ -1,6 +1,7 @@
 import { GoogleGenAI, GenerateContentResponse, Type, FunctionDeclaration, Modality } from '@google/genai';
 import { Slide, ChartData, TableData, Deck } from '../data/decks';
 import { templates } from '../styles/templates';
+import { mockDeck } from '../data/decks';
 
 // This is a client-side implementation. In a production app, this key would be
 // moved to a secure backend or Edge Function.
@@ -35,30 +36,78 @@ export interface BioSummary {
 
 
 // --- Mock/Stub Functions for when API key is missing ---
-// Fix: Allow function to accept arguments so it doesn't cause type errors when used as a fallback.
 const disabledAiService = <T>(defaultValue: T) => async (..._args: any[]): Promise<T> => {
     console.warn("AI service is disabled because API key is missing.");
     await new Promise(res => setTimeout(res, 500)); // Simulate network delay
     return defaultValue;
 };
 
-// Specific mock for generateDeck to ensure a valid, non-empty ID is always returned for the UI flow.
-const mockGenerateDeck = async (payload: { mode: 'text' | 'url', content: string | string[] }): Promise<{ deckId: string }> => {
-    console.warn("AI service is disabled. Simulating deck generation with payload:", payload);
-    await new Promise(res => setTimeout(res, 1000));
-    // In a real mock, you might even add this to sessionStorage to make polling succeed.
-    return { deckId: `mock-deck-${Date.now()}` };
-};
-
 
 // --- Service Implementations ---
-export const generateDeck = apiKey ? async (payload: { mode: 'text' | 'url', content: string | string[] }): Promise<{ deckId: string }> => {
-    // In a real app, this would call a backend which creates the deck and returns an ID.
-    // For now, we'll just simulate success.
-    console.log("Simulating deck generation with payload:", payload);
-    await new Promise(res => setTimeout(res, 1000));
-    return { deckId: `new-deck-${Date.now()}` };
-} : mockGenerateDeck;
+
+const deckSchema = {
+  type: Type.OBJECT,
+  properties: {
+    title: { type: Type.STRING, description: "A compelling title for the pitch deck, based on the company's context." },
+    slides: {
+      type: Type.ARRAY,
+      description: "An array of exactly 10 slides for a standard investor pitch deck.",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING, description: "The title of the slide (e.g., 'The Problem', 'Our Solution')." },
+          content: { type: Type.STRING, description: "The main text content of the slide, formatted as bullet points separated by newlines." },
+          imageUrl: { type: Type.STRING, description: "A descriptive prompt for an AI image generator to create a relevant visual for this slide. Do not include URLs." },
+          type: { type: Type.STRING, description: "The type of the slide.", enum: ['vision', 'problem', 'solution', 'market', 'product', 'traction', 'competition', 'team', 'ask', 'roadmap', 'generic'] }
+        },
+        required: ["title", "content", "imageUrl", "type"],
+      },
+    },
+  },
+  required: ["title", "slides"],
+};
+
+export const generateFullDeck = async (payload: { mode: 'text' | 'url', content: string | string[] }): Promise<Deck> => {
+    if (!apiKey) {
+        console.warn("AI service is disabled. Returning mock deck.");
+        await new Promise(res => setTimeout(res, 2000));
+        return { ...mockDeck, id: `deck-${Date.now()}` };
+    }
+
+    const model = 'gemini-2.5-pro';
+    const context = Array.isArray(payload.content) ? payload.content.join('\n') : payload.content;
+    const prompt = `You are an expert startup consultant. Based on the following context about a company, generate a complete 10-slide pitch deck. The context is from their ${payload.mode}. Ensure the slides follow a logical narrative for an investor pitch (Problem, Solution, Market, etc.). For each slide, provide a title, bullet-point content, a descriptive AI image prompt, and the slide type.
+
+Context:
+---
+${context}
+---
+`;
+
+    const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: deckSchema,
+        },
+    });
+
+    const deckData = JSON.parse(response.text.trim());
+    
+    const finalDeck: Deck = {
+      id: `deck-${Date.now()}`,
+      title: deckData.title,
+      template: 'default',
+      slides: deckData.slides.map((slide: any, index: number) => ({
+        ...slide,
+        id: `slide-${Date.now()}-${index}`,
+        position: index + 1, // Add position for ordering
+      })),
+    };
+
+    return finalDeck;
+};
 
 
 export const generateEventDescription = apiKey ? async (details: { title: string; date: string; location: string }): Promise<{ description: string }> => {
@@ -68,7 +117,6 @@ export const generateEventDescription = apiKey ? async (details: { title: string
     return { description: response.text };
 } : disabledAiService({ description: "AI is disabled. Please add a Gemini API key." });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const generateSlideImage = apiKey ? async (title: string, content: string, imagePrompt?: string): Promise<{ base64Image: string }> => {
   const model = 'gemini-2.5-flash-image';
   const finalPrompt = imagePrompt || `A visually appealing, professional image for a presentation slide titled "${title}". The slide content is about: "${content}". The image should be abstract and inspiring.`;
@@ -89,7 +137,6 @@ export const generateSlideImage = apiKey ? async (title: string, content: string
   throw new Error("No image was generated.");
 } : disabledAiService({ base64Image: '' });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const editSlideImage = apiKey ? async (base64Data: string, mimeType: string, prompt: string): Promise<{ base64Image: string }> => {
   const model = 'gemini-2.5-flash-image';
   
@@ -121,7 +168,6 @@ export const editSlideImage = apiKey ? async (base64Data: string, mimeType: stri
   throw new Error("No image was generated from edit.");
 } : disabledAiService({ base64Image: '' });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const modifySlideContent = apiKey ? async (title: string, content: string, instruction: string): Promise<{ newTitle: string, newContent: string }> => {
   const model = 'gemini-2.5-pro';
 
@@ -176,7 +222,6 @@ export const modifySlideContent = apiKey ? async (title: string, content: string
   }
 } : disabledAiService({ newTitle: 'AI Disabled', newContent: 'Please configure your API Key.' });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx and to return the correct type for SlideAnalysis.
 export const analyzeSlide = apiKey ? async (title: string, content: string): Promise<SlideAnalysis> => {
   const model = 'gemini-2.5-flash';
   const schema = {
@@ -223,10 +268,8 @@ export const analyzeSlide = apiKey ? async (title: string, content: string): Pro
     },
   });
   return JSON.parse(response.text.trim()) as SlideAnalysis;
-// FIX: Explicitly set generic type to prevent type widening of the 'rating' property.
 } : disabledAiService<SlideAnalysis>({ clarity: { rating: 'Average', feedback: 'AI is disabled.'}, impact: { rating: 'Average', feedback: 'AI is disabled.'}, tone: { rating: 'Average', feedback: 'AI is disabled.'}});
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const researchTopic = apiKey ? async (query: string): Promise<ResearchResult> => {
   const model = 'gemini-2.5-flash';
   const response = await ai.models.generateContent({
@@ -246,7 +289,6 @@ export const researchTopic = apiKey ? async (query: string): Promise<ResearchRes
   return { summary, sources };
 } : disabledAiService({ summary: 'AI is disabled.', sources: [] });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const suggestLayout = apiKey ? async (title: string, content: string): Promise<{ layout: keyof typeof templates }> => {
   const model = 'gemini-2.5-flash';
   const templateNames = Object.keys(templates).join(', ');
@@ -282,7 +324,6 @@ export const suggestLayout = apiKey ? async (title: string, content: string): Pr
   return { layout: result.layout as keyof typeof templates };
 } : disabledAiService({ layout: 'default' });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const fetchAllSuggestions = apiKey ? async (slide: Slide): Promise<{ copilotSuggestions: string[], imageSuggestions: string[], researchSuggestions: string[] }> => {
   const model = 'gemini-2.5-flash';
   const schema = {
@@ -321,7 +362,6 @@ export const fetchAllSuggestions = apiKey ? async (slide: Slide): Promise<{ copi
   return JSON.parse(response.text.trim());
 } : disabledAiService({ copilotSuggestions: [], imageSuggestions: [], researchSuggestions: [] });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const suggestChart = apiKey ? async (title: string, content: string): Promise<{ chartData: ChartData | null }> => {
   const model = 'gemini-2.5-flash';
   const schema = {
@@ -364,7 +404,6 @@ export const suggestChart = apiKey ? async (title: string, content: string): Pro
   return { chartData: null };
 } : disabledAiService({ chartData: null });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const suggestPieChart = apiKey ? async (content: string): Promise<{ chartData: ChartData | null }> => {
   const model = 'gemini-2.5-flash';
   const schema = {
@@ -405,10 +444,7 @@ export const suggestPieChart = apiKey ? async (content: string): Promise<{ chart
   return { chartData: null };
 } : disabledAiService({ chartData: null });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const generateRoadmapSlide = apiKey ? async (companyContext: string): Promise<{ slide: Slide }> => {
-  // This is a complex operation. In a real app, you might have a more dedicated prompt or function chain.
-  // For now, we'll generate content and format it.
   const model = 'gemini-2.5-pro';
   const prompt = `Based on the company context "${companyContext}", create a 4-point product roadmap for the next 12 months. Each point should be a concise bullet. Format the response as bullet points separated by newlines.`;
   const response = await ai.models.generateContent({ model, contents: prompt });
@@ -423,7 +459,6 @@ export const generateRoadmapSlide = apiKey ? async (companyContext: string): Pro
   return { slide: newSlide };
 } : disabledAiService({ slide: { id: '', title: 'AI Disabled', content: '' } });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const generateHeadlineVariations = apiKey ? async (title: string): Promise<{ headlines: string[] }> => {
   const model = 'gemini-2.5-flash';
   const prompt = `Generate 5 alternative, more impactful headlines for a presentation slide titled: "${title}"`;
@@ -432,7 +467,6 @@ export const generateHeadlineVariations = apiKey ? async (title: string): Promis
   return { headlines };
 } : disabledAiService({ headlines: [] });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx.
 export const extractMetrics = apiKey ? async (content: string): Promise<{ metrics: ExtractedMetric[] }> => {
   const model = 'gemini-2.5-flash';
   const schema = {
@@ -465,7 +499,6 @@ export const extractMetrics = apiKey ? async (content: string): Promise<{ metric
   return JSON.parse(response.text.trim());
 } : disabledAiService({ metrics: [] });
 
-// Fix: Implemented the function to match its usage in DeckEditor.tsx and to return the correct type for TableData.
 export const generatePricingTable = apiKey ? async (content: string): Promise<{ tableData: TableData }> => {
   const model = 'gemini-2.5-flash';
   const schema = {
@@ -499,10 +532,8 @@ export const generatePricingTable = apiKey ? async (content: string): Promise<{ 
   });
   const result = JSON.parse(response.text.trim());
   return { tableData: { type: 'pricing', tiers: result.tiers } };
-// FIX: Explicitly set generic type to prevent type widening of the tableData 'type' property.
 } : disabledAiService<{ tableData: TableData }>({ tableData: { type: 'pricing', tiers: [] } });
 
-// Fix: Implemented the function to match its usage in FounderProfile.tsx and DeckEditor.tsx.
 export const summarizeBio = apiKey ? async (bio: string): Promise<BioSummary> => {
   const model = 'gemini-2.5-flash';
   const schema = {

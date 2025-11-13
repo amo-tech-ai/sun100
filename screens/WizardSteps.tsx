@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import UrlInput from '../components/UrlInput';
-import { generateDeck } from '../services/aiService';
 
 const WizardSteps: React.FC = () => {
   const location = useLocation();
@@ -28,22 +27,23 @@ const WizardSteps: React.FC = () => {
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
-    try {
-      let deckId: string;
-      if (companyDetails.trim().length > 0) {
-        const result = await generateDeck({ mode: 'text', content: companyDetails });
-        deckId = result.deckId;
-      } else if (urls.length > 0) {
-        const result = await generateDeck({ mode: 'url', content: urls });
-        deckId = result.deckId;
-      } else {
-        throw new Error("Please provide either business context or at least one URL.");
-      }
-      navigate('/pitch-decks/generating', { state: { deckId } });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred during generation.');
-    } finally {
-      setLoading(false);
+    if (isGenerateDisabled) {
+        setLoading(false);
+        return;
+    }
+    
+    // The new flow: navigate to the generating screen with the raw context.
+    // The generating screen will handle the AI call.
+    const hasDetails = companyDetails.trim().length > 0;
+    const hasUrls = urls.length > 0;
+
+    if (hasDetails) {
+        navigate('/pitch-decks/generating', { state: { mode: 'text', content: companyDetails } });
+    } else if (hasUrls) {
+        navigate('/pitch-decks/generating', { state: { mode: 'url', content: urls } });
+    } else {
+        setError("Please provide either business context or at least one URL.");
+        setLoading(false);
     }
   };
 

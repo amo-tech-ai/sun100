@@ -168,6 +168,13 @@ const DeckEditor: React.FC = () => {
         fetchInitialDeck();
     }, [id, navigate]);
     
+    // Save deck to session storage on any change to persist state without a backend
+    useEffect(() => {
+        if (deck) {
+            sessionStorage.setItem(`deck-${deck.id}`, JSON.stringify(deck));
+        }
+    }, [deck]);
+
     useEffect(() => {
         localStorage.setItem('editorSidebarCollapsed', String(isSidebarCollapsed));
     }, [isSidebarCollapsed]);
@@ -211,24 +218,13 @@ const DeckEditor: React.FC = () => {
 
     const handleTitleSave = useCallback(async (newTitle: string) => {
         if (deck && deck.title !== newTitle) {
-            try {
-                await updateDeck(deck.id, { title: newTitle });
-                setDeck(prev => prev ? { ...prev, title: newTitle } : null);
-            } catch (err) {
-                console.error("Failed to save title:", err);
-            }
+            setDeck(prev => prev ? { ...prev, title: newTitle } : null);
         }
     }, [deck]);
 
     const handleTemplateChange = useCallback(async (newTemplate: keyof typeof templates) => {
         if (deck && deck.template !== newTemplate) {
-            try {
-                setDeck(prev => prev ? { ...prev, template: newTemplate } : null);
-                await updateDeck(deck.id, { template: newTemplate });
-            } catch (err) {
-                console.error("Failed to save template:", err);
-                setDeck(prev => prev ? { ...prev, template: deck.template } : null); // Revert on error
-            }
+            setDeck(prev => prev ? { ...prev, template: newTemplate } : null);
         }
     }, [deck]);
 
@@ -248,8 +244,6 @@ const DeckEditor: React.FC = () => {
         try {
             const companyContext = deck.slides[0]?.content || deck.title;
             const { slide: newSlide } = await generateRoadmapSlide(companyContext);
-            // This would need a backend function to add the slide to the deck and return the updated deck
-            // For now, we optimistically update the UI. A real implementation would re-fetch or get the updated deck back.
             const updatedSlides = [...deck.slides, newSlide];
             const updatedDeck = { ...deck, slides: updatedSlides };
             setDeck(updatedDeck);
@@ -272,7 +266,6 @@ const DeckEditor: React.FC = () => {
             const imagePrompt = (typeof selectedSlide.imageUrl === 'string' && !selectedSlide.imageUrl.startsWith('data:image')) ? selectedSlide.imageUrl : undefined;
             const { base64Image } = await generateSlideImage(selectedSlide.title, selectedSlide.content, imagePrompt);
             const imageUrl = `data:image/png;base64,${base64Image}`;
-            await updateSlide(selectedSlide.id, { imageUrl });
             updateLocalSlideState(selectedSlide.id, { imageUrl });
         } catch (err) {
             setImageError(err instanceof Error ? err.message : "An unknown error occurred.");
@@ -295,7 +288,6 @@ const DeckEditor: React.FC = () => {
             const base64Data = imageParts[2];
             const { base64Image } = await editSlideImage(base64Data, mimeType, prompt);
             const imageUrl = `data:${mimeType};base64,${base64Image}`;
-            await updateSlide(selectedSlide.id, { imageUrl });
             updateLocalSlideState(selectedSlide.id, { imageUrl });
         } catch (err) {
             setImageError(err instanceof Error ? err.message : "An unknown error occurred during image editing.");
@@ -308,17 +300,13 @@ const DeckEditor: React.FC = () => {
         if (!selectedSlide) return;
         setIsCopilotLoading(true);
         try {
-            // The instruction is either the user's typed prompt, or a specific command to change the title.
             const instruction = newTitle ? `Set the title to "${newTitle}" and keep the content the same.` : prompt;
-            
-            // Always use the current slide's title and content as the source material for the AI.
             const { newTitle: updatedTitle, newContent } = await modifySlideContent(
                 selectedSlide.title,
                 selectedSlide.content,
                 instruction
             );
     
-            // When content is rewritten, any existing chart/table based on the old content is invalidated and removed.
             const finalUpdates: Partial<Slide> = { 
                 title: newTitle || updatedTitle, 
                 content: newContent, 
@@ -326,11 +314,9 @@ const DeckEditor: React.FC = () => {
                 tableData: undefined 
             };
     
-            await updateSlide(selectedSlide.id, finalUpdates);
             updateLocalSlideState(selectedSlide.id, finalUpdates);
         } catch (err) {
             console.error("Copilot error:", err);
-            // TODO: Set an error state to display in the UI
         } finally {
             setIsCopilotLoading(false);
         }
@@ -370,7 +356,6 @@ const DeckEditor: React.FC = () => {
         setLayoutError(null);
         try {
             const { layout: newLayout } = await suggestLayout(selectedSlide.title, selectedSlide.content);
-            await updateSlide(selectedSlide.id, { template: newLayout });
             updateLocalSlideState(selectedSlide.id, { template: newLayout });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
@@ -387,7 +372,6 @@ const DeckEditor: React.FC = () => {
         try {
             const { chartData } = await suggestChart(selectedSlide.title, selectedSlide.content);
             const updates = { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined };
-            await updateSlide(selectedSlide.id, updates);
             updateLocalSlideState(selectedSlide.id, updates);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
@@ -441,7 +425,6 @@ const DeckEditor: React.FC = () => {
         try {
             const { tableData } = await generatePricingTable(selectedSlide.content);
             const updates = { content: '', tableData, chartData: undefined };
-            await updateSlide(selectedSlide.id, updates);
             updateLocalSlideState(selectedSlide.id, updates);
         } catch (err) {
             setTableError(err instanceof Error ? err.message : "An unknown error occurred.");
@@ -481,7 +464,6 @@ const DeckEditor: React.FC = () => {
         try {
             const { chartData } = await suggestPieChart(selectedSlide.content);
             const updates = { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined };
-            await updateSlide(selectedSlide.id, updates);
             updateLocalSlideState(selectedSlide.id, updates);
         } catch (err) {
             setPieChartError(err instanceof Error ? err.message : "An unknown error occurred.");
