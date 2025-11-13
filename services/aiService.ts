@@ -685,8 +685,8 @@ export const generateEventDescription = async (details: { title: string; date: s
 
         const functionCall = response.functionCalls?.[0];
         if (functionCall?.name === 'generateEventDescription' && functionCall.args?.description != null) {
-            // FIX: The AI model may return a number instead of a string. Using .toString() explicitly converts the value to a string to ensure type safety.
-            return { description: functionCall.args.description.toString() };
+            // FIX: Explicitly cast the description to a string to handle cases where the AI might return a number.
+            return { description: String(functionCall.args.description) };
         }
         
         // Fallback if function calling fails
@@ -844,7 +844,6 @@ Call the 'generateSocialMediaCopy' function with the generated posts.`;
         const functionCall = response.functionCalls?.[0];
 
         if (functionCall?.name === 'generateSocialMediaCopy' && functionCall.args) {
-            // FIX: To satisfy stricter type checking, first cast to 'unknown' before asserting the final type. This confirms to TypeScript that the conversion is intentional.
             return functionCall.args as unknown as SocialMediaCopy;
         }
 
