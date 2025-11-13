@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { pollForDeckSlides } from '../services/deckService';
@@ -23,6 +24,8 @@ const GeneratingScreen: React.FC = () => {
 
         const poll = async () => {
             try {
+                // In a real app with a backend, we might poll an endpoint that checks a status field.
+                // For this Supabase-direct version, we just check if any slides exist for the deck.
                 const isReady = await pollForDeckSlides(deckId);
                 if (isReady) {
                     clearInterval(pollingInterval);
@@ -35,7 +38,9 @@ const GeneratingScreen: React.FC = () => {
                 clearInterval(dotsInterval);
             }
         };
-
+        
+        // Start polling immediately, then continue at an interval
+        poll();
         const pollingInterval = setInterval(poll, 3000); // Poll every 3 seconds
 
         // Cleanup function

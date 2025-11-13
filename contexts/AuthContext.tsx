@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Session, User, AuthError, SignUpWithPasswordCredentials, SignInWithPasswordCredentials } from '@supabase/supabase-js';
@@ -6,8 +7,8 @@ interface AuthContextType {
     user: User | null;
     session: Session | null;
     loading: boolean;
-    login: (credentials: SignInWithPasswordCredentials) => Promise<{ error: AuthError | null }>;
-    signup: (credentials: SignUpWithPasswordCredentials) => Promise<{ error: AuthError | null }>;
+    login: (credentials: SignInWithPasswordCredentials) => Promise<{ data: { user: User; session: Session; } | { user: null; session: null; }, error: AuthError | null }>;
+    signup: (credentials: SignUpWithPasswordCredentials) => Promise<{ data: { user: User; session: Session; } | { user: null; session: null; }, error: AuthError | null }>;
     logout: () => Promise<{ error: AuthError | null }>;
 }
 

@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import useOnScreen from '../hooks/useOnScreen';
 
 const AnimatedCounter: React.FC<{ value: number, duration?: number, suffix?: string, prefix?: string }> = ({ value, duration = 2000, suffix = '', prefix = '' }) => {
     const [count, setCount] = useState(0);
-    // FIX: Specified the generic type for useOnScreen to match the `span` element.
     const [ref, isVisible] = useOnScreen<HTMLSpanElement>({ threshold: 0.5 });
     const hasAnimated = useRef(false);
 

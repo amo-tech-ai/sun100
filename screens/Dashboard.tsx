@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AnimatedCounter from '../components/AnimatedCounter';
@@ -136,7 +137,7 @@ const Dashboard: React.FC = () => {
             </div>
             <button className="p-2 text-gray-500 hover:text-brand-blue" aria-label="Notifications"><BellIcon/></button>
             <button className="p-2 text-gray-500 hover:text-brand-blue" aria-label="Settings"><SettingsIcon/></button>
-            <img src="https://storage.googleapis.com/aistudio-hosting/docs/team1.png" alt="User avatar" className="w-10 h-10 rounded-full"/>
+            <img src="https://picsum.photos/seed/sunai-user/40/40" alt="User avatar" className="w-10 h-10 rounded-full"/>
         </div>
       </header>
 

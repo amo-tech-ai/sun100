@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const TeamMember: React.FC<{ name: string; title: string; imageUrl: string; }> = ({ name, title, imageUrl }) => (
@@ -23,9 +24,9 @@ const About: React.FC = () => {
             <div className="text-center">
                 <h2 className="text-3xl font-bold text-gray-800 mb-8">Meet the Team</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-                    <TeamMember name="Alex Chen" title="Founder & CEO" imageUrl="https://storage.googleapis.com/aistudio-hosting/docs/team1.png" />
-                    <TeamMember name="Samantha Rao" title="Chief Technology Officer" imageUrl="https://storage.googleapis.com/aistudio-hosting/docs/team2.png" />
-                    <TeamMember name="David Kim" title="Head of Product & Design" imageUrl="https://storage.googleapis.com/aistudio-hosting/docs/team3.png" />
+                    <TeamMember name="Alex Chen" title="Founder & CEO" imageUrl="https://picsum.photos/seed/sunai-t1/200" />
+                    <TeamMember name="Samantha Rao" title="Chief Technology Officer" imageUrl="https://picsum.photos/seed/sunai-t2/200" />
+                    <TeamMember name="David Kim" title="Head of Product & Design" imageUrl="https://picsum.photos/seed/sunai-t3/200" />
                 </div>
             </div>
         </div>

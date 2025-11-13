@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -18,7 +19,6 @@ const Login: React.FC = () => {
         setError(null);
         setLoading(true);
         try {
-            // FIX: The Supabase `signInWithPassword` function expects a single object with email and password properties.
             const { error } = await login({ email, password });
             if (error) {
                 throw error;

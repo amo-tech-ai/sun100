@@ -1,6 +1,7 @@
+
 import React, { useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { summarizeBio, BioSummary } from '../services/aiService';
+import { summarizeBio, BioSummary } from '../services/geminiService';
 
 // --- ICONS ---
 const LinkIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>;
@@ -34,7 +35,7 @@ const mockProfile = {
     username: 'alex-chen',
     name: 'Alex Chen',
     title: 'Founder & CEO, Sun AI Startup',
-    avatarUrl: 'https://storage.googleapis.com/aistudio-hosting/docs/team1.png',
+    avatarUrl: 'https://picsum.photos/seed/sunai-user/200',
     bio: "Obsessed with democratizing access to AI for the next generation of founders. Building tools that make professional design and storytelling effortless. Previously at Google AI.",
     socials: {
         linkedin: '#',

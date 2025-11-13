@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import useOnScreen from '../hooks/useOnScreen';
@@ -252,14 +253,14 @@ const Landing: React.FC = () => {
                             quote="sun ai startup is my go-to. I found my co-founder at an event and used the AI tools to build our first deck."
                             name="Maria Rodriguez"
                             title="Founder, LATAM AI Hub"
-                            imageUrl="https://storage.googleapis.com/aistudio-hosting/docs/team1.png"
+                            imageUrl="https://picsum.photos/seed/sunai-t1/200"
                             delay={0}
                         />
                          <TestimonialCard 
                             quote="It's the first platform that understands the entire founder journey, from finding a job to getting funded."
                             name="Chen Wei"
                             title="CEO, SynthFlow"
-                            imageUrl="https://storage.googleapis.com/aistudio-hosting/docs/team2.png"
+                            imageUrl="https://picsum.photos/seed/sunai-t2/200"
                             delay={200}
                         />
                     </div>
