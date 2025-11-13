@@ -1,12 +1,11 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { pollForDeckSlides } from '../services/deckService';
+import { generateFullDeck } from '../services/aiService';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { deckId } = location.state || {};
+    const { mode, content } = location.state || {};
     
     const [dots, setDots] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -16,39 +15,36 @@ const GeneratingScreen: React.FC = () => {
             setDots(prev => (prev.length >= 3 ? '' : prev + '.'));
         }, 500);
 
-        if (!deckId) {
-            setError("No deck ID provided. Please go back and start the wizard again.");
+        if (!mode || !content) {
+            setError("No generation context provided. Please go back and start the wizard again.");
             clearInterval(dotsInterval);
             return;
         }
 
-        const poll = async () => {
+        const performGeneration = async () => {
             try {
-                // In a real app with a backend, we might poll an endpoint that checks a status field.
-                // For this Supabase-direct version, we just check if any slides exist for the deck.
-                const isReady = await pollForDeckSlides(deckId);
-                if (isReady) {
-                    clearInterval(pollingInterval);
-                    clearInterval(dotsInterval);
-                    navigate(`/pitch-decks/${deckId}/edit`);
-                }
+                // This new service function does the full AI call and returns a complete Deck object
+                const generatedDeck = await generateFullDeck({ mode, content });
+                
+                // Save the full deck to session storage for persistence across reloads
+                sessionStorage.setItem(`deck-${generatedDeck.id}`, JSON.stringify(generatedDeck));
+
+                // Navigate to the editor for the new deck
+                navigate(`/pitch-decks/${generatedDeck.id}/edit`);
+
             } catch (err) {
-                setError(err instanceof Error ? err.message : "An unknown error occurred during polling.");
-                clearInterval(pollingInterval);
-                clearInterval(dotsInterval);
+                console.error("Deck generation failed:", err);
+                setError(err instanceof Error ? err.message : "An unknown error occurred during generation.");
             }
         };
-        
-        // Start polling immediately, then continue at an interval
-        poll();
-        const pollingInterval = setInterval(poll, 3000); // Poll every 3 seconds
+
+        performGeneration();
 
         // Cleanup function
         return () => {
             clearInterval(dotsInterval);
-            clearInterval(pollingInterval);
         };
-    }, [deckId, navigate]);
+    }, [mode, content, navigate]);
 
     if (error) {
         return (
