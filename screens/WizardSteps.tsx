@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import UrlInput from '../components/UrlInput';
+import TemplateSelector from '../components/TemplateSelector';
+import { templates } from '../styles/templates';
 
 const WizardSteps: React.FC = () => {
   const location = useLocation();
   const [companyDetails, setCompanyDetails] = useState('');
   const [urls, setUrls] = useState<string[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof templates>('default');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -38,7 +41,8 @@ const WizardSteps: React.FC = () => {
     if (hasDetails || hasUrls) {
         navigate('/pitch-decks/generating', { state: { 
             textContext: companyDetails, 
-            urlContext: urls 
+            urlContext: urls,
+            template: selectedTemplate,
         }});
     } else {
         setError("Please provide either business context or at least one URL.");
@@ -49,53 +53,69 @@ const WizardSteps: React.FC = () => {
   const isGenerateDisabled = loading || (!companyDetails.trim() && urls.length === 0);
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <div className="bg-white p-6 md:p-8 rounded-lg shadow-md">
         <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2 text-center">Pitch Deck Wizard</h1>
         <p className="text-center text-gray-500 mb-8">
-          Let's start with the core of your business. Provide your context below.
+          Let's start with the core of your business. Provide your context and choose a style.
         </p>
         
         {error && <p className="bg-red-100 text-red-700 p-3 rounded-md mb-4">{error}</p>}
         
-        <div className="mb-6">
-          <label htmlFor="company-details" className="block text-lg lg:text-xl font-semibold mb-2 text-gray-700">
-            Provide Business Context
-          </label>
-          <p className="text-gray-600 mb-3">
-            Provide a brief, business plan, or any details about your company. The more information you provide, the better the AI can tailor your pitch deck.
-          </p>
-          <textarea
-            id="company-details"
-            value={companyDetails}
-            onChange={(e) => setCompanyDetails(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#E87C4D] focus:border-transparent transition-shadow duration-200"
-            rows={10}
-            placeholder="e.g., Sun AI is a startup that uses generative AI to create pitch decks..."
-          />
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg lg:text-xl font-semibold mb-2 text-gray-700">
+                    1. Provide Business Context
+                  </h2>
+                  <p className="text-gray-600 mb-3 text-sm">
+                    Provide a brief, business plan, or any details about your company. The more information you provide, the better the AI can tailor your pitch deck.
+                  </p>
+                  <textarea
+                    id="company-details"
+                    value={companyDetails}
+                    onChange={(e) => setCompanyDetails(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#E87C4D] focus:border-transparent transition-shadow duration-200"
+                    rows={10}
+                    placeholder="e.g., Sun AI is a startup that uses generative AI to create pitch decks..."
+                  />
+                </div>
 
-        <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center">
-                <span className="bg-white px-3 text-lg font-medium text-gray-500">OR</span>
-            </div>
-        </div>
+                <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                        <div className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center">
+                        <span className="bg-white px-3 text-lg font-medium text-gray-500">OR</span>
+                    </div>
+                </div>
 
-        <div className="mb-6">
-          <label htmlFor="company-urls" className="block text-lg lg:text-xl font-semibold mb-2 text-gray-700">
-            Generate from Website URLs
-          </label>
-          <p className="text-gray-600 mb-3">
-            Provide up to 5 URLs (e.g., homepage, about us, pricing). Our AI will crawl these pages to gather context. If business context is also provided above, it will be prioritized.
-          </p>
-          <UrlInput urls={urls} setUrls={setUrls} />
+                <div>
+                  <h2 className="text-lg lg:text-xl font-semibold mb-2 text-gray-700">
+                    Generate from Website URLs
+                  </h2>
+                  <p className="text-gray-600 mb-3 text-sm">
+                    Provide up to 5 URLs (e.g., homepage, about us). Our AI will crawl these pages to gather context. If business context is also provided above, it will be prioritized.
+                  </p>
+                  <UrlInput urls={urls} setUrls={setUrls} />
+                </div>
+            </div>
+            <div>
+                 <h2 className="text-lg lg:text-xl font-semibold mb-2 text-gray-700">
+                    2. Select a Visual Theme
+                  </h2>
+                  <p className="text-gray-600 mb-3 text-sm">
+                    Choose a theme for your presentation. The AI will adapt the tone and visual suggestions to match your selected style.
+                  </p>
+                  <TemplateSelector
+                    selectedTemplate={selectedTemplate}
+                    onSelectTemplate={setSelectedTemplate}
+                  />
+            </div>
         </div>
         
 
-        <div className="flex justify-center sm:justify-end mt-8">
+        <div className="flex justify-center sm:justify-end mt-8 border-t pt-6">
           <button
             onClick={handleGenerate}
             disabled={isGenerateDisabled}

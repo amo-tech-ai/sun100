@@ -48,5 +48,38 @@ export const templates: Templates = {
     title: 'text-5xl font-bold mb-6 text-white leading-tight',
     content: 'text-xl text-gray-300 list-disc pl-6 space-y-3',
     bullet: 'text-brand-orange',
+  },
+  vibrantCover: {
+    slide: 'bg-white p-12 flex flex-col items-start justify-center text-left relative overflow-hidden',
+    title: 'text-5xl md:text-7xl font-extrabold text-heading-text !leading-tight tracking-tighter',
+    content: 'text-xl text-body-text mt-4 max-w-xl',
+    bullet: '',
+  },
+  vibrantVision: {
+    slide: 'bg-white p-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center',
+    title: 'text-4xl md:text-5xl font-extrabold text-heading-text mb-4',
+    content: 'text-lg text-body-text',
+    bullet: '',
+  },
+  vibrantProblem: {
+    slide: 'bg-white p-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center',
+    imageContainer: 'w-full h-full rounded-lg overflow-hidden',
+    image: 'w-full h-full object-cover',
+    textContainer: 'flex flex-col justify-center',
+    title: 'text-4xl font-bold text-heading-text mb-6',
+    content: 'text-xl text-body-text space-y-4 list-disc pl-6',
+    bullet: 'text-vibrant-purple',
+  },
+  vibrantSolutions: {
+    slide: 'bg-white p-12 text-center',
+    title: 'text-4xl font-bold text-heading-text mb-4',
+    content: 'text-lg text-body-text max-w-3xl mx-auto mb-12',
+    bullet: '',
+  },
+  vibrantTimeline: {
+    slide: 'bg-vibrant-purple p-12 text-white',
+    title: 'text-4xl font-bold text-center mb-12',
+    content: 'list-none p-0',
+    bullet: '',
   }
 };

@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { Deck, Slide } from '../../data/decks';
+import { templates } from '../../styles/templates';
 import { generateDeckOutlineFunctionDeclaration, createRoadmapContentFunctionDeclaration } from './prompts';
 import { generateSlideImage } from './image';
 
@@ -12,7 +13,7 @@ const uuidv4 = () => {
     });
 };
 
-export const generateFullDeck = async ({ text, urls }: { text?: string; urls?: string[] }): Promise<Omit<Deck, 'id'>> => {
+export const generateFullDeck = async ({ text, urls, template }: { text?: string; urls?: string[], template?: keyof typeof templates }): Promise<Omit<Deck, 'id'>> => {
     const contextParts: string[] = [];
     if (text?.trim()) {
         contextParts.push(`the following business description: "${text.trim()}"`);
@@ -25,8 +26,11 @@ export const generateFullDeck = async ({ text, urls }: { text?: string; urls?: s
     }
     const context = `For context, use ${contextParts.join(' and ')}.`;
 
+    const themeInstruction = template ? `The desired theme is '${template}'. The tone should be consistent with this theme (e.g., 'professional', 'minimalist', 'vibrant and bold'). The image prompts should also reflect this style.` : '';
+
     const prompt = `Based on the provided context, generate a complete 10-slide pitch deck using the 'generateDeckOutline' function.
 ${context}
+${themeInstruction}
 The deck should follow a standard pitch deck structure (Problem, Solution, Market, etc.). For each slide, provide a title, content, a descriptive image prompt, and a slide 'type'.`;
 
     try {
@@ -44,7 +48,7 @@ The deck should follow a standard pitch deck structure (Problem, Solution, Marke
             if (typeof deckData.title === 'string' && Array.isArray(deckData.slides)) {
                 const newDeck: Omit<Deck, 'id'> = {
                     title: deckData.title,
-                    template: 'default',
+                    template: template || 'default',
                     slides: (deckData.slides as Omit<Slide, 'id'>[]).map(s => ({ ...s, id: `slide-${uuidv4()}` })),
                 };
                 return newDeck;

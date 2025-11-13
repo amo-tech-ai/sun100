@@ -7,7 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { textContext, urlContext } = location.state || {};
+    const { textContext, urlContext, template } = location.state || {};
     const { user } = useAuth();
     
     const [dots, setDots] = useState('');
@@ -35,8 +35,8 @@ const GeneratingScreen: React.FC = () => {
 
         const performGeneration = async () => {
             try {
-                // 1. Generate the deck structure with AI
-                const generatedDeckData = await generateFullDeck({ text: textContext, urls: urlContext });
+                // 1. Generate the deck structure with AI, now with theme context
+                const generatedDeckData = await generateFullDeck({ text: textContext, urls: urlContext, template });
                 
                 // 2. Persist the new deck to the database
                 const newDeck = await createDeck(generatedDeckData, user.id);
@@ -56,7 +56,7 @@ const GeneratingScreen: React.FC = () => {
         return () => {
             clearInterval(dotsInterval);
         };
-    }, [textContext, urlContext, navigate, user]);
+    }, [textContext, urlContext, template, navigate, user]);
 
     if (error) {
         return (
