@@ -32,15 +32,14 @@ const WizardSteps: React.FC = () => {
         return;
     }
     
-    // The new flow: navigate to the generating screen with the raw context.
-    // The generating screen will handle the AI call.
     const hasDetails = companyDetails.trim().length > 0;
     const hasUrls = urls.length > 0;
 
-    if (hasDetails) {
-        navigate('/pitch-decks/generating', { state: { mode: 'text', content: companyDetails } });
-    } else if (hasUrls) {
-        navigate('/pitch-decks/generating', { state: { mode: 'url', content: urls } });
+    if (hasDetails || hasUrls) {
+        navigate('/pitch-decks/generating', { state: { 
+            textContext: companyDetails, 
+            urlContext: urls 
+        }});
     } else {
         setError("Please provide either business context or at least one URL.");
         setLoading(false);

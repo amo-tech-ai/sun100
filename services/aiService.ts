@@ -42,12 +42,44 @@ export interface VenueSuggestion {
     mapLink?: string;
 }
 
+export interface SocialMediaCopy {
+    twitter: string;
+    linkedin: string;
+    instagram: string;
+}
+
+export interface AgendaItem {
+    time: string;
+    topic: string;
+    speaker?: string;
+}
+
+export interface StructuredAgenda {
+    schedule: AgendaItem[];
+}
+
+
 // FIX: Implement and export the missing 'generateFullDeck' function.
-export const generateFullDeck = async ({ mode, content }: { mode: 'text' | 'url', content: string | string[] }): Promise<Deck> => {
+export const generateFullDeck = async ({ text, urls }: { text?: string; urls?: string[] }): Promise<Deck> => {
     const model = 'gemini-2.5-pro';
-    const context = Array.isArray(content) ? `the websites: ${content.join(', ')}` : content;
-    const prompt = `Based on the following business context, generate a complete 10-slide pitch deck for a startup.
-The context is: "${context}".
+
+    // Construct a comprehensive context string.
+    const contextParts: string[] = [];
+    if (text?.trim()) {
+        contextParts.push(`the following business description: "${text.trim()}"`);
+    }
+    if (urls && urls.length > 0) {
+        contextParts.push(`information from these websites: ${urls.join(', ')}`);
+    }
+
+    if (contextParts.length === 0) {
+        throw new Error("No context provided for deck generation.");
+    }
+
+    const context = `For context, use ${contextParts.join(' and ')}.`;
+    
+    const prompt = `Based on the provided business context, generate a complete 10-slide pitch deck for a startup.
+${context}
 The deck should follow a standard pitch deck structure (e.g., Problem, Solution, Market Size, Product, Traction, Team, Competition, Ask, etc.).
 For each slide, provide a unique id, a short, impactful title, content with bullet points (each on a new line), and a suggested 'type' from this list: 'vision', 'problem', 'solution', 'market', 'product', 'traction', 'competition', 'team', 'ask', 'roadmap', 'generic'.
 Also, suggest a descriptive prompt for an image that would visually represent the slide's content in the 'imageUrl' field.
@@ -652,13 +684,9 @@ export const generateEventDescription = async (details: { title: string; date: s
         });
 
         const functionCall = response.functionCalls?.[0];
-        if (functionCall?.name === 'generateEventDescription') {
-            const description = functionCall.args?.description;
-            // FIX: The AI can return a number for the description if it's purely numeric.
-            // Explicitly convert to a string to ensure type compatibility.
-            if (typeof description === 'string' || typeof description === 'number') {
-                return { description: description.toString() };
-            }
+        if (functionCall?.name === 'generateEventDescription' && functionCall.args?.description != null) {
+            // FIX: The AI model may return a number instead of a string. Using .toString() explicitly converts the value to a string to ensure type safety.
+            return { description: functionCall.args.description.toString() };
         }
         
         // Fallback if function calling fails
@@ -767,5 +795,115 @@ export const suggestVenues = async (eventType: string, city: string): Promise<Ve
             throw error;
         }
         throw new Error("Failed to suggest venues. Please ensure the location is specific enough.");
+    }
+};
+
+const generateSocialMediaCopyFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateSocialMediaCopy',
+    description: "Generates tailored promotional copy for an event for Twitter, LinkedIn, and Instagram.",
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            twitter: {
+                type: Type.STRING,
+                description: 'A short, engaging post for Twitter, under 280 characters, including relevant hashtags.'
+            },
+            linkedin: {
+                type: Type.STRING,
+                description: 'A professional post for LinkedIn, suitable for a business audience, including professional hashtags.'
+            },
+            instagram: {
+                type: Type.STRING,
+                description: 'An engaging and visually-oriented caption for Instagram, including emojis and relevant hashtags.'
+            }
+        },
+        required: ['twitter', 'linkedin', 'instagram']
+    }
+};
+
+export const generateSocialMediaCopy = async (details: { title: string; description: string; date: string; location: string }): Promise<SocialMediaCopy> => {
+    const model = 'gemini-2.5-pro';
+    const prompt = `You are a social media marketing expert for a tech startup community. Based on the following event details, generate promotional copy tailored for Twitter, LinkedIn, and Instagram.
+
+Event Title: "${details.title}"
+Date: ${new Date(details.date).toLocaleString()}
+Location: ${details.location}
+Description: "${details.description}"
+
+Call the 'generateSocialMediaCopy' function with the generated posts.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+                tools: [{ functionDeclarations: [generateSocialMediaCopyFunctionDeclaration] }],
+            },
+        });
+
+        const functionCall = response.functionCalls?.[0];
+
+        if (functionCall?.name === 'generateSocialMediaCopy' && functionCall.args) {
+            // FIX: To satisfy stricter type checking, first cast to 'unknown' before asserting the final type. This confirms to TypeScript that the conversion is intentional.
+            return functionCall.args as unknown as SocialMediaCopy;
+        }
+
+        throw new Error("The AI did not generate social media copy as expected.");
+    } catch (error) {
+        console.error("Error generating social media copy:", error);
+        throw new Error("Failed to generate social media copy. Please try again.");
+    }
+};
+
+const structureAgendaFunctionDeclaration: FunctionDeclaration = {
+    name: 'structureAgenda',
+    description: 'Formats a raw list of event topics or speakers into a structured, timed agenda.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            schedule: {
+                type: Type.ARRAY,
+                description: 'An array of agenda item objects.',
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        time: { type: Type.STRING, description: 'The start time of the agenda item (e.g., "6:00 PM").' },
+                        topic: { type: Type.STRING, description: 'The title or description of the agenda item.' },
+                        speaker: { type: Type.STRING, description: 'Optional: The name of the speaker for this item.' }
+                    },
+                    required: ['time', 'topic']
+                }
+            }
+        },
+        required: ['schedule']
+    }
+};
+
+export const structureAgenda = async (rawAgenda: string, eventDate: string): Promise<StructuredAgenda> => {
+    const model = 'gemini-2.5-pro';
+    const prompt = `You are an expert event coordinator. Analyze the following raw text for an event schedule. The event is on ${new Date(eventDate).toLocaleDateString()}. Structure it into a timed agenda by calling the 'structureAgenda' function. Infer timings if they are relative (e.g., 'after the keynote').
+
+Raw Agenda Text:
+"${rawAgenda}"`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+                tools: [{ functionDeclarations: [structureAgendaFunctionDeclaration] }],
+            },
+        });
+
+        const functionCall = response.functionCalls?.[0];
+
+        if (functionCall?.name === 'structureAgenda' && functionCall.args?.schedule) {
+            return { schedule: functionCall.args.schedule as AgendaItem[] };
+        }
+
+        throw new Error("The AI did not generate a structured agenda as expected.");
+    } catch (error) {
+        console.error("Error structuring agenda:", error);
+        throw new Error("Failed to structure the event agenda. Please check the input text.");
     }
 };
