@@ -103,7 +103,6 @@ ${context}
       slides: deckData.slides.map((slide: any, index: number) => ({
         ...slide,
         id: `slide-${Date.now()}-${index}`,
-        position: index + 1, // Add position for ordering
       })),
     };
 
