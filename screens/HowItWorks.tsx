@@ -18,7 +18,7 @@ const StepIcon: React.FC<{ icon: React.ReactNode; title: string; description: st
 
 const HowItWorks: React.FC = () => {
     return (
-        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md">
+        <div className="bg-white p-8 md:p-12 rounded-lg shadow-md">
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold text-gray-800">How It Works</h1>
                 <p className="text-xl text-gray-600 mt-4">Transform your idea into a professional pitch deck in three simple steps.</p>
@@ -27,7 +27,7 @@ const HowItWorks: React.FC = () => {
             <div className="space-y-8">
                 <StepIcon
                     step={1}
-                    icon={<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"/></svg>}
+                    icon={<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"/></svg>}
                     title="Provide Context"
                     description="Start by giving our AI the raw material. You can provide a brief business plan, paste in your website URLs, or simply describe your company. The more detail you provide, the more tailored your deck will be."
                 />

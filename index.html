@@ -6,75 +6,8 @@
   <title>Sun AI Startup - From Idea to Investor-Ready. Instantly.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-  <style type="text/tailwindcss">
-    .material-symbols-outlined {
-        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    }
-    .animated-dot {
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-      50% {
-        opacity: 0.5;
-        transform: scale(0.9);
-      }
-    }
-    .animated-dot:nth-child(2) { animation-delay: 0.2s; }
-    .animated-dot:nth-child(3) { animation-delay: 0.4s; }
-    .animated-dot:nth-child(4) { animation-delay: 0.6s; }
-    .animated-dot:nth-child(5) { animation-delay: 0.8s; }
-    .icon-wrapper .icon-bg {
-        transition: opacity 0.3s ease-in-out;
-    }
-    .group:hover .icon-wrapper .icon-bg {
-        opacity: 1;
-    }
-  </style>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            primary: "#F58A5C",
-            "background-light": "#FFFBF8",
-            "background-dark": "#121212",
-            "card-light": "#FFFFFF",
-            "card-dark": "#1E1E1E",
-            "text-light": "#1C1C1E",
-            "text-dark": "#EAEAEA",
-            "subtext-light": "#555555",
-            "subtext-dark": "#A0A0A0",
-            "border-light": "#F0EAE4",
-            "border-dark": "#333333",
-            'vibrant-purple': '#7C3AED',
-            'vibrant-green': '#34D399',
-            'heading-text': '#111827',
-            'body-text': '#374151',
-            // New Homepage Palette
-            'brand-blue': '#1E293B',
-            'brand-orange': '#E87C4D',
-            'brand-mustard': '#F3B93C',
-            'brand-off-white': '#F8FAFC',
-          },
-          fontFamily: {
-            display: ["Sora", "sans-serif"],
-          },
-          borderRadius: {
-            DEFAULT: "1rem",
-            lg: "1.25rem",
-          },
-        },
-      },
-    };
-  </script>
 <script type="importmap">
 {
   "imports": {
@@ -90,6 +23,6 @@
 </head>
 <body class="font-display bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark antialiased">
   <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
+  <script type="module" src="index.tsx"></script>
 </body>
 </html>

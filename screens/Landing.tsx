@@ -32,7 +32,7 @@ const Landing: React.FC = () => {
     const [painRef, isPainVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.2 });
 
     return (
-    <>
+    <div>
         <style>{`
             @keyframes fade-in-up {
                 from { opacity: 0; transform: translateY(20px); }
@@ -47,9 +47,9 @@ const Landing: React.FC = () => {
         `}</style>
         
         {/* Section 1: Hero */}
-        <section className="bg-brand-blue text-white pt-32 pb-20 md:pt-48 md:pb-32 relative overflow-hidden">
+        <section className="bg-brand-blue text-white relative overflow-hidden rounded-lg py-20 md:py-32">
             <div className="absolute inset-0 bg-grid opacity-50"></div>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="relative z-10 px-4 sm:px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
                     <div className="text-center lg:text-left animate-fade-in-up">
                         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
@@ -72,23 +72,23 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 2: Social Proof */}
-        <section className="py-12 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="bg-white rounded-lg py-16 px-4 sm:px-6 lg:px-8">
+            <div>
                 <p className="text-center text-sm font-semibold text-gray-500 tracking-wider">TRUSTED BY FOUNDERS AND INNOVATORS FROM:</p>
                 <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 items-center">
-                    <div className="flex justify-center"><img className="h-8 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/docs/yc-logo.svg" alt="Y Combinator" /></div>
-                    <div className="flex justify-center"><img className="h-8 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/docs/google-logo.svg" alt="Google" /></div>
-                    <div className="flex justify-center"><img className="h-6 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/docs/stripe-logo.svg" alt="Stripe" /></div>
-                    <div className="flex justify-center"><img className="h-8 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/docs/aws-logo.svg" alt="AWS" /></div>
-                    <div className="flex justify-center"><img className="h-8 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/docs/hubspot-logo.svg" alt="HubSpot" /></div>
-                    <div className="flex justify-center"><img className="h-8 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/docs/notion-logo.svg" alt="Notion" /></div>
+                    <div className="flex justify-center"><img className="h-8 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/brand-logos/y-combinator.svg" alt="Y Combinator" /></div>
+                    <div className="flex justify-center"><img className="h-8 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/brand-logos/google.svg" alt="Google" /></div>
+                    <div className="flex justify-center"><img className="h-6 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/brand-logos/stripe.svg" alt="Stripe" /></div>
+                    <div className="flex justify-center"><img className="h-8 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/brand-logos/aws.svg" alt="AWS" /></div>
+                    <div className="flex justify-center"><img className="h-8 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/brand-logos/hubspot.svg" alt="HubSpot" /></div>
+                    <div className="flex justify-center"><img className="h-8 opacity-50" src="https://storage.googleapis.com/aistudio-hosting/brand-logos/notion.svg" alt="Notion" /></div>
                 </div>
             </div>
         </section>
 
         {/* Section 3: Pain & Promise */}
-        <section className="py-20 md:py-28 bg-brand-off-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
+            <div>
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
                     <div ref={painRef} className="space-y-8">
                         <h2 className="text-3xl md:text-4xl font-bold text-brand-blue">Stop Wrestling With Slides.</h2>
@@ -108,8 +108,8 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 4: Core Features */}
-        <section className="py-20 md:py-28 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="bg-white rounded-lg py-16 px-4 sm:px-6 lg:px-8">
+            <div>
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-blue">Your Intelligent Co-Pilot for Fundraising</h2>
                     <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Go from zero to a complete, professional pitch deck with a suite of powerful AI tools at your fingertips.</p>
@@ -118,13 +118,13 @@ const Landing: React.FC = () => {
                     <FeatureHighlightCard 
                         title="AI Wizard" 
                         description="Generate a complete 10-slide deck from a single prompt or URL. Our AI structures the narrative, writes the content, and suggests visuals."
-                        icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>}
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>}
                         delay={0}
                     />
                     <FeatureHighlightCard 
                         title="Intelligent Copilot" 
                         description="Rewrite, analyze, and get expert feedback on any slide. Ask the AI to make content more concise, impactful, or data-driven."
-                        icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"/></svg>}
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"/></svg>}
                         delay={200}
                     />
                     <FeatureHighlightCard 
@@ -138,8 +138,8 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 5: Data Storytelling */}
-        <section className="py-20 md:py-28 bg-brand-blue text-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="bg-brand-blue text-white rounded-lg py-16 px-4 sm:px-6 lg:px-8">
+            <div>
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="text-center">
                         <p className="text-5xl md:text-6xl font-extrabold text-brand-mustard"><AnimatedCounter value={75} suffix="%" /></p>
@@ -158,8 +158,8 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 6: Testimonials */}
-        <section className="py-20 md:py-28 bg-brand-off-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
+            <div>
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-blue">Built for Founders, by Founders</h2>
                 </div>
@@ -168,20 +168,20 @@ const Landing: React.FC = () => {
                         quote="Sun AI is my go-to. I found my co-founder at an event and used the AI Deck Wizard for our seed round. A game-changer."
                         name="Maria Rodriguez"
                         title="Founder, InnovateHub"
-                        avatar="https://lh3.googleusercontent.com/aida-public/AB6AXuCppGncG4NIlQhP-Mm6ydP25B3hbY93ccUrHDGiSO2teieVc19d4z-z4lIXv-SUmE3Y-VYlpDGUb_yEzMMpIiY9x_QVKR1r1W710kuqh4RB8G-EtR_POxU5_0JxRMRWHomvzmniYkzcRzF8xztKdrSWwdV2Qlk-ZhIo0ZdaW6TCv-9-whx1f42MsrFVPubntiFaUrwfayffzgHyxfPiC6FHovruULy2MAsMcK5el4cmhcqYjWdc7hTkVLprPJDAO_z41k_62V9aDSo"
+                        avatar="https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person1.jpg"
                     />
                      <TestimonialCard
                         quote="It's the first platform that understands the entire founder journey, from pitching to product-market fit."
                         name="Chen Wei"
                         title="CEO, NextLayer"
-                        avatar="https://lh3.googleusercontent.com/aida-public/AB6AXuD91z1jOzow1ZHS1VbQbH3qwrYp3Kv0t9oXBZF0-AZ86pKCW88K-KSfltfWrQiQ8oECc8-7knImh8bbp1Z0HI9DUOOFJXDSb8jNJSzxJQWdgJkvHIYWCgoYtjPEMolrZPmkjOPkNyZB8ZNaVffFwyd78iiJHCiCLby_qUOiHBE_wNJkM987QZffxnd0_NiuNqzSLvTIgi2j6mHZlFlRI5lD1aALbflk9iQyGr5H9QoICxTC58R0V-ONsa_vZnbEd-GYWiXhqMSZ5g"
+                        avatar="https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person2.jpg"
                     />
                 </div>
             </div>
         </section>
 
         {/* Section 7: Final CTA */}
-        <section className="py-20 md:py-28">
+        <section className="pb-16 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-brand-blue">Ready to Build Your Masterpiece?</h2>
                 <p className="mt-4 text-lg text-gray-600">Join hundreds of VCs, accelerating angels and AI startups</p>
@@ -190,7 +190,7 @@ const Landing: React.FC = () => {
                 </div>
             </div>
         </section>
-    </>
+    </div>
     );
 };
 

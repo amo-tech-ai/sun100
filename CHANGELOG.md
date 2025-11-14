@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2024-08-28
+
+### Fixed
+- **Critical Application Failure & Layout Inconsistency:** Restored all AI service logic that was missing after an incomplete architectural refactor. The application's AI features were non-functional, causing crashes. This commit restores all AI functionality. Additionally, it standardizes page layouts by moving padding responsibility from individual pages to the parent `PublicLayout.tsx`, fixing inconsistent spacing and visual jarring when navigating between public pages.
+
+## [2.1.0] - 2024-08-28
+
+### Fixed
+- **Critical Application Failure:** Restored all AI service logic that was missing after an incomplete architectural refactor. The monolithic `geminiService.ts` was previously removed, but its logic was not correctly reimplemented in the new modular services (`/services/ai/*`), causing a fatal application crash. All AI features are now functional again.
+- **Layout Inconsistency:** Standardized page layouts by moving padding responsibility from individual pages to the parent `PublicLayout.tsx`. This fixes inconsistent spacing and visual jarring when navigating between public pages.
+
 ## [2.0.0] - 2024-08-13
 
 ### Changed

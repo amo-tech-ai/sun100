@@ -13,8 +13,8 @@ const PublicLayout: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen flex flex-col relative overflow-hidden bg-brand-off-white">
-            <header className="absolute top-0 left-0 right-0 z-20 py-6 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex flex-col bg-brand-off-white">
+            <header className="relative z-20 py-6 px-4 sm:px-6 lg:px-8 bg-brand-off-white/80 backdrop-blur-sm border-b border-gray-200/50">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <Link className="flex items-center space-x-2" to="/">
                         <span className="material-symbols-outlined text-brand-orange text-3xl">flare</span>
@@ -35,7 +35,7 @@ const PublicLayout: React.FC = () => {
                 </div>
             </header>
             
-            <main className="flex-1 w-full pt-20">
+            <main className="flex-1 w-full max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                 <Outlet />
             </main>
 

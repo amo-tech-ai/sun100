@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const MvpDevelopment: React.FC = () => {
     return (
-        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md">
+        <div className="bg-white p-8 md:p-12 rounded-lg shadow-md">
             <Link to="/services" className="text-[#E87C4D] hover:underline">&larr; Back to all services</Link>
             <div className="grid md:grid-cols-2 gap-8 items-center mt-6">
                 <div>

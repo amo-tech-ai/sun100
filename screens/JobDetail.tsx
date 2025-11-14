@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 const JobDetail: React.FC = () => {
     const { id } = useParams();
     return (
-        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md">
+        <div className="bg-white p-8 md:p-12 rounded-lg shadow-md">
             <Link to="/jobs" className="text-[#E87C4D] hover:underline">&larr; Back to all jobs</Link>
             <h1 className="text-3xl font-bold text-gray-800 mt-4">AI Prompt Engineer</h1>
             <p className="text-lg text-gray-500 mt-2">Location: Remote &bull; Type: Full-time</p>

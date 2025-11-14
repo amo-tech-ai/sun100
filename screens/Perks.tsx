@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const mockPerks = [
-    { id: 1, partner: "Amazon Web Services", offer: "$10,000 in AWS Credits", logoUrl: "https://storage.googleapis.com/aistudio-hosting/docs/aws-logo.svg" },
-    { id: 2, partner: "Stripe", offer: "Fee-free processing on your first $20,000", logoUrl: "https://storage.googleapis.com/aistudio-hosting/docs/stripe-logo.svg" },
-    { id: 3, partner: "HubSpot for Startups", offer: "90% off HubSpot's Professional software", logoUrl: "https://storage.googleapis.com/aistudio-hosting/docs/hubspot-logo.svg" },
+    { id: 1, partner: "Amazon Web Services", offer: "$10,000 in AWS Credits", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg" },
+    { id: 2, partner: "Stripe", offer: "Fee-free processing on your first $20,000", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" },
+    { id: 3, partner: "HubSpot for Startups", offer: "90% off HubSpot's Professional software", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/HubSpot_Logo.svg" },
 ];
 
 const PerkCard: React.FC<typeof mockPerks[0]> = ({ id, partner, offer, logoUrl }) => (

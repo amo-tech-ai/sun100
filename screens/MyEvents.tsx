@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -17,9 +16,9 @@ const popularEvents = [
     { name: 'Fashion', percentage: 15, events: 12500 },
 ];
 const allEvents = [
-    { title: "Champions League Screening Night", location: "SkyDome Stadium, Toronto, ON", date: "Apr 20, 2029", price: 30, category: "Sport", image: "https://images.unsplash.com/photo-1593321598482-f67f52c1032b?q=80&w=800" },
-    { title: "Culinary Delights Festival", location: "Gourmet Plaza, San Francisco, CA", date: "Mar 3, 2029", price: 40, category: "Food & Culinary", image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800" },
-    { title: "Artistry Unveiled: Modern Art Expo", location: "Vogue Hall, Los Angeles, CA", date: "Mar 10, 2029", price: 110, category: "Fashion", image: "https://images.unsplash.com/photo-1501430654243-c934cec2e1c0?q=80&w=800" },
+    { title: "Champions League Screening Night", location: "SkyDome Stadium, Toronto, ON", date: "Apr 20, 2029", price: 30, category: "Sport", image: "https://storage.googleapis.com/aistudio-hosting/event-placeholders/event1.jpg" },
+    { title: "Culinary Delights Festival", location: "Gourmet Plaza, San Francisco, CA", date: "Mar 3, 2029", price: 40, category: "Food & Culinary", image: "https://storage.googleapis.com/aistudio-hosting/event-placeholders/event2.jpg" },
+    { title: "Artistry Unveiled: Modern Art Expo", location: "Vogue Hall, Los Angeles, CA", date: "Mar 10, 2029", price: 110, category: "Fashion", image: "https://storage.googleapis.com/aistudio-hosting/event-placeholders/event3.jpg" },
 ];
 const recentBookings = [
     { id: 'INV10011', date: '2029/02/15 10:30 AM', name: 'Jackson Moore', event: 'Symphony Under the Stars', qty: 2, amount: 100, status: 'Confirmed' },
@@ -211,7 +210,7 @@ const MyEvents: React.FC = () => {
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h3 className="font-bold text-lg text-brand-blue mb-4">Upcoming Event</h3>
                 <div className="rounded-lg overflow-hidden mb-4">
-                    <img src="https://images.unsplash.com/photo-1578736641334-6493a52f461a?q=80&w=800" alt="Rhythm & Beats Music Festival" className="w-full h-40 object-cover" />
+                    <img src="https://storage.googleapis.com/aistudio-hosting/event-placeholders/upcoming.jpg" alt="Rhythm & Beats Music Festival" className="w-full h-40 object-cover" />
                 </div>
                 <h4 className="font-bold text-brand-blue">Rhythm & Beats Music Festival</h4>
                 <p className="text-sm text-gray-500 mt-1">Sunset Park, Los Angeles, CA</p>
