@@ -142,7 +142,7 @@ const WizardSteps: React.FC = () => {
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm h-full">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white">2. Select a Visual Theme</h2>
                     <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Choose a theme for your presentation. The AI will adapt the tone and visual suggestions to match your selected style.</p>
-                    <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div className="mt-4 grid grid-cols-3 gap-4">
                         {themeTemplates.map((key, index) => (
                              <div key={key} className={`theme-card fade-in fade-in-${index+1} group cursor-pointer relative`} onClick={() => setSelectedTemplate(key)}>
                                 <div className={`aspect-[4/3] w-full rounded border transition-all duration-200 ${selectedTemplate === key ? 'border-2 border-[#6366F1] shadow-md' : 'border-gray-300 dark:border-gray-600 hover:border-[#6366F1]'}`}>
@@ -153,7 +153,7 @@ const WizardSteps: React.FC = () => {
                                         <span className="material-symbols-outlined text-white text-sm">check</span>
                                     </div>
                                 )}
-                                <p className="mt-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{/* FIX: Cast `key` to a string to resolve TypeScript error. `keyof` on a string-indexed object type is `string | number`. */ String(key).replace(/([A-Z])/g, ' $1').replace('vibrant', 'Vibrant ')}</p>
+                                <p className="mt-2 text-center text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{String(key).replace(/([A-Z])/g, ' $1').replace('vibrant', 'Vibrant ')}</p>
                             </div>
                         ))}
                     </div>
