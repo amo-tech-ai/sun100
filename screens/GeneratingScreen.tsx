@@ -7,7 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { textContext, urlContext, template } = location.state || {};
+    const { textContext, urlContext, fileContext, template } = location.state || {};
     const { user } = useAuth();
     
     const [dots, setDots] = useState('');
@@ -20,8 +20,9 @@ const GeneratingScreen: React.FC = () => {
 
         const hasText = textContext && textContext.trim().length > 0;
         const hasUrls = urlContext && urlContext.length > 0;
+        const hasFile = fileContext;
 
-        if (!hasText && !hasUrls) {
+        if (!hasText && !hasUrls && !hasFile) {
             setError("No generation context provided. Please go back and start the wizard again.");
             clearInterval(dotsInterval);
             return;
@@ -36,7 +37,7 @@ const GeneratingScreen: React.FC = () => {
         const performGeneration = async () => {
             try {
                 // 1. Generate the deck structure with AI, now with theme context
-                const generatedDeckData = await generateFullDeck({ text: textContext, urls: urlContext, template });
+                const generatedDeckData = await generateFullDeck({ text: textContext, urls: urlContext, fileContext, template });
                 
                 // 2. Persist the new deck to the database
                 const newDeck = await createDeck(generatedDeckData, user.id);
@@ -56,7 +57,7 @@ const GeneratingScreen: React.FC = () => {
         return () => {
             clearInterval(dotsInterval);
         };
-    }, [textContext, urlContext, template, navigate, user]);
+    }, [textContext, urlContext, fileContext, template, navigate, user]);
 
     if (error) {
         return (

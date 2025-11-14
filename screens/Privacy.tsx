@@ -2,10 +2,10 @@ import React from 'react';
 
 const Privacy: React.FC = () => {
     return (
-        <>
+        <div>
             <title>Privacy Policy - sun ai startup</title>
             <meta name="description" content="Read the Privacy Policy for the sun ai startup platform to understand how we handle your data." />
-            <div className="bg-white p-6 md:p-10 rounded-lg shadow-md prose">
+            <div className="bg-white rounded-lg shadow-md prose p-8 md:p-12">
                 <h1>Privacy Policy</h1>
                 <p>Last updated: {new Date().toLocaleDateString()}</p>
 
@@ -26,7 +26,7 @@ const Privacy: React.FC = () => {
                 
                 <p><em>This is a placeholder document. Please consult with a legal professional to create a complete and compliant Privacy Policy for your application.</em></p>
             </div>
-        </>
+        </div>
     );
 };
 

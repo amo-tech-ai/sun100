@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 const BlogDetail: React.FC = () => {
     const { id } = useParams();
     return (
-        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md prose prose-lg">
+        <div className="bg-white p-8 md:p-12 rounded-lg shadow-md prose prose-lg mx-auto">
             <Link to="/blogs" className="text-[#E87C4D] no-underline hover:underline">&larr; Back to all posts</Link>
             <h1 className="mt-4">5 Mistakes to Avoid in Your Investor Pitch Deck</h1>
             <p className="text-base text-gray-500">By Alex Chen on August 1, 2024</p>

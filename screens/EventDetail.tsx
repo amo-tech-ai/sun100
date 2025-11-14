@@ -125,7 +125,7 @@ const EventDetail: React.FC = () => {
     const eventDate = new Date(event.start_date);
 
     return (
-        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md">
+        <div className="bg-white p-8 md:p-12 rounded-lg shadow-md">
             <Link to="/events" className="text-[#E87C4D] hover:underline">&larr; Back to all events</Link>
             <h1 className="text-3xl font-bold text-gray-800 mt-4">{event.title}</h1>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-lg text-gray-500 mt-2">

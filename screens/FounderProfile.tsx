@@ -34,7 +34,7 @@ const mockProfile = {
     username: 'alex-chen',
     name: 'Alex Chen',
     title: 'Founder & CEO, Sun AI Startup',
-    avatarUrl: 'https://picsum.photos/seed/sunai-user/200',
+    avatarUrl: 'https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person3.jpg',
     bio: "Obsessed with democratizing access to AI for the next generation of founders. Building tools that make professional design and storytelling effortless. Previously at Google AI.",
     socials: {
         linkedin: '#',
@@ -78,134 +78,132 @@ const FounderProfile: React.FC = () => {
     }, [profile.bio]);
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="flex flex-col lg:flex-row gap-8">
-                {/* Left Column / Profile Sidebar */}
-                <aside className="w-full lg:w-1/3 lg:flex-shrink-0">
-                    <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center sticky top-28">
-                        <img src={profile.avatarUrl} alt={profile.name} className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-md" />
-                        <h1 className="text-3xl font-bold text-brand-blue">{profile.name}</h1>
-                        <p className="text-gray-500 mt-1">{profile.title}</p>
-                        <button className="mt-6 w-full bg-brand-orange text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors">
-                            Connect
-                        </button>
-                        <div className="border-t border-gray-200 my-6"></div>
-                        <div className="text-left">
-                            <div className="flex items-center justify-between mb-2">
-                                <h3 className="font-semibold text-brand-blue">About</h3>
-                                <button 
-                                    onClick={() => setShowAiTools(!showAiTools)} 
-                                    className="p-1 text-gray-400 hover:text-brand-orange rounded-full transition-colors"
-                                    title="Refine with AI"
-                                    aria-label="Toggle AI Bio Assistant"
-                                    aria-expanded={showAiTools}
-                                >
-                                    <WandIcon />
-                                </button>
-                            </div>
-                            <p className="text-gray-600">{profile.bio}</p>
-                            
-                            {showAiTools && (
-                                <div className="mt-4 p-4 bg-orange-50/50 border border-brand-orange/20 rounded-lg space-y-4">
-                                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                                        <h4 className="font-semibold text-sm text-brand-blue">AI Bio Assistant</h4>
-                                        <button 
-                                            onClick={handleSummarize} 
-                                            disabled={isSummarizing}
-                                            className="flex items-center justify-center gap-2 text-sm font-semibold text-brand-orange hover:text-opacity-80 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors self-start sm:self-center"
-                                        >
-                                            {isSummarizing ? (
-                                                <> <Spinner /> Generating... </>
-                                            ) : (
-                                                <> <WandIcon /> Generate Summary & Highlights </>
-                                            )}
-                                        </button>
-                                    </div>
-                                    {aiError && <p className="text-red-500 text-sm">{aiError}</p>}
-                                    {summaryAndHighlights && (
-                                        <div className="space-y-4 border-t border-brand-orange/20 pt-4">
-                                            <div>
-                                                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Suggested Summary</label>
-                                                <div className="flex items-start justify-between gap-2 bg-white p-2 border rounded-md">
-                                                    <p className="text-sm text-gray-700">{summaryAndHighlights.summary}</p>
-                                                    <CopyButton textToCopy={summaryAndHighlights.summary} />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Suggested Highlights</label>
-                                                <ul className="space-y-2">
-                                                    {summaryAndHighlights.highlights.map((highlight, i) => (
-                                                        <li key={i} className="flex items-start justify-between gap-2 bg-white p-2 border rounded-md">
-                                                            <p className="text-sm text-gray-700 leading-tight">- {highlight}</p>
-                                                            <CopyButton textToCopy={highlight} />
-                                                        </li>
-                                                    ))}
-                                                </ul>
+        <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left Column / Profile Sidebar */}
+            <aside className="w-full lg:w-1/3 lg:flex-shrink-0">
+                <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center sticky top-28">
+                    <img src={profile.avatarUrl} alt={profile.name} className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-md" />
+                    <h1 className="text-3xl font-bold text-brand-blue">{profile.name}</h1>
+                    <p className="text-gray-500 mt-1">{profile.title}</p>
+                    <button className="mt-6 w-full bg-brand-orange text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors">
+                        Connect
+                    </button>
+                    <div className="border-t border-gray-200 my-6"></div>
+                    <div className="text-left">
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-semibold text-brand-blue">About</h3>
+                            <button 
+                                onClick={() => setShowAiTools(!showAiTools)} 
+                                className="p-1 text-gray-400 hover:text-brand-orange rounded-full transition-colors"
+                                title="Refine with AI"
+                                aria-label="Toggle AI Bio Assistant"
+                                aria-expanded={showAiTools}
+                            >
+                                <WandIcon />
+                            </button>
+                        </div>
+                        <p className="text-gray-600">{profile.bio}</p>
+                        
+                        {showAiTools && (
+                            <div className="mt-4 p-4 bg-orange-50/50 border border-brand-orange/20 rounded-lg space-y-4">
+                                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                                    <h4 className="font-semibold text-sm text-brand-blue">AI Bio Assistant</h4>
+                                    <button 
+                                        onClick={handleSummarize} 
+                                        disabled={isSummarizing}
+                                        className="flex items-center justify-center gap-2 text-sm font-semibold text-brand-orange hover:text-opacity-80 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors self-start sm:self-center"
+                                    >
+                                        {isSummarizing ? (
+                                            <> <Spinner /> Generating... </>
+                                        ) : (
+                                            <> <WandIcon /> Generate Summary & Highlights </>
+                                        )}
+                                    </button>
+                                </div>
+                                {aiError && <p className="text-red-500 text-sm">{aiError}</p>}
+                                {summaryAndHighlights && (
+                                    <div className="space-y-4 border-t border-brand-orange/20 pt-4">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Suggested Summary</label>
+                                            <div className="flex items-start justify-between gap-2 bg-white p-2 border rounded-md">
+                                                <p className="text-sm text-gray-700">{summaryAndHighlights.summary}</p>
+                                                <CopyButton textToCopy={summaryAndHighlights.summary} />
                                             </div>
                                         </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                        <div className="border-t border-gray-200 my-6"></div>
-                        <div className="flex justify-center gap-4">
-                            <a href={profile.socials.website} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-brand-orange"><LinkIcon /></a>
-                            <a href={profile.socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-brand-orange"><LinkedinIcon /></a>
-                            <a href={profile.socials.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-brand-orange"><TwitterIcon /></a>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Suggested Highlights</label>
+                                            <ul className="space-y-2">
+                                                {summaryAndHighlights.highlights.map((highlight, i) => (
+                                                    <li key={i} className="flex items-start justify-between gap-2 bg-white p-2 border rounded-md">
+                                                        <p className="text-sm text-gray-700 leading-tight">- {highlight}</p>
+                                                        <CopyButton textToCopy={highlight} />
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <div className="border-t border-gray-200 my-6"></div>
+                    <div className="flex justify-center gap-4">
+                        <a href={profile.socials.website} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-brand-orange"><LinkIcon /></a>
+                        <a href={profile.socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-brand-orange"><LinkedinIcon /></a>
+                        <a href={profile.socials.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-brand-orange"><TwitterIcon /></a>
+                    </div>
+                </div>
+            </aside>
+
+            {/* Right Column / Main Content */}
+            <main className="flex-1 space-y-8">
+                {/* Startup Card */}
+                <section className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                    <div className="flex items-center gap-6">
+                        <img src={profile.startup.logoUrl} alt={`${profile.startup.name} logo`} className="w-16 h-16"/>
+                        <div>
+                            <h2 className="text-2xl font-bold text-brand-blue">{profile.startup.name}</h2>
+                            <p className="text-gray-600">{profile.startup.tagline}</p>
+                            <a href={profile.startup.website} target="_blank" rel="noopener noreferrer" className="text-brand-orange font-semibold hover:underline flex items-center gap-1 mt-1">
+                                <LinkIcon className="w-4 h-4" />
+                                {profile.startup.website.replace('https://', '')}
+                            </a>
                         </div>
                     </div>
-                </aside>
-
-                {/* Right Column / Main Content */}
-                <main className="flex-1 space-y-8">
-                    {/* Startup Card */}
-                    <section className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-                        <div className="flex items-center gap-6">
-                            <img src={profile.startup.logoUrl} alt={`${profile.startup.name} logo`} className="w-16 h-16"/>
-                            <div>
-                                <h2 className="text-2xl font-bold text-brand-blue">{profile.startup.name}</h2>
-                                <p className="text-gray-600">{profile.startup.tagline}</p>
-                                <a href={profile.startup.website} target="_blank" rel="noopener noreferrer" className="text-brand-orange font-semibold hover:underline flex items-center gap-1 mt-1">
-                                    <LinkIcon className="w-4 h-4" />
-                                    {profile.startup.website.replace('https://', '')}
-                                </a>
-                            </div>
-                        </div>
-                    </section>
-                    
-                    {/* Looking For Card */}
-                    <section className="bg-orange-50 p-8 rounded-lg border border-brand-orange/30">
-                         <h3 className="text-xl font-semibold text-brand-blue mb-4 flex items-center gap-2">
-                             <SearchIcon className="text-brand-orange"/>
-                             Currently Looking For
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                            {profile.lookingFor.map(item => (
-                                <span key={item} className="bg-white border border-gray-300 text-gray-700 font-semibold text-sm px-3 py-1 rounded-full">
-                                    {item}
-                                </span>
-                            ))}
-                        </div>
-                    </section>
-                    
-                    {/* Public Decks Section */}
-                    <section>
-                         <h3 className="text-xl font-semibold text-brand-blue mb-4">Public Pitch Decks</h3>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {profile.publicDecks.map(deck => (
-                                <Link key={deck.id} to={`/pitch-decks/${deck.id}/present`} className="block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group">
-                                    <div className="aspect-video bg-gray-100">
-                                        <img src={deck.imageUrl} alt={deck.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                                    </div>
-                                    <div className="p-4">
-                                        <h4 className="font-bold text-brand-blue group-hover:text-brand-orange transition-colors">{deck.title}</h4>
-                                    </div>
-                                </Link>
-                            ))}
-                         </div>
-                    </section>
-                </main>
-            </div>
+                </section>
+                
+                {/* Looking For Card */}
+                <section className="bg-orange-50 p-8 rounded-lg border border-brand-orange/30">
+                     <h3 className="text-xl font-semibold text-brand-blue mb-4 flex items-center gap-2">
+                         <SearchIcon className="text-brand-orange"/>
+                         Currently Looking For
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                        {profile.lookingFor.map(item => (
+                            <span key={item} className="bg-white border border-gray-300 text-gray-700 font-semibold text-sm px-3 py-1 rounded-full">
+                                {item}
+                            </span>
+                        ))}
+                    </div>
+                </section>
+                
+                {/* Public Decks Section */}
+                <section>
+                     <h3 className="text-xl font-semibold text-brand-blue mb-4">Public Pitch Decks</h3>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {profile.publicDecks.map(deck => (
+                            <Link key={deck.id} to={`/pitch-decks/${deck.id}/present`} className="block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group">
+                                <div className="aspect-video bg-gray-100">
+                                    <img src={deck.imageUrl} alt={deck.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                                </div>
+                                <div className="p-4">
+                                    <h4 className="font-bold text-brand-blue group-hover:text-brand-orange transition-colors">{deck.title}</h4>
+                                </div>
+                            </Link>
+                        ))}
+                     </div>
+                </section>
+            </main>
         </div>
     );
 };

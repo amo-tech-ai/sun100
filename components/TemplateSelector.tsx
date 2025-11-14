@@ -39,13 +39,11 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selectedTemplate, o
                 {templateKeys.map(key => (
                     <div key={String(key)}>
                         <TemplatePreview
-                            template={templates[key as string]}
-                            // FIX: The `key`'s type is inferred as `string | number`, but the `templateKey` prop expects a `string`. Explicitly convert to string.
+                            template={templates[key as keyof typeof templates]}
                             templateKey={String(key)}
                             isSelected={selectedTemplate === key}
                             onSelect={() => onSelectTemplate(key)}
                         />
-                        {/* FIX: The `key`'s type is inferred as `string | number`. String methods like `replace` are not available on `number`, so we cast it to string first. */}
                         <p className="text-center text-sm font-medium text-gray-600 mt-2 capitalize">{String(key).replace(/([A-Z])/g, ' $1').replace('vibrant', 'Vibrant ')}</p>
                     </div>
                 ))}

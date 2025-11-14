@@ -32,7 +32,7 @@ const Signup: React.FC = () => {
     };
 
     return (
-        <>
+        <div>
             <title>Sign Up - sun ai startup</title>
             <meta name="description" content="Create a new sun ai startup account." />
             <div className="bg-white p-6 md:p-10 rounded-lg shadow-md max-w-md mx-auto">
@@ -82,7 +82,7 @@ const Signup: React.FC = () => {
                     </Link>
                 </p>
             </div>
-        </>
+        </div>
     );
 };
 

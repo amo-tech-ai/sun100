@@ -11,7 +11,7 @@ const TeamMember: React.FC<{ name: string; title: string; imageUrl: string; }> =
 
 const About: React.FC = () => {
     return (
-        <div className="bg-white p-6 md:p-10 rounded-lg shadow-md">
+        <div className="bg-white rounded-lg shadow-md p-8 md:p-12">
             <div className="text-center">
                 <h1 className="text-4xl font-bold text-gray-800">Our Mission</h1>
                 <p className="text-xl text-gray-600 mt-4 max-w-3xl mx-auto">
@@ -24,9 +24,9 @@ const About: React.FC = () => {
             <div className="text-center">
                 <h2 className="text-3xl font-bold text-gray-800 mb-8">Meet the Team</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-                    <TeamMember name="Alex Chen" title="Founder & CEO" imageUrl="https://picsum.photos/seed/sunai-t1/200" />
-                    <TeamMember name="Samantha Rao" title="Chief Technology Officer" imageUrl="https://picsum.photos/seed/sunai-t2/200" />
-                    <TeamMember name="David Kim" title="Head of Product & Design" imageUrl="https://picsum.photos/seed/sunai-t3/200" />
+                    <TeamMember name="Alex Chen" title="Founder & CEO" imageUrl="https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person3.jpg" />
+                    <TeamMember name="Samantha Rao" title="Chief Technology Officer" imageUrl="https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person4.jpg" />
+                    <TeamMember name="David Kim" title="Head of Product & Design" imageUrl="https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person5.jpg" />
                 </div>
             </div>
         </div>

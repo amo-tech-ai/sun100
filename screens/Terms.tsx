@@ -2,10 +2,10 @@ import React from 'react';
 
 const Terms: React.FC = () => {
     return (
-        <>
+        <div>
             <title>Terms of Service - sun ai startup</title>
             <meta name="description" content="Read the Terms of Service for using the sun ai startup platform." />
-            <div className="bg-white p-6 md:p-10 rounded-lg shadow-md prose">
+            <div className="bg-white rounded-lg shadow-md prose p-8 md:p-12">
                 <h1>Terms of Service</h1>
                 <p>Last updated: {new Date().toLocaleDateString()}</p>
 
@@ -26,7 +26,7 @@ const Terms: React.FC = () => {
                 
                 <p><em>This is a placeholder document. Please consult with a legal professional to create a complete and compliant Terms of Service for your application.</em></p>
             </div>
-        </>
+        </div>
     );
 };
 
