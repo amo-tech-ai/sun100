@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Deck, Slide } from '../data/decks';
@@ -5,25 +7,26 @@ import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
 import AICopilot from '../components/AICopilot';
 import { getDeckById, updateDeck, updateSlide } from '../services/deckService';
+import { generateRoadmapSlide } from '../services/ai/deck';
+import { generateSlideImage, editSlideImage } from '../services/ai/image';
+import { researchTopic } from '../services/ai/research';
 import {
-    generateSlideImage,
-    editSlideImage,
     modifySlideContent,
     analyzeSlide,
-    researchTopic,
     suggestLayout,
     fetchAllSuggestions,
     suggestChart,
-    generateRoadmapSlide,
     generateHeadlineVariations,
     extractMetrics,
-    ExtractedMetric,
     generatePricingTable,
     summarizeBio,
     suggestPieChart,
+} from '../services/ai/slide';
+import {
+    ExtractedMetric,
     SlideAnalysis,
     ResearchResult,
-} from '../services/aiService';
+} from '../services/ai/types';
 import { templates } from '../styles/templates';
 
 

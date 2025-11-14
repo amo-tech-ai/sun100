@@ -1,8 +1,10 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { generateFullDeck } from '../services/aiService';
-import { createDeck } from '../services/deckService';
+import { createDeck } from '../services/deckService'; // We'll use this after generation
 import { useAuth } from '../hooks/useAuth';
+import { Deck } from '../data/decks';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
@@ -36,33 +38,36 @@ const GeneratingScreen: React.FC = () => {
 
         const performGeneration = async () => {
             try {
-                // 1. Generate the deck structure with AI, now with theme context
+                // 1. Generate the deck content using the AI service.
                 const generatedDeckData = await generateFullDeck({ text: textContext, urls: urlContext, fileContext, template });
                 
-                // 2. Persist the new deck to the database
+                // 2. Persist the new deck to the database.
                 const newDeck = await createDeck(generatedDeckData, user.id);
 
-                // 3. Navigate to the editor with the new database ID
+                // 3. Navigate to the editor with the new database ID.
                 navigate(`/pitch-decks/${newDeck.id}/edit`);
 
             } catch (err) {
                 console.error("Deck generation failed:", err);
-                setError(err instanceof Error ? err.message : "An unknown error occurred during generation.");
+                // Improved error handling to show a more useful message.
+                const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during generation.";
+                setError(errorMessage);
             }
         };
 
-        performGeneration();
+        const timeoutId = setTimeout(performGeneration, 1000); // Give a moment for the UI to render
 
         // Cleanup function
         return () => {
             clearInterval(dotsInterval);
+            clearTimeout(timeoutId);
         };
     }, [textContext, urlContext, fileContext, template, navigate, user]);
 
     if (error) {
         return (
              <div className="flex flex-col items-center justify-center h-full">
-                <div className="bg-white p-12 rounded-lg shadow-xl text-center">
+                <div className="bg-white p-12 rounded-lg shadow-xl text-center max-w-lg">
                     <h1 className="text-2xl font-bold text-red-600 mb-4">Generation Failed</h1>
                     <p className="text-gray-600 mb-6">{error}</p>
                     <button 
