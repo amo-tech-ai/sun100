@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Deck, Slide } from '../data/decks';
@@ -94,10 +93,10 @@ export const useDeckEditor = () => useContext(DeckEditorContext);
 
 // ICONS
 const PanelLeftOpenIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
 );
 const PanelLeftCloseIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 15-3-3 3-3"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 15-3-3 3-3"/></svg>
 );
 
 
@@ -148,6 +147,20 @@ const DeckEditor: React.FC = () => {
         const fetchInitialDeck = async () => {
             setLoading(true);
             try {
+                // Dual-loading strategy: Check sessionStorage first
+                const sessionDeckJson = sessionStorage.getItem('newlyGeneratedDeck');
+                if (sessionDeckJson) {
+                    const sessionDeck = JSON.parse(sessionDeckJson);
+                    if (sessionDeck.id === id) {
+                        setDeck(sessionDeck);
+                        setSelectedSlide(sessionDeck.slides[0] || null);
+                        sessionStorage.removeItem('newlyGeneratedDeck'); // Clean up
+                        setLoading(false);
+                        return;
+                    }
+                }
+
+                // Fallback to fetching from the database
                 const fetchedDeck = await getDeckById(id);
                 if (fetchedDeck) {
                     setDeck(fetchedDeck);
