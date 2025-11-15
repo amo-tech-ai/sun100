@@ -1,10 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { generateFullDeck } from '../services/aiService';
-import { createDeck } from '../services/deckService'; // We'll use this after generation
+import { generateFullDeck } from '../services/ai/deck';
+import { createDeck } from '../services/deckService';
 import { useAuth } from '../hooks/useAuth';
-import { Deck } from '../data/decks';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
@@ -24,14 +23,14 @@ const GeneratingScreen: React.FC = () => {
         const hasUrls = urlContext && urlContext.length > 0;
         const hasFile = fileContext;
 
-        if (!hasText && !hasUrls && !hasFile) {
-            setError("No generation context provided. Please go back and start the wizard again.");
+        if (!user || user.id === 'mock-user-id') {
+            setError("You must be logged in to create a deck. Please log in and try again.");
             clearInterval(dotsInterval);
             return;
         }
 
-        if (!user) {
-            setError("You must be logged in to create a deck. Please log in and try again.");
+        if (!hasText && !hasUrls && !hasFile) {
+            setError("No generation context provided. Please go back and start the wizard again.");
             clearInterval(dotsInterval);
             return;
         }
@@ -44,7 +43,10 @@ const GeneratingScreen: React.FC = () => {
                 // 2. Persist the new deck to the database.
                 const newDeck = await createDeck(generatedDeckData, user.id);
 
-                // 3. Navigate to the editor with the new database ID.
+                // 3. Save to sessionStorage as a fallback and for the editor to pick up immediately.
+                sessionStorage.setItem('newlyGeneratedDeck', JSON.stringify(newDeck));
+
+                // 4. Navigate to the editor with the new database ID.
                 navigate(`/pitch-decks/${newDeck.id}/edit`);
 
             } catch (err) {
