@@ -12,8 +12,9 @@ const UploadIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://ww
 // --- STEP COMPONENTS ---
 const stepsConfig = [
     { id: 1, title: 'Business Context' },
-    { id: 2, title: 'Deck Type & Theme' },
-    { id: 3, title: 'Company Details' }
+    { id: 2, title: 'Deck Type' },
+    { id: 3, title: 'Visual Theme' },
+    { id: 4, title: 'Company Details' }
 ];
 
 const ProgressIndicator: React.FC<{ currentStep: number }> = ({ currentStep }) => (
@@ -49,9 +50,11 @@ const WizardSteps: React.FC = () => {
 
     // Step 2 State
     const [deckType, setDeckType] = useState('Investor Pitch');
+    
+    // Step 3 State
     const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof templates>('default');
 
-    // Step 3 State
+    // Step 4 State
     const [companyName, setCompanyName] = useState('');
     const [industry, setIndustry] = useState('');
     const [customerType, setCustomerType] = useState('');
@@ -77,7 +80,7 @@ const WizardSteps: React.FC = () => {
 
     // --- NAVIGATION ---
     const handleNext = () => {
-        if (step < 3) {
+        if (step < 4) {
             setAnimationClass('animate-fade-out');
             setTimeout(() => {
                 setStep(s => s + 1);
@@ -126,8 +129,9 @@ const WizardSteps: React.FC = () => {
     const renderStepContent = () => {
         switch (step) {
             case 1: return <Step1Content companyDetails={businessContext} setCompanyDetails={setBusinessContext} urls={urls} setUrls={setUrls} />;
-            case 2: return <Step2Content deckType={deckType} setDeckType={setDeckType} selectedTemplate={selectedTemplate} setSelectedTemplate={setSelectedTemplate} />;
-            case 3: return <Step3Content {...{ companyName, setCompanyName, industry, setIndustry, customerType, setCustomerType, revenueModel, setRevenueModel, stage, setStage, traction, setTraction }} />;
+            case 2: return <Step2Content deckType={deckType} setDeckType={setDeckType} />;
+            case 3: return <Step3Content selectedTemplate={selectedTemplate} setSelectedTemplate={setSelectedTemplate} />;
+            case 4: return <Step4Content {...{ companyName, setCompanyName, industry, setIndustry, customerType, setCustomerType, revenueModel, setRevenueModel, stage, setStage, traction, setTraction }} />;
             default: return null;
         }
     };
@@ -165,7 +169,7 @@ const WizardSteps: React.FC = () => {
                 <button onClick={handleBack} disabled={step === 1} className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-6 rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
                     &larr; Back
                 </button>
-                {step < 3 ? (
+                {step < 4 ? (
                     <button onClick={handleNext} className="bg-brand-orange text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition">
                         Next &rarr;
                     </button>
@@ -181,7 +185,7 @@ const WizardSteps: React.FC = () => {
                  <button onClick={handleBack} disabled={step === 1} className="flex-1 bg-white border border-gray-300 text-gray-700 font-bold py-3 rounded-lg disabled:opacity-50">
                     Back
                 </button>
-                {step < 3 ? (
+                {step < 4 ? (
                     <button onClick={handleNext} className="flex-1 bg-brand-orange text-white font-bold py-3 rounded-lg">
                         Next
                     </button>
@@ -243,34 +247,36 @@ const Step1Content: React.FC<{ companyDetails: string; setCompanyDetails: (s: st
 
 // --- STEP 2 COMPONENT ---
 const deckTypes = ['Investor Pitch', 'Accelerator', 'Product Launch', 'Sales Deck', 'Go-to-Market', 'Custom'];
-const Step2Content: React.FC<{ deckType: string; setDeckType: (s: string) => void; selectedTemplate: keyof typeof templates; setSelectedTemplate: (k: keyof typeof templates) => void; }> = ({ deckType, setDeckType, selectedTemplate, setSelectedTemplate }) => (
-    <div className="space-y-8">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-xl font-semibold text-brand-blue">1. Select Deck Type</h2>
-            <p className="mt-1 text-sm text-gray-500">Choose the primary goal of your presentation. This helps the AI tailor the tone and structure.</p>
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-                {deckTypes.map(type => (
-                    <button key={type} onClick={() => setDeckType(type)} className={`p-4 rounded-lg border-2 text-center font-semibold transition-all duration-200 ${deckType === type ? 'bg-brand-orange/10 border-brand-orange text-brand-orange shadow-inner' : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-400'}`}>
-                        {type}
-                    </button>
-                ))}
-            </div>
-        </div>
-         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-xl font-semibold text-brand-blue">2. Select a Visual Theme</h2>
-            <p className="mt-1 text-sm text-gray-500">Choose a theme for your presentation. The AI will adapt the visual suggestions to match your selected style.</p>
-            <div className="mt-4">
-                <TemplateSelector selectedTemplate={selectedTemplate} setSelectedTemplate={setSelectedTemplate} />
-            </div>
+const Step2Content: React.FC<{ deckType: string; setDeckType: (s: string) => void; }> = ({ deckType, setDeckType }) => (
+    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-xl font-semibold text-brand-blue">Select Deck Type</h2>
+        <p className="mt-1 text-sm text-gray-500">Choose the primary goal of your presentation. This helps the AI tailor the tone and structure.</p>
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+            {deckTypes.map(type => (
+                <button key={type} onClick={() => setDeckType(type)} className={`p-4 rounded-lg border-2 text-center font-semibold transition-all duration-200 ${deckType === type ? 'bg-brand-orange/10 border-brand-orange text-brand-orange shadow-inner' : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-400'}`}>
+                    {type}
+                </button>
+            ))}
         </div>
     </div>
 );
 
 // --- STEP 3 COMPONENT ---
-const Step3Content: React.FC<any> = ({ companyName, setCompanyName, industry, setIndustry, customerType, setCustomerType, revenueModel, setRevenueModel, stage, setStage, traction, setTraction }) => (
+const Step3Content: React.FC<{ selectedTemplate: keyof typeof templates; setSelectedTemplate: (k: keyof typeof templates) => void; }> = ({ selectedTemplate, setSelectedTemplate }) => (
+    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-xl font-semibold text-brand-blue">Select a Visual Theme</h2>
+        <p className="mt-1 text-sm text-gray-500">Choose a theme for your presentation. The AI will adapt the visual suggestions to match your selected style.</p>
+        <div className="mt-4">
+            <TemplateSelector selectedTemplate={selectedTemplate} setSelectedTemplate={setSelectedTemplate} />
+        </div>
+    </div>
+);
+
+// --- STEP 4 COMPONENT ---
+const Step4Content: React.FC<any> = ({ companyName, setCompanyName, industry, setIndustry, customerType, setCustomerType, revenueModel, setRevenueModel, stage, setStage, traction, setTraction }) => (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
         <div className="md:col-span-3 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h2 className="text-xl font-semibold text-brand-blue mb-4">3. Company Details</h2>
+            <h2 className="text-xl font-semibold text-brand-blue mb-4">Company Details</h2>
             <div className="space-y-6">
                 <div>
                     <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">Company Name</label>
