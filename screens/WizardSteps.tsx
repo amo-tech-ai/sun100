@@ -5,11 +5,11 @@ import UrlInput from '../components/UrlInput';
 import TemplateSelector from '../components/TemplateSelector';
 
 // --- ICONS ---
-const InfoIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
-const CheckIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M20 6 9 17l-5-5"/></svg>;
-const UploadIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
+const InfoIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
+const CheckIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M20 6 9 17l-5-5"/></svg>;
+const UploadIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
 
-// --- STEP COMPONENTS ---
+// --- STEP CONFIGURATION ---
 const stepsConfig = [
     { id: 1, title: 'Business Context' },
     { id: 2, title: 'Deck Type' },
@@ -43,6 +43,7 @@ const WizardSteps: React.FC = () => {
     
     // --- STATE MANAGEMENT ---
     const [step, setStep] = useState(1);
+    const totalSteps = stepsConfig.length;
 
     // Step 1 State
     const [businessContext, setBusinessContext] = useState('Sun AI is a startup that uses generative AI to create pitch decks for early-stage companies. We leverage large language models to analyze business context and generate compelling narratives, financial projections, and slide designs automatically.');
@@ -50,7 +51,6 @@ const WizardSteps: React.FC = () => {
 
     // Step 2 State
     const [deckType, setDeckType] = useState('Investor Pitch');
-    
     // Step 3 State
     const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof templates>('default');
 
@@ -80,7 +80,7 @@ const WizardSteps: React.FC = () => {
 
     // --- NAVIGATION ---
     const handleNext = () => {
-        if (step < 4) {
+        if (step < totalSteps) {
             setAnimationClass('animate-fade-out');
             setTimeout(() => {
                 setStep(s => s + 1);
@@ -169,7 +169,7 @@ const WizardSteps: React.FC = () => {
                 <button onClick={handleBack} disabled={step === 1} className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-6 rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed">
                     &larr; Back
                 </button>
-                {step < 4 ? (
+                {step < totalSteps ? (
                     <button onClick={handleNext} className="bg-brand-orange text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition">
                         Next &rarr;
                     </button>
@@ -185,7 +185,7 @@ const WizardSteps: React.FC = () => {
                  <button onClick={handleBack} disabled={step === 1} className="flex-1 bg-white border border-gray-300 text-gray-700 font-bold py-3 rounded-lg disabled:opacity-50">
                     Back
                 </button>
-                {step < 4 ? (
+                {step < totalSteps ? (
                     <button onClick={handleNext} className="flex-1 bg-brand-orange text-white font-bold py-3 rounded-lg">
                         Next
                     </button>
@@ -247,7 +247,10 @@ const Step1Content: React.FC<{ companyDetails: string; setCompanyDetails: (s: st
 
 // --- STEP 2 COMPONENT ---
 const deckTypes = ['Investor Pitch', 'Accelerator', 'Product Launch', 'Sales Deck', 'Go-to-Market', 'Custom'];
-const Step2Content: React.FC<{ deckType: string; setDeckType: (s: string) => void; }> = ({ deckType, setDeckType }) => (
+const Step2Content: React.FC<{
+    deckType: string;
+    setDeckType: (s: string) => void;
+}> = ({ deckType, setDeckType }) => (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <h2 className="text-xl font-semibold text-brand-blue">Select Deck Type</h2>
         <p className="mt-1 text-sm text-gray-500">Choose the primary goal of your presentation. This helps the AI tailor the tone and structure.</p>
@@ -262,7 +265,10 @@ const Step2Content: React.FC<{ deckType: string; setDeckType: (s: string) => voi
 );
 
 // --- STEP 3 COMPONENT ---
-const Step3Content: React.FC<{ selectedTemplate: keyof typeof templates; setSelectedTemplate: (k: keyof typeof templates) => void; }> = ({ selectedTemplate, setSelectedTemplate }) => (
+const Step3Content: React.FC<{
+    selectedTemplate: keyof typeof templates;
+    setSelectedTemplate: (k: keyof typeof templates) => void;
+}> = ({ selectedTemplate, setSelectedTemplate }) => (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <h2 className="text-xl font-semibold text-brand-blue">Select a Visual Theme</h2>
         <p className="mt-1 text-sm text-gray-500">Choose a theme for your presentation. The AI will adapt the visual suggestions to match your selected style.</p>
@@ -271,6 +277,7 @@ const Step3Content: React.FC<{ selectedTemplate: keyof typeof templates; setSele
         </div>
     </div>
 );
+
 
 // --- STEP 4 COMPONENT ---
 const Step4Content: React.FC<any> = ({ companyName, setCompanyName, industry, setIndustry, customerType, setCustomerType, revenueModel, setRevenueModel, stage, setStage, traction, setTraction }) => (
