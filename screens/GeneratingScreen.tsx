@@ -1,14 +1,13 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { generateFullDeck } from '../services/ai/deck';
+import { generateFullDeck } from '../services/aiService';
 import { createDeck } from '../services/deckService';
 import { useAuth } from '../hooks/useAuth';
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { textContext, urlContext, fileContext, template } = location.state || {};
+    const { generationPayload } = location.state || {};
     const { user } = useAuth();
     
     const [dots, setDots] = useState('');
@@ -19,17 +18,13 @@ const GeneratingScreen: React.FC = () => {
             setDots(prev => (prev.length >= 3 ? '' : prev + '.'));
         }, 500);
 
-        const hasText = textContext && textContext.trim().length > 0;
-        const hasUrls = urlContext && urlContext.length > 0;
-        const hasFile = fileContext;
-
         if (!user || user.id === 'mock-user-id') {
             setError("You must be logged in to create a deck. Please log in and try again.");
             clearInterval(dotsInterval);
             return;
         }
 
-        if (!hasText && !hasUrls && !hasFile) {
+        if (!generationPayload || (!generationPayload.businessContext && generationPayload.urls.length === 0)) {
             setError("No generation context provided. Please go back and start the wizard again.");
             clearInterval(dotsInterval);
             return;
@@ -38,7 +33,7 @@ const GeneratingScreen: React.FC = () => {
         const performGeneration = async () => {
             try {
                 // 1. Generate the deck content using the AI service.
-                const generatedDeckData = await generateFullDeck({ text: textContext, urls: urlContext, fileContext, template });
+                const generatedDeckData = await generateFullDeck(generationPayload);
                 
                 // 2. Persist the new deck to the database.
                 const newDeck = await createDeck(generatedDeckData, user.id);
@@ -64,7 +59,7 @@ const GeneratingScreen: React.FC = () => {
             clearInterval(dotsInterval);
             clearTimeout(timeoutId);
         };
-    }, [textContext, urlContext, fileContext, template, navigate, user]);
+    }, [generationPayload, navigate, user]);
 
     if (error) {
         return (

@@ -1,53 +1,34 @@
 import React from 'react';
-import { templates, DeckTemplate } from '../styles/templates';
+import { templates } from '../styles/templates';
 
 interface TemplateSelectorProps {
     selectedTemplate: keyof typeof templates;
-    onSelectTemplate: (templateKey: keyof typeof templates) => void;
+    setSelectedTemplate: (templateKey: keyof typeof templates) => void;
 }
 
-const TemplatePreview: React.FC<{ template: DeckTemplate, templateKey: string, isSelected: boolean, onSelect: () => void }> = ({ template, templateKey, isSelected, onSelect }) => {
-    return (
-        <button
-            onClick={onSelect}
-            className={`relative w-full aspect-[16/9] rounded-lg border-2 p-1.5 overflow-hidden transition-all duration-200 ${isSelected ? 'border-brand-orange ring-2 ring-brand-orange/50 shadow-lg' : 'border-gray-200 hover:border-gray-400'}`}
-            aria-label={`Select ${templateKey} theme`}
-            aria-pressed={isSelected}
-        >
-            <div className={`w-full h-full text-[4px] leading-tight flex flex-col justify-center ${template.slide}`}>
-                <div className={`font-bold truncate ${template.title}`}>Title</div>
-                <div className={`p-0 ${template.content}`}>
-                    <li className="list-none">Bullet point 1</li>
-                    <li className="list-none">Bullet point 2</li>
-                </div>
-            </div>
-            {isSelected && (
-                <div className="absolute top-1 right-1 bg-brand-orange text-white rounded-full p-0.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                </div>
-            )}
-        </button>
-    );
-};
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selectedTemplate, setSelectedTemplate }) => {
+    const themeTemplates = Object.keys(templates) as (keyof typeof templates)[];
 
-const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selectedTemplate, onSelectTemplate }) => {
-    const templateKeys = Object.keys(templates) as (keyof typeof templates)[];
-    
     return (
-        <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                {templateKeys.map(key => (
-                    <div key={String(key)}>
-                        <TemplatePreview
-                            template={templates[key as keyof typeof templates]}
-                            templateKey={String(key)}
-                            isSelected={selectedTemplate === key}
-                            onSelect={() => onSelectTemplate(key)}
-                        />
-                        <p className="text-center text-sm font-medium text-gray-600 mt-2 capitalize">{String(key).replace(/([A-Z])/g, ' $1').replace('vibrant', 'Vibrant ')}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {themeTemplates.map((key) => (
+                 <div key={key} className="group cursor-pointer relative" onClick={() => setSelectedTemplate(key)}>
+                    <div className={`aspect-[16/9] w-full rounded-lg border-2 transition-all duration-200 ${selectedTemplate === key ? 'border-brand-orange shadow-md' : 'border-gray-300 hover:border-brand-orange/50'}`}>
+                        <div className={`w-full h-full text-[4px] leading-tight flex flex-col justify-center p-1.5 ${templates[key].slide}`}>
+                            <div className={`font-bold truncate ${templates[key].title}`}>Title</div>
+                            <div className={`p-0 ${templates[key].content}`}>
+                                <li className="list-none">Bullet point</li>
+                            </div>
+                        </div>
                     </div>
-                ))}
-            </div>
+                    {selectedTemplate === key && (
+                        <div className="absolute top-2 right-2 bg-brand-orange rounded-full h-5 w-5 flex items-center justify-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                        </div>
+                    )}
+                    <p className="mt-2 text-center text-sm font-medium text-gray-700 capitalize">{String(key).replace(/([A-Z])/g, ' $1').replace('vibrant', 'Vibrant ')}</p>
+                </div>
+            ))}
         </div>
     );
 };

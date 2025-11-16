@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Deck, Slide } from '../data/decks';
 import { templates } from '../styles/templates';
@@ -15,72 +14,124 @@ try {
     console.error("Gemini API key not found or invalid. AI features will be disabled.", e);
 }
 
-
-const deckSchema = {
+const DECK_GENERATION_SCHEMA = {
   type: Type.OBJECT,
   properties: {
-    title: { type: Type.STRING, description: 'A catchy, professional title for the entire pitch deck.' },
     slides: {
       type: Type.ARRAY,
-      description: 'An array of exactly 10 slide objects.',
+      description: 'An array of 10-12 slide objects, following the default deck structure.',
       items: {
         type: Type.OBJECT,
         properties: {
-          title: { type: Type.STRING, description: 'The title of the slide.' },
-          content: { type: Type.STRING, description: 'The main content of the slide, formatted as bullet points separated by newlines. Each bullet point should start on a new line.' },
-          imageUrl: { type: Type.STRING, description: 'A descriptive, creative prompt for an AI image generator to create a relevant visual for this slide.' },
+          title: { type: Type.STRING, description: 'The title of the slide (e.g., "Problem", "Solution").' },
+          bullets: {
+            type: Type.ARRAY,
+            description: '3-5 concise bullet points for the slide content. Each bullet should be 18 words or less.',
+            items: { type: Type.STRING }
+          },
+          notes: { type: Type.STRING, description: 'Optional speaker notes for the slide to provide extra context.' },
+          imageUrl: { type: Type.STRING, description: 'A descriptive, creative prompt for an AI image generator to create a relevant visual for this slide, matching the selected theme.' },
           type: { 
             type: Type.STRING, 
             description: "The type of slide (e.g., 'vision', 'problem', 'solution', 'market', 'product', 'traction', 'competition', 'team', 'ask', 'roadmap', 'generic')."
           }
         },
-        required: ['title', 'content', 'imageUrl', 'type']
+        required: ['title', 'bullets', 'notes', 'imageUrl', 'type']
       }
+    },
+    metadata: {
+      type: Type.OBJECT,
+      properties: {
+        deck_title: { type: Type.STRING, description: 'A catchy, professional title for the entire pitch deck.' },
+        deck_type: { type: Type.STRING, description: 'The user-selected deck type.' },
+        theme: { type: Type.STRING, description: 'The user-selected visual theme.' },
+        company_name: { type: Type.STRING, description: 'The name of the company.' },
+      },
+      required: ['deck_title', 'deck_type', 'theme', 'company_name']
     }
   },
-  required: ['title', 'slides']
+  required: ['slides', 'metadata']
 };
 
+interface GenerationPayload {
+  businessContext: string;
+  urls: string[];
+  deckType: string;
+  theme: keyof typeof templates;
+  companyDetails: {
+    name: string;
+    industry: string;
+    customerType: string;
+    revenueModel: string;
+    stage: string;
+    traction: string;
+  };
+}
 
-export const generateFullDeck = async ({ text, urls, fileContext, template }: { text?: string; urls?: string[], fileContext?: any, template?: keyof typeof templates }): Promise<Omit<Deck, 'id'>> => {
+const SYSTEM_INSTRUCTION = `You are an expert pitch-deck analyst and content strategist for Sun AI.
+Your job is to generate clear, concise, investor-ready slides in a structured JSON format.
+Use user-provided business context, website URLs, deck type, company details, and brand style to create a complete pitch deck with 10-12 slides, each having 3–5 bullets.
+Avoid fluff and jargon. The tone must be professional and investor-friendly.
+If URLs are provided, you MUST fetch and use their content as primary context.
+Adapt the content and tone to the selected visual theme.`;
+
+export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit<Deck, 'id'>> => {
     if (!ai) {
         throw new Error("AI Service is not initialized. Please check your API key.");
     }
 
-    let prompt = `You are a world-class venture capital analyst and startup consultant. Your task is to generate a complete, investor-ready 10-slide pitch deck based on the provided business context. The tone should be professional, confident, and compelling.
+    let prompt = `
+    Generate a complete pitch deck using the following unified context.
 
-    **Business Context:**
+    ## Primary Business Context ##
+    ${payload.businessContext || '(No written context provided)'}
+
+    ## Website URLs to Analyze ##
+    ${payload.urls.length > 0 ? payload.urls.map(url => `- ${url}`).join('\n') : '(No URLs provided)'}
+
+    ## Company Details ##
+    - Name: ${payload.companyDetails.name || 'Not Provided'}
+    - Industry: ${payload.companyDetails.industry || 'Not Provided'}
+    - Target Customer: ${payload.companyDetails.customerType || 'Not Provided'}
+    - Revenue Model: ${payload.companyDetails.revenueModel || 'Not Provided'}
+    - Stage: ${payload.companyDetails.stage || 'Not Provided'}
+    - Key Traction: ${payload.companyDetails.traction || 'Not Provided'}
+
+    ## Deck Goal & Style ##
+    - Deck Type: ${payload.deckType}
+    - Visual Theme: ${payload.theme}
     `;
-
-    if (text) {
-        prompt += text;
-    } else if (urls && urls.length > 0) {
-        prompt += `Generate the deck based on the content of these URLs: ${urls.join(', ')}`;
-    } else {
-        throw new Error("No context provided for deck generation.");
-    }
     
     try {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-pro",
             contents: prompt,
             config: {
+                systemInstruction: SYSTEM_INSTRUCTION,
                 responseMimeType: "application/json",
-                responseSchema: deckSchema,
+                responseSchema: DECK_GENERATION_SCHEMA,
+                temperature: 0.1,
+                thinkingConfig: { thinkingBudget: 0 }
             },
         });
         
         const jsonText = response.text.trim();
-        const deckData = JSON.parse(jsonText) as { title: string; slides: Omit<Slide, 'id'>[] };
+        const deckData = JSON.parse(jsonText) as { metadata: { deck_title: string }, slides: { title: string; bullets: string[]; imageUrl: string; type: Slide['type'] }[] };
         
-        if (!deckData || !deckData.title || !Array.isArray(deckData.slides) || deckData.slides.length === 0) {
+        if (!deckData || !deckData.metadata?.deck_title || !Array.isArray(deckData.slides) || deckData.slides.length === 0) {
             throw new Error("AI returned invalid or empty deck structure.");
         }
         
         const newDeck: Omit<Deck, 'id'> = {
-            title: deckData.title,
-            template: template || 'default',
-            slides: deckData.slides.map(s => ({ ...s, id: `slide-${crypto.randomUUID()}` })),
+            title: deckData.metadata.deck_title,
+            template: payload.theme || 'default',
+            slides: deckData.slides.map(s => ({
+                id: `slide-${crypto.randomUUID()}`,
+                title: s.title,
+                content: s.bullets.join('\n'),
+                imageUrl: s.imageUrl,
+                type: s.type,
+            })),
         };
 
         return newDeck;
@@ -93,6 +144,7 @@ export const generateFullDeck = async ({ text, urls, fileContext, template }: { 
         throw new Error("The AI failed to generate the pitch deck. It might be due to a content safety policy or an issue with the provided context. Please try again with a different prompt.");
     }
 };
+
 
 // --- Re-adding other AI functions that were moved from the old geminiService.ts ---
 

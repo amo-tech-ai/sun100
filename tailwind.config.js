@@ -9,7 +9,6 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#F58A5C",
         "background-light": "#FFFBF8",
         "background-dark": "#121212",
         "card-light": "#FFFFFF",
@@ -24,11 +23,11 @@ module.exports = {
         'vibrant-green': '#34D399',
         'heading-text': '#111827',
         'body-text': '#374151',
-        // New Homepage Palette
+        // New Homepage Palette & App Palette
         'brand-blue': '#1E293B',
         'brand-orange': '#E87C4D',
         'brand-mustard': '#F3B93C',
-        'brand-off-white': '#F8FAFC',
+        'brand-off-white': '#FBF8F5', // Soft beige background
       },
       fontFamily: {
         display: ["Inter", "sans-serif"],
