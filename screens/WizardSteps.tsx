@@ -18,24 +18,67 @@ const stepsConfig = [
 ];
 
 const ProgressIndicator: React.FC<{ currentStep: number }> = ({ currentStep }) => (
-    <div className="w-full lg:w-auto lg:h-full flex lg:flex-col items-start lg:justify-center gap-4 lg:gap-8 p-4 lg:p-0">
-        {stepsConfig.map(step => {
-            const isActive = step.id === currentStep;
-            const isCompleted = step.id < currentStep;
-            return (
-                <div key={step.id} className="flex lg:flex-col items-center gap-3 relative">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${isActive ? 'bg-brand-orange text-white ring-4 ring-brand-orange/20' : isCompleted ? 'bg-brand-orange text-white' : 'bg-gray-200 text-gray-500'}`}>
-                        {isCompleted ? <CheckIcon className="w-4 h-4" /> : step.id}
-                    </div>
-                    <div className="text-left">
-                        <p className="text-xs text-gray-400 hidden lg:block">Step {step.id}</p>
-                        <p className={`font-semibold text-sm transition-colors ${isActive || isCompleted ? 'text-brand-blue' : 'text-gray-400'}`}>{step.title}</p>
-                    </div>
-                </div>
-            );
-        })}
+    <div className="p-4 lg:p-0">
+        {/* Desktop Stepper */}
+        <div className="hidden lg:block relative">
+            <div className="absolute left-4 top-4 -bottom-4 w-0.5 bg-gray-200" aria-hidden="true" />
+            <ul className="space-y-4">
+                {stepsConfig.map(step => {
+                    const isCompleted = step.id < currentStep;
+                    const isActive = step.id === currentStep;
+                    return (
+                        <li key={step.id} className="flex items-start gap-4">
+                            <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
+                                isCompleted ? 'bg-brand-orange text-white' : 
+                                isActive ? 'bg-brand-orange text-white ring-4 ring-brand-orange/20' : 
+                                'bg-white border-2 border-gray-300 text-gray-500'
+                            }`}>
+                                {isCompleted ? <CheckIcon className="w-4 h-4" /> : step.id}
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400">Step {step.id}</p>
+                                <p className={`font-semibold text-sm ${isActive || isCompleted ? 'text-brand-blue' : 'text-gray-500'}`}>{step.title}</p>
+                            </div>
+                        </li>
+                    );
+                })}
+            </ul>
+        </div>
+
+        {/* Mobile Stepper */}
+        <div className="lg:hidden">
+            <ol className="flex items-center">
+                {stepsConfig.map((step, index) => {
+                    const isCompleted = step.id < currentStep;
+                    const isActive = step.id === currentStep;
+                    return (
+                        <li key={step.id} className={`relative flex w-full items-center ${index === stepsConfig.length - 1 ? 'justify-end' : ''}`}>
+                            {/* Line */}
+                            {index > 0 && (
+                                <div className="absolute -left-1/2 top-1/2 h-0.5 w-full -translate-y-1/2" aria-hidden="true">
+                                    <div className={`h-full w-full ${isCompleted || isActive ? 'bg-brand-orange' : 'bg-gray-200'}`} />
+                                </div>
+                            )}
+
+                            <div className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full font-bold text-sm ${
+                                isCompleted ? 'bg-brand-orange text-white' : 
+                                isActive ? 'bg-brand-orange text-white ring-4 ring-brand-orange/20' : 
+                                'bg-gray-200 text-gray-500'
+                            }`} aria-current={isActive ? 'step' : undefined}>
+                                {isCompleted ? <CheckIcon className="w-4 h-4" /> : step.id}
+                            </div>
+                        </li>
+                    );
+                })}
+            </ol>
+            <div className="mt-4 text-center">
+                <p className="text-xs text-gray-500">Step {currentStep} of {stepsConfig.length}</p>
+                <p className="font-semibold text-brand-blue">{stepsConfig.find(s => s.id === currentStep)?.title}</p>
+            </div>
+        </div>
     </div>
 );
+
 
 const WizardSteps: React.FC = () => {
     const navigate = useNavigate();
