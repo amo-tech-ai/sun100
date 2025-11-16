@@ -117,13 +117,16 @@ With these files in place, you can now redeploy your application to Cloud Run. T
 
 For the application to function correctly, it needs to communicate with Google's Generative AI services. This communication is authenticated using an API key.
 
-### `API_KEY` (Required)
+### `API_KEY` (Required for AI Features)
 
--   **Purpose:** This variable holds your Google Generative Language API key. The application uses this key to make authenticated requests to the Gemini API for all AI-powered features, including deck generation and image creation.
+-   **Purpose:** This variable holds your Google Generative AI API key. The application uses this key for all client-side AI features, including the Pitch Deck Wizard and the Video Generator.
+-   **Security Note:** In a production application, API keys should never be exposed on the client side. This client-side key is for development and prototyping. The long-term plan is to move all AI calls to a secure backend.
 -   **Format:** It should be the string value of the API key provided by Google AI Studio.
--   **How to set:** When deploying to Google Cloud Run or any other hosting service, you must set this environment variable.
-    -   In Cloud Run, you can set this under the "Variables & Secrets" tab when creating or editing a revision.
+-   **How to set:**
+    -   This variable is expected to be available in the execution environment as `process.env.API_KEY`.
+    -   For local development, this can be managed via a `.env` file if your tooling supports it.
+    -   When deploying to a service like Google Cloud Run, set this as a build-time or run-time environment variable.
     -   **Variable Name:** `API_KEY`
     -   **Value:** `your_actual_api_key_here`
 
-The application code is already configured to read this key from `process.env.API_KEY`. Without this variable, all calls to the Gemini API will fail.
+The application code reads this key from `process.env.API_KEY`. If this variable is not present, AI features will gracefully fall back to using mock data where available, allowing the UI to remain functional for review purposes.

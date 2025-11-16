@@ -1,18 +1,22 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Deck, Slide } from '../data/decks';
+import { Deck, Slide, mockDeck } from '../data/decks';
 import { templates } from '../styles/templates';
 
 // In a real app, this would be a secure environment variable.
 // For this context, we assume process.env.API_KEY is available.
-let ai: GoogleGenAI;
+let ai: GoogleGenAI | null = null;
 try {
-    if (!process.env.API_KEY) {
-        throw new Error("API_KEY environment variable not found.");
+    const apiKey = process.env.API_KEY;
+    if (apiKey) {
+        ai = new GoogleGenAI({ apiKey });
+    } else {
+        // This is a warning, not an error. The app can continue with mock data.
+        console.warn("API_KEY environment variable not found. AI features will fall back to mock data where available.");
     }
-    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 } catch (e) {
-    console.error("Gemini API key not found or invalid. AI features will be disabled.", e);
+    console.error("Error initializing Gemini AI Service. AI features may not work as expected.", e);
 }
+
 
 const DECK_GENERATION_SCHEMA = {
   type: Type.OBJECT,
@@ -77,7 +81,11 @@ Adapt the content and tone to the selected visual theme.`;
 
 export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit<Deck, 'id'>> => {
     if (!ai) {
-        throw new Error("AI Service is not initialized. Please check your API key.");
+        console.warn("AI Service not initialized, returning mock deck for generation.");
+        const { id, ...mockDeckData } = mockDeck;
+        // Adjust the mock to match the payload theme
+        mockDeckData.template = payload.theme;
+        return Promise.resolve(mockDeckData);
     }
 
     let prompt = `
