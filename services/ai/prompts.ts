@@ -302,3 +302,82 @@ export const structureAgendaFunctionDeclaration: FunctionDeclaration = {
         required: ['schedule']
     }
 };
+
+export const generateFinancialsFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateFinancials',
+    description: 'Generates a structured financial projection table based on assumptions.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            headers: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+                description: 'Column headers for the table (e.g., ["Year 1", "Year 2"]).'
+            },
+            rows: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        label: { type: Type.STRING, description: 'Row label (e.g., "Revenue").' },
+                        values: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Values corresponding to headers.' }
+                    },
+                    required: ['label', 'values']
+                }
+            },
+            summary: { type: Type.STRING, description: 'A brief textual summary of the projections.' }
+        },
+        required: ['headers', 'rows', 'summary']
+    }
+};
+
+export const generateBudgetFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateBudget',
+    description: 'Allocates a total budget into line items based on event type and size.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            total: { type: Type.NUMBER },
+            perHead: { type: Type.NUMBER, description: 'Estimated cost per attendee.' },
+            items: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        category: { type: Type.STRING, description: 'e.g., "Catering", "Venue"' },
+                        amount: { type: Type.NUMBER },
+                        notes: { type: Type.STRING, description: 'Reasoning for this allocation.' }
+                    },
+                    required: ['category', 'amount', 'notes']
+                }
+            }
+        },
+        required: ['total', 'perHead', 'items']
+    }
+};
+
+export const generateEmailSequenceFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateEmailSequence',
+    description: 'Generates a 3-part email marketing sequence for an event.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            invitation: {
+                type: Type.OBJECT,
+                properties: { subject: { type: Type.STRING }, body: { type: Type.STRING } },
+                required: ['subject', 'body']
+            },
+            reminder: {
+                type: Type.OBJECT,
+                properties: { subject: { type: Type.STRING }, body: { type: Type.STRING } },
+                required: ['subject', 'body']
+            },
+            followUp: {
+                type: Type.OBJECT,
+                properties: { subject: { type: Type.STRING }, body: { type: Type.STRING } },
+                required: ['subject', 'body']
+            }
+        },
+        required: ['invitation', 'reminder', 'followUp']
+    }
+};

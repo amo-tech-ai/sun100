@@ -37,6 +37,8 @@ The application is fully runnable in a "Review Mode" thanks to robust mocking st
 | **Event Wizard AI** | Implement all 10 planned AI features for events. | 🟢 **Completed** | 100% | `services/ai/event.ts` contains `generateEventDescription`, `suggestVenues` (Maps), `structureAgenda`, etc. | — | None. |
 | **Dashboard & Visualization** | Interactive dashboards with charts. | 🟢 **Completed** | 100% | `Dashboard.tsx` and `MyEvents.tsx` render correctly with `AnimatedCounter` and chart components. | — | None. |
 | **Video Generation** | Integration with Veo model. | 🟢 **Completed** | 100% | `VideoGenerator.tsx` calls `veo-3.1` via `GoogleGenAI` client (client-side for now, requires user key). | — | Move Veo logic to Edge Function for security. |
+| **Image Generation (Imagen)** | Integration with Imagen 4.0. | 🟢 **Completed** | 100% | `services/ai/image.ts` calls `imagen-4.0-generate-001`. Logic verified. | — | None. |
+| **Image Editing (Nano Banana)** | Integration with Gemini 2.5 Flash Image. | 🟢 **Completed** | 100% | `services/ai/image.ts` calls `gemini-2.5-flash-image` with `Modality.IMAGE`. Logic verified. | — | None. |
 | **Backend Integration Strategy** | Secure API calls and DB persistence. | 🟡 **In Progress** | 90% | `edgeFunctionService.ts` abstracts calls. `supabaseClient.ts` mocks behavior seamlessly. | Actual Supabase backend is not deployed/connected. | Deploy Cloud SQL & Edge Functions. |
 
 ---

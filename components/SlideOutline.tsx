@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Slide, Deck } from '../data/decks';
 import { templates } from '../styles/templates';
-import { useDeckEditor } from '../screens/DeckEditor';
+import { useDeckEditor } from '../contexts/DeckEditorContext';
+import TemplateSelector from './TemplateSelector';
 
 const EditIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
@@ -129,33 +130,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
                         <ThemeIcon />
                         <span>Deck Theme</span>
                     </h3>
-                    <div className="grid grid-cols-2 gap-2">
-                        {Object.keys(templates).map(templateKey => {
-                            const template = templates[templateKey as keyof typeof templates];
-                            const isSelected = deck.template === templateKey;
-                            return (
-                                <button
-                                    key={templateKey}
-                                    onClick={() => handleTemplateChange(templateKey as keyof typeof templates)}
-                                    className={`relative aspect-[16/9] rounded-md border-2 p-1 overflow-hidden transition-all ${isSelected ? 'border-brand-orange shadow-md' : 'border-gray-200 hover:border-gray-400'}`}
-                                    aria-label={`Select ${templateKey} theme`}
-                                >
-                                    <div className={`w-full h-full text-[3px] leading-tight flex flex-col justify-center ${template.slide}`}>
-                                        <div className={`font-bold truncate ${template.title}`}>Title</div>
-                                        <div className={`p-0 ${template.content}`}>
-                                            <li className="list-none">Bullet point 1</li>
-                                            <li className="list-none">Bullet point 2</li>
-                                        </div>
-                                    </div>
-                                    {isSelected && (
-                                        <div className="absolute top-1 right-1 bg-brand-orange text-white rounded-full p-0.5">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                                        </div>
-                                    )}
-                                </button>
-                            )
-                        })}
-                    </div>
+                    <TemplateSelector selectedTemplate={deck.template} setSelectedTemplate={handleTemplateChange} />
                 </div>
                 <div className="flex flex-col space-y-2">
                     <button

@@ -7,11 +7,15 @@ import {
     suggestVenues,
     generateSocialMediaCopy,
     structureAgenda,
+    estimateBudget,
+    generateEmailSequence,
 } from '../services/ai/event';
 import {
     VenueSuggestion,
     SocialMediaCopy,
     AgendaItem,
+    BudgetEstimate,
+    EmailSequence,
 } from '../services/ai/types';
 
 const WandIcon = () => (
@@ -20,6 +24,9 @@ const WandIcon = () => (
 
 const ClipboardIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>;
 const CheckIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M20 6 9 17l-5-5"/></svg>;
+const CalculatorIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>;
+const MailIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>;
+
 
 const CopyButton: React.FC<{ textToCopy: string }> = ({ textToCopy }) => {
     const [copied, setCopied] = useState(false);
@@ -68,6 +75,19 @@ const EventWizard: React.FC = () => {
     const [structuredAgenda, setStructuredAgenda] = useState<AgendaItem[]>([]);
     const [isStructuringAgenda, setIsStructuringAgenda] = useState(false);
     const [agendaError, setAgendaError] = useState<string | null>(null);
+
+    // State for budget
+    const [totalBudget, setTotalBudget] = useState(1000);
+    const [attendeeCount, setAttendeeCount] = useState(50);
+    const [budgetEstimate, setBudgetEstimate] = useState<BudgetEstimate | null>(null);
+    const [isEstimatingBudget, setIsEstimatingBudget] = useState(false);
+    const [budgetError, setBudgetError] = useState<string | null>(null);
+
+    // State for emails
+    const [emailSequence, setEmailSequence] = useState<EmailSequence | null>(null);
+    const [isGeneratingEmails, setIsGeneratingEmails] = useState(false);
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const [activeEmailTab, setActiveEmailTab] = useState<'invitation' | 'reminder' | 'followUp'>('invitation');
 
 
     const totalSteps = 2;
@@ -149,6 +169,40 @@ const EventWizard: React.FC = () => {
             setIsStructuringAgenda(false);
         }
     };
+
+    const handleEstimateBudget = async () => {
+        setIsEstimatingBudget(true);
+        setBudgetError(null);
+        setBudgetEstimate(null);
+        try {
+            const result = await estimateBudget(totalBudget, attendeeCount, `${eventName} - ${description}`);
+            setBudgetEstimate(result);
+        } catch (err) {
+            setBudgetError(err instanceof Error ? err.message : "Failed to estimate budget.");
+        } finally {
+            setIsEstimatingBudget(false);
+        }
+    };
+
+    const handleGenerateEmails = async () => {
+        setIsGeneratingEmails(true);
+        setEmailError(null);
+        setEmailSequence(null);
+        try {
+            const result = await generateEmailSequence({
+                title: eventName,
+                description,
+                date: eventDate,
+                location
+            });
+            setEmailSequence(result);
+        } catch (err) {
+            setEmailError(err instanceof Error ? err.message : "Failed to generate emails.");
+        } finally {
+            setIsGeneratingEmails(false);
+        }
+    };
+
 
     const applyTitle = (title: string) => {
         setEventName(title);
@@ -342,6 +396,72 @@ const EventWizard: React.FC = () => {
                             </div>
                         )}
                     </div>
+
+                    {/* Budget Estimator Section */}
+                    <div className="border-t border-gray-200 pt-6">
+                        <div className="flex justify-between items-center mb-4">
+                             <h3 className="text-lg font-semibold text-brand-blue">Logistics & Budget</h3>
+                             <button
+                                type="button"
+                                onClick={handleEstimateBudget}
+                                disabled={isEstimatingBudget}
+                                className="flex items-center gap-2 text-sm font-semibold text-[#E87C4D] hover:text-opacity-80 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {isEstimatingBudget ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Calculating...
+                                    </>
+                                ) : (
+                                    <> <CalculatorIcon /> Estimate Costs </>
+                                )}
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Total Budget ($)</label>
+                                <input 
+                                    type="number" 
+                                    value={totalBudget} 
+                                    onChange={(e) => setTotalBudget(parseFloat(e.target.value))}
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#E87C4D] focus:border-[#E87C4D]" 
+                                />
+                            </div>
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700">Attendees</label>
+                                <input 
+                                    type="number" 
+                                    value={attendeeCount} 
+                                    onChange={(e) => setAttendeeCount(parseInt(e.target.value, 10))}
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#E87C4D] focus:border-[#E87C4D]" 
+                                />
+                            </div>
+                        </div>
+                        {budgetError && <p className="text-red-600 text-sm mt-1">{budgetError}</p>}
+                        {budgetEstimate && (
+                             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <div className="flex justify-between text-sm font-bold text-gray-700 mb-2 border-b pb-2">
+                                    <span>Category</span>
+                                    <span>Estimated Cost</span>
+                                </div>
+                                <ul className="space-y-2">
+                                    {budgetEstimate.items.map((item, i) => (
+                                        <li key={i} className="flex justify-between text-sm">
+                                            <span>{item.category} <span className="text-xs text-gray-500 block font-normal">{item.notes}</span></span>
+                                            <span className="font-medium">${item.amount.toLocaleString()}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="flex justify-between text-sm font-bold text-brand-blue mt-4 pt-2 border-t border-gray-300">
+                                    <span>Total Estimated</span>
+                                    <span>${budgetEstimate.total.toLocaleString()} <span className="text-xs font-normal text-gray-500">(${budgetEstimate.perHead}/head)</span></span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
             
@@ -354,51 +474,123 @@ const EventWizard: React.FC = () => {
                     
                     <div className="border-t border-gray-200 pt-6">
                         <h3 className="text-lg font-semibold text-brand-blue mb-4">Promote Your Event</h3>
-                        <p className="text-sm text-gray-500 mb-4">Generate promotional copy for social media to help spread the word about your event.</p>
+                        <p className="text-sm text-gray-500 mb-4">Generate promotional copy for social media and email campaigns to help spread the word.</p>
                         
-                        <button
-                            type="button"
-                            onClick={handleGenerateSocialCopy}
-                            disabled={isGeneratingSocial}
-                            className="w-full flex items-center justify-center gap-2 bg-brand-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors duration-200 disabled:bg-gray-400"
-                        >
-                            {isGeneratingSocial ? (
-                                <>
-                                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Generating Posts...
-                                </>
-                            ) : (
-                                <>
-                                    <WandIcon />
-                                    Generate Social Media Posts
-                                </>
+                        {/* Social Media Section */}
+                        <div className="mb-8">
+                            <button
+                                type="button"
+                                onClick={handleGenerateSocialCopy}
+                                disabled={isGeneratingSocial}
+                                className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:bg-gray-200 mb-4"
+                            >
+                                {isGeneratingSocial ? (
+                                    <>
+                                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Generating Posts...
+                                    </>
+                                ) : (
+                                    <>
+                                        <WandIcon />
+                                        Generate Social Media Posts
+                                    </>
+                                )}
+                            </button>
+                            {socialError && <p className="text-red-600 text-sm mt-2">{socialError}</p>}
+                            
+                            {socialCopy && (
+                                <div className="space-y-4">
+                                    {Object.entries(socialCopy).map(([platform, text]) => (
+                                        <div key={platform}>
+                                            <label className="block text-sm font-semibold text-gray-700 capitalize mb-1">{platform}</label>
+                                            <div className="relative">
+                                                <textarea
+                                                    readOnly
+                                                    value={text}
+                                                    rows={platform === 'linkedin' ? 4 : 3}
+                                                    className="w-full p-2 pr-10 border border-gray-300 rounded-md bg-gray-50 focus:ring-2 focus:ring-brand-orange focus:border-transparent transition text-sm"
+                                                />
+                                                <div className="absolute top-2 right-2">
+                                                    <CopyButton textToCopy={text} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
-                        </button>
-                        {socialError && <p className="text-red-600 text-sm mt-2">{socialError}</p>}
-                        
-                        {socialCopy && (
-                            <div className="mt-4 space-y-4">
-                                {Object.entries(socialCopy).map(([platform, text]) => (
-                                    <div key={platform}>
-                                        <label className="block text-sm font-semibold text-gray-700 capitalize mb-1">{platform}</label>
-                                        <div className="relative">
-                                            <textarea
-                                                readOnly
-                                                value={text}
-                                                rows={platform === 'linkedin' ? 6 : 4}
-                                                className="w-full p-2 pr-10 border border-gray-300 rounded-md bg-gray-50 focus:ring-2 focus:ring-brand-orange focus:border-transparent transition"
-                                            />
-                                            <div className="absolute top-2 right-2">
-                                                <CopyButton textToCopy={text} />
+                        </div>
+
+                        {/* Email Campaign Section */}
+                        <div>
+                            <button
+                                type="button"
+                                onClick={handleGenerateEmails}
+                                disabled={isGeneratingEmails}
+                                className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors duration-200 disabled:bg-gray-200 mb-4"
+                            >
+                                {isGeneratingEmails ? (
+                                    <>
+                                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Generating Emails...
+                                    </>
+                                ) : (
+                                    <>
+                                        <MailIcon />
+                                        Generate Email Sequence
+                                    </>
+                                )}
+                            </button>
+                            {emailError && <p className="text-red-600 text-sm mt-2">{emailError}</p>}
+
+                            {emailSequence && (
+                                <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                                    <div className="flex border-b border-gray-200">
+                                        {(['invitation', 'reminder', 'followUp'] as const).map((tab) => (
+                                            <button
+                                                key={tab}
+                                                onClick={() => setActiveEmailTab(tab)}
+                                                className={`flex-1 py-2 text-sm font-medium capitalize ${activeEmailTab === tab ? 'bg-white text-brand-orange border-b-2 border-brand-orange' : 'text-gray-500 hover:bg-gray-100'}`}
+                                            >
+                                                {tab.replace(/([A-Z])/g, ' $1')}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="p-4">
+                                        <div className="mb-3">
+                                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Subject Line</label>
+                                            <div className="flex items-center gap-2">
+                                                <input 
+                                                    readOnly 
+                                                    value={emailSequence[activeEmailTab].subject} 
+                                                    className="flex-grow p-2 border border-gray-300 rounded-md bg-white text-sm"
+                                                />
+                                                <CopyButton textToCopy={emailSequence[activeEmailTab].subject} />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Body</label>
+                                            <div className="relative">
+                                                 <textarea 
+                                                    readOnly 
+                                                    value={emailSequence[activeEmailTab].body} 
+                                                    rows={6}
+                                                    className="w-full p-2 pr-10 border border-gray-300 rounded-md bg-white text-sm"
+                                                />
+                                                <div className="absolute top-2 right-2">
+                                                    <CopyButton textToCopy={emailSequence[activeEmailTab].body} />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
