@@ -1,10 +1,9 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { templates } from '../../styles/templates';
 import { Slide, ChartData, TableData } from '../../data/decks';
 import { SlideAnalysis, ExtractedMetric, BioSummary, FinancialData } from './types';
 import { invokeEdgeFunction } from '../edgeFunctionService';
-import { analyzeSlideContentFunctionDeclaration } from './prompts';
+import { analyzeSlideContentFunctionDeclaration, generateSWOTAnalysisFunctionDeclaration } from './prompts';
 
 export const modifySlideContent = async (slideTitle: string, slideContent: string, instruction: string): Promise<{ newTitle: string; newContent: string }> => {
     // For simple rewrites, we use 'low' thinking to prioritize speed/latency.
@@ -147,4 +146,47 @@ export const generateFinancialProjections = async (assumptions: string): Promise
             tools: ['code_execution'] // Backend should map this string to actual tool config
         }
     });
+};
+
+export const generateCompetitorSWOT = async (slideContent: string): Promise<{ tableData: TableData | null }> => {
+    // Using Google Search + URL Context + Structured Output for SWOT
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `
+    Analyze the slide content to identify the user's company and potential competitors.
+    Perform a Google Search to find detailed information about these competitors.
+    Then, generate a SWOT analysis table for these competitors comparing them to the user's company.
+    Call 'generateSWOTAnalysis' with the result.
+
+    Slide Content: "${slideContent}"
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-3-pro-preview",
+            contents: prompt,
+            config: {
+                tools: [
+                    { googleSearch: {} },
+                    { functionDeclarations: [generateSWOTAnalysisFunctionDeclaration] }
+                ],
+                thinkingConfig: { thinkingBudget: 2048 } // High reasoning for strategic analysis
+            },
+        });
+
+        const call = response.functionCalls?.[0];
+        if (call && call.name === 'generateSWOTAnalysis' && call.args) {
+            const args = call.args as any;
+            return {
+                tableData: {
+                    type: 'comparison',
+                    headers: args.headers,
+                    rows: args.rows
+                }
+            };
+        }
+        return { tableData: null };
+    } catch (error) {
+        console.error("Error generating SWOT:", error);
+        throw new Error("Failed to generate SWOT analysis.");
+    }
 };

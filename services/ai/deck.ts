@@ -2,6 +2,7 @@
 import { Deck, Slide } from '../../data/decks';
 import { templates } from '../../styles/templates';
 import { invokeEdgeFunction } from '../edgeFunctionService';
+import { DeckUpdateSuggestion } from './types';
 
 const uuidv4 = () => {
     // A simple UUID generator for client-side keying
@@ -11,12 +12,32 @@ const uuidv4 = () => {
     });
 };
 
+export interface FinancialSettings {
+    industry: string;
+    revenueModel: string;
+    currentRevenue: string;
+    pricePoint: string;
+    customerGrowthRate: string;
+    costStructure: {
+        burnRate: string;
+        marketingBudget: string;
+    };
+    timeHorizon: string;
+    currency: string;
+}
+
 interface GenerationPayload {
   businessContext: string;
   urls: string[];
   deckType: string;
   theme: keyof typeof templates;
-  companyDetails: {
+  config?: {
+    model: string;
+    thinking_level: 'high' | 'low';
+  };
+  financials?: FinancialSettings;
+  // Legacy props to satisfy type checker if needed
+  companyDetails?: {
     name: string;
     industry: string;
     customerType: string;
@@ -28,14 +49,16 @@ interface GenerationPayload {
 
 export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit<Deck, 'id'>> => {
     // This calls the secure backend function.
-    // We pass 'thinking_level: "high"' to instruct the backend to use Gemini 3's deep reasoning
-    // to analyze the business context and structure a coherent narrative.
+    // We use the config from the payload (user preference) or default to High reasoning.
+    const config = {
+        model: 'gemini-3-pro-preview',
+        thinking_level: 'high', // Default to high if not specified
+        ...payload.config
+    };
+
     const deckData = await invokeEdgeFunction<{ title: string; slides: Omit<Slide, 'id'>[] }>('generate-deck', { 
         ...payload,
-        config: {
-            model: 'gemini-3-pro-preview',
-            thinking_level: 'high'
-        }
+        config
     });
     
     // Add client-side IDs before returning to the UI for React keys
@@ -62,4 +85,18 @@ export const generateRoadmapSlide = async (companyContext: string): Promise<{ sl
             id: `slide-${uuidv4()}`
         }
     };
+};
+
+export const checkForWebsiteUpdates = async (deck: Deck, url: string): Promise<DeckUpdateSuggestion[]> => {
+    // This function calls the backend to crawl the URL and compare it with the deck content.
+    const response = await invokeEdgeFunction<{ suggestions: DeckUpdateSuggestion[] }>('sync-deck-with-website', {
+        deck,
+        url,
+        config: {
+            model: 'gemini-3-pro-preview',
+            thinking_level: 'high', // High reasoning to detect nuanced changes vs semantic similarity
+            tools: ['urlContext'] // Enable URL reading capability
+        }
+    });
+    return response.suggestions;
 };
