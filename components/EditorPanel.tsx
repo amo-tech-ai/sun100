@@ -29,6 +29,9 @@ const EditorPanel: React.FC = () => {
         tableError,
         handlePrevSlide,
         handleNextSlide,
+        handleGenerateSWOT,
+        isGeneratingSWOT,
+        swotError
      } = useDeckEditor();
 
     if (!deck || !selectedSlide) {
@@ -111,6 +114,15 @@ const EditorPanel: React.FC = () => {
                 <button onClick={handleNextSlide} disabled={selectedSlideIndex === totalSlides - 1} className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-100 disabled:opacity-50 transition-colors" aria-label="Next slide"><ChevronRightIcon /></button>
                 
                  <div className="ml-auto hidden md:flex items-center gap-2">
+                    {selectedSlide.type === 'competition' && (
+                         <div className="relative">
+                            <button onClick={handleGenerateSWOT} disabled={isGeneratingSWOT || !!selectedSlide.tableData} className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:bg-gray-200" title="Generate SWOT Table">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="9" x2="9" y1="21" y2="9"/></svg>
+                                <span>SWOT Table</span>
+                            </button>
+                            {swotError && <p className="absolute top-full mt-1 text-xs text-red-600">{swotError}</p>}
+                        </div>
+                    )}
                      <div className="relative">
                         <button onClick={handleGenerateTable} disabled={isGeneratingTable || !!selectedSlide.chartData || !!selectedSlide.tableData} className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:bg-gray-200" title="Format as Pricing Table">
                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>

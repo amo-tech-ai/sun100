@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, createContext, useContext } fr
 import { useParams, useNavigate } from 'react-router-dom';
 import { Deck, Slide } from '../data/decks';
 import { getDeckById, updateDeck, updateSlide } from '../services/deckService';
-import { generateRoadmapSlide } from '../services/ai/deck';
+import { generateRoadmapSlide, checkForWebsiteUpdates } from '../services/ai/deck';
 import { generateSlideImage, editSlideImage } from '../services/ai/image';
 import { researchTopic } from '../services/ai/research';
 import {
@@ -17,11 +17,13 @@ import {
     summarizeBio,
     suggestPieChart,
     generateFinancialProjections,
+    generateCompetitorSWOT,
 } from '../services/ai/slide';
 import {
     ExtractedMetric,
     SlideAnalysis,
     ResearchResult,
+    DeckUpdateSuggestion
 } from '../services/ai/types';
 import { templates } from '../styles/templates';
 
@@ -60,6 +62,11 @@ interface DeckEditorContextType {
     isGeneratingFinancials: boolean;
     financialError: string | null;
     loading: boolean;
+    isSyncing: boolean;
+    syncSuggestions: DeckUpdateSuggestion[];
+    syncError: string | null;
+    isGeneratingSWOT: boolean;
+    swotError: string | null;
     handleSlideSelect: (slide: Slide) => void;
     handleTitleSave: (newTitle: string) => void;
     handleGenerateRoadmapSlide: () => void;
@@ -83,6 +90,9 @@ interface DeckEditorContextType {
     handlePrevSlide: () => void;
     handleNextSlide: () => void;
     handleTemplateChange: (newTemplate: keyof typeof templates) => void;
+    handleCheckForUpdates: (url: string) => void;
+    handleApplyUpdate: (suggestion: DeckUpdateSuggestion) => void;
+    handleGenerateSWOT: () => void;
 }
 
 const DeckEditorContext = createContext<DeckEditorContextType>(null!);
@@ -135,6 +145,12 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [isPublishing, setIsPublishing] = useState(false);
     const [publishProgressMessage, setPublishProgressMessage] = useState('');
     const [publishError, setPublishError] = useState<string | null>(null);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [syncSuggestions, setSyncSuggestions] = useState<DeckUpdateSuggestion[]>([]);
+    const [syncError, setSyncError] = useState<string | null>(null);
+    const [isGeneratingSWOT, setIsGeneratingSWOT] = useState(false);
+    const [swotError, setSwotError] = useState<string | null>(null);
+
 
     useEffect(() => {
         if (!id) return;
@@ -214,6 +230,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setHeadlineIdeas([]);
         setExtractedMetrics([]);
         setFinancialError(null);
+        setSwotError(null);
     }, []);
 
     const updateSlideStateAndPersist = useCallback(async (slideId: string, updates: Partial<Slide>) => {
@@ -512,18 +529,6 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 }))
             };
             
-            // We need to handle the headers separately or adapt the Table component. 
-            // For this implementation, we will map it to a structure the existing Table component can *mostly* handle, 
-            // or ideally we would update Table.tsx.
-            // Let's update tableData in the db to match the TableData type but effectively store the financial info.
-            // Since TableData is strict, let's create a new 'financials' type for tableData if we were refactoring cleanly.
-            // Given constraints, let's stick to updating the slide with a new property or adapting.
-            // Let's assume we updated TableData to be more generic or added a new type.
-            // For now, let's map it to a generic table structure if TableData supported it.
-            // Let's simplify: We will store it as `tableData` but with a 'financials' type we add to the type definition.
-            
-            // NOTE: In a real refactor we would update TableData type. 
-            // Here we will cast it for the sake of the example and assume Table.tsx updates to handle generic tables.
             const updates = { 
                 content: financialData.summary, 
                 tableData: { 
@@ -550,6 +555,72 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (!selectedSlide) return;
         handleResearch(`quotes or testimonials about the problem of ${selectedSlide.title}`);
     }, [selectedSlide, handleResearch]);
+
+    const handleCheckForUpdates = useCallback(async (url: string) => {
+        if (!deck || !url.trim()) return;
+        setIsSyncing(true);
+        setSyncError(null);
+        setSyncSuggestions([]);
+        try {
+            const suggestions = await checkForWebsiteUpdates(deck, url);
+            setSyncSuggestions(suggestions);
+        } catch (err) {
+            setSyncError(err instanceof Error ? err.message : "Failed to check for updates.");
+        } finally {
+            setIsSyncing(false);
+        }
+    }, [deck]);
+
+    const handleApplyUpdate = useCallback(async (suggestion: DeckUpdateSuggestion) => {
+        if (!deck) return;
+        
+        // Find the slide to update based on the suggestion's title reference
+        // This is a fuzzy match, ideally we'd have slide IDs
+        const targetSlide = deck.slides.find(s => s.title === suggestion.slideTitle || s.content.includes(suggestion.currentValue));
+        
+        if (!targetSlide) {
+            alert("Could not find the matching slide to update automatically. Please review manually.");
+            return;
+        }
+
+        // Use AI to apply the specific update instruction
+        // We pass the context to modifySlideContent
+        setIsCopilotLoading(true); // Reuse copilot loading state
+        try {
+            const instruction = `Update this slide based on new website data. Change "${suggestion.currentValue}" to "${suggestion.newValue}". Context: ${suggestion.reason}`;
+            const { newContent } = await modifySlideContent(targetSlide.title, targetSlide.content, instruction);
+            await updateSlideStateAndPersist(targetSlide.id, { content: newContent });
+            
+            // Remove the applied suggestion from the list
+            setSyncSuggestions(prev => prev.filter(s => s !== suggestion));
+
+        } catch (err) {
+            console.error("Failed to apply update:", err);
+            alert("Failed to apply update automatically.");
+        } finally {
+            setIsCopilotLoading(false);
+        }
+    }, [deck, updateSlideStateAndPersist]);
+
+    const handleGenerateSWOT = useCallback(async () => {
+        if (!selectedSlide) return;
+        setIsGeneratingSWOT(true);
+        setSwotError(null);
+        try {
+            const { tableData } = await generateCompetitorSWOT(selectedSlide.content);
+            if (tableData) {
+                const updates = { content: '', tableData, chartData: undefined };
+                await updateSlideStateAndPersist(selectedSlide.id, updates);
+            } else {
+                setSwotError("AI could not generate SWOT analysis.");
+            }
+        } catch (err) {
+            setSwotError(err instanceof Error ? err.message : "An unknown error occurred.");
+        } finally {
+            setIsGeneratingSWOT(false);
+        }
+    }, [selectedSlide, updateSlideStateAndPersist]);
+
 
     const handlePublishDeck = useCallback(async () => {
         if (!deck) return;
@@ -611,12 +682,16 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         headlineError, extractedMetrics, isExtractingMetrics, metricError, isGeneratingTable, tableError,
         isSuggestingPieChart, pieChartError, copilotSuggestions, imageSuggestions, researchSuggestions,
         areSuggestionsLoading, isPublishing, publishProgressMessage, loading, isGeneratingFinancials, financialError,
+        isSyncing, syncSuggestions, syncError,
+        isGeneratingSWOT, swotError,
         handleSlideSelect, handleTitleSave, 
         handleGenerateRoadmapSlide, handleGenerateImage, handleEditImage, handleCopilotGenerate, 
         handleAnalyzeSlide, handleResearch, handleSuggestLayout, handleSuggestChart, handleGenerateHeadlines, 
         handleExtractMetrics, handleMarketResearch, handleGenerateTable, handleCompetitorResearch, 
         handleSummarizeBio, handleSuggestPieChart, handleSocialProofSearch, handleGenerateFinancials, handlePublishDeck, 
-        handlePrevSlide, handleNextSlide, handleTemplateChange
+        handlePrevSlide, handleNextSlide, handleTemplateChange,
+        handleCheckForUpdates, handleApplyUpdate,
+        handleGenerateSWOT
     };
 
     return (

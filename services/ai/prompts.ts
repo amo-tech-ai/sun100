@@ -381,3 +381,51 @@ export const generateEmailSequenceFunctionDeclaration: FunctionDeclaration = {
         required: ['invitation', 'reminder', 'followUp']
     }
 };
+
+export const generateDeckUpdateSuggestionsFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateDeckUpdateSuggestions',
+    description: 'Analyzes a website URL and compares it with the current deck content to suggest updates.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            suggestions: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        slideTitle: { type: Type.STRING, description: "The title of the slide to update." },
+                        currentValue: { type: Type.STRING, description: "The text currently in the deck that appears outdated." },
+                        newValue: { type: Type.STRING, description: "The updated information found on the website." },
+                        reason: { type: Type.STRING, description: "Why this update is recommended (e.g., 'New pricing detected')." }
+                    },
+                    required: ['slideTitle', 'currentValue', 'newValue', 'reason']
+                }
+            }
+        },
+        required: ['suggestions']
+    }
+};
+
+export const generateSWOTAnalysisFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateSWOTAnalysis',
+    description: 'Generates a SWOT analysis table for competitors.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            headers: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+                description: 'Column headers, e.g., ["Competitor", "Strengths", "Weaknesses", "Opportunities", "Threats"]'
+            },
+            rows: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                    description: 'Row data corresponding to headers.'
+                }
+            }
+        },
+        required: ['headers', 'rows']
+    }
+};

@@ -74,3 +74,10 @@ export interface EmailSequence {
     reminder: EmailDraft;
     followUp: EmailDraft;
 }
+
+export interface DeckUpdateSuggestion {
+    slideTitle: string;
+    currentValue: string;
+    newValue: string;
+    reason: string;
+}

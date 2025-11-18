@@ -6,12 +6,16 @@ export type ChartData =
   | { type: 'pie'; data: { label: string; value: number }[] };
 
 export interface TableData {
-  type: 'pricing';
-  tiers: {
+  type: 'pricing' | 'comparison';
+  // Pricing specific
+  tiers?: {
     name: string;
     price: string;
     features: string[];
   }[];
+  // Comparison specific (SWOT)
+  headers?: string[];
+  rows?: string[][];
 }
 
 export interface Slide {
@@ -21,7 +25,7 @@ export interface Slide {
   imageUrl?: string; // Can be a URL or an AI prompt
   template?: keyof typeof templates;
   chartData?: ChartData;
-  tableData?: TableData; // New property for pricing tables
+  tableData?: TableData; // New property for pricing tables and SWOT
   type?: 'vision' | 'problem' | 'solution' | 'market' | 'product' | 'traction' | 'competition' | 'team' | 'ask' | 'roadmap' | 'generic'; // New property for robust context
 }
 
