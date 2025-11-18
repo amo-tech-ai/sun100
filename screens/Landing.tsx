@@ -32,7 +32,7 @@ const Landing: React.FC = () => {
     const [painRef, isPainVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.2 });
 
     return (
-    <div>
+    <div className="space-y-12">
         <style>{`
             @keyframes fade-in-up {
                 from { opacity: 0; transform: translateY(20px); }
@@ -47,9 +47,9 @@ const Landing: React.FC = () => {
         `}</style>
         
         {/* Section 1: Hero */}
-        <section className="bg-brand-blue text-white relative overflow-hidden rounded-lg py-20 md:py-32">
+        <section className="bg-brand-blue text-white relative overflow-hidden rounded-lg py-20 md:py-32 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
             <div className="absolute inset-0 bg-grid opacity-50"></div>
-            <div className="relative z-10 px-4 sm:px-6 lg:px-8">
+            <div className="relative z-10 max-w-7xl mx-auto">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
                     <div className="text-center lg:text-left animate-fade-in-up">
                         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
@@ -72,7 +72,7 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 2: Social Proof */}
-        <section className="bg-white rounded-lg py-16 px-4 sm:px-6 lg:px-8">
+        <section>
             <div>
                 <p className="text-center text-sm font-semibold text-gray-500 tracking-wider">TRUSTED BY FOUNDERS AND INNOVATORS FROM:</p>
                 <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 items-center">
@@ -87,7 +87,7 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 3: Pain & Promise */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <section>
             <div>
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
                     <div ref={painRef} className="space-y-8">
@@ -108,8 +108,8 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 4: Core Features */}
-        <section className="bg-white rounded-lg py-16 px-4 sm:px-6 lg:px-8">
-            <div>
+        <section className="bg-white rounded-lg py-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-blue">Your Intelligent Co-Pilot for Fundraising</h2>
                     <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Go from zero to a complete, professional pitch deck with a suite of powerful AI tools at your fingertips.</p>
@@ -130,7 +130,7 @@ const Landing: React.FC = () => {
                     <FeatureHighlightCard 
                         title="Visual Agent" 
                         description="Create stunning, on-brand visuals with a click. Generate images from text, edit them with simple commands, and visualize your data."
-                        icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>}
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>}
                         delay={400}
                     />
                 </div>
@@ -138,8 +138,8 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 5: Data Storytelling */}
-        <section className="bg-brand-blue text-white rounded-lg py-16 px-4 sm:px-6 lg:px-8">
-            <div>
+        <section className="bg-brand-blue text-white rounded-lg py-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="text-center">
                         <p className="text-5xl md:text-6xl font-extrabold text-brand-mustard"><AnimatedCounter value={75} suffix="%" /></p>
@@ -158,7 +158,7 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 6: Testimonials */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <section>
             <div>
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-blue">Built for Founders, by Founders</h2>
@@ -181,7 +181,7 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 7: Final CTA */}
-        <section className="pb-16 px-4 sm:px-6 lg:px-8">
+        <section>
             <div className="max-w-3xl mx-auto text-center">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-brand-blue">Ready to Build Your Masterpiece?</h2>
                 <p className="mt-4 text-lg text-gray-600">Join hundreds of VCs, accelerating angels and AI startups</p>
