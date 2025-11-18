@@ -1,3 +1,4 @@
+
 import { Deck, Slide } from '../../data/decks';
 import { templates } from '../../styles/templates';
 import { invokeEdgeFunction } from '../edgeFunctionService';
@@ -26,8 +27,16 @@ interface GenerationPayload {
 }
 
 export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit<Deck, 'id'>> => {
-    // This now calls a secure backend function instead of the Gemini API directly.
-    const deckData = await invokeEdgeFunction<{ title: string; slides: Omit<Slide, 'id'>[] }>('generate-deck', { ...payload });
+    // This calls the secure backend function.
+    // We pass 'thinking_level: "high"' to instruct the backend to use Gemini 3's deep reasoning
+    // to analyze the business context and structure a coherent narrative.
+    const deckData = await invokeEdgeFunction<{ title: string; slides: Omit<Slide, 'id'>[] }>('generate-deck', { 
+        ...payload,
+        config: {
+            model: 'gemini-3-pro-preview',
+            thinking_level: 'high'
+        }
+    });
     
     // Add client-side IDs before returning to the UI for React keys
     const newDeck: Omit<Deck, 'id'> = {
@@ -39,8 +48,14 @@ export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit
 };
 
 export const generateRoadmapSlide = async (companyContext: string): Promise<{ slide: Slide }> => {
-    // This now calls a secure backend function.
-    const result = await invokeEdgeFunction<{ slide: Omit<Slide, 'id'> }>('generate-roadmap-slide', { companyContext });
+    // For roadmap generation, we also want high reasoning to infer strategic milestones.
+    const result = await invokeEdgeFunction<{ slide: Omit<Slide, 'id'> }>('generate-roadmap-slide', { 
+        companyContext,
+        config: {
+            model: 'gemini-3-pro-preview',
+            thinking_level: 'high'
+        }
+    });
     return {
         slide: {
             ...result.slide,
