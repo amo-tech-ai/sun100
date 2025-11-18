@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { mockDeck } from '../data/decks';
 
 /**
  * A generic helper function to invoke a Supabase Edge Function.
@@ -15,10 +16,16 @@ export const invokeEdgeFunction = async <T>(
   functionName: string,
   payload?: Record<string, unknown>
 ): Promise<T> => {
-  // Ensure Supabase client is available, especially in mock mode.
-  if (!supabase || !(supabase as any).realtime) {
-     console.warn(`Supabase not configured. Cannot invoke Edge Function "${functionName}".`);
-     throw new Error("Cannot connect to the backend service because Supabase is not configured.");
+  // Check if we are in mock mode by checking for a mock-specific property
+  if (!(supabase as any).realtime) {
+     console.warn(`Supabase not configured. Mocking Edge Function "${functionName}".`);
+     // Return mock data for the deck generation flow to allow UI testing
+     if (functionName === 'generate-deck') {
+        const { id, ...deckData } = mockDeck;
+        return Promise.resolve(deckData as T);
+     }
+     // Provide a generic empty object for other functions
+     return Promise.resolve({} as T);
   }
 
   const { data, error } = await supabase.functions.invoke(functionName, {
@@ -28,7 +35,7 @@ export const invokeEdgeFunction = async <T>(
   if (error) {
     console.error(`Error invoking Edge Function "${functionName}":`, error);
     // Create a more generic, user-facing error to avoid exposing implementation details.
-    throw new Error(`An error occurred while processing your request. Please try again.`);
+    throw new Error(`An error occurred while processing your request via ${functionName}. Please try again.`);
   }
 
   return data as T;
