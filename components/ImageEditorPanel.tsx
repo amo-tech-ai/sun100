@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDeckEditor } from '../screens/DeckEditor';
+import { useDeckEditor } from '../contexts/DeckEditorContext';
 
 const ImageEditorPanel: React.FC = () => {
     const { 

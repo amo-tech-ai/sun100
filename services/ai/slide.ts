@@ -1,8 +1,10 @@
 
+import { GoogleGenAI } from "@google/genai";
 import { templates } from '../../styles/templates';
 import { Slide, ChartData, TableData } from '../../data/decks';
-import { SlideAnalysis, ExtractedMetric, BioSummary } from './types';
+import { SlideAnalysis, ExtractedMetric, BioSummary, FinancialData } from './types';
 import { invokeEdgeFunction } from '../edgeFunctionService';
+import { analyzeSlideContentFunctionDeclaration } from './prompts';
 
 export const modifySlideContent = async (slideTitle: string, slideContent: string, instruction: string): Promise<{ newTitle: string; newContent: string }> => {
     // For simple rewrites, we use 'low' thinking to prioritize speed/latency.
@@ -18,15 +20,33 @@ export const modifySlideContent = async (slideTitle: string, slideContent: strin
 };
 
 export const analyzeSlide = async (slideTitle: string, slideContent: string): Promise<SlideAnalysis> => {
-    // For analysis/feedback, we want the model to think deeply about the implications of the content.
-    return invokeEdgeFunction('analyze-slide', { 
-        slideTitle, 
-        slideContent,
-        config: {
+    // Direct client-side call for immediate feedback
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `Analyze the following presentation slide content for Clarity, Impact, and Tone. Provide a rating (Good, Average, Needs Improvement) and specific, actionable feedback for each category.
+
+    Slide Title: "${slideTitle}"
+    Slide Content:
+    "${slideContent}"`;
+
+    try {
+        const response = await ai.models.generateContent({
             model: 'gemini-3-pro-preview',
-            thinking_level: 'high'
+            contents: prompt,
+            config: {
+                tools: [{ functionDeclarations: [analyzeSlideContentFunctionDeclaration] }],
+                thinkingConfig: { thinkingBudget: 2048 } // Use thinking for deeper analysis
+            }
+        });
+
+        const call = response.functionCalls?.[0];
+        if (call && call.name === 'analyzeSlideContent') {
+            return call.args as unknown as SlideAnalysis;
         }
-    });
+        throw new Error("The AI did not return a valid analysis.");
+    } catch (error) {
+        console.error("Error analyzing slide:", error);
+        throw new Error("Failed to analyze slide content.");
+    }
 };
 
 export const suggestLayout = async (slideTitle: string, slideContent: string): Promise<{ layout: keyof typeof templates }> => {
@@ -112,6 +132,19 @@ export const summarizeBio = async (bio: string): Promise<BioSummary> => {
         config: {
             model: 'gemini-3-pro-preview',
             thinking_level: 'high' // Synthesis requires reasoning
+        }
+    });
+};
+
+export const generateFinancialProjections = async (assumptions: string): Promise<FinancialData> => {
+    // Financial projections benefit immensely from Code Execution for calculation accuracy
+    // and High Thinking for strategic assumption modeling.
+    return invokeEdgeFunction('generate-financial-projections', { 
+        assumptions,
+        config: {
+            model: 'gemini-3-pro-preview',
+            thinking_level: 'high',
+            tools: ['code_execution'] // Backend should map this string to actual tool config
         }
     });
 };

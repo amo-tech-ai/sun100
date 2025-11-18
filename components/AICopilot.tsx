@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDeckEditor } from '../screens/DeckEditor';
+import { useDeckEditor } from '../contexts/DeckEditorContext';
 
 const AICopilot: React.FC = () => {
     const { 
@@ -12,10 +12,14 @@ const AICopilot: React.FC = () => {
         headlineError,
         headlineIdeas,
         selectedSlide,
-        handleSummarizeBio
+        handleSummarizeBio,
+        handleGenerateFinancials,
+        isGeneratingFinancials,
+        financialError
     } = useDeckEditor();
 
     const [prompt, setPrompt] = useState('');
+    const [financialAssumptions, setFinancialAssumptions] = useState('');
 
     const handleGenerateClick = () => {
         if (prompt.trim()) {
@@ -31,6 +35,12 @@ const AICopilot: React.FC = () => {
     const onApplyHeadline = (idea: string) => {
         handleCopilotGenerate(`Set the title to "${idea}"`, idea);
     }
+
+    const onGenerateFinancials = () => {
+        if (financialAssumptions.trim()) {
+            handleGenerateFinancials(financialAssumptions);
+        }
+    };
 
     return (
         <div className="p-4">
@@ -116,6 +126,27 @@ const AICopilot: React.FC = () => {
                         </button>
                     </div>
                 )}
+
+                <div className="border-t border-gray-200 mt-4 pt-3">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Financial Studio</h4>
+                    <p className="text-sm text-gray-500 mb-2">Enter growth assumptions (e.g. "Start at $10k, grow 10% MoM").</p>
+                    <textarea
+                        value={financialAssumptions}
+                        onChange={(e) => setFinancialAssumptions(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#E87C4D] focus:border-transparent transition disabled:bg-gray-200 mb-2"
+                        rows={2}
+                        placeholder="Enter assumptions..."
+                        disabled={isGeneratingFinancials}
+                    />
+                    <button 
+                        onClick={onGenerateFinancials} 
+                        disabled={isGeneratingFinancials || !financialAssumptions.trim()} 
+                        className="w-full text-center bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 disabled:bg-gray-200 disabled:cursor-not-allowed"
+                    >
+                        {isGeneratingFinancials ? 'Calculating...' : 'Generate Projections'}
+                    </button>
+                    {financialError && <p className="text-red-600 text-sm mt-2">{financialError}</p>}
+                </div>
             </div>
         </div>
     );

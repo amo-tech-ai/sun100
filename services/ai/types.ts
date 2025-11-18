@@ -45,3 +45,32 @@ export interface AgendaItem {
 export interface StructuredAgenda {
     schedule: AgendaItem[];
 }
+
+export interface FinancialData {
+    headers: string[];
+    rows: { label: string; values: string[] }[];
+    summary: string;
+}
+
+export interface BudgetLineItem {
+    category: string;
+    amount: number;
+    notes: string;
+}
+
+export interface BudgetEstimate {
+    total: number;
+    perHead: number;
+    items: BudgetLineItem[];
+}
+
+export interface EmailDraft {
+    subject: string;
+    body: string;
+}
+
+export interface EmailSequence {
+    invitation: EmailDraft;
+    reminder: EmailDraft;
+    followUp: EmailDraft;
+}

@@ -1,5 +1,5 @@
 
-import { VenueSuggestion, SocialMediaCopy, StructuredAgenda } from './types';
+import { VenueSuggestion, SocialMediaCopy, StructuredAgenda, BudgetEstimate, EmailSequence } from './types';
 import { invokeEdgeFunction } from '../edgeFunctionService';
 
 export const generateEventDescription = async (details: { title: string; date: string; location: string }): Promise<{ description: string }> => {
@@ -50,6 +50,29 @@ export const structureAgenda = async (rawAgenda: string, eventDate: string): Pro
         config: {
             model: 'gemini-3-pro-preview',
             thinking_level: 'low' // Structuring/formatting task
+        }
+    });
+};
+
+export const estimateBudget = async (totalBudget: number, attendees: number, eventContext: string): Promise<BudgetEstimate> => {
+    return invokeEdgeFunction('estimate-budget', {
+        totalBudget,
+        attendees,
+        eventContext,
+        config: {
+            model: 'gemini-3-pro-preview',
+            thinking_level: 'high', // Critical reasoning/math task
+            tools: ['code_execution'] // Enable code execution for accurate calculations
+        }
+    });
+};
+
+export const generateEmailSequence = async (details: { title: string; description: string; date: string; location: string }): Promise<EmailSequence> => {
+    return invokeEdgeFunction('generate-email-sequence', {
+        ...details,
+        config: {
+            model: 'gemini-3-pro-preview',
+            thinking_level: 'high' // Creative task
         }
     });
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDeckEditor } from '../screens/DeckEditor';
+import { useDeckEditor } from '../contexts/DeckEditorContext';
 
 const ratingStyles: { [key: string]: string } = {
     "Good": 'text-green-600 font-semibold',

@@ -3,7 +3,7 @@ import AICopilot from './AICopilot';
 import ImageEditorPanel from './ImageEditorPanel';
 import AnalysisPanel from './AnalysisPanel';
 import ResearchResultPanel from './ResearchResultPanel';
-import { useDeckEditor } from '../screens/DeckEditor';
+import { useDeckEditor } from '../contexts/DeckEditorContext';
 
 type AITab = 'copilot' | 'image' | 'analysis' | 'research';
 
