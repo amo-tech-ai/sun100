@@ -1,3 +1,4 @@
+
 import { Deck, Slide, mockDeck } from '../data/decks';
 import { supabase } from '../lib/supabaseClient';
 
@@ -59,6 +60,30 @@ export const getDeckById = async (id: string): Promise<Deck | null> => {
 };
 
 export const createDeck = async (deckData: Omit<Deck, 'id'>, userId: string): Promise<Deck> => {
+    // MOCK MODE CHECK: If Supabase is not configured (mock client), simulate success
+    if (!(supabase as any).realtime) {
+        console.warn("Supabase not configured. Creating mock deck in memory.");
+        
+        // Generate a fake ID
+        const mockId = `mock-deck-${Date.now()}`;
+        
+        // Construct the deck object as if it came from the DB
+        const newMockDeck: Deck = {
+            id: mockId,
+            title: deckData.title,
+            template: deckData.template,
+            slides: deckData.slides.map((s, i) => ({
+                ...s,
+                id: `mock-slide-${mockId}-${i}`,
+                position: i,
+                content: s.content || ''
+            }))
+        };
+        
+        // Return immediately
+        return newMockDeck;
+    }
+
     // Insert deck metadata
     const { data: newDeck, error: deckError } = await supabase
         .from('decks')
@@ -95,6 +120,7 @@ export const createDeck = async (deckData: Omit<Deck, 'id'>, userId: string): Pr
 };
 
 export const updateDeck = async (deckId: string, updates: Partial<Omit<Deck, 'id' | 'slides'>>) => {
+    if (!(supabase as any).realtime) return; // Mock mode no-op
     const { error } = await supabase
         .from('decks')
         .update(updates)
@@ -103,6 +129,7 @@ export const updateDeck = async (deckId: string, updates: Partial<Omit<Deck, 'id
 };
 
 export const updateSlide = async (slideId: string, updates: Partial<Omit<Slide, 'id'>>) => {
+    if (!(supabase as any).realtime) return; // Mock mode no-op
     const { error } = await supabase
         .from('slides')
         .update(updates)
