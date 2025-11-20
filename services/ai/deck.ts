@@ -1,8 +1,10 @@
 
+import { GoogleGenAI } from "@google/genai";
 import { Deck, Slide } from '../../data/decks';
 import { templates } from '../../styles/templates';
 import { invokeEdgeFunction } from '../edgeFunctionService';
-import { DeckUpdateSuggestion } from './types';
+import { DeckUpdateSuggestion, FundingAnalysis } from './types';
+import { analyzeFundingGoalFunctionDeclaration } from './prompts';
 
 const uuidv4 = () => {
     // A simple UUID generator for client-side keying
@@ -24,6 +26,7 @@ export interface FinancialSettings {
     };
     timeHorizon: string;
     currency: string;
+    fundingGoal?: string;
 }
 
 interface GenerationPayload {
@@ -99,4 +102,36 @@ export const checkForWebsiteUpdates = async (deck: Deck, url: string): Promise<D
         }
     });
     return response.suggestions;
+};
+
+export const analyzeFundingGoal = async (amount: string, industry: string): Promise<FundingAnalysis> => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `
+    Analyze the following funding goal for a startup in the specified industry.
+    Determine the most suitable investor types (e.g., Angel, Pre-Seed VC, Series A VC), provide strategic advice on raising this amount, and list actionable next steps.
+    Call 'analyzeFundingGoal' with the results.
+
+    Funding Amount: ${amount}
+    Industry: ${industry}
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-3-pro-preview",
+            contents: prompt,
+            config: {
+                tools: [{ functionDeclarations: [analyzeFundingGoalFunctionDeclaration] }],
+                thinkingConfig: { thinkingBudget: 2048 } // High reasoning for strategic analysis
+            },
+        });
+
+        const call = response.functionCalls?.[0];
+        if (call && call.name === 'analyzeFundingGoal' && call.args) {
+            return call.args as unknown as FundingAnalysis;
+        }
+        throw new Error("The AI did not return a valid funding analysis.");
+    } catch (error) {
+        console.error("Error analyzing funding goal:", error);
+        throw new Error("Failed to analyze funding goal.");
+    }
 };

@@ -6,7 +6,7 @@ export type ChartData =
   | { type: 'pie'; data: { label: string; value: number }[] };
 
 export interface TableData {
-  type: 'pricing' | 'comparison';
+  type: 'pricing' | 'comparison' | 'financials';
   // Pricing specific
   tiers?: {
     name: string;
@@ -16,6 +16,11 @@ export interface TableData {
   // Comparison specific (SWOT)
   headers?: string[];
   rows?: string[][];
+  // Financials specific
+  financials?: {
+    headers: string[];
+    rows: { label: string; values: string[] }[];
+  };
 }
 
 export interface Slide {

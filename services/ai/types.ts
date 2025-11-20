@@ -1,6 +1,8 @@
 import { Deck, Slide, ChartData, TableData } from '../../data/decks';
 import { templates } from '../../styles/templates';
 
+export { Deck, Slide, ChartData, TableData };
+
 // This file contains shared TypeScript types used across the AI services.
 
 export interface ExtractedMetric {
@@ -80,4 +82,10 @@ export interface DeckUpdateSuggestion {
     currentValue: string;
     newValue: string;
     reason: string;
+}
+
+export interface FundingAnalysis {
+    investorTypes: string[];
+    strategicAdvice: string;
+    nextSteps: string[];
 }

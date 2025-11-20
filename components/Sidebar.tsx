@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 
@@ -70,19 +71,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                     <PlusIcon />
                     {!isCollapsed && <span className="ml-3 font-semibold">New Deck</span>}
                 </NavLink>
-                <NavLink
-                    to="/dashboard/video-generator"
-                    className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
-                >
-                    <VideoIcon />
-                    {!isCollapsed && <span className="ml-3 font-semibold">Video Generator</span>}
-                </NavLink>
                  <NavLink
                     to="/dashboard/my-events"
                     className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
                 >
                     <CalendarIcon />
                     {!isCollapsed && <span className="ml-3 font-semibold">My Events</span>}
+                </NavLink>
+                <NavLink
+                    to="/dashboard/video-generator"
+                    className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
+                >
+                    <VideoIcon />
+                    {!isCollapsed && <span className="ml-3 font-semibold">Video Generator</span>}
                 </NavLink>
                 <NavLink
                     to="/dashboard/sitemap"

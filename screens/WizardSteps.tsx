@@ -4,7 +4,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { templates } from '../styles/templates';
 import UrlInput from '../components/UrlInput';
 import TemplateSelector from '../components/TemplateSelector';
-import { FinancialSettings } from '../services/ai/deck';
+import { FinancialSettings, analyzeFundingGoal } from '../services/ai/deck';
+import { useWizardStore } from '../stores/wizardStore';
+import { FundingAnalysis } from '../services/ai/types';
 
 // --- ICONS ---
 const InfoIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
@@ -51,41 +53,33 @@ const WizardSteps: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     
-    // --- STATE MANAGEMENT ---
-    const [step, setStep] = useState(1);
-    const [direction, setDirection] = useState<'forward' | 'back'>('forward');
+    // --- ZUSTAND STATE ---
+    const {
+        step,
+        direction,
+        businessContext,
+        urls,
+        financials,
+        useThinking,
+        selectedTemplate,
+        setStep,
+        setDirection,
+        setBusinessContext,
+        setUrls,
+        updateFinancials,
+        setSelectedTemplate
+    } = useWizardStore();
+
     const totalSteps = stepsConfig.length;
 
-    // Text & URL Inputs
-    const [businessContext, setBusinessContext] = useState('Sun AI is a startup that uses generative AI to create pitch decks for early-stage companies. We leverage large language models to analyze business context and generate compelling narratives, financial projections, and slide designs automatically.');
-    const [urls, setUrls] = useState<string[]>([]);
-    
-    // Financial Inputs
-    const [financials, setFinancials] = useState<FinancialSettings>({
-        industry: 'SaaS',
-        revenueModel: 'Subscription',
-        currentRevenue: '0',
-        pricePoint: '',
-        customerGrowthRate: '10',
-        costStructure: { burnRate: '', marketingBudget: '' },
-        timeHorizon: '36',
-        currency: 'USD'
-    });
-
-    // AI Config
-    const [useThinking, setUseThinking] = useState(true);
-
-    // Theme
-    const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof templates>('default');
-
-    // Global State
+    // Local state for loading during navigation/generation initiation
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (location.state?.fundingGoal) {
-            // Pre-fill if coming from dashboard
+             updateFinancials('fundingGoal', location.state.fundingGoal);
         }
-    }, [location.state]);
+    }, [location.state, updateFinancials]);
 
     // --- NAVIGATION ---
     const handleNext = () => {
@@ -95,7 +89,7 @@ const WizardSteps: React.FC = () => {
                 return;
             }
             setDirection('forward');
-            setStep(s => s + 1);
+            setStep(step + 1);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -103,7 +97,7 @@ const WizardSteps: React.FC = () => {
     const handleBack = () => {
         if (step > 1) {
             setDirection('back');
-            setStep(s => s - 1);
+            setStep(step - 1);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -184,12 +178,7 @@ const WizardSteps: React.FC = () => {
                             </div>
 
                             {/* Collapsible Advanced Section */}
-                            <AdvancedSettings 
-                                financials={financials} 
-                                setFinancials={setFinancials} 
-                                useThinking={useThinking} 
-                                setUseThinking={setUseThinking} 
-                            />
+                            <AdvancedSettings />
                         </div>
                     </div>
                 )}
@@ -268,17 +257,34 @@ const WizardSteps: React.FC = () => {
 };
 
 // Extracted Advanced Settings Component
-const AdvancedSettings: React.FC<{
-    financials: FinancialSettings;
-    setFinancials: React.Dispatch<React.SetStateAction<FinancialSettings>>;
-    useThinking: boolean;
-    setUseThinking: (b: boolean) => void;
-}> = ({ financials, setFinancials, useThinking, setUseThinking }) => {
+const AdvancedSettings: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [fundingAnalysis, setFundingAnalysis] = useState<FundingAnalysis | null>(null);
+    const [isAnalyzingFunding, setIsAnalyzingFunding] = useState(false);
+    const [analysisError, setAnalysisError] = useState<string | null>(null);
+    
+    const { financials, updateFinancials, useThinking, setUseThinking } = useWizardStore();
 
     const handleFinancialChange = (field: keyof FinancialSettings, value: string) => {
-        setFinancials(prev => ({ ...prev, [field]: value }));
+        updateFinancials(field, value);
     };
+
+    const handleAnalyzeFunding = async () => {
+        if (!financials.fundingGoal || !financials.industry) {
+            alert("Please provide a funding goal and industry to analyze.");
+            return;
+        }
+        setIsAnalyzingFunding(true);
+        setAnalysisError(null);
+        try {
+            const analysis = await analyzeFundingGoal(financials.fundingGoal, financials.industry);
+            setFundingAnalysis(analysis);
+        } catch (err) {
+             setAnalysisError(err instanceof Error ? err.message : "Analysis failed.");
+        } finally {
+            setIsAnalyzingFunding(false);
+        }
+    }
 
     return (
         <div className="border-t border-gray-200 pt-4 mt-6">
@@ -306,6 +312,11 @@ const AdvancedSettings: React.FC<{
                                 <option value="FinTech">FinTech</option>
                                 <option value="HealthTech">HealthTech</option>
                             </select>
+                            {financials.industry === 'FinTech' && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                    FinTech is an ideal example to showcase Gemini 3's reasoning capabilities in generating complex financial models and ensuring data accuracy for investor-grade presentations.
+                                </p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Revenue Model</label>
@@ -339,7 +350,56 @@ const AdvancedSettings: React.FC<{
                                 className="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-brand-orange focus:border-transparent transition"
                             />
                         </div>
+                         <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Funding Goal ($)</label>
+                             <div className="flex gap-2">
+                                <input 
+                                    type="text"
+                                    value={financials.fundingGoal || ''}
+                                    onChange={(e) => handleFinancialChange('fundingGoal', e.target.value)}
+                                    placeholder="1,500,000"
+                                    className="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-brand-orange focus:border-transparent transition"
+                                />
+                                <button
+                                    onClick={handleAnalyzeFunding}
+                                    disabled={isAnalyzingFunding || !financials.fundingGoal}
+                                    className="bg-blue-600 text-white font-bold px-4 py-3 rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                                    title="Analyze Funding Goal"
+                                >
+                                    {isAnalyzingFunding ? (
+                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    ) : (
+                                         <BrainCircuitIcon className="w-5 h-5" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
                     </div>
+
+                    {/* Analysis Result */}
+                    {analysisError && <p className="text-red-600 text-sm">{analysisError}</p>}
+                    {fundingAnalysis && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+                            <h4 className="font-bold text-blue-800 flex items-center gap-2">
+                                <SparklesIcon className="w-4 h-4" />
+                                AI Funding Strategy
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                                {fundingAnalysis.investorTypes.map((type, i) => (
+                                    <span key={i} className="bg-white text-blue-600 text-xs font-bold px-2 py-1 rounded border border-blue-200">{type}</span>
+                                ))}
+                            </div>
+                            <p className="text-sm text-blue-900">{fundingAnalysis.strategicAdvice}</p>
+                             <div>
+                                <p className="text-xs font-bold text-blue-800 uppercase mb-1">Next Steps:</p>
+                                <ul className="list-disc pl-4 text-sm text-blue-900 space-y-1">
+                                    {fundingAnalysis.nextSteps.map((step, i) => (
+                                        <li key={i}>{step}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Gemini 3 Feature Toggle */}
                     <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border border-indigo-100 flex items-center justify-between gap-4">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Deck, Slide } from '../data/decks';
+import { Deck, Slide, ChartData, TableData } from '../data/decks';
 import { getDeckById, updateDeck, updateSlide } from '../services/deckService';
 import { generateRoadmapSlide, checkForWebsiteUpdates } from '../services/ai/deck';
 import { generateSlideImage, editSlideImage } from '../services/ai/image';
@@ -75,6 +75,7 @@ interface DeckEditorContextType {
     handleCopilotGenerate: (prompt: string, newTitle?: string) => void;
     handleAnalyzeSlide: () => void;
     handleResearch: (query: string) => void;
+    handleApplyResearch: (researchSummary: string) => void;
     handleSuggestLayout: () => void;
     handleSuggestChart: () => void;
     handleGenerateHeadlines: () => void;
@@ -391,6 +392,21 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }, []);
 
+    const handleApplyResearch = useCallback(async (researchSummary: string) => {
+        if (!selectedSlide) return;
+        setIsCopilotLoading(true); // Reuse copilot loading state for content modification
+        try {
+            const instruction = `Rewrite the slide content to incorporate the following market research findings. Structure it clearly (e.g., with sections for Market Size and Trends if applicable) and keep it concise for a presentation.\n\nResearch Insights:\n${researchSummary}`;
+            const { newContent } = await modifySlideContent(selectedSlide.title, selectedSlide.content, instruction);
+            await updateSlideStateAndPersist(selectedSlide.id, { content: newContent });
+        } catch (err) {
+            console.error("Failed to apply research:", err);
+            alert("Failed to update slide with research data.");
+        } finally {
+            setIsCopilotLoading(false);
+        }
+    }, [selectedSlide, updateSlideStateAndPersist]);
+
     const handleSuggestLayout = useCallback(async () => {
         if (!selectedSlide) return;
         setIsSuggestingLayout(true);
@@ -455,7 +471,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const handleMarketResearch = useCallback(() => {
         if (!deck) return;
         const marketTopic = deck.title.replace(/pitch deck/i, "").trim() || "the user's industry";
-        const query = `Latest market size data (TAM, SAM, SOM) and key growth trends for ${marketTopic}`;
+        const query = `Perform a deep market analysis for ${marketTopic}. 1. Estimate TAM, SAM, and SOM with dollar values. 2. Identify 3 specific market growth trends (include CAGR if available). 3. Provide citations for all data points. Format the summary so it can be easily used in a pitch deck.`;
         handleResearch(query);
     }, [deck, handleResearch]);
 
@@ -519,28 +535,46 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setFinancialError(null);
         try {
             const financialData = await generateFinancialProjections(assumptions);
-            // Use the generic table format to render the financial data
-            const tableData = {
-                type: 'pricing' as const, // Reusing the pricing type for now, but structure fits
-                tiers: financialData.rows.map((row) => ({
-                    name: row.label,
-                    price: '', // Not used for financials
-                    features: row.values // Hijacking features array for cell values
-                }))
-            };
             
+            // 1. Map to new 'financials' TableData structure
+            const tableData: TableData = {
+                type: 'financials',
+                financials: {
+                    headers: financialData.headers,
+                    rows: financialData.rows
+                }
+            };
+
+            // 2. Try to extract "Revenue" or "Sales" for a Chart
+            let chartData: ChartData | undefined = undefined;
+            const revenueRow = financialData.rows.find(r => 
+                r.label.toLowerCase().includes('revenue') || r.label.toLowerCase().includes('sales')
+            );
+
+            if (revenueRow && financialData.headers.length === revenueRow.values.length) {
+                const chartValues = revenueRow.values.map((val, index) => {
+                    // Remove currency symbols, commas, 'M', 'K', spaces to parse number
+                    const numericString = val.replace(/[^0-9.-]+/g, "");
+                    return {
+                        label: financialData.headers[index],
+                        value: parseFloat(numericString) || 0
+                    };
+                });
+                
+                // Only create chart if we have valid numbers
+                if (chartValues.some(d => d.value > 0)) {
+                    chartData = {
+                        type: 'bar',
+                        data: chartValues
+                    };
+                }
+            }
+            
+            // Update slide with both table and potential chart
             const updates = { 
                 content: financialData.summary, 
-                tableData: { 
-                    type: 'pricing', // Keeping 'pricing' to satisfy TS for now, but logically it is financials
-                    tiers: financialData.rows.map(row => ({
-                        name: row.label,
-                        price: '',
-                        features: row.values
-                    })),
-                    // In a real scenario, we'd add `headers: financialData.headers` here.
-                } as any, 
-                chartData: undefined 
+                tableData, 
+                chartData // Can be undefined if extraction failed
             };
             await updateSlideStateAndPersist(selectedSlide.id, updates);
 
@@ -686,7 +720,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         isGeneratingSWOT, swotError,
         handleSlideSelect, handleTitleSave, 
         handleGenerateRoadmapSlide, handleGenerateImage, handleEditImage, handleCopilotGenerate, 
-        handleAnalyzeSlide, handleResearch, handleSuggestLayout, handleSuggestChart, handleGenerateHeadlines, 
+        handleAnalyzeSlide, handleResearch, handleApplyResearch, handleSuggestLayout, handleSuggestChart, handleGenerateHeadlines, 
         handleExtractMetrics, handleMarketResearch, handleGenerateTable, handleCompetitorResearch, 
         handleSummarizeBio, handleSuggestPieChart, handleSocialProofSearch, handleGenerateFinancials, handlePublishDeck, 
         handlePrevSlide, handleNextSlide, handleTemplateChange,
