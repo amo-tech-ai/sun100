@@ -429,3 +429,17 @@ export const generateSWOTAnalysisFunctionDeclaration: FunctionDeclaration = {
         required: ['headers', 'rows']
     }
 };
+
+export const analyzeFundingGoalFunctionDeclaration: FunctionDeclaration = {
+    name: 'analyzeFundingGoal',
+    description: 'Analyzes a startup funding goal to suggest investor types and next steps.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            investorTypes: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'List of suitable investor types (e.g. Angel, VC, Seed Funds).' },
+            strategicAdvice: { type: Type.STRING, description: 'Strategic advice on raising this amount.' },
+            nextSteps: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Actionable next steps for the founder.' }
+        },
+        required: ['investorTypes', 'strategicAdvice', 'nextSteps']
+    }
+};

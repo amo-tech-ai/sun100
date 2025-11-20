@@ -80,6 +80,41 @@ const Table: React.FC<TableProps> = ({ tableData }) => {
         );
     }
 
+    if (tableData.type === 'financials' && tableData.financials) {
+        return (
+            <div className="w-full h-full p-4 overflow-auto">
+                <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
+                    <thead className="bg-gray-100">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-r border-gray-300 last:border-r-0">
+                                Metric
+                            </th>
+                            {tableData.financials.headers.map((header, index) => (
+                                <th key={index} scope="col" className="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider border-r border-gray-300 last:border-r-0">
+                                    {header}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {tableData.financials.rows.map((row, rowIndex) => (
+                            <tr key={rowIndex} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-brand-blue border-r border-gray-200">
+                                    {row.label}
+                                </td>
+                                {row.values.map((val, valIndex) => (
+                                    <td key={valIndex} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right border-r border-gray-200 last:border-r-0 font-mono">
+                                        {val}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    }
+
     return null;
 };
 

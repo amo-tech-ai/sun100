@@ -1,7 +1,9 @@
+
 import React, { useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { summarizeBio } from '../services/ai/slide';
-import { BioSummary } from '../services/ai/types';
+import { summarizeBio, extractMetrics, generateCompetitorSWOT } from '../services/ai/slide';
+import { BioSummary, ExtractedMetric, TableData } from '../services/ai/types';
+import Table from '../components/Table';
 
 // --- ICONS ---
 const LinkIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>;
@@ -11,6 +13,9 @@ const SearchIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://ww
 const WandIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/></svg>;
 const CheckIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M20 6 9 17l-5-5"/></svg>;
 const ClipboardIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>;
+const BrainIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>;
+const BarChartIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>;
+
 const Spinner = () => <svg className="animate-spin h-4 w-4 text-brand-orange" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>;
 
 // --- HELPER COMPONENTS ---
@@ -36,7 +41,7 @@ const mockProfile = {
     name: 'Alex Chen',
     title: 'Founder & CEO, Sun AI Startup',
     avatarUrl: 'https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person3.jpg',
-    bio: "Obsessed with democratizing access to AI for the next generation of founders. Building tools that make professional design and storytelling effortless. Previously at Google AI.",
+    bio: "Obsessed with democratizing access to AI for the next generation of founders. Building tools that make professional design and storytelling effortless. Previously at Google AI, scaling infrastructure for machine learning models to millions of users. Passionate about the intersection of design, code, and business strategy.",
     socials: {
         linkedin: '#',
         twitter: '#',
@@ -46,7 +51,9 @@ const mockProfile = {
         name: 'Sun AI Startup',
         logoUrl: 'https://www.gstatic.com/mobilesdk/160503_mobilesdk/logo/2x/firebase_28dp.png', // Placeholder
         tagline: 'Your AI-Powered Startup Hub for Growth.',
-        website: 'https://sunaistartup.com'
+        website: 'https://sunaistartup.com',
+        fundingGoal: '$1.5M Seed',
+        industry: 'Generative AI / SaaS'
     },
     lookingFor: ['Seed Funding', 'Technical Co-founder', 'Beta Testers'],
     publicDecks: [
@@ -59,15 +66,22 @@ const FounderProfile: React.FC = () => {
     const { username } = useParams<{ username: string }>();
     const profile = mockProfile; // In a real app, you'd fetch this based on username
 
+    // AI State
     const [showAiTools, setShowAiTools] = useState(false);
     const [isSummarizing, setIsSummarizing] = useState(false);
     const [summaryAndHighlights, setSummaryAndHighlights] = useState<BioSummary | null>(null);
+    
+    const [isExtractingMetrics, setIsExtractingMetrics] = useState(false);
+    const [extractedMetrics, setExtractedMetrics] = useState<ExtractedMetric[] | null>(null);
+
+    const [isGeneratingSWOT, setIsGeneratingSWOT] = useState(false);
+    const [swotAnalysis, setSwotAnalysis] = useState<TableData | null>(null);
+
     const [aiError, setAiError] = useState<string | null>(null);
 
     const handleSummarize = useCallback(async () => {
         setIsSummarizing(true);
         setAiError(null);
-        setSummaryAndHighlights(null);
         try {
             const result = await summarizeBio(profile.bio);
             setSummaryAndHighlights(result);
@@ -77,6 +91,37 @@ const FounderProfile: React.FC = () => {
             setIsSummarizing(false);
         }
     }, [profile.bio]);
+
+    const handleExtractMetrics = useCallback(async () => {
+        setIsExtractingMetrics(true);
+        setAiError(null);
+        try {
+            // Combine bio and tagline for context
+            const textToAnalyze = `${profile.startup.tagline} ${profile.bio}`;
+            const { metrics } = await extractMetrics(textToAnalyze);
+            setExtractedMetrics(metrics);
+        } catch (err) {
+            setAiError(err instanceof Error ? err.message : "Failed to extract metrics.");
+        } finally {
+            setIsExtractingMetrics(false);
+        }
+    }, [profile.bio, profile.startup.tagline]);
+
+    const handleGenerateSWOT = useCallback(async () => {
+        setIsGeneratingSWOT(true);
+        setAiError(null);
+        try {
+            // Use Gemini 3 Reasoning to infer SWOT from limited context
+            const context = `Startup: ${profile.startup.name}. Industry: ${profile.startup.industry}. Tagline: ${profile.startup.tagline}. Founder Bio: ${profile.bio}`;
+            const { tableData } = await generateCompetitorSWOT(context);
+            setSwotAnalysis(tableData);
+        } catch (err) {
+            setAiError(err instanceof Error ? err.message : "Failed to generate SWOT.");
+        } finally {
+            setIsGeneratingSWOT(false);
+        }
+    }, [profile]);
+
 
     return (
         <div className="flex flex-col lg:flex-row gap-8">
@@ -96,54 +141,66 @@ const FounderProfile: React.FC = () => {
                             <button 
                                 onClick={() => setShowAiTools(!showAiTools)} 
                                 className="p-1 text-gray-400 hover:text-brand-orange rounded-full transition-colors"
-                                title="Refine with AI"
-                                aria-label="Toggle AI Bio Assistant"
+                                title="AI Founder Tools"
+                                aria-label="Toggle AI Tools"
                                 aria-expanded={showAiTools}
                             >
                                 <WandIcon />
                             </button>
                         </div>
-                        <p className="text-gray-600">{profile.bio}</p>
+                        <p className="text-gray-600 text-sm leading-relaxed">{profile.bio}</p>
                         
                         {showAiTools && (
-                            <div className="mt-4 p-4 bg-orange-50/50 border border-brand-orange/20 rounded-lg space-y-4">
-                                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                                    <h4 className="font-semibold text-sm text-brand-blue">AI Bio Assistant</h4>
+                            <div className="mt-4 p-4 bg-orange-50/50 border border-brand-orange/20 rounded-lg space-y-4 animate-fade-in">
+                                <div className="flex justify-between items-center border-b border-brand-orange/10 pb-2">
+                                    <h4 className="font-bold text-xs text-brand-orange uppercase tracking-wider">Gemini 3 Assistant</h4>
+                                </div>
+                                
+                                {/* Tool 1: Bio Summarizer */}
+                                <div className="space-y-2">
                                     <button 
                                         onClick={handleSummarize} 
                                         disabled={isSummarizing}
-                                        className="flex items-center justify-center gap-2 text-sm font-semibold text-brand-orange hover:text-opacity-80 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors self-start sm:self-center"
+                                        className="w-full flex items-center justify-between text-sm font-medium text-gray-700 hover:text-brand-blue bg-white p-2 rounded border border-gray-200 hover:border-brand-orange/50 transition-all"
                                     >
-                                        {isSummarizing ? (
-                                            <> <Spinner /> Generating... </>
-                                        ) : (
-                                            <> <WandIcon /> Generate Summary & Highlights </>
-                                        )}
+                                        <span className="flex items-center gap-2"><BrainIcon className="w-4 h-4 text-purple-500"/> Summarize Bio</span>
+                                        {isSummarizing && <Spinner />}
                                     </button>
-                                </div>
-                                {aiError && <p className="text-red-500 text-sm">{aiError}</p>}
-                                {summaryAndHighlights && (
-                                    <div className="space-y-4 border-t border-brand-orange/20 pt-4">
-                                        <div>
-                                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Suggested Summary</label>
-                                            <div className="flex items-start justify-between gap-2 bg-white p-2 border rounded-md">
-                                                <p className="text-sm text-gray-700">{summaryAndHighlights.summary}</p>
-                                                <CopyButton textToCopy={summaryAndHighlights.summary} />
+                                    {summaryAndHighlights && (
+                                        <div className="bg-white p-3 rounded border border-gray-200 text-xs text-gray-600 space-y-2">
+                                            <p className="italic">"{summaryAndHighlights.summary}"</p>
+                                            <div className="flex flex-wrap gap-1">
+                                                {summaryAndHighlights.highlights.map((h, i) => (
+                                                    <span key={i} className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full border border-purple-100">{h}</span>
+                                                ))}
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Suggested Highlights</label>
-                                            <ul className="space-y-2">
-                                                {summaryAndHighlights.highlights.map((highlight, i) => (
-                                                    <li key={i} className="flex items-start justify-between gap-2 bg-white p-2 border rounded-md">
-                                                        <p className="text-sm text-gray-700 leading-tight">- {highlight}</p>
-                                                        <CopyButton textToCopy={highlight} />
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                    )}
+                                </div>
+
+                                {/* Tool 2: Metric Extractor */}
+                                <div className="space-y-2">
+                                    <button 
+                                        onClick={handleExtractMetrics} 
+                                        disabled={isExtractingMetrics}
+                                        className="w-full flex items-center justify-between text-sm font-medium text-gray-700 hover:text-brand-blue bg-white p-2 rounded border border-gray-200 hover:border-brand-orange/50 transition-all"
+                                    >
+                                        <span className="flex items-center gap-2"><BarChartIcon className="w-4 h-4 text-green-500"/> Extract Key Metrics</span>
+                                        {isExtractingMetrics && <Spinner />}
+                                    </button>
+                                     {extractedMetrics && (
+                                        <div className="bg-white p-3 rounded border border-gray-200 text-xs space-y-1">
+                                            {extractedMetrics.length > 0 ? extractedMetrics.map((m, i) => (
+                                                <div key={i} className="flex justify-between">
+                                                    <span className="text-gray-500">{m.label}:</span>
+                                                    <span className="font-bold text-gray-800">{m.value}</span>
+                                                </div>
+                                            )) : <p className="text-gray-400 italic">No metrics found in bio.</p>}
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
+
+                                {aiError && <p className="text-red-500 text-xs">{aiError}</p>}
                             </div>
                         )}
                     </div>
@@ -160,16 +217,60 @@ const FounderProfile: React.FC = () => {
             <main className="flex-1 space-y-8">
                 {/* Startup Card */}
                 <section className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-                    <div className="flex items-center gap-6">
-                        <img src={profile.startup.logoUrl} alt={`${profile.startup.name} logo`} className="w-16 h-16"/>
-                        <div>
-                            <h2 className="text-2xl font-bold text-brand-blue">{profile.startup.name}</h2>
-                            <p className="text-gray-600">{profile.startup.tagline}</p>
-                            <a href={profile.startup.website} target="_blank" rel="noopener noreferrer" className="text-brand-orange font-semibold hover:underline flex items-center gap-1 mt-1">
-                                <LinkIcon className="w-4 h-4" />
-                                {profile.startup.website.replace('https://', '')}
-                            </a>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-6">
+                            <img src={profile.startup.logoUrl} alt={`${profile.startup.name} logo`} className="w-16 h-16"/>
+                            <div>
+                                <h2 className="text-2xl font-bold text-brand-blue">{profile.startup.name}</h2>
+                                <p className="text-gray-600">{profile.startup.tagline}</p>
+                                <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                                    <span className="bg-gray-100 px-2 py-1 rounded">{profile.startup.industry}</span>
+                                    <a href={profile.startup.website} target="_blank" rel="noopener noreferrer" className="text-brand-orange font-semibold hover:underline flex items-center gap-1">
+                                        <LinkIcon className="w-3 h-3" />
+                                        {profile.startup.website.replace('https://', '')}
+                                    </a>
+                                </div>
+                            </div>
                         </div>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center min-w-[150px]">
+                            <p className="text-xs text-green-600 font-bold uppercase tracking-wide">Funding Goal</p>
+                            <p className="text-xl font-bold text-green-800 mt-1">{profile.startup.fundingGoal}</p>
+                        </div>
+                    </div>
+
+                    {/* Strategic Analysis Section (Gemini 3) */}
+                    <div className="mt-8 border-t border-gray-100 pt-6">
+                         <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-brand-blue flex items-center gap-2">
+                                <BrainIcon className="text-brand-orange" />
+                                Strategic Analysis
+                            </h3>
+                             <button 
+                                onClick={handleGenerateSWOT} 
+                                disabled={isGeneratingSWOT}
+                                className="text-sm bg-white border border-gray-300 text-gray-700 font-semibold py-1.5 px-4 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
+                                {isGeneratingSWOT ? 'Analyzing...' : 'Generate SWOT with Gemini 3'}
+                            </button>
+                        </div>
+                        
+                        {swotAnalysis ? (
+                            <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                                <Table tableData={swotAnalysis} />
+                            </div>
+                        ) : (
+                            !isGeneratingSWOT && (
+                                <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                    <p className="text-gray-500 text-sm">Run a deep strategic analysis of this startup profile using Gemini 3's reasoning capabilities.</p>
+                                </div>
+                            )
+                        )}
+                        {isGeneratingSWOT && (
+                             <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                                <Spinner />
+                                <p className="text-gray-500 text-sm mt-2">Gemini 3 is thinking deeply about market position...</p>
+                            </div>
+                        )}
                     </div>
                 </section>
                 
