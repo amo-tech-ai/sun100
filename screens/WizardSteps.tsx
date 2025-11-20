@@ -14,6 +14,7 @@ const CheckIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www
 const SparklesIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
 const BrainCircuitIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M9 13a3 3 0 1 1 5.997.129 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 9a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 18 18Z"/><path d="M12 5v13"/><path d="M9 13h6"/><path d="M12 18h6"/></svg>;
 const ChevronDownIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m6 9 6 6 6-6"/></svg>;
+const PaletteIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>;
 
 // --- STEP CONFIGURATION ---
 const stepsConfig = [
@@ -22,14 +23,14 @@ const stepsConfig = [
 ];
 
 const ProgressIndicator: React.FC<{ currentStep: number }> = ({ currentStep }) => (
-    <div className="mb-8 flex justify-center">
+    <div className="mb-10 flex justify-center">
         <div className="flex items-center gap-4">
             {stepsConfig.map((step, index) => {
                 const isCompleted = step.id < currentStep;
                 const isActive = step.id === currentStep;
                 return (
                     <React.Fragment key={step.id}>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                             <div className={`flex h-8 w-8 items-center justify-center rounded-full font-bold text-sm transition-all duration-300 ${
                                 isCompleted ? 'bg-brand-orange text-white' : 
                                 isActive ? 'bg-brand-orange text-white ring-4 ring-brand-orange/20' : 
@@ -37,7 +38,7 @@ const ProgressIndicator: React.FC<{ currentStep: number }> = ({ currentStep }) =
                             }`}>
                                 {isCompleted ? <CheckIcon className="w-4 h-4" /> : step.id}
                             </div>
-                            <span className={`font-bold text-sm ${isActive || isCompleted ? 'text-brand-blue' : 'text-gray-400'}`}>{step.title}</span>
+                            <span className={`font-bold text-sm hidden sm:block ${isActive || isCompleted ? 'text-brand-blue' : 'text-gray-400'}`}>{step.title}</span>
                         </div>
                         {index < stepsConfig.length - 1 && (
                             <div className={`w-12 h-0.5 transition-colors duration-300 ${isCompleted ? 'bg-brand-orange' : 'bg-gray-200'}`} />
@@ -130,7 +131,7 @@ const WizardSteps: React.FC = () => {
 
     // --- RENDER LOGIC ---
     return (
-        <div className="w-full max-w-4xl mx-auto pb-32 md:pb-24 px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="w-full max-w-6xl mx-auto pb-32 md:pb-24 px-4 sm:px-6 lg:px-8 pt-8">
             <style>{`
                 .slide-enter { opacity: 0; transform: translateX(${direction === 'forward' ? '20px' : '-20px'}); }
                 .slide-enter-active { opacity: 1; transform: translateX(0); transition: opacity 300ms, transform 300ms; }
@@ -145,7 +146,7 @@ const WizardSteps: React.FC = () => {
 
             <ProgressIndicator currentStep={step} />
 
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden relative min-h-[600px]">
+            <div className={`bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden relative min-h-[600px] ${step === 2 ? 'max-w-full' : 'max-w-4xl mx-auto'}`}>
                 {/* Step 1: Strategy & Context */}
                 {step === 1 && (
                     <div className="animate-fade-in p-8">
@@ -185,24 +186,36 @@ const WizardSteps: React.FC = () => {
 
                 {/* Step 2: Visual Theme */}
                 {step === 2 && (
-                    <div className="animate-fade-in p-8">
-                        <div className="flex items-center gap-4 mb-6 border-b border-gray-100 pb-4">
-                            <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-brand-orange font-bold text-lg shadow-sm">2</div>
-                            <div>
-                                <h2 className="text-xl font-bold text-brand-blue">Select a Visual Theme</h2>
-                                <p className="text-sm text-gray-500">This sets the tone, fonts, and image style.</p>
+                    <div className="animate-fade-in p-8 md:p-12">
+                        {/* Centered Header for Step 2 */}
+                        <div className="text-center mb-10 max-w-2xl mx-auto">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-50 text-brand-orange mb-4 shadow-sm">
+                                <PaletteIcon className="w-6 h-6" />
                             </div>
+                            <div className="inline-block mb-2 px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-bold tracking-wider uppercase">
+                                Step 2 of 2
+                            </div>
+                            <h2 className="text-3xl font-extrabold text-brand-blue mb-3">Define Your Aesthetic</h2>
+                            <p className="text-lg text-gray-600">
+                                Choose a visual style. Our AI will adapt your content, fonts, and imagery to match this mood.
+                            </p>
                         </div>
 
-                        <div className="mb-6">
+                        <div className="mb-12">
                             <TemplateSelector selectedTemplate={selectedTemplate} setSelectedTemplate={setSelectedTemplate} />
                         </div>
                         
-                         <div className="text-sm bg-blue-50 text-brand-blue p-4 rounded-xl flex items-start gap-3 border border-blue-100">
-                            <InfoIcon className="w-5 h-5 flex-shrink-0 mt-0.5"/>
-                            <span>
-                                <strong>Pro Tip:</strong> The "Vibrant" themes are great for consumer apps, while "Professional" works best for B2B SaaS and Fintech.
-                            </span>
+                        {/* Smart AI Tip */}
+                         <div className="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 flex items-start gap-5 shadow-sm">
+                            <div className="flex-shrink-0 p-3 bg-white rounded-full shadow-sm text-brand-blue">
+                                <SparklesIcon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-brand-blue text-lg mb-1">AI Design Advice</h4>
+                                <p className="text-gray-700">
+                                    Not sure? <strong>Professional</strong> is our most versatile theme for Seed Rounds, while <strong>Vibrant</strong> performs best for Consumer Apps. You can always change this later in the editor.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 )}
