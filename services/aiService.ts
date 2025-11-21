@@ -1,7 +1,6 @@
 
-// This file now acts as a "facade," re-exporting from the modular services.
-// This ensures that any component importing from the old path still works,
-// making the refactor a non-breaking change for the UI.
+// This file acts as a "facade," re-exporting from the modular services.
+// This ensures that any component importing from the old path still works.
 
 export * from './ai/deck';
 export * from './ai/slide';

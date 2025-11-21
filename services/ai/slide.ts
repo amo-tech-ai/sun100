@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { templates } from '../../styles/templates';
 import { Slide, ChartData, TableData } from '../../data/decks';
@@ -6,7 +7,6 @@ import { invokeEdgeFunction } from '../edgeFunctionService';
 import { analyzeSlideContentFunctionDeclaration, generateSWOTAnalysisFunctionDeclaration } from './prompts';
 
 export const modifySlideContent = async (slideTitle: string, slideContent: string, instruction: string): Promise<{ newTitle: string; newContent: string }> => {
-    // For simple rewrites, we use 'low' thinking to prioritize speed/latency.
     return invokeEdgeFunction('modify-slide-content', { 
         slideTitle, 
         slideContent, 
@@ -19,7 +19,6 @@ export const modifySlideContent = async (slideTitle: string, slideContent: strin
 };
 
 export const analyzeSlide = async (slideTitle: string, slideContent: string): Promise<SlideAnalysis> => {
-    // Direct client-side call for immediate feedback
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `Analyze the following presentation slide content for Clarity, Impact, and Tone. Provide a rating (Good, Average, Needs Improvement) and specific, actionable feedback for each category.
 
@@ -33,7 +32,7 @@ export const analyzeSlide = async (slideTitle: string, slideContent: string): Pr
             contents: prompt,
             config: {
                 tools: [{ functionDeclarations: [analyzeSlideContentFunctionDeclaration] }],
-                thinkingConfig: { thinkingBudget: 2048 } // Use thinking for deeper analysis
+                thinkingConfig: { thinkingBudget: 2048 }
             }
         });
 
@@ -54,17 +53,16 @@ export const suggestLayout = async (slideTitle: string, slideContent: string): P
         slideContent,
         config: {
             model: 'gemini-3-pro-preview',
-            thinking_level: 'low' // Layout suggestions should be snappy
+            thinking_level: 'low'
         }
     });
     if (Object.keys(templates).includes(result.layout)) {
         return { layout: result.layout as keyof typeof templates };
     }
-    return { layout: 'default' }; // Fallback
+    return { layout: 'default' };
 };
 
 export const fetchAllSuggestions = async (slide: Slide): Promise<{ copilotSuggestions: string[], imageSuggestions: string[], researchSuggestions: string[] }> => {
-    // Fast suggestions use 'low' thinking for better UX responsiveness.
     return invokeEdgeFunction('fetch-all-suggestions', { 
         slide,
         config: {
@@ -80,7 +78,7 @@ export const suggestChart = async (slideTitle: string, slideContent: string): Pr
         slideContent,
         config: {
             model: 'gemini-3-pro-preview',
-            thinking_level: 'low' // Extraction task
+            thinking_level: 'low'
         }
     });
 };
@@ -90,7 +88,7 @@ export const suggestPieChart = async (slideContent: string): Promise<{ chartData
         slideContent,
         config: {
             model: 'gemini-3-pro-preview',
-            thinking_level: 'low' // Extraction task
+            thinking_level: 'low'
         }
     });
 };
@@ -100,7 +98,7 @@ export const generateHeadlineVariations = async (slideTitle: string): Promise<{ 
         slideTitle,
         config: {
             model: 'gemini-3-pro-preview',
-            thinking_level: 'high' // Creative task requires reasoning
+            thinking_level: 'high'
         }
     });
 };
@@ -110,7 +108,7 @@ export const extractMetrics = async (slideContent: string): Promise<{ metrics: E
         slideContent,
         config: {
             model: 'gemini-3-pro-preview',
-            thinking_level: 'low' // Extraction task
+            thinking_level: 'low'
         }
     });
 };
@@ -120,7 +118,7 @@ export const generatePricingTable = async (slideContent: string): Promise<{ tabl
         slideContent,
         config: {
             model: 'gemini-3-pro-preview',
-            thinking_level: 'low' // Formatting task
+            thinking_level: 'low'
         }
     });
 };
@@ -130,26 +128,23 @@ export const summarizeBio = async (bio: string): Promise<BioSummary> => {
         bio,
         config: {
             model: 'gemini-3-pro-preview',
-            thinking_level: 'high' // Synthesis requires reasoning
+            thinking_level: 'high'
         }
     });
 };
 
 export const generateFinancialProjections = async (assumptions: string): Promise<FinancialData> => {
-    // Financial projections benefit immensely from Code Execution for calculation accuracy
-    // and High Thinking for strategic assumption modeling.
     return invokeEdgeFunction('generate-financial-projections', { 
         assumptions,
         config: {
             model: 'gemini-3-pro-preview',
             thinking_level: 'high',
-            tools: ['code_execution'] // Backend should map this string to actual tool config
+            tools: ['code_execution']
         }
     });
 };
 
 export const generateCompetitorSWOT = async (slideContent: string): Promise<{ tableData: TableData | null }> => {
-    // Using Google Search + URL Context + Structured Output for SWOT
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
     Analyze the slide content to identify the user's company and potential competitors.
@@ -169,7 +164,7 @@ export const generateCompetitorSWOT = async (slideContent: string): Promise<{ ta
                     { googleSearch: {} },
                     { functionDeclarations: [generateSWOTAnalysisFunctionDeclaration] }
                 ],
-                thinkingConfig: { thinkingBudget: 2048 } // High reasoning for strategic analysis
+                thinkingConfig: { thinkingBudget: 2048 }
             },
         });
 
