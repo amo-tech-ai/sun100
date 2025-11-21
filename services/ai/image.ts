@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Modality } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 
 /**
  * Generates a high-quality image using Imagen 4.0.
@@ -43,7 +43,7 @@ export const editSlideImage = async (base64ImageData: string, mimeType: string, 
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image', // Nano Banana
+            model: 'gemini-2.5-flash-image',
             contents: {
                 parts: [
                     { 
@@ -54,19 +54,25 @@ export const editSlideImage = async (base64ImageData: string, mimeType: string, 
                     },
                     { text: prompt }
                 ]
-            },
-            config: {
-                responseModalities: [Modality.IMAGE],
             }
         });
 
-        const part = response.candidates?.[0]?.content?.parts?.[0];
+        // Find the image part in the response
+        let imagePart;
+        if (response.candidates?.[0]?.content?.parts) {
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    imagePart = part;
+                    break;
+                }
+            }
+        }
         
-        if (!part || !part.inlineData || !part.inlineData.data) {
+        if (!imagePart || !imagePart.inlineData || !imagePart.inlineData.data) {
              throw new Error("Gemini processed the request but returned no image data.");
         }
 
-        return { base64Image: part.inlineData.data };
+        return { base64Image: imagePart.inlineData.data };
 
     } catch (error) {
         console.error("Nano Banana Edit Error:", error);
