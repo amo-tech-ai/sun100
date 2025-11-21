@@ -52,6 +52,7 @@ const PublicLayout: React.FC = () => {
                             <h4 className="font-bold tracking-wider uppercase text-sm text-gray-800">Product</h4>
                             <ul className="mt-4 space-y-2 text-sm text-subtext-light dark:text-subtext-dark">
                                 <li><Link className="hover:text-brand-orange" to="/pitch-decks/new">AI Pitch Deck Wizard</Link></li>
+                                <li><Link className="hover:text-brand-orange" to="/how-it-works">How It Works</Link></li>
                                 <li><Link className="hover:text-brand-orange" to="/jobs">AI Jobs</Link></li>
                                 <li><Link className="hover:text-brand-orange" to="/events">Events</Link></li>
                             </ul>
