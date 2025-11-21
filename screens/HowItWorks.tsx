@@ -56,6 +56,14 @@ const TrophyIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
+const BanknoteIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <rect width="20" height="12" x="2" y="6" rx="2" />
+        <circle cx="12" cy="12" r="2" />
+        <path d="M6 12h.01M18 12h.01" />
+    </svg>
+);
+
 // --- DATA ---
 
 const stages = [
@@ -78,9 +86,9 @@ const stages = [
         description: "MVP live, early users, first signs of traction.",
         badges: ["Prototype", "Launch"],
         status: "Active",
-        accent: "text-emerald-500",
-        bgGradient: "from-emerald-500/20 to-teal-500/5",
-        iconGradient: "from-emerald-400 to-teal-600",
+        accent: "text-teal-500",
+        bgGradient: "from-teal-500/20 to-cyan-500/5",
+        iconGradient: "from-teal-400 to-cyan-600",
         icon: SproutIcon
     },
     {
@@ -91,7 +99,7 @@ const stages = [
         badges: ["ARR", "PMF"],
         status: "Next",
         accent: "text-blue-500",
-        bgGradient: "from-blue-500/20 to-cyan-500/5",
+        bgGradient: "from-blue-500/20 to-indigo-500/5",
         iconGradient: "from-cyan-400 to-blue-600",
         icon: RocketIcon
     },
@@ -103,7 +111,7 @@ const stages = [
         badges: ["CAC", "Growth %"],
         status: "Future",
         accent: "text-purple-500",
-        bgGradient: "from-purple-500/20 to-violet-500/5",
+        bgGradient: "from-purple-500/20 to-fuchsia-500/5",
         iconGradient: "from-blue-600 to-purple-600",
         icon: ChartIcon
     },
@@ -114,9 +122,9 @@ const stages = [
         description: "International expansion, acquisitions, market dominance.",
         badges: ["Global", "Scale"],
         status: "Future",
-        accent: "text-indigo-500",
-        bgGradient: "from-indigo-500/20 to-purple-500/5",
-        iconGradient: "from-purple-600 to-indigo-600",
+        accent: "text-fuchsia-500",
+        bgGradient: "from-fuchsia-500/20 to-pink-500/5",
+        iconGradient: "from-purple-600 to-fuchsia-600",
         icon: GlobeIcon
     },
     {
@@ -126,10 +134,22 @@ const stages = [
         description: "IPO, acquisition, investor liquidity events.",
         badges: ["IPO", "M&A"],
         status: "Goal",
+        accent: "text-rose-500",
+        bgGradient: "from-rose-500/20 to-orange-500/5",
+        iconGradient: "from-fuchsia-500 to-rose-600",
+        icon: TrophyIcon
+    },
+    {
+        id: 7,
+        title: "Liquidity",
+        subtitle: "Founder Exit",
+        description: "Secondaries, private equity, post-exit roles.",
+        badges: ["Wealth", "Legacy"],
+        status: "Dream",
         accent: "text-amber-500",
         bgGradient: "from-amber-500/20 to-yellow-500/5",
-        iconGradient: "from-amber-300 to-yellow-600",
-        icon: TrophyIcon
+        iconGradient: "from-rose-500 to-amber-500",
+        icon: BanknoteIcon
     }
 ];
 
@@ -141,7 +161,7 @@ const StageCard: React.FC<{ stage: typeof stages[0]; index: number }> = ({ stage
     return (
         <div 
             ref={ref}
-            className={`relative group w-full md:w-64 flex-shrink-0 transition-all duration-700 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0'}`}
+            className={`relative group w-full md:w-[280px] flex-shrink-0 transition-all duration-700 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0'}`}
             style={{ transitionDelay: `${index * 100}ms` }}
         >
             {/* Floating Icon */}
@@ -157,34 +177,31 @@ const StageCard: React.FC<{ stage: typeof stages[0]; index: number }> = ({ stage
             </div>
 
             {/* Card Body */}
-            <div className="mt-0 pt-10 pb-8 px-6 h-full bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 flex flex-col items-center text-center relative overflow-hidden">
+            <div className="mt-0 pt-12 pb-8 px-6 h-full bg-white/80 backdrop-blur-xl border border-white/60 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 flex flex-col items-center text-center relative overflow-hidden">
                 {/* Subtle Gradient BG */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${stage.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
                 
                 {/* Content */}
-                <div className="relative z-10 flex flex-col h-full">
-                    <span className={`text-xs font-bold uppercase tracking-wider mb-1 ${stage.accent} opacity-80`}>{stage.subtitle}</span>
-                    <h3 className="text-xl font-bold text-gray-800 mb-3 leading-tight">{stage.title}</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed mb-6 flex-grow">{stage.description}</p>
+                <div className="relative z-10 flex flex-col h-full items-center">
+                    <span className={`text-[10px] font-extrabold uppercase tracking-widest mb-2 ${stage.accent} opacity-90`}>{stage.subtitle}</span>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2 leading-tight">{stage.title}</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-grow">{stage.description}</p>
                     
                     <div className="flex flex-wrap gap-2 justify-center mt-auto">
                         {stage.badges.map((badge, i) => (
                             <span 
                                 key={i} 
-                                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white shadow-sm border border-gray-100 text-gray-600 group-hover:border-${stage.accent}/30 group-hover:text-${stage.accent} transition-colors duration-300`}
+                                className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white shadow-sm border border-slate-100 text-slate-500 group-hover:border-${stage.accent}/30 group-hover:text-${stage.accent} group-hover:scale-105 transition-all duration-300`}
                             >
                                 {badge}
                             </span>
                         ))}
                     </div>
                 </div>
-
-                {/* Status Indicator */}
-                <div className={`absolute top-4 right-4 w-2 h-2 rounded-full ${stage.status === 'Active' ? 'bg-green-500 animate-pulse' : 'bg-gray-200'}`}></div>
             </div>
 
             {/* Connector Dot (Desktop) */}
-            <div className="hidden md:block absolute -bottom-14 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-white border-4 border-gray-200 z-10 group-hover:border-brand-orange group-hover:scale-125 transition-all duration-300"></div>
+            <div className="hidden md:block absolute -bottom-12 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-slate-200 z-10 group-hover:border-brand-orange group-hover:scale-150 transition-all duration-300"></div>
         </div>
     );
 };
@@ -194,41 +211,48 @@ const HowItWorks: React.FC = () => {
     const [timelineRef, isTimelineVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.1 });
 
     return (
-        <div className="min-h-screen bg-[#FBF8F5] relative overflow-hidden">
+        <div className="min-h-screen bg-[#FBF8F5] relative overflow-hidden font-display">
             <style>{`
                 @keyframes draw-line {
                     from { width: 0%; }
                     to { width: 100%; }
                 }
-                .animate-draw-line { animation: draw-line 1.5s ease-out forwards; }
+                .animate-draw-line { animation: draw-line 2s ease-out forwards; }
                 
                 @keyframes draw-line-vertical {
                     from { height: 0%; }
                     to { height: 100%; }
                 }
-                .animate-draw-line-vertical { animation: draw-line-vertical 1.5s ease-out forwards; }
+                .animate-draw-line-vertical { animation: draw-line-vertical 2s ease-out forwards; }
 
                 @keyframes ping-slow {
-                    75%, 100% { transform: scale(2); opacity: 0; }
+                    75%, 100% { transform: scale(1.5); opacity: 0; }
                 }
-                .animate-ping-slow { animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite; }
+                .animate-ping-slow { animation: ping-slow 4s cubic-bezier(0, 0, 0.2, 1) infinite; }
+                
+                @keyframes float {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-10px); }
+                }
+                .animate-float { animation: float 6s ease-in-out infinite; }
             `}</style>
 
             {/* Ambient Background Elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute -top-20 -left-20 w-96 h-96 bg-brand-orange/5 rounded-full blur-3xl animate-pulse-slow"></div>
-                <div className="absolute top-1/3 right-0 w-[500px] h-[500px] bg-blue-100/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-                <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] bg-purple-100/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
+                <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-brand-orange/5 rounded-full blur-[100px] animate-float"></div>
+                <div className="absolute top-1/4 right-[-200px] w-[800px] h-[800px] bg-blue-100/30 rounded-full blur-[120px] animate-float" style={{ animationDelay: '2s' }}></div>
+                <div className="absolute bottom-0 left-1/4 w-[700px] h-[700px] bg-purple-100/20 rounded-full blur-[100px] animate-float" style={{ animationDelay: '4s' }}></div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
                 {/* Header */}
-                <div ref={headerRef} className={`text-center mb-20 transition-all duration-1000 ease-out ${isHeaderVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                    <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
-                        Startup Funding <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-brand-mustard">Journey</span>
+                <div ref={headerRef} className={`text-center mb-24 transition-all duration-1000 ease-out ${isHeaderVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                    <span className="inline-block py-1 px-3 rounded-full bg-brand-orange/10 text-brand-orange text-xs font-bold uppercase tracking-widest mb-4">The Roadmap</span>
+                    <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight leading-tight">
+                        From Idea to <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-brand-mustard">Exit</span>
                     </h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">
-                        From idea to traction, scale, and exit. A visual guide for founders navigating the venture path with Sun AI.
+                    <p className="text-xl text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
+                        A visual guide to the startup lifecycle. Sun AI accelerates every stage of this journey with intelligent tools and insights.
                     </p>
                 </div>
 
@@ -236,23 +260,26 @@ const HowItWorks: React.FC = () => {
                 <div ref={timelineRef} className="relative">
                     
                     {/* Desktop Timeline Line */}
-                    <div className="hidden md:block absolute bottom-8 left-0 h-1 bg-gray-200 rounded-full w-full overflow-hidden">
+                    <div className="hidden md:block absolute -bottom-11 left-0 right-0 h-1 bg-slate-100 rounded-full w-full overflow-hidden mx-auto max-w-[95%]">
                         <div 
                             className={`h-full bg-gradient-to-r from-green-400 via-blue-500 via-purple-500 to-amber-500 ${isTimelineVisible ? 'animate-draw-line' : 'w-0'}`}
                         ></div>
                     </div>
 
                     {/* Mobile Timeline Line */}
-                    <div className="md:hidden absolute top-0 left-8 bottom-0 w-1 bg-gray-200 rounded-full overflow-hidden h-full">
+                    <div className="md:hidden absolute top-0 left-[50%] -translate-x-1/2 bottom-0 w-1 bg-slate-100 rounded-full overflow-hidden h-full z-0">
                         <div 
                             className={`w-full bg-gradient-to-b from-green-400 via-blue-500 via-purple-500 to-amber-500 ${isTimelineVisible ? 'animate-draw-line-vertical' : 'h-0'}`}
                         ></div>
                     </div>
 
                     {/* Nodes Container */}
-                    <div className="flex flex-col md:flex-row justify-between items-stretch gap-12 md:gap-6 pl-16 md:pl-0">
+                    {/* Desktop: Horizontal Scroll Container if needed, or Flex Wrap centered */}
+                    <div className="flex flex-col md:flex-row md:overflow-x-auto md:pb-20 md:pt-10 md:px-4 items-stretch gap-12 md:gap-8 scrollbar-hide snap-x">
                         {stages.map((stage, index) => (
-                            <StageCard key={stage.id} stage={stage} index={index} />
+                            <div key={stage.id} className="snap-center shrink-0 flex justify-center md:block">
+                                <StageCard stage={stage} index={index} />
+                            </div>
                         ))}
                     </div>
 
@@ -260,21 +287,23 @@ const HowItWorks: React.FC = () => {
 
                 {/* CTA Footer */}
                 <div className="mt-32 text-center">
-                    <div className="inline-block p-1 rounded-2xl bg-gradient-to-r from-brand-orange/20 to-brand-mustard/20 backdrop-blur-sm">
-                        <div className="bg-white/80 rounded-xl p-8 md:p-12 border border-white shadow-xl max-w-4xl mx-auto">
-                            <h2 className="text-3xl font-bold text-brand-blue mb-4">Ready to Start Your Journey?</h2>
-                            <p className="text-gray-600 mb-8 text-lg">Use Sun AI's intelligent tools to accelerate every stage of your growth.</p>
-                            <div className="flex flex-col sm:flex-row justify-center gap-4">
-                                <Link to="/dashboard" className="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-brand-orange rounded-xl hover:bg-opacity-90 transition-all shadow-lg hover:shadow-orange-500/25 transform hover:-translate-y-1">
+                    <div className="inline-block p-1 rounded-3xl bg-gradient-to-r from-brand-orange/10 to-brand-mustard/10 backdrop-blur-sm">
+                        <div className="bg-white/90 rounded-[20px] p-10 md:p-16 border border-white shadow-2xl max-w-4xl mx-auto relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+                            
+                            <h2 className="text-3xl font-bold text-slate-900 mb-4 relative z-10">Ready to Start Your Journey?</h2>
+                            <p className="text-slate-600 mb-10 text-lg relative z-10">Use Sun AI's intelligent tools to accelerate every stage of your growth.</p>
+                            <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
+                                <Link to="/dashboard" className="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-brand-orange rounded-xl hover:bg-opacity-90 transition-all shadow-lg hover:shadow-brand-orange/30 transform hover:-translate-y-1 active:translate-y-0">
                                     Build My Pitch Deck
                                 </Link>
-                                <Link to="/sunaistartup-deck" className="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-brand-blue bg-white border-2 border-brand-blue/10 rounded-xl hover:bg-gray-50 transition-all">
-                                    View Sponsor Network
+                                <Link to="/sunaistartup-deck" className="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-slate-700 bg-white border-2 border-slate-100 rounded-xl hover:bg-slate-50 hover:border-slate-200 transition-all">
+                                    View Ecosystem
                                 </Link>
                             </div>
                         </div>
                     </div>
-                    <p className="mt-12 text-sm text-gray-400 font-medium tracking-wider uppercase">Sun AI — Founder Intelligence Platform</p>
+                    <p className="mt-12 text-xs font-bold text-slate-400 tracking-widest uppercase">Sun AI — Founder Intelligence Platform</p>
                 </div>
             </div>
         </div>
