@@ -4,7 +4,8 @@ import { Deck, Slide } from '../../data/decks';
 import { templates } from '../../styles/templates';
 import { invokeEdgeFunction } from '../edgeFunctionService';
 import { DeckUpdateSuggestion, FundingAnalysis } from './types';
-import { analyzeFundingGoalFunctionDeclaration } from './prompts';
+import { analyzeFundingGoalFunctionDeclaration, createRoadmapContentFunctionDeclaration } from './prompts';
+import { generateSlideImage } from './image';
 
 const uuidv4 = () => {
     // A simple UUID generator for client-side keying
@@ -74,18 +75,67 @@ export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit
 };
 
 export const generateRoadmapSlide = async (companyContext: string): Promise<{ slide: Slide }> => {
-    // For roadmap generation, we also want high reasoning to infer strategic milestones.
-    const result = await invokeEdgeFunction<{ slide: Omit<Slide, 'id'> }>('generate-roadmap-slide', { 
-        companyContext,
-        config: {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+    // Step 1: Generate Strategic Milestones (Text) using Gemini 3 reasoning
+    let milestones: string[] = ['Launch MVP', 'Gain Traction', 'Scale', 'Series A']; // Fallback
+    
+    try {
+        const response = await ai.models.generateContent({
             model: 'gemini-3-pro-preview',
-            thinking_level: 'high'
+            contents: `Generate 4 strategic, forward-looking roadmap milestones for a startup with this context: "${companyContext}". 
+            The milestones should represent:
+            1. Early Stage (e.g., MVP, Beta)
+            2. Growth (e.g., User milestone, Revenue)
+            3. Scaling (e.g., Series A, Expansion)
+            4. Future (e.g., Global, Market Leader)
+            Call the 'createRoadmapContent' function with these 4 milestones.`,
+            config: {
+                tools: [{ functionDeclarations: [createRoadmapContentFunctionDeclaration] }],
+                thinkingConfig: { thinkingBudget: 2048 }
+            }
+        });
+        
+        const call = response.functionCalls?.[0];
+        if (call && call.name === 'createRoadmapContent' && call.args) {
+            const args = call.args as any;
+            if (args.milestones && Array.isArray(args.milestones)) {
+                 milestones = args.milestones;
+            }
         }
-    });
+    } catch (e) {
+        console.error("Roadmap text generation failed, using fallback.", e);
+    }
+
+    // Step 2: Generate Visual (Image) using the generated milestones
+    // Refined 'Vision Trail' prompt with specific design constraints
+    const imagePrompt = `A minimalist 'Vision Trail' roadmap diagram on a light beige background (#FBF8F5). 
+    A single, clean horizontal line (#1F2937) runs from left to right. 
+    Four circular nodes are evenly spaced on the line, with simple, recognizable icons inside. 
+    The first circle is green (#10B981), the second is brand orange (#E87C4D), and the last two are gray (#6B7280). 
+    A vertical dashed orange line labeled 'Now' passes through the second circle. 
+    Below each circle, add a short, dark gray label corresponding to these milestones: '${milestones[0]}', '${milestones[1]}', '${milestones[2]}', '${milestones[3]}'.
+    Style: Professional vector art, clean, high resolution.`;
+    
+    let imageUrl = '';
+    try {
+        // Reuse the existing high-quality image service
+        const { base64Image } = await generateSlideImage("Strategic Roadmap", companyContext, imagePrompt);
+        imageUrl = `data:image/jpeg;base64,${base64Image}`;
+    } catch (e) {
+        console.error("Roadmap image generation failed", e);
+    }
+
+    // Step 3: Return the composed slide
     return {
         slide: {
-            ...result.slide,
-            id: `slide-${uuidv4()}`
+            id: `slide-${uuidv4()}`,
+            title: "Our Strategic Roadmap",
+            // Put milestones in content so they are accessible as text/bullets too
+            content: milestones.map(m => `- ${m}`).join('\n'),
+            imageUrl: imageUrl,
+            template: 'default',
+            type: 'roadmap'
         }
     };
 };
