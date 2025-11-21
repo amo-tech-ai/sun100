@@ -8,7 +8,6 @@ import { analyzeFundingGoalFunctionDeclaration, createRoadmapContentFunctionDecl
 import { generateSlideImage } from './image';
 
 const uuidv4 = () => {
-    // A simple UUID generator for client-side keying
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
@@ -40,7 +39,6 @@ interface GenerationPayload {
     thinking_level: 'high' | 'low';
   };
   financials?: FinancialSettings;
-  // Legacy props to satisfy type checker if needed
   companyDetails?: {
     name: string;
     industry: string;
@@ -52,11 +50,9 @@ interface GenerationPayload {
 }
 
 export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit<Deck, 'id'>> => {
-    // This calls the secure backend function.
-    // We use the config from the payload (user preference) or default to High reasoning.
     const config = {
         model: 'gemini-3-pro-preview',
-        thinking_level: 'high', // Default to high if not specified
+        thinking_level: 'high',
         ...payload.config
     };
 
@@ -65,7 +61,6 @@ export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit
         config
     });
     
-    // Add client-side IDs before returning to the UI for React keys
     const newDeck: Omit<Deck, 'id'> = {
         title: deckData.title,
         template: payload.theme || 'default',
@@ -77,8 +72,7 @@ export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit
 export const generateRoadmapSlide = async (companyContext: string): Promise<{ slide: Slide }> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-    // Step 1: Generate Strategic Milestones (Text) using Gemini 3 reasoning
-    let milestones: string[] = ['Launch MVP', 'Gain Traction', 'Scale', 'Series A']; // Fallback
+    let milestones: string[] = ['Launch MVP', 'Gain Traction', 'Scale', 'Series A'];
     
     try {
         const response = await ai.models.generateContent({
@@ -107,8 +101,6 @@ export const generateRoadmapSlide = async (companyContext: string): Promise<{ sl
         console.error("Roadmap text generation failed, using fallback.", e);
     }
 
-    // Step 2: Generate Visual (Image) using the generated milestones
-    // Refined 'Vision Trail' prompt with specific design constraints
     const imagePrompt = `A minimalist 'Vision Trail' roadmap diagram on a light beige background (#FBF8F5). 
     A single, clean horizontal line (#1F2937) runs from left to right. 
     Four circular nodes are evenly spaced on the line, with simple, recognizable icons inside. 
@@ -119,19 +111,16 @@ export const generateRoadmapSlide = async (companyContext: string): Promise<{ sl
     
     let imageUrl = '';
     try {
-        // Reuse the existing high-quality image service
         const { base64Image } = await generateSlideImage("Strategic Roadmap", companyContext, imagePrompt);
         imageUrl = `data:image/jpeg;base64,${base64Image}`;
     } catch (e) {
         console.error("Roadmap image generation failed", e);
     }
 
-    // Step 3: Return the composed slide
     return {
         slide: {
             id: `slide-${uuidv4()}`,
             title: "Our Strategic Roadmap",
-            // Put milestones in content so they are accessible as text/bullets too
             content: milestones.map(m => `- ${m}`).join('\n'),
             imageUrl: imageUrl,
             template: 'default',
@@ -141,14 +130,13 @@ export const generateRoadmapSlide = async (companyContext: string): Promise<{ sl
 };
 
 export const checkForWebsiteUpdates = async (deck: Deck, url: string): Promise<DeckUpdateSuggestion[]> => {
-    // This function calls the backend to crawl the URL and compare it with the deck content.
     const response = await invokeEdgeFunction<{ suggestions: DeckUpdateSuggestion[] }>('sync-deck-with-website', {
         deck,
         url,
         config: {
             model: 'gemini-3-pro-preview',
-            thinking_level: 'high', // High reasoning to detect nuanced changes vs semantic similarity
-            tools: ['urlContext'] // Enable URL reading capability
+            thinking_level: 'high',
+            tools: ['urlContext']
         }
     });
     return response.suggestions;
@@ -171,7 +159,7 @@ export const analyzeFundingGoal = async (amount: string, industry: string): Prom
             contents: prompt,
             config: {
                 tools: [{ functionDeclarations: [analyzeFundingGoalFunctionDeclaration] }],
-                thinkingConfig: { thinkingBudget: 2048 } // High reasoning for strategic analysis
+                thinkingConfig: { thinkingBudget: 2048 }
             },
         });
 
