@@ -18,6 +18,8 @@ const DocBuilder: React.FC = () => {
     const [updateData, setUpdateData] = useState({
         currentMRR: '12000',
         prevMRR: '10000',
+        currentUsers: '150',
+        prevUsers: '100',
         wins: 'Closed huge partnership with TechCorp. Launched v2.0.',
         blockers: 'Need to hire a senior engineer. Marketing spend is inefficient.',
     });
@@ -36,8 +38,8 @@ const DocBuilder: React.FC = () => {
                 setOnePagerResult(result);
             } else {
                 const result = await generateInvestorUpdate(
-                    { mrr: updateData.currentMRR }, 
-                    { mrr: updateData.prevMRR }, 
+                    { mrr: updateData.currentMRR, active_users: updateData.currentUsers }, 
+                    { mrr: updateData.prevMRR, active_users: updateData.prevUsers }, 
                     `Wins: ${updateData.wins}\nBlockers: ${updateData.blockers}`
                 );
                 setUpdateResult(result);
@@ -117,6 +119,24 @@ const DocBuilder: React.FC = () => {
                                 type="number" 
                                 value={updateData.currentMRR} 
                                 onChange={(e) => setUpdateData({...updateData, currentMRR: e.target.value})}
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-brand-orange focus:border-brand-orange"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Previous Active Users</label>
+                            <input 
+                                type="number" 
+                                value={updateData.prevUsers} 
+                                onChange={(e) => setUpdateData({...updateData, prevUsers: e.target.value})}
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-brand-orange focus:border-brand-orange"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Current Active Users</label>
+                            <input 
+                                type="number" 
+                                value={updateData.currentUsers} 
+                                onChange={(e) => setUpdateData({...updateData, currentUsers: e.target.value})}
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-brand-orange focus:border-brand-orange"
                             />
                         </div>
