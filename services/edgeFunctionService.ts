@@ -1,6 +1,7 @@
+
 import { supabase } from '../lib/supabaseClient';
 import { mockDeck } from '../data/decks';
-import { MarketSizeAnalysis, OnePagerContent } from './ai/types';
+import { MarketSizeAnalysis, OnePagerContent, InvestorUpdateContent } from './ai/types';
 
 /**
  * A generic helper function to invoke a Supabase Edge Function.
@@ -60,7 +61,16 @@ export const invokeEdgeFunction = async <T>(
 
      if (functionName === 'generate-investor-update') {
          await new Promise(resolve => setTimeout(resolve, 1500));
-         return { content: "This month we achieved 15% growth in MRR..." } as unknown as T;
+         const mockUpdate: InvestorUpdateContent = {
+             subject_line: "September Update: 15% Growth & New AI Features 🚀",
+             status_emoji: "🟢",
+             status_summary: "We are on track to hit our Q3 goals. Growth is accelerating, and user retention is at an all-time high.",
+             highlights: ["Reached $12k MRR (+15% MoM)", "Launched Gemini 3 integration", "Hired lead engineer"],
+             lowlights: ["Churn slightly increased to 3%", "Marketing spend efficiency dropped"],
+             kpi_summary: "**MRR:** $12k (+15%)\n**Active Users:** 520 (+10%)\n**Runway:** 14 Months",
+             ask: "Intros to Series A fintech investors for our upcoming round."
+         };
+         return mockUpdate as unknown as T;
      }
 
      // Generic fallback

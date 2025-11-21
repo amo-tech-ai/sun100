@@ -6,8 +6,8 @@ export const researchTopic = async (query: string): Promise<ResearchResult> => {
     return invokeEdgeFunction('research-topic', { 
         query,
         config: {
-            model: 'gemini-3-pro-preview',
-            thinking_level: 'high' // Research synthesis requires deep reasoning
+            model: 'gemini-2.5-flash', // Use Flash for efficient Search Grounding
+            tools: ['googleSearch']
         }
     });
 };

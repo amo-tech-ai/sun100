@@ -123,3 +123,13 @@ export interface OnePagerContent {
     ask: string;
     contact_info: { email: string; website: string };
 }
+
+export interface InvestorUpdateContent {
+    subject_line: string;
+    status_emoji: '🟢' | '🟡' | '🔴';
+    status_summary: string;
+    highlights: string[];
+    lowlights: string[];
+    kpi_summary: string; // Markdown table or list
+    ask: string;
+}

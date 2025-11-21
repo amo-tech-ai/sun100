@@ -280,6 +280,30 @@ export const generateSocialMediaCopyFunctionDeclaration: FunctionDeclaration = {
     }
 };
 
+export const suggestVenuesFunctionDeclaration: FunctionDeclaration = {
+    name: 'suggestVenues',
+    description: 'Suggests suitable venues for an event based on type and location.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            venues: {
+                type: Type.ARRAY,
+                description: 'List of venue suggestions.',
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        reason: { type: Type.STRING },
+                        mapLink: { type: Type.STRING }
+                    },
+                    required: ['name', 'reason']
+                }
+            }
+        },
+        required: ['venues']
+    }
+};
+
 export const structureAgendaFunctionDeclaration: FunctionDeclaration = {
     name: 'structureAgenda',
     description: 'Formats a raw list of event topics into a structured, timed agenda.',
@@ -467,6 +491,24 @@ export const generateOnePagerFunctionDeclaration: FunctionDeclaration = {
             }
         },
         required: ["headline", "problem_summary", "solution_summary", "market_opportunity", "traction_highlights", "business_model", "ask"]
+    }
+};
+
+export const generateInvestorUpdateFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateInvestorUpdate',
+    description: 'Generates a structured investor update based on metrics and notes.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            subject_line: { type: Type.STRING, description: "A compelling email subject line (e.g. 'August Update: 20% Growth 🚀')." },
+            status_emoji: { type: Type.STRING, description: "Green, Yellow, or Red circle emoji based on performance." },
+            status_summary: { type: Type.STRING, description: "1-2 sentences summarizing the overall health." },
+            highlights: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of key wins." },
+            lowlights: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of blockers or challenges." },
+            kpi_summary: { type: Type.STRING, description: "A Markdown-formatted list or table of key metrics." },
+            ask: { type: Type.STRING, description: "Specific requests for help from investors." }
+        },
+        required: ["subject_line", "status_emoji", "status_summary", "highlights", "lowlights", "kpi_summary", "ask"]
     }
 };
 

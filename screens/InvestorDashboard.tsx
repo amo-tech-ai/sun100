@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AnimatedCounter from '../components/AnimatedCounter';
@@ -103,9 +104,9 @@ const InvestorDashboard: React.FC = () => {
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
                             <h3 className="font-bold text-lg text-brand-blue">Investor Documents</h3>
-                            <button className="bg-brand-blue text-white text-sm font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors flex items-center gap-2">
+                            <Link to="/dashboard/investor-docs/new" className="bg-brand-blue text-white text-sm font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors flex items-center gap-2">
                                 <PlusIcon /> New Doc
-                            </button>
+                            </Link>
                         </div>
                         <div>
                             <DocRow title="Seed Round One-Pager" type="One-Pager" date="Aug 28, 2024" status="final" />
