@@ -62,6 +62,7 @@ const MyEvents = lazy(() => import('./screens/MyEvents'));
 const EventWizard = lazy(() => import('./screens/EventWizard'));
 const VideoGenerator = lazy(() => import('./screens/VideoGenerator'));
 const InvestorDashboard = lazy(() => import('./screens/InvestorDashboard'));
+const DocBuilder = lazy(() => import('./screens/DocBuilder'));
 
 
 // Loading fallback component
@@ -119,6 +120,7 @@ const App: React.FC = () => {
               <Route path="/dashboard/events/new" element={<EventWizard />} />
               <Route path="/dashboard/video-generator" element={<VideoGenerator />} />
               <Route path="/dashboard/investor-docs" element={<InvestorDashboard />} />
+              <Route path="/dashboard/investor-docs/new" element={<DocBuilder />} />
               <Route path="/dashboard/sitemap" element={<Sitemap />} />
               
               <Route path="/pitch-decks" element={<PitchDecks />} />

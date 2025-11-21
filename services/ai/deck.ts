@@ -4,7 +4,7 @@ import { Deck, Slide } from '../../data/decks';
 import { templates } from '../../styles/templates';
 import { invokeEdgeFunction } from '../edgeFunctionService';
 import { DeckUpdateSuggestion, FundingAnalysis } from './types';
-import { analyzeFundingGoalFunctionDeclaration, createRoadmapContentFunctionDeclaration } from './prompts';
+import { analyzeFundingGoalFunctionDeclaration, createRoadmapContentFunctionDeclaration, generateDeckOutlineFunctionDeclaration, generateDeckUpdateSuggestionsFunctionDeclaration } from './prompts';
 import { generateSlideImage } from './image';
 
 const uuidv4 = () => {
@@ -52,28 +52,60 @@ interface GenerationPayload {
 }
 
 export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit<Deck, 'id'>> => {
-    const config = {
-        model: 'gemini-3-pro-preview',
-        thinking_level: 'high',
-        ...payload.config
-    };
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    const prompt = `
+    Act as a professional pitch deck consultant. Generate a 10-slide pitch deck outline for the following company.
+    
+    Business Context: ${payload.businessContext}
+    Deck Type: ${payload.deckType}
+    Theme: ${payload.theme}
+    
+    Company Details:
+    Name: ${payload.companyDetails?.name}
+    Industry: ${payload.companyDetails?.industry}
+    Customer: ${payload.companyDetails?.customerType}
+    Business Model: ${payload.companyDetails?.revenueModel}
+    Stage: ${payload.companyDetails?.stage}
+    Traction: ${payload.companyDetails?.traction}
+    Focus: ${payload.companyDetails?.focus}
+    Team Size: ${payload.companyDetails?.teamSize}
+    
+    Call the 'generateDeckOutline' function with the result.
+    `;
 
-    // We pass the payload to the edge function. The prompt construction logic
-    // resides on the server-side (in the edge function) to keep secrets safe.
-    // However, we ensure the payload now carries the rich 'companyDetails' 
-    // which the edge function will use to prime the Thinking Model.
-    
-    const deckData = await invokeEdgeFunction<{ title: string; slides: Omit<Slide, 'id'>[] }>('generate-deck', { 
-        ...payload,
-        config
-    });
-    
-    const newDeck: Omit<Deck, 'id'> = {
-        title: deckData.title,
-        template: payload.theme || 'default',
-        slides: deckData.slides.map(s => ({ ...s, id: `slide-${uuidv4()}` })),
-    };
-    return newDeck;
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-pro-preview',
+            contents: prompt,
+            config: {
+                tools: [{ functionDeclarations: [generateDeckOutlineFunctionDeclaration] }],
+                thinkingConfig: { thinkingBudget: 2048 }
+            }
+        });
+
+        const call = response.functionCalls?.[0];
+        if (call && call.name === 'generateDeckOutline' && call.args) {
+            const args = call.args as any;
+            return {
+                title: args.title,
+                template: payload.theme || 'default',
+                slides: (args.slides || []).map((s: any, i: number) => ({
+                    id: `slide-${uuidv4()}`,
+                    position: i,
+                    title: s.title,
+                    content: s.content,
+                    imageUrl: s.imageUrl,
+                    type: s.type,
+                    template: payload.theme
+                }))
+            };
+        }
+        throw new Error("The AI did not generate a valid deck structure.");
+    } catch (error) {
+        console.error("Error generating deck:", error);
+        throw new Error("Failed to generate deck. Please try again.");
+    }
 };
 
 export const generateRoadmapSlide = async (companyContext: string): Promise<{ slide: Slide }> => {
@@ -137,16 +169,43 @@ export const generateRoadmapSlide = async (companyContext: string): Promise<{ sl
 };
 
 export const checkForWebsiteUpdates = async (deck: Deck, url: string): Promise<DeckUpdateSuggestion[]> => {
-    const response = await invokeEdgeFunction<{ suggestions: DeckUpdateSuggestion[] }>('sync-deck-with-website', {
-        deck,
-        url,
-        config: {
-            model: 'gemini-3-pro-preview',
-            thinking_level: 'high',
-            tools: ['urlContext']
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    const deckSummary = deck.slides.map(s => `Slide: ${s.title}\nContent: ${s.content}`).join('\n\n');
+    const prompt = `
+    Analyze the provided website URL content (using urlContext) and compare it with the current pitch deck content.
+    Identify discrepancies such as outdated pricing, new features, or changed messaging.
+    Suggest updates by calling 'generateDeckUpdateSuggestions'.
+
+    Website URL: ${url}
+    
+    Current Deck Content:
+    ${deckSummary}
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-3-pro-preview",
+            contents: prompt,
+            config: {
+                tools: [
+                    { urlContext: {} },
+                    { functionDeclarations: [generateDeckUpdateSuggestionsFunctionDeclaration] }
+                ],
+                thinkingConfig: { thinkingBudget: 2048 }
+            },
+        });
+
+        const call = response.functionCalls?.[0];
+        if (call && call.name === 'generateDeckUpdateSuggestions' && call.args) {
+            const args = call.args as any;
+            return args.suggestions as DeckUpdateSuggestion[];
         }
-    });
-    return response.suggestions;
+        return [];
+    } catch (error) {
+        console.error("Error checking for website updates:", error);
+        throw new Error("Failed to check for website updates.");
+    }
 };
 
 export const analyzeFundingGoal = async (amount: string, industry: string): Promise<FundingAnalysis> => {
