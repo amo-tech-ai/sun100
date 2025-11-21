@@ -1,3 +1,4 @@
+
 import { Deck, Slide, ChartData, TableData } from '../../data/decks';
 import { templates } from '../../styles/templates';
 
@@ -88,4 +89,37 @@ export interface FundingAnalysis {
     investorTypes: string[];
     strategicAdvice: string;
     nextSteps: string[];
+}
+
+// --- Investor Command Center Types ---
+
+export type InvestorDocType = 'one_pager' | 'update' | 'memo' | 'gtm_strategy';
+
+export interface InvestorDoc {
+    id: string;
+    title: string;
+    type: InvestorDocType;
+    status: 'draft' | 'final' | 'sent';
+    lastUpdated: string;
+    previewUrl?: string; // For thumbnail generation
+}
+
+export interface MarketSizeAnalysis {
+  icp: string;
+  beachhead: string;
+  tam: { value: string; description: string; sourceUrl: string };
+  sam: { value: string; description: string; sourceUrl: string };
+  som: { value: string; description: string; sourceUrl: string };
+  methodology: string;
+}
+
+export interface OnePagerContent {
+    headline: string;
+    problem_summary: string;
+    solution_summary: string;
+    market_opportunity: string;
+    traction_highlights: string[];
+    business_model: string;
+    ask: string;
+    contact_info: { email: string; website: string };
 }
