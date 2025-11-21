@@ -70,11 +70,17 @@ export const generateMarketSizing = async (industry: string, location: string, b
 export const generateInvestorUpdate = async (currentMetrics: any, previousMetrics: any, notes: string): Promise<InvestorUpdateContent> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Generate an investor update based on the following data:
+    Act as a professional startup founder writing a monthly investor update.
+
+    Task:
+    1. Compare the Current Metrics against the Previous Metrics. Calculate the percentage growth (or decline) for each.
+    2. Analyze the provided 'Notes' to extract key wins (Highlights) and blockers (Lowlights).
+    3. Draft a professional, transparent update email content by calling 'generateInvestorUpdate'.
+
+    Data:
     Current Metrics: ${JSON.stringify(currentMetrics)}
     Previous Metrics: ${JSON.stringify(previousMetrics)}
     Notes: "${notes}"
-    Call 'generateInvestorUpdate' with the content.
     `;
 
     try {
