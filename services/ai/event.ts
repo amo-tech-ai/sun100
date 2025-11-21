@@ -49,7 +49,7 @@ export const structureAgenda = async (rawAgenda: string, eventDate: string): Pro
         eventDate,
         config: {
             model: 'gemini-3-pro-preview',
-            thinking_level: 'low' // Structuring/formatting task
+            thinking_level: 'high' // Upgraded to high thinking for complex unstructured text analysis
         }
     });
 };
