@@ -91,6 +91,12 @@ export interface FundingAnalysis {
     nextSteps: string[];
 }
 
+export interface GTMStrategy {
+    strategy_summary: string;
+    channels: string[];
+    key_metrics: string[];
+}
+
 // --- Investor Command Center Types ---
 
 export type InvestorDocType = 'one_pager' | 'update' | 'memo' | 'gtm_strategy';

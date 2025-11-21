@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Deck, Slide, ChartData, TableData } from '../data/decks';
@@ -18,6 +19,7 @@ import {
     suggestPieChart,
     generateFinancialProjections,
     generateCompetitorSWOT,
+    generateGTMStrategy
 } from '../services/ai/slide';
 import {
     ExtractedMetric,
@@ -67,6 +69,7 @@ interface DeckEditorContextType {
     syncError: string | null;
     isGeneratingSWOT: boolean;
     swotError: string | null;
+    isGeneratingGTM: boolean;
     handleSlideSelect: (slide: Slide) => void;
     handleTitleSave: (newTitle: string) => void;
     handleGenerateRoadmapSlide: () => void;
@@ -94,6 +97,7 @@ interface DeckEditorContextType {
     handleCheckForUpdates: (url: string) => void;
     handleApplyUpdate: (suggestion: DeckUpdateSuggestion) => void;
     handleGenerateSWOT: () => void;
+    handleGenerateGTM: () => void;
 }
 
 const DeckEditorContext = createContext<DeckEditorContextType>(null!);
@@ -151,6 +155,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [syncError, setSyncError] = useState<string | null>(null);
     const [isGeneratingSWOT, setIsGeneratingSWOT] = useState(false);
     const [swotError, setSwotError] = useState<string | null>(null);
+    const [isGeneratingGTM, setIsGeneratingGTM] = useState(false);
 
 
     useEffect(() => {
@@ -655,6 +660,33 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }, [selectedSlide, updateSlideStateAndPersist]);
 
+    const handleGenerateGTM = useCallback(async () => {
+        if (!deck) return;
+        setIsGeneratingGTM(true);
+        try {
+            const context = deck.slides[0]?.content || deck.title;
+            const strategy = await generateGTMStrategy(context);
+            
+            const newSlide: Slide = {
+                id: `slide-${Date.now()}`, // simple ID gen
+                title: "Go-To-Market Strategy",
+                content: `${strategy.strategy_summary}\n\n**Key Channels:**\n- ${strategy.channels.join('\n- ')}\n\n**Success Metrics:**\n- ${strategy.key_metrics.join('\n- ')}`,
+                template: 'default',
+                type: 'market'
+            };
+
+            // Mocking persistence as per existing roadmap pattern
+            const updatedSlides = [...deck.slides, newSlide];
+            setDeck({ ...deck, slides: updatedSlides });
+            handleSlideSelect(newSlide);
+        } catch (err) {
+            console.error("Failed to generate GTM slide:", err);
+            alert("Failed to generate GTM slide");
+        } finally {
+            setIsGeneratingGTM(false);
+        }
+    }, [deck, handleSlideSelect]);
+
 
     const handlePublishDeck = useCallback(async () => {
         if (!deck) return;
@@ -717,7 +749,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         isSuggestingPieChart, pieChartError, copilotSuggestions, imageSuggestions, researchSuggestions,
         areSuggestionsLoading, isPublishing, publishProgressMessage, loading, isGeneratingFinancials, financialError,
         isSyncing, syncSuggestions, syncError,
-        isGeneratingSWOT, swotError,
+        isGeneratingSWOT, swotError, isGeneratingGTM,
         handleSlideSelect, handleTitleSave, 
         handleGenerateRoadmapSlide, handleGenerateImage, handleEditImage, handleCopilotGenerate, 
         handleAnalyzeSlide, handleResearch, handleApplyResearch, handleSuggestLayout, handleSuggestChart, handleGenerateHeadlines, 
@@ -725,7 +757,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         handleSummarizeBio, handleSuggestPieChart, handleSocialProofSearch, handleGenerateFinancials, handlePublishDeck, 
         handlePrevSlide, handleNextSlide, handleTemplateChange,
         handleCheckForUpdates, handleApplyUpdate,
-        handleGenerateSWOT
+        handleGenerateSWOT, handleGenerateGTM
     };
 
     return (

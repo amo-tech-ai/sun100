@@ -2,7 +2,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { templates } from '../../styles/templates';
 import { Slide, ChartData, TableData } from '../../data/decks';
-import { SlideAnalysis, ExtractedMetric, BioSummary, FinancialData } from './types';
+import { SlideAnalysis, ExtractedMetric, BioSummary, FinancialData, GTMStrategy } from './types';
 import { 
     analyzeSlideContentFunctionDeclaration, 
     chooseLayoutFunctionDeclaration,
@@ -15,7 +15,8 @@ import {
     rewriteSlideFunctionDeclaration,
     suggestChartFunctionDeclaration,
     suggestPieChartFunctionDeclaration,
-    summarizeBioFunctionDeclaration
+    summarizeBioFunctionDeclaration,
+    generateGTMStrategyFunctionDeclaration
 } from './prompts';
 
 export const modifySlideContent = async (slideTitle: string, slideContent: string, instruction: string): Promise<{ newTitle: string; newContent: string }> => {
@@ -414,5 +415,35 @@ export const generateCompetitorSWOT = async (slideContent: string): Promise<{ ta
     } catch (error) {
         console.error("Error generating SWOT:", error);
         throw new Error("Failed to generate SWOT analysis.");
+    }
+};
+
+export const generateGTMStrategy = async (context: string): Promise<GTMStrategy> => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `
+    Analyze the following business context and suggest a high-impact Go-To-Market (GTM) strategy.
+    Identify the best channels for user acquisition and the key metrics to track.
+    Context: "${context}"
+    Call 'generateGTMStrategy' with the results.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-pro-preview',
+            contents: prompt,
+            config: {
+                tools: [{ functionDeclarations: [generateGTMStrategyFunctionDeclaration] }],
+                thinkingConfig: { thinkingBudget: 2048 }
+            }
+        });
+
+        const call = response.functionCalls?.[0];
+        if (call && call.name === 'generateGTMStrategy' && call.args) {
+            return call.args as unknown as GTMStrategy;
+        }
+        throw new Error("AI did not return GTM strategy.");
+    } catch (error) {
+        console.error("Error generating GTM strategy:", error);
+        throw new Error("Failed to generate GTM strategy.");
     }
 };

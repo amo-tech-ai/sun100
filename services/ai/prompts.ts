@@ -540,3 +540,25 @@ export const generateMarketSizingFunctionDeclaration: FunctionDeclaration = {
         required: ['icp', 'beachhead', 'tam', 'sam', 'som', 'methodology']
     }
 };
+
+export const generateGTMStrategyFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateGTMStrategy',
+    description: 'Generates a Go-To-Market strategy including key channels and metrics based on business context.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            strategy_summary: { type: Type.STRING, description: 'A strategic overview of how to acquire customers.' },
+            channels: { 
+                type: Type.ARRAY, 
+                items: { type: Type.STRING },
+                description: 'List of 3-4 most effective marketing or sales channels.' 
+            },
+            key_metrics: { 
+                type: Type.ARRAY, 
+                items: { type: Type.STRING },
+                description: 'List of 3-4 key performance indicators (KPIs) to track success.'
+            }
+        },
+        required: ['strategy_summary', 'channels', 'key_metrics']
+    }
+};
