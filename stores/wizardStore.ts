@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { templates } from '../styles/templates';
@@ -11,7 +12,14 @@ interface WizardState {
   financials: FinancialSettings;
   useThinking: boolean;
   selectedTemplate: keyof typeof templates;
-
+  
+  // New Step 3 Fields
+  startupType: string[];
+  stage: string;
+  primaryFocus: string[];
+  teamSize: string;
+  tractionStage: string;
+  
   setStep: (step: number) => void;
   setDirection: (direction: 'forward' | 'back') => void;
   setBusinessContext: (context: string) => void;
@@ -19,7 +27,15 @@ interface WizardState {
   setFinancials: (financials: FinancialSettings) => void;
   updateFinancials: (field: keyof FinancialSettings, value: string) => void;
   setUseThinking: (useThinking: boolean) => void;
-  setSelectedTemplate: (template: keyof typeof templates) => void;
+  setSelectedTemplate: (selectedTemplate: keyof typeof templates) => void;
+  
+  // New Setters
+  setStartupType: (types: string[]) => void;
+  setStage: (stage: string) => void;
+  setPrimaryFocus: (focus: string[]) => void;
+  setTeamSize: (size: string) => void;
+  setTractionStage: (traction: string) => void;
+  
   resetWizard: () => void;
 }
 
@@ -39,21 +55,36 @@ export const useWizardStore = create<WizardState>()(
         costStructure: { burnRate: '', marketingBudget: '' },
         timeHorizon: '36',
         currency: 'USD',
-        fundingGoal: ''
+        fundingGoal: '500000'
       },
       useThinking: true,
       selectedTemplate: 'default',
+      
+      // Initial State for New Fields
+      startupType: [],
+      stage: 'Idea',
+      primaryFocus: [],
+      teamSize: '2–5',
+      tractionStage: 'Pre-launch',
 
       setStep: (step) => set({ step }),
       setDirection: (direction) => set({ direction }),
       setBusinessContext: (businessContext) => set({ businessContext }),
       setUrls: (urls) => set({ urls }),
-      setFinancials: (financials) => set({ financials }),
+      setFinancials: (financials: FinancialSettings) => set({ financials }),
       updateFinancials: (field, value) => set((state) => ({
         financials: { ...state.financials, [field]: value }
       })),
       setUseThinking: (useThinking) => set({ useThinking }),
       setSelectedTemplate: (selectedTemplate) => set({ selectedTemplate }),
+      
+      // New Setters Implementation
+      setStartupType: (types) => set({ startupType: types }),
+      setStage: (stage) => set({ stage }),
+      setPrimaryFocus: (focus) => set({ primaryFocus: focus }),
+      setTeamSize: (size) => set({ teamSize: size }),
+      setTractionStage: (traction) => set({ tractionStage: traction }),
+
       resetWizard: () => set({
         step: 1,
         direction: 'forward',
@@ -72,6 +103,11 @@ export const useWizardStore = create<WizardState>()(
         },
         useThinking: true,
         selectedTemplate: 'default',
+        startupType: [],
+        stage: 'Idea',
+        primaryFocus: [],
+        teamSize: '2–5',
+        tractionStage: 'Pre-launch',
       })
     }),
     {

@@ -14,13 +14,46 @@ const CheckIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www
 const GlobeIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>;
 const PaletteIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>;
 const SlidersIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="1" x2="7" y1="14" y2="14"/><line x1="9" x2="15" y1="8" y2="8"/><line x1="17" x2="23" y1="16" y2="16"/></svg>;
+const BriefcaseIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
 
 // --- PROGRESS HEADER ---
 const stepsConfig = [
     { id: 1, title: 'Context', icon: <GlobeIcon /> },
     { id: 2, title: 'Aesthetic', icon: <PaletteIcon /> },
-    { id: 3, title: 'Refine', icon: <SlidersIcon /> }
+    { id: 3, title: 'Details', icon: <BriefcaseIcon /> },
+    { id: 4, title: 'Financials', icon: <SlidersIcon /> }
 ];
+
+// --- HELPER COMPONENTS FOR STEP 3 ---
+const PillButton = ({ 
+    label, 
+    selected, 
+    onClick,
+    multi = false 
+}: { 
+    label: string, 
+    selected: boolean, 
+    onClick: () => void,
+    multi?: boolean
+}) => (
+    <button
+        onClick={onClick}
+        className={`
+            px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border shadow-sm
+            ${selected 
+                ? 'bg-brand-orange text-white border-brand-orange ring-2 ring-brand-orange/20 transform scale-105' 
+                : 'bg-white text-gray-600 border-gray-200 hover:border-brand-orange/50 hover:text-brand-orange'
+            }
+        `}
+    >
+        {label}
+        {selected && multi && <span className="ml-2 text-white/80">✓</span>}
+    </button>
+);
+
+const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+    <h3 className="text-lg font-bold text-brand-blue mb-4">{children}</h3>
+);
 
 const WizardSteps: React.FC = () => {
     const navigate = useNavigate();
@@ -36,7 +69,18 @@ const WizardSteps: React.FC = () => {
         financials,
         updateFinancials,
         useThinking,
-        setUseThinking
+        setUseThinking,
+        // Step 3 State
+        startupType,
+        setStartupType,
+        stage,
+        setStage,
+        primaryFocus,
+        setPrimaryFocus,
+        teamSize,
+        setTeamSize,
+        tractionStage,
+        setTractionStage
     } = useWizardStore();
 
     const [loading, setLoading] = useState(false);
@@ -51,7 +95,18 @@ const WizardSteps: React.FC = () => {
             alert("Please provide a description or a URL to proceed.");
             return;
         }
-        if (step < 3) setStep(step + 1);
+        if (step === 3) {
+            // Basic validation for Step 3
+            if (startupType.length === 0) {
+                alert("Please select at least one Startup Type.");
+                return;
+            }
+            if (primaryFocus.length === 0) {
+                alert("Please select at least one Main Focus.");
+                return;
+            }
+        }
+        if (step < 4) setStep(step + 1);
     };
 
     const handleBack = () => {
@@ -72,15 +127,32 @@ const WizardSteps: React.FC = () => {
             },
             companyDetails: {
                 name: 'New Startup',
-                industry: financials.industry,
+                industry: startupType.join(', '),
                 customerType: 'B2B',
                 revenueModel: financials.revenueModel,
-                stage: 'Seed',
-                traction: ''
+                stage: stage,
+                traction: tractionStage,
+                focus: primaryFocus.join(', '),
+                teamSize: teamSize
             }
         };
         // Navigate immediately; GeneratingScreen handles the async call
         navigate('/pitch-decks/generating', { state: { generationPayload }});
+    };
+
+    // Step 3 Logic Helpers
+    const toggleSelection = (list: string[], item: string, max?: number) => {
+        if (list.includes(item)) {
+            return list.filter(i => i !== item);
+        } else {
+            if (max && list.length >= max) return list;
+            return [...list, item];
+        }
+    };
+
+    const formatFundingGoal = (val: number) => {
+        if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M+`;
+        return `$${(val / 1000).toFixed(0)}k`;
     };
 
     return (
@@ -167,7 +239,7 @@ const WizardSteps: React.FC = () => {
                 {step === 2 && (
                     <div className="animate-fade-in-up">
                         <div className="text-center mb-10">
-                            <span className="text-brand-orange font-bold text-xs uppercase tracking-widest mb-2 block">Step 2 of 3</span>
+                            <span className="text-brand-orange font-bold text-xs uppercase tracking-widest mb-2 block">Step 2 of 4</span>
                             <h1 className="text-3xl md:text-4xl font-extrabold text-brand-blue mb-3">
                                 Define Your Aesthetic
                             </h1>
@@ -179,49 +251,141 @@ const WizardSteps: React.FC = () => {
                     </div>
                 )}
 
-                {/* STEP 3: REFINE (Structured Data) */}
+                {/* STEP 3: STARTUP DETAILS (New Screen) */}
                 {step === 3 && (
-                    <div className="animate-fade-in-up grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Left Column: Forms */}
-                        <div className="lg:col-span-2 space-y-8">
-                            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
-                                <h3 className="text-xl font-bold text-brand-blue mb-6 flex items-center gap-2">
-                                    <span className="w-1 h-6 bg-brand-orange rounded-full"></span>
-                                    Company Basics
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Industry</label>
-                                        <select 
-                                            value={financials.industry}
-                                            onChange={(e) => updateFinancials('industry', e.target.value)}
-                                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-orange focus:border-transparent transition font-medium"
-                                        >
-                                            <option>SaaS</option>
-                                            <option>FinTech</option>
-                                            <option>HealthTech</option>
-                                            <option>E-commerce</option>
-                                            <option>Marketplace</option>
-                                            <option>AI / ML</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Funding Goal</label>
-                                        <input 
-                                            type="text" 
-                                            value={financials.fundingGoal}
-                                            onChange={(e) => updateFinancials('fundingGoal', e.target.value)}
-                                            placeholder="$1,500,000"
-                                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-orange focus:border-transparent transition font-medium"
+                    <div className="animate-fade-in-up max-w-4xl mx-auto">
+                        <div className="text-center mb-8">
+                            <span className="text-brand-orange font-bold text-xs uppercase tracking-widest mb-2 block">Step 3 of 4</span>
+                            <h1 className="text-3xl md:text-4xl font-extrabold text-brand-blue mb-3">
+                                Tell Us About Your Startup
+                            </h1>
+                            <p className="text-gray-500">
+                                These details help the AI tailor your pitch deck narrative and financial projections.
+                            </p>
+                        </div>
+
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 space-y-10">
+                            
+                            {/* Row 1: Type */}
+                            <div>
+                                <SectionLabel>What type of startup is this? <span className="text-gray-400 text-sm font-normal ml-2">(Select all that apply)</span></SectionLabel>
+                                <div className="flex flex-wrap gap-3">
+                                    {['AI SaaS', 'Marketplace', 'B2B SaaS', 'Consumer App', 'Fintech', 'Creator / Media', 'Hardware', 'Other'].map(type => (
+                                        <PillButton 
+                                            key={type} 
+                                            label={type} 
+                                            selected={startupType.includes(type)} 
+                                            onClick={() => setStartupType(toggleSelection(startupType, type))} 
+                                            multi 
                                         />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Row 2: Stage */}
+                            <div>
+                                <SectionLabel>What stage are you at?</SectionLabel>
+                                <div className="flex flex-wrap gap-3">
+                                    {['Idea', 'MVP', 'Pre-Seed', 'Seed', 'Series A+'].map(s => (
+                                        <PillButton 
+                                            key={s} 
+                                            label={s} 
+                                            selected={stage === s} 
+                                            onClick={() => setStage(s)} 
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Row 3: Focus */}
+                            <div>
+                                <SectionLabel>What is your main focus for this deck? <span className="text-gray-400 text-sm font-normal ml-2">(Max 3)</span></SectionLabel>
+                                <div className="flex flex-wrap gap-3">
+                                    {['Raising capital', 'Joining an accelerator', 'Closing customers', 'Updating existing investors', 'Internal strategy', 'Recruiting'].map(f => (
+                                        <PillButton 
+                                            key={f} 
+                                            label={f} 
+                                            selected={primaryFocus.includes(f)} 
+                                            onClick={() => setPrimaryFocus(toggleSelection(primaryFocus, f, 3))} 
+                                            multi
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Row 4: Team & Traction (Grid) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <SectionLabel>Team Size</SectionLabel>
+                                    <div className="flex flex-wrap gap-2">
+                                        {['Solo', '2–5', '6–15', '16+'].map(size => (
+                                            <PillButton 
+                                                key={size} 
+                                                label={size} 
+                                                selected={teamSize === size} 
+                                                onClick={() => setTeamSize(size)} 
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <SectionLabel>Traction</SectionLabel>
+                                    <div className="flex flex-wrap gap-2">
+                                        {['Pre-launch', 'Early users', 'Paying customers', 'Growing revenue'].map(t => (
+                                            <PillButton 
+                                                key={t} 
+                                                label={t} 
+                                                selected={tractionStage === t} 
+                                                onClick={() => setTractionStage(t)} 
+                                            />
+                                        ))}
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Row 5: Funding Slider */}
+                            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                <div className="flex justify-between items-center mb-4">
+                                    <SectionLabel>Target Raise Amount</SectionLabel>
+                                    <span className="text-2xl font-bold text-brand-orange">{formatFundingGoal(parseInt(financials.fundingGoal || '500000'))}</span>
+                                </div>
+                                <input 
+                                    type="range" 
+                                    min="100000" 
+                                    max="5000000" 
+                                    step="100000"
+                                    value={financials.fundingGoal || '500000'}
+                                    onChange={(e) => updateFinancials('fundingGoal', e.target.value)}
+                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                                />
+                                <div className="flex justify-between text-xs text-gray-500 mt-2 font-medium">
+                                    <span>$100k</span>
+                                    <span>$1M</span>
+                                    <span>$5M+</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                )}
+
+                {/* STEP 4: FINANCIALS (Refine) */}
+                {step === 4 && (
+                    <div className="animate-fade-in-up grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="col-span-full text-center mb-6">
+                             <span className="text-brand-orange font-bold text-xs uppercase tracking-widest mb-2 block">Step 4 of 4</span>
+                             <h1 className="text-3xl md:text-4xl font-extrabold text-brand-blue">
+                                Final Details
+                            </h1>
+                        </div>
+
+                        {/* Left Column: Forms */}
+                        <div className="lg:col-span-2 space-y-8">
+                            {/* Revenue Model */}
                             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
                                 <h3 className="text-xl font-bold text-brand-blue mb-6 flex items-center gap-2">
                                     <span className="w-1 h-6 bg-blue-500 rounded-full"></span>
-                                    Business Model
+                                    Business Model Deep Dive
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
@@ -235,10 +399,11 @@ const WizardSteps: React.FC = () => {
                                             <option>Transaction Fees</option>
                                             <option>Marketplace Commission</option>
                                             <option>One-time Purchase</option>
+                                            <option>Ad-supported</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Avg Price ($)</label>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">Avg Price / Deal Size ($)</label>
                                         <input 
                                             type="number" 
                                             value={financials.pricePoint}
@@ -268,30 +433,31 @@ const WizardSteps: React.FC = () => {
                         {/* Right Column: Summary Sticky */}
                         <div className="lg:col-span-1">
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 sticky top-28">
-                                <h4 className="font-bold text-gray-400 text-xs uppercase tracking-widest mb-4">Summary</h4>
+                                <h4 className="font-bold text-gray-400 text-xs uppercase tracking-widest mb-4">Review Summary</h4>
                                 
                                 <div className="mb-4">
                                     <p className="text-sm text-gray-500 mb-1">Theme</p>
                                     <div className="font-bold text-brand-blue flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full bg-brand-orange"></div>
-                                        {templates[selectedTemplate]?.title ? selectedTemplate.replace(/([A-Z])/g, ' $1').trim() : 'Default'}
+                                        {templates[selectedTemplate]?.title ? String(selectedTemplate).replace(/([A-Z])/g, ' $1').trim() : 'Default'}
                                     </div>
                                 </div>
 
                                 <div className="mb-4">
-                                    <p className="text-sm text-gray-500 mb-1">Input Sources</p>
-                                    {urls.length > 0 ? (
-                                        <div className="flex flex-wrap gap-2">
-                                            {urls.map((u, i) => <span key={i} className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-md truncate max-w-full">{u}</span>)}
-                                        </div>
-                                    ) : (
-                                        <span className="text-sm font-medium text-gray-800">Manual Text Entry</span>
-                                    )}
+                                    <p className="text-sm text-gray-500 mb-1">Stage</p>
+                                    <div className="font-bold text-brand-blue">{stage}</div>
+                                </div>
+
+                                <div className="mb-4">
+                                    <p className="text-sm text-gray-500 mb-1">Focus</p>
+                                    <div className="flex flex-wrap gap-1">
+                                        {primaryFocus.map((f, i) => <span key={i} className="text-xs bg-gray-100 px-2 py-1 rounded">{f}</span>)}
+                                    </div>
                                 </div>
 
                                 <div className="border-t border-gray-100 my-4 pt-4">
                                     <p className="text-xs text-gray-400 leading-relaxed">
-                                        The AI will generate 10 slides including Problem, Solution, Market, and Financials based on this data.
+                                        The AI will generate 10 slides tailored to {startupType.join(', ')} at the {stage} stage.
                                     </p>
                                 </div>
                             </div>
@@ -315,10 +481,10 @@ const WizardSteps: React.FC = () => {
                         <div className="hidden sm:block text-right mr-2">
                             <p className="text-xs text-gray-400 font-bold uppercase">Next Step</p>
                             <p className="text-sm font-bold text-brand-blue">
-                                {step === 1 ? 'Choose Aesthetic' : step === 2 ? 'Refine Details' : 'Generate Deck'}
+                                {step === 1 ? 'Choose Aesthetic' : step === 2 ? 'Startup Details' : step === 3 ? 'Financials' : 'Generate Deck'}
                             </p>
                         </div>
-                        {step < 3 ? (
+                        {step < 4 ? (
                             <button 
                                 onClick={handleNext}
                                 className="bg-brand-blue text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2"

@@ -46,6 +46,8 @@ interface GenerationPayload {
     revenueModel: string;
     stage: string;
     traction: string;
+    focus: string; // Changed from string[] to string for easier passing to backend
+    teamSize: string;
   };
 }
 
@@ -56,6 +58,11 @@ export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit
         ...payload.config
     };
 
+    // We pass the payload to the edge function. The prompt construction logic
+    // resides on the server-side (in the edge function) to keep secrets safe.
+    // However, we ensure the payload now carries the rich 'companyDetails' 
+    // which the edge function will use to prime the Thinking Model.
+    
     const deckData = await invokeEdgeFunction<{ title: string; slides: Omit<Slide, 'id'>[] }>('generate-deck', { 
         ...payload,
         config

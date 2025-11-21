@@ -1,3 +1,4 @@
+
 import { Type, FunctionDeclaration } from '@google/genai';
 
 // This file centralizes all FunctionDeclarations used by the AI services.
@@ -441,5 +442,59 @@ export const analyzeFundingGoalFunctionDeclaration: FunctionDeclaration = {
             nextSteps: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Actionable next steps for the founder.' }
         },
         required: ['investorTypes', 'strategicAdvice', 'nextSteps']
+    }
+};
+
+export const generateOnePagerFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateOnePager',
+    description: 'Generates a structured One-Pager summary for a startup.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            headline: { type: Type.STRING, description: "A catchy 5-10 word value prop." },
+            problem_summary: { type: Type.STRING, description: "2-3 sentences on the pain point." },
+            solution_summary: { type: Type.STRING, description: "2-3 sentences on the product solution." },
+            market_opportunity: { type: Type.STRING, description: "TAM/SAM/SOM narrative and data." },
+            traction_highlights: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of key traction metrics." },
+            business_model: { type: Type.STRING, description: "Brief explanation of how the startup makes money." },
+            ask: { type: Type.STRING, description: "Funding amount and brief use of funds." },
+            contact_info: { 
+                type: Type.OBJECT, 
+                properties: { 
+                    email: { type: Type.STRING }, 
+                    website: { type: Type.STRING } 
+                } 
+            }
+        },
+        required: ["headline", "problem_summary", "solution_summary", "market_opportunity", "traction_highlights", "business_model", "ask"]
+    }
+};
+
+export const generateMarketSizingFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateMarketSizing',
+    description: 'Calculates TAM, SAM, and SOM for a startup based on industry and location.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            icp: { type: Type.STRING, description: "Ideal Customer Profile definition." },
+            beachhead: { type: Type.STRING, description: "Specific beachhead market definition." },
+            tam: { 
+                type: Type.OBJECT, 
+                properties: { value: { type: Type.STRING }, description: { type: Type.STRING }, sourceUrl: { type: Type.STRING } },
+                required: ['value', 'description']
+            },
+            sam: { 
+                type: Type.OBJECT, 
+                properties: { value: { type: Type.STRING }, description: { type: Type.STRING }, sourceUrl: { type: Type.STRING } },
+                required: ['value', 'description']
+            },
+            som: { 
+                type: Type.OBJECT, 
+                properties: { value: { type: Type.STRING }, description: { type: Type.STRING }, sourceUrl: { type: Type.STRING } },
+                required: ['value', 'description']
+            },
+            methodology: { type: Type.STRING, description: "Brief explanation of the calculation logic." }
+        },
+        required: ['icp', 'beachhead', 'tam', 'sam', 'som', 'methodology']
     }
 };
