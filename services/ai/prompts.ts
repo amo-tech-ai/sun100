@@ -562,3 +562,55 @@ export const generateGTMStrategyFunctionDeclaration: FunctionDeclaration = {
         required: ['strategy_summary', 'channels', 'key_metrics']
     }
 };
+
+export const analyzeInvestorFitFunctionDeclaration: FunctionDeclaration = {
+    name: 'analyzeInvestorFit',
+    description: 'Analyzes the compatibility between a startup and an investor, providing a score and reasoning.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            matchScore: { type: Type.NUMBER, description: 'A 0-100 score indicating fit.' },
+            status: { type: Type.STRING, description: "'High Fit', 'Potential', or 'Low Fit'." },
+            reasoning: { type: Type.STRING, description: 'A concise summary of why this score was given.' },
+            alignment: {
+                type: Type.OBJECT,
+                properties: {
+                    stage: { type: Type.BOOLEAN },
+                    check_size: { type: Type.BOOLEAN },
+                    industry: { type: Type.BOOLEAN },
+                    geo: { type: Type.BOOLEAN },
+                },
+                required: ['stage', 'check_size', 'industry', 'geo']
+            },
+            strengths: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'List of key alignment points.' },
+            risks: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'List of potential blockers or mismatches.' },
+            recommendedAction: { type: Type.STRING, description: 'Specific advice for the founder (e.g. "Highlight your enterprise traction").' }
+        },
+        required: ['matchScore', 'status', 'reasoning', 'alignment', 'strengths', 'risks', 'recommendedAction']
+    }
+};
+
+export const rankInvestorsFunctionDeclaration: FunctionDeclaration = {
+    name: 'rankInvestors',
+    description: 'Ranks a list of investors based on fit for a specific startup.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            matches: {
+                type: Type.ARRAY,
+                description: 'The top 5 matched investors.',
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        investorId: { type: Type.STRING, description: 'The unique ID of the investor.' },
+                        investorName: { type: Type.STRING },
+                        matchScore: { type: Type.NUMBER, description: '0-100 fit score.' },
+                        reasoning: { type: Type.STRING, description: '1-sentence explanation of the match.' }
+                    },
+                    required: ['investorId', 'investorName', 'matchScore', 'reasoning']
+                }
+            }
+        },
+        required: ['matches']
+    }
+};

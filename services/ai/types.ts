@@ -139,3 +139,42 @@ export interface InvestorUpdateContent {
     kpi_summary: string; // Markdown table or list
     ask: string;
 }
+
+// --- VC Matching Types ---
+
+export interface StartupProfile {
+    name: string;
+    industry: string;
+    stage: string;
+    location: string;
+    fundingAsk: number;
+    description: string;
+    traction?: string;
+}
+
+export interface VCMatchAnalysis {
+    investorId: string;
+    matchScore: number;
+    status: 'High Fit' | 'Potential' | 'Low Fit';
+    reasoning: string;
+    alignment: {
+        stage: boolean;
+        check_size: boolean;
+        industry: boolean;
+        geo: boolean;
+    };
+    strengths: string[];
+    risks: string[];
+    recommendedAction: string;
+}
+
+export interface RankedInvestor {
+    investorId: string;
+    investorName: string;
+    matchScore: number;
+    reasoning: string;
+}
+
+export interface InvestorRanking {
+    matches: RankedInvestor[];
+}
