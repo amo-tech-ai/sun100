@@ -45,6 +45,11 @@ const Signup = lazy(() => import('./screens/Signup'));
 const BusinessModel = lazy(() => import('./screens/BusinessModel'));
 const FounderProfile = lazy(() => import('./screens/FounderProfile'));
 
+// --- NEW VC DIRECTORY SCREENS ---
+const VCDirectory = lazy(() => import('./screens/VCDirectory'));
+const VCDetail = lazy(() => import('./screens/VCDetail'));
+const DirectoryAdmin = lazy(() => import('./screens/DirectoryAdmin'));
+
 
 // --- Renamed SunAIStartupDeck Screens ---
 const SunAIStartupDeckLayout = lazy(() => import('./screens/SponsorDeckLayout'));
@@ -102,6 +107,10 @@ const App: React.FC = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               
+              {/* VC Directory Routes (Public for now, or move to protected if needed) */}
+              <Route path="/directory" element={<VCDirectory />} />
+              <Route path="/directory/:id" element={<VCDetail />} />
+              
               {/* SunAIStartupDeck routes now have their own nested layout for sub-navigation */}
               <Route path="/sunaistartup-deck" element={<SunAIStartupDeckLayout />}>
                 <Route index element={<SunAIStartupDeckOverview />} />
@@ -122,6 +131,7 @@ const App: React.FC = () => {
               <Route path="/dashboard/investor-docs" element={<InvestorDashboard />} />
               <Route path="/dashboard/investor-docs/new" element={<DocBuilder />} />
               <Route path="/dashboard/sitemap" element={<Sitemap />} />
+              <Route path="/dashboard/directory-admin" element={<DirectoryAdmin />} />
               
               <Route path="/pitch-decks" element={<PitchDecks />} />
               <Route path="/pitch-decks/new" element={<WizardSteps />} />

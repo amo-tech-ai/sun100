@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -14,6 +15,8 @@ const Sitemap: React.FC = () => {
     { path: '/terms', name: 'Terms of Service', description: 'Legal terms and conditions.' },
     { path: '/privacy', name: 'Privacy Policy', description: 'Information on data handling.' },
     { path: '/about', name: 'About', description: 'Information about the sun ai startup community.' },
+    { path: '/directory', name: 'Investor Directory', description: 'List of VCs and Accelerators.' },
+    { path: '/directory/:id', name: 'Investor Detail', description: 'Detailed profile of an investor.' },
     { path: '/perks', name: 'Perks', description: 'List of available perks for members.' },
     { path: '/perks/:id', name: 'Perk Detail', description: 'Details for a specific perk.' },
     { path: '/events', name: 'Events', description: 'List of upcoming community events.' },

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Outlet, Link, NavLink } from 'react-router-dom';
 
@@ -60,6 +61,7 @@ const PublicLayout: React.FC = () => {
                         <div>
                             <h4 className="font-bold tracking-wider uppercase text-sm text-gray-800">Resources</h4>
                             <ul className="mt-4 space-y-2 text-sm text-subtext-light dark:text-subtext-dark">
+                                <li><Link className="hover:text-brand-orange" to="/directory">Investor Directory</Link></li>
                                 <li><Link className="hover:text-brand-orange" to="/blogs">Blog</Link></li>
                                 <li><Link className="hover:text-brand-orange" to="#">Docs</Link></li>
                                 <li><Link className="hover:text-brand-orange" to="#">API</Link></li>
