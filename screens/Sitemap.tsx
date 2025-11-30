@@ -1,4 +1,6 @@
 
+
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -53,6 +55,11 @@ const Sitemap: React.FC = () => {
     { path: '/dashboard/my-events', name: 'My Events', description: "The user's personal event dashboard." },
     { path: '/dashboard/events/new', name: 'New Event Wizard', description: 'The new wizard for creating a community event.' },
     { path: '/dashboard/video-generator', name: 'Video Generator', description: 'Tool for generating videos with the Veo AI model.' },
+    { path: '/dashboard/investor-docs', name: 'Investor Docs', description: 'Command center for creating fundraising documents.' },
+    { path: '/dashboard/investor-docs/new', name: 'Doc Builder', description: 'Wizard for creating one-pagers and updates.' },
+    { path: '/dashboard/gtm-strategy', name: 'GTM Strategy', description: 'AI-powered Go-To-Market strategy generator.' },
+    { path: '/dashboard/data-room', name: 'Data Room', description: 'Secure file management and AI auditing for due diligence.' },
+    { path: '/dashboard/directory-admin', name: 'Directory Admin', description: 'Administrative panel for the investor directory.' },
   ];
 
   const utilityRoutes = [

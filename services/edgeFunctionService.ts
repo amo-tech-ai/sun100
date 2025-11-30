@@ -31,6 +31,64 @@ export const invokeEdgeFunction = async <T>(
         return deckData as unknown as T;
      }
 
+     // New Mock: Full Pitch Deck Generation & Persistence
+     if (functionName === 'generate-pitch-deck') {
+        await new Promise(resolve => setTimeout(resolve, 4000)); // Simulate AI generation time
+        
+        // Generate a fake ID
+        const newDeckId = `deck-${Date.now()}`;
+        
+        // Create a mock deck object based on the payload inputs if available
+        const inputTitle = (payload?.companyDetails as any)?.name || "New AI Startup";
+        const inputIndustry = (payload?.companyDetails as any)?.industry || "Tech";
+        
+        const generatedDeck = {
+            id: newDeckId,
+            title: `${inputTitle} Pitch Deck`,
+            template: payload?.theme || 'default',
+            slides: [
+                {
+                    id: `slide-${Date.now()}-1`,
+                    position: 0,
+                    title: "Vision",
+                    content: `Our vision is to revolutionize the ${inputIndustry} industry.`,
+                    type: 'vision',
+                    template: payload?.theme || 'default'
+                },
+                {
+                    id: `slide-${Date.now()}-2`,
+                    position: 1,
+                    title: "Problem",
+                    content: "Current solutions are slow, expensive, and hard to use.",
+                    type: 'problem',
+                    template: payload?.theme || 'default'
+                },
+                {
+                    id: `slide-${Date.now()}-3`,
+                    position: 2,
+                    title: "Solution",
+                    content: `We use advanced AI to solve this problem 10x faster.`,
+                    type: 'solution',
+                    template: payload?.theme || 'default'
+                },
+                // ... (In a real backend, Gemini would generate all 10 slides)
+                 {
+                    id: `slide-${Date.now()}-10`,
+                    position: 9,
+                    title: "The Ask",
+                    content: "We are raising $2M to scale our operations.",
+                    type: 'ask',
+                    template: payload?.theme || 'default'
+                }
+            ]
+        };
+
+        // "Persist" to sessionStorage so the DeckEditor can find it
+        sessionStorage.setItem('newlyGeneratedDeck', JSON.stringify(generatedDeck));
+        
+        return { deckId: newDeckId } as unknown as T;
+     }
+
      if (functionName === 'generate-market-sizing') {
         await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate Gemini Thinking
         const mockMarket: MarketSizeAnalysis = {

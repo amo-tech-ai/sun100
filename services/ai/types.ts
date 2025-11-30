@@ -91,10 +91,57 @@ export interface FundingAnalysis {
     nextSteps: string[];
 }
 
+// Legacy simple GTM type (keep for backward compatibility)
 export interface GTMStrategy {
     strategy_summary: string;
     channels: string[];
     key_metrics: string[];
+}
+
+// --- Full GTM Strategy Types ---
+
+export interface GTMInput {
+    startupName: string;
+    industry: string;
+    description: string;
+    targetAudience: string;
+    stage: string;
+}
+
+export interface FullGTMStrategy {
+    executiveSummary: string;
+    icp: {
+        personaName: string;
+        painPoints: string[];
+        motivations: string[];
+        role: string;
+    };
+    valueProposition: {
+        headline: string;
+        benefits: string[];
+        differentiators: string[];
+    };
+    channels: {
+        name: string;
+        type: 'Inbound' | 'Outbound' | 'Partnership' | 'Community';
+        tactic: string;
+        priority: 'High' | 'Medium' | 'Low';
+    }[];
+    pricingStrategy: {
+        model: string; // e.g. Freemium, Tiered
+        recommendation: string;
+        tiers: { name: string; price: string; features: string[] }[];
+    };
+    launchRoadmap: {
+        phase1: { name: string; duration: string; focus: string; tasks: string[] }; // Days 0-30
+        phase2: { name: string; duration: string; focus: string; tasks: string[] }; // Days 30-60
+        phase3: { name: string; duration: string; focus: string; tasks: string[] }; // Days 60-90
+    };
+    risks: {
+        risk: string;
+        mitigation: string;
+        severity: 'High' | 'Medium' | 'Low';
+    }[];
 }
 
 // --- Investor Command Center Types ---
@@ -177,4 +224,23 @@ export interface RankedInvestor {
 
 export interface InvestorRanking {
     matches: RankedInvestor[];
+}
+
+// --- Data Room Types ---
+
+export interface DataRoomFile {
+    id: string;
+    name: string;
+    category: 'Financials' | 'Legal' | 'Product' | 'Team' | 'Market' | 'Uncategorized';
+    size: string;
+    uploadDate: string;
+}
+
+export interface DataRoomAudit {
+    score: number; // 0-100
+    status: 'Ready' | 'Needs Work' | 'Critical Gaps';
+    found_categories: string[];
+    missing_items: string[];
+    warnings: string[];
+    recommendations: string[];
 }
