@@ -1,10 +1,12 @@
-import { GoogleGenAI } from "@google/genai";
+
 import { Deck, Slide } from '../../data/decks';
 import { templates } from '../../styles/templates';
 import { invokeEdgeFunction } from '../edgeFunctionService';
 import { DeckUpdateSuggestion, FundingAnalysis } from './types';
+import { handleAIError } from './utils';
 import { analyzeFundingGoalFunctionDeclaration, createRoadmapContentFunctionDeclaration, generateDeckUpdateSuggestionsFunctionDeclaration } from './prompts';
 import { generateSlideImage } from './image';
+import { edgeClient } from './edgeClient';
 
 const uuidv4 = () => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -45,7 +47,7 @@ interface GenerationPayload {
     revenueModel: string;
     stage: string;
     traction: string;
-    focus: string; // Changed from string[] to string for easier passing to backend
+    focus: string; 
     teamSize: string;
   };
 }
@@ -66,26 +68,30 @@ export const generateFullDeck = async (payload: GenerationPayload): Promise<{ de
 
         return result;
     } catch (error) {
-        console.error("Error generating deck:", error);
-        throw new Error("Failed to generate deck. Please try again.");
+        handleAIError(error);
     }
 };
 
 export const generateRoadmapSlide = async (companyContext: string): Promise<{ slide: Slide }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
     let milestones: string[] = ['Launch MVP', 'Gain Traction', 'Scale', 'Series A'];
     
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
-            contents: `Generate 4 strategic, forward-looking roadmap milestones for a startup with this context: "${companyContext}". 
-            The milestones should represent:
-            1. Early Stage (e.g., MVP, Beta)
-            2. Growth (e.g., User milestone, Revenue)
-            3. Scaling (e.g., Series A, Expansion)
-            4. Future (e.g., Global, Market Leader)
-            Call the 'createRoadmapContent' function with these 4 milestones.`,
+            contents: `
+            You are a Startup Strategy Consultant.
+            
+            **Goal:** Define 4 clear, ambitious, yet realistic strategic milestones for a startup roadmap.
+            **Context:** "${companyContext}"
+            
+            **Requirements:**
+            - Milestone 1: Immediate Term (e.g., Launch, Beta)
+            - Milestone 2: Early Traction (e.g., 1k Users, First Revenue)
+            - Milestone 3: Growth/Scale (e.g., $1M ARR, Series A)
+            - Milestone 4: Visionary Future (e.g., Market Leadership)
+            
+            Call 'createRoadmapContent' with these 4 milestones.
+            `,
             config: {
                 tools: [{ functionDeclarations: [createRoadmapContentFunctionDeclaration] }],
                 thinkingConfig: { thinkingBudget: 2048 }
@@ -100,7 +106,7 @@ export const generateRoadmapSlide = async (companyContext: string): Promise<{ sl
             }
         }
     } catch (e) {
-        console.error("Roadmap text generation failed, using fallback.", e);
+        handleAIError(e);
     }
 
     const imagePrompt = `A minimalist 'Vision Trail' roadmap diagram on a light beige background (#FBF8F5). 
@@ -132,22 +138,23 @@ export const generateRoadmapSlide = async (companyContext: string): Promise<{ sl
 };
 
 export const checkForWebsiteUpdates = async (deck: Deck, url: string): Promise<DeckUpdateSuggestion[]> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
     const deckSummary = deck.slides.map(s => `Slide: ${s.title}\nContent: ${s.content}`).join('\n\n');
     const prompt = `
-    Analyze the provided website URL content (using urlContext) and compare it with the current pitch deck content.
-    Identify discrepancies such as outdated pricing, new features, or changed messaging.
-    Suggest updates by calling 'generateDeckUpdateSuggestions'.
-
-    Website URL: ${url}
+    You are an Audit Bot. 
     
-    Current Deck Content:
+    **Task:** Compare the live website content (read via urlContext) against the current Pitch Deck.
+    **Goal:** Identify discrepancies (outdated pricing, old messaging, missing features) and suggest specific updates.
+    
+    **Website URL:** ${url}
+    
+    **Current Deck Content:**
     ${deckSummary}
+    
+    Call 'generateDeckUpdateSuggestions' with any findings.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: "gemini-3-pro-preview",
             contents: prompt,
             config: {
@@ -166,24 +173,29 @@ export const checkForWebsiteUpdates = async (deck: Deck, url: string): Promise<D
         }
         return [];
     } catch (error) {
-        console.error("Error checking for website updates:", error);
-        throw new Error("Failed to check for website updates.");
+        handleAIError(error);
     }
 };
 
 export const analyzeFundingGoal = async (amount: string, industry: string): Promise<FundingAnalysis> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Analyze the following funding goal for a startup in the specified industry.
-    Determine the most suitable investor types (e.g., Angel, Pre-Seed VC, Series A VC), provide strategic advice on raising this amount, and list actionable next steps.
-    Call 'analyzeFundingGoal' with the results.
-
-    Funding Amount: ${amount}
-    Industry: ${industry}
+    You are a Venture Capital Associate.
+    
+    **Task:** Analyze the startup's funding request.
+    **Ask:** ${amount}
+    **Industry:** ${industry}
+    
+    **Thinking Process:**
+    1. Evaluate if the amount is typical for this industry and implied stage.
+    2. Identify the right class of investors (Angels vs Pre-Seed Funds vs VCs).
+    3. Formulate strategic advice on how to pitch this number (e.g. "Focus on runway").
+    4. Define 3 concrete next steps.
+    
+    Call 'analyzeFundingGoal' with your analysis.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: "gemini-3-pro-preview",
             contents: prompt,
             config: {
@@ -198,7 +210,6 @@ export const analyzeFundingGoal = async (amount: string, industry: string): Prom
         }
         throw new Error("The AI did not return a valid funding analysis.");
     } catch (error) {
-        console.error("Error analyzing funding goal:", error);
-        throw new Error("Failed to analyze funding goal.");
+        handleAIError(error);
     }
 };

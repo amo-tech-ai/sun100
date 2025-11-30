@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
 import RightSidebar from '../components/RightSidebar';
@@ -14,8 +14,16 @@ const PanelLeftCloseIcon = () => (
 );
 
 const DeckEditorContent: React.FC = () => {
-    const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
+    // Initialize from localStorage
+    const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(() => {
+        return localStorage.getItem('deckEditor_leftSidebarCollapsed') === 'true';
+    });
     const { deck, loading } = useDeckEditor();
+
+    // Persist to localStorage
+    useEffect(() => {
+        localStorage.setItem('deckEditor_leftSidebarCollapsed', String(isLeftSidebarCollapsed));
+    }, [isLeftSidebarCollapsed]);
 
     if (loading) {
         return (
@@ -51,9 +59,8 @@ const DeckEditorContent: React.FC = () => {
             </div>
 
             {/* Right Sidebar (AI Tools) */}
-            <div className="h-full z-20 shadow-xl flex-shrink-0">
-                <RightSidebar />
-            </div>
+            {/* The RightSidebar component now handles its own width and collapsed state */}
+            <RightSidebar />
         </div>
     );
 };

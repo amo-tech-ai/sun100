@@ -1,14 +1,12 @@
 
-import { GoogleGenAI } from "@google/genai";
 import { DataRoomAudit, DataRoomFile } from './types';
 import { auditDataRoomFunctionDeclaration } from './prompts';
+import { edgeClient } from './edgeClient';
 
 /**
  * Analyzes a list of files to determine data room readiness.
  */
 export const auditDataRoom = async (files: DataRoomFile[], stage: string = "Series A"): Promise<DataRoomAudit> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
     // Prepare the file list context for the AI
     const fileContext = files.map(f => `- ${f.name} (${f.category})`).join('\n');
 
@@ -29,7 +27,7 @@ export const auditDataRoom = async (files: DataRoomFile[], stage: string = "Seri
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {

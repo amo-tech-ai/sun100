@@ -1,7 +1,7 @@
 
 import { supabase } from '../lib/supabaseClient';
 import { mockDeck } from '../data/decks';
-import { MarketSizeAnalysis, OnePagerContent, InvestorUpdateContent } from './ai/types';
+import { MarketSizeAnalysis, OnePagerContent, InvestorUpdateContent, InvestmentMemoContent } from './ai/types';
 
 /**
  * A generic helper function to invoke a Supabase Edge Function.
@@ -129,6 +129,20 @@ export const invokeEdgeFunction = async <T>(
              ask: "Intros to Series A fintech investors for our upcoming round."
          };
          return mockUpdate as unknown as T;
+     }
+
+     if (functionName === 'generate-investment-memo') {
+         await new Promise(resolve => setTimeout(resolve, 3000));
+         const mockMemo: InvestmentMemoContent = {
+             investment_thesis: "Sun AI is positioned to capture the exploding 'Founder Productivity' market. Their AI-first approach reduces time-to-funding by 90%.",
+             key_risks: ["Platform dependency on Gemini API", "High competition from incumbents like Canva", "Churn risk after fundraising"],
+             market_dynamics: "The Generative AI market is growing at 42% CAGR. Verticalized applications for specific workflows (like fundraising) are seeing high adoption.",
+             competitor_analysis: "While horizontal players exist, Sun AI's specialized focus on the founder journey provides a defensive moat through deep workflow integration.",
+             team_assessment: "Strong technical founders with previous exits. Lack of senior sales leadership.",
+             verdict_score: 78,
+             verdict_summary: "Invest. The product velocity is high, and the market demand is clear. Valuation is reasonable for the stage."
+         };
+         return mockMemo as unknown as T;
      }
 
      // Generic fallback

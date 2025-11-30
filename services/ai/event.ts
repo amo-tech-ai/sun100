@@ -1,6 +1,6 @@
 
-import { GoogleGenAI } from "@google/genai";
 import { VenueSuggestion, SocialMediaCopy, StructuredAgenda, BudgetEstimate, EmailSequence } from './types';
+import { edgeClient } from './edgeClient';
 import { 
     generateBudgetFunctionDeclaration,
     generateEmailSequenceFunctionDeclaration,
@@ -12,17 +12,26 @@ import {
 } from './prompts';
 
 export const generateEventDescription = async (details: { title: string; date: string; location: string }): Promise<{ description: string }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Generate a compelling one-paragraph event description for the following event.
-    Title: ${details.title}
-    Date: ${details.date}
-    Location: ${details.location}
+    You are a Senior Event Marketer.
+    
+    **Task:** Write a compelling, high-conversion event description.
+    **Event Details:**
+    - Title: ${details.title}
+    - Date: ${details.date}
+    - Location: ${details.location}
+    
+    **Instructions:**
+    - Start with a strong hook.
+    - Clearly articulate the value proposition (WIIFM - What's In It For Me).
+    - End with a clear Call to Action.
+    - Tone: Professional yet exciting.
+    
     Call 'generateEventDescription' with the result.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -44,14 +53,18 @@ export const generateEventDescription = async (details: { title: string; date: s
 };
 
 export const generateEventTitles = async (baseTitle: string): Promise<{ titles: string[] }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Generate 3 creative and engaging alternative titles for an event named "${baseTitle}".
+    You are a Copywriting Expert.
+    
+    **Task:** Brainstorm 3 creative, engaging alternative titles for an event currently named "${baseTitle}".
+    
+    **Goal:** Make them catchy, memorable, and optimized for clicks. Avoid generic phrasing.
+    
     Call 'generateEventTitles' with the results.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -73,15 +86,21 @@ export const generateEventTitles = async (baseTitle: string): Promise<{ titles: 
 };
 
 export const suggestVenues = async (eventType: string, city: string): Promise<VenueSuggestion[]> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Suggest suitable venues for a "${eventType}" in "${city}".
-    Provide the venue name, a reason for the suggestion, and if possible a map link.
+    You are an Expert Event Planner in ${city}.
+    
+    **Task:** Suggest 3 specific, real-world venues suitable for a "${eventType}".
+    
+    **Requirements:**
+    - Venues must be real places.
+    - Provide a specific reason why each is good for this event type (e.g., "Great acoustics", "Intimate vibe").
+    - Include a map link if possible.
+    
     Call 'suggestVenues' with the results.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -103,18 +122,25 @@ export const suggestVenues = async (eventType: string, city: string): Promise<Ve
 };
 
 export const generateSocialMediaCopy = async (details: { title: string; description: string; date: string; location: string }): Promise<SocialMediaCopy> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Generate promotional copy for Twitter, LinkedIn, and Instagram for this event:
-    Title: ${details.title}
-    Description: ${details.description}
-    When: ${details.date}
-    Where: ${details.location}
+    You are a Social Media Manager.
+    
+    **Task:** Create a promotional kit for this event:
+    - Title: ${details.title}
+    - Description: ${details.description}
+    - When: ${details.date}
+    - Where: ${details.location}
+    
+    **Requirements:**
+    - **Twitter:** Short, punchy, under 280 chars, include hashtags.
+    - **LinkedIn:** Professional, value-focused, engaging.
+    - **Instagram:** Visual, emoji-rich, "link in bio" CTA.
+    
     Call 'generateSocialMediaCopy' with the results.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -135,15 +161,23 @@ export const generateSocialMediaCopy = async (details: { title: string; descript
 };
 
 export const structureAgenda = async (rawAgenda: string, eventDate: string): Promise<StructuredAgenda> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Format the following raw agenda text into a structured schedule. The event is on ${eventDate}.
-    Raw Text: "${rawAgenda}"
+    You are an Event Operations Specialist.
+    
+    **Task:** Transform this raw note into a professional, structured run-of-show.
+    **Event Date:** ${eventDate}
+    **Raw Input:** "${rawAgenda}"
+    
+    **Instructions:**
+    - Standardize time formats (e.g., "6:00 PM").
+    - Ensure logical flow.
+    - Identify speakers if mentioned.
+    
     Call 'structureAgenda' with the result.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -164,15 +198,23 @@ export const structureAgenda = async (rawAgenda: string, eventDate: string): Pro
 };
 
 export const estimateBudget = async (totalBudget: number, attendees: number, eventContext: string): Promise<BudgetEstimate> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Estimate budget allocation for an event with total budget $${totalBudget} and ${attendees} attendees.
-    Context: ${eventContext}.
+    You are an Event Producer.
+    
+    **Task:** Create a realistic budget allocation.
+    **Total Budget:** $${totalBudget}
+    **Attendees:** ${attendees}
+    **Context:** ${eventContext}
+    
+    **Thinking:**
+    - Consider standard industry ratios (e.g., Food & Bev is usually ~30-40%).
+    - Ensure specific line items match the event context (e.g., "AV Equipment" for a talk).
+    
     Call 'generateBudget' with the estimates.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -193,18 +235,22 @@ export const estimateBudget = async (totalBudget: number, attendees: number, eve
 };
 
 export const generateEmailSequence = async (details: { title: string; description: string; date: string; location: string }): Promise<EmailSequence> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Generate a 3-part email sequence (Invitation, Reminder, Follow-up) for this event:
-    Title: ${details.title}
-    Description: ${details.description}
-    Date: ${details.date}
-    Location: ${details.location}
+    You are an Email Marketing Specialist.
+    
+    **Task:** Write a 3-part email sequence to maximize attendance.
+    **Event:** ${details.title}
+    
+    **Sequence:**
+    1. **Invitation:** Exciting, persuasive.
+    2. **Reminder:** Urgent, practical (include logistics).
+    3. **Follow-up:** Grateful, resource-sharing (post-event).
+    
     Call 'generateEmailSequence' with the result.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {

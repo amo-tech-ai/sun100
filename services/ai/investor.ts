@@ -1,12 +1,16 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { OnePagerContent, MarketSizeAnalysis, InvestorUpdateContent, StartupStrategicAnalysis } from './types';
+import { OnePagerContent, MarketSizeAnalysis, InvestorUpdateContent, StartupStrategicAnalysis, FinancialData, InvestmentMemoContent } from './types';
 import { 
     generateInvestorUpdateFunctionDeclaration, 
     generateMarketSizingFunctionDeclaration, 
     generateOnePagerFunctionDeclaration,
-    analyzeStartupStrategyFunctionDeclaration
+    analyzeStartupStrategyFunctionDeclaration,
+    generateFinancialsFunctionDeclaration,
+    generateInvestmentMemoFunctionDeclaration
 } from './prompts';
+import { edgeClient } from './edgeClient';
+import { handleAIError } from './utils';
 
 export const generateOnePager = async (startupProfile: any): Promise<OnePagerContent> => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -147,5 +151,80 @@ export const analyzeStartupStrategy = async (profileContext: string): Promise<St
     } catch (error) {
         console.error("Error analyzing startup strategy:", error);
         throw new Error("Failed to perform strategic analysis.");
+    }
+};
+
+export const generateFinancialForecast = async (historicalMetrics: any[]): Promise<FinancialData> => {
+    const prompt = `
+    You are a startup CFO and Financial Analyst.
+    
+    **Task:** Generate a 3-year financial projection (forecast) based on the provided historical performance.
+    
+    **Historical Data (Recent Months):**
+    ${JSON.stringify(historicalMetrics)}
+    
+    **Reasoning & Requirements:**
+    1. Analyze the growth trends in Revenue, User Base, and Burn Rate from the history.
+    2. Project Revenue, Expenses (Burn Rate), and Cash Balance for the next 3 years (e.g., Year 1, Year 2, Year 3).
+    3. Ensure Cash Balance accurately reflects the cumulative burn and revenue.
+    4. Include a 'Net Income' or 'Net Burn' row.
+    5. Provide a concise summary of the financial outlook and key assumptions (e.g., "Assuming 10% MoM growth").
+    
+    Call 'generateFinancials' with the structured projection table and summary.
+    `;
+
+    try {
+        const response = await edgeClient.models.generateContent({
+            model: 'gemini-3-pro-preview',
+            contents: prompt,
+            config: {
+                tools: [{ functionDeclarations: [generateFinancialsFunctionDeclaration] }],
+                thinkingConfig: { thinkingBudget: 2048 }
+            }
+        });
+
+        const call = response.functionCalls?.[0];
+        if (call && call.name === 'generateFinancials' && call.args) {
+            return call.args as unknown as FinancialData;
+        }
+        throw new Error("AI did not return financial projections.");
+    } catch (error) {
+        handleAIError(error);
+    }
+};
+
+export const generateInvestmentMemo = async (startupProfile: any): Promise<InvestmentMemoContent> => {
+    const prompt = `
+    Act as a cynical but fair General Partner at a VC firm. Write an Investment Memo for the following startup.
+    
+    **Startup Profile:**
+    ${JSON.stringify(startupProfile)}
+    
+    **Task:**
+    1. Analyze the startup's potential strengths and critical weaknesses.
+    2. Evaluate the market dynamics and competition.
+    3. Assess the team's capability.
+    4. Provide a final verdict score and summary.
+    
+    Call 'generateInvestmentMemo' with your analysis.
+    `;
+
+    try {
+        const response = await edgeClient.models.generateContent({
+            model: 'gemini-3-pro-preview',
+            contents: prompt,
+            config: {
+                tools: [{ functionDeclarations: [generateInvestmentMemoFunctionDeclaration] }],
+                thinkingConfig: { thinkingBudget: 4096 }
+            }
+        });
+
+        const call = response.functionCalls?.[0];
+        if (call && call.name === 'generateInvestmentMemo' && call.args) {
+            return call.args as unknown as InvestmentMemoContent;
+        }
+        throw new Error("AI did not return investment memo.");
+    } catch (error) {
+        handleAIError(error);
     }
 };

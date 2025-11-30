@@ -1,18 +1,16 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { edgeClient } from './edgeClient';
 
 /**
  * Generates a high-quality image using Imagen 4.0.
  */
 export const generateSlideImage = async (slideTitle: string, slideContent: string, customPrompt?: string): Promise<{ base64Image: string }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
     const prompt = customPrompt || `A professional, high-quality presentation image for a slide titled "${slideTitle}". 
     Context: ${slideContent}. 
     Style: Modern, clean, suitable for a pitch deck.`;
 
     try {
-        const response = await ai.models.generateImages({
+        const response = await edgeClient.models.generateImages({
             model: 'imagen-4.0-generate-001',
             prompt: prompt,
             config: {
@@ -39,10 +37,8 @@ export const generateSlideImage = async (slideTitle: string, slideContent: strin
  * Edits an existing image using Gemini 2.5 Flash Image ("Nano Banana").
  */
 export const editSlideImage = async (base64ImageData: string, mimeType: string, prompt: string): Promise<{ base64Image: string }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-2.5-flash-image',
             contents: {
                 parts: [

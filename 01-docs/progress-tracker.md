@@ -1,6 +1,7 @@
+
 # 📊 Sun AI: Master Progress Tracker
 
-**Document Status:** Published - 2024-08-28 (Revised & Validated)
+**Document Status:** Published - 2024-09-03 (Revised & Validated)
 **Goal:** This document serves as the high-level master tracker for the Sun AI platform. It provides a detailed, granular overview of all features, their implementation status, and technical stack, ordered by phase of implementation.
 
 ---
@@ -42,21 +43,18 @@
 | **6. Architecture & Services**| **AI Service Layer Refactor**| 100% | ✅ | **FE:** Monolithic `aiService.ts` broken into modular services (`/services/ai/*`).<br/>**BE:** All AI calls are now abstracted via `edgeFunctionService.ts`, preparing for backend migration.<br/>**AI:** N/A. |
 | **7. Dashboards**| **Founder Dashboard V2** | 100% | ✅ | **FE:** Complete redesign in `Dashboard.tsx` with modular cards, charts, and feeds.<br/>**BE:** N/A (uses mock data).<br/>**AI:** N/A. |
 | | **Events Dashboard** | 100% | ✅ | **FE:** `MyEvents.tsx` implemented with a full suite of data visualizations.<br/>**BE:** N/A (uses mock data).<br/>**AI:** N/A. |
-| **8. QA, Performance & Validation** | **Layout Unification** | 100% | ✅ | **FE:** `PublicLayout.tsx` now controls all page layout. All child pages refactored to remove redundant styles, fixing inconsistent spacing.<br/>**BE:** N/A.<br/>**AI:** N/A. |
+| **8. Investor Suite** | **Investor Command Center** | 100% | ✅ | **FE:** `InvestorDashboard.tsx` serves as the HUD for fundraising. Includes Runway calc, Market Sizing widget.<br/>**BE:** Mocked via `investorDocService.ts`.<br/>**AI:** `generateMarketSizing` (Search Grounding). |
+| | **Metrics Management** | 100% | ✅ | **FE:** `MetricsTable.tsx` allows manual entry of financial history. <br/>**BE:** Mocked via `metricsService.ts`.<br/>**AI:** `generateFinancialForecast` creates 3-year projections. |
+| | **Document Builder** | 100% | ✅ | **FE:** `DocBuilder.tsx` wizard for One-Pagers, Updates, Memos.<br/>**AI:** Specialized prompts for each doc type using Gemini 3 (Thinking/Search). |
+| | **GTM Strategy Generator** | 100% | ✅ | **FE:** `GTMStrategy.tsx`. Generates comprehensive Go-To-Market plans.<br/>**AI:** `generateFullGTMStrategy` using High Thinking Budget. |
+| | **Data Room Manager** | 100% | ✅ | **FE:** `DataRoom.tsx`. File manager + AI Audit.<br/>**AI:** `auditDataRoom` analyzes file lists against VC due diligence checklists. |
+| | **VC Directory & Matching** | 100% | ✅ | **FE:** `VCDirectory.tsx`, `VCDetail.tsx`, `MatchmakingModal.tsx`.<br/>**AI:** `matchInvestor` uses Gemini Reasoning to score startup fit against investor thesis. |
+| **9. QA, Performance & Validation** | **Layout Unification** | 100% | ✅ | **FE:** `PublicLayout.tsx` now controls all page layout. All child pages refactored to remove redundant styles, fixing inconsistent spacing.<br/>**BE:** N/A.<br/>**AI:** N/A. |
 | | **Full-Cycle E2E Validation** | 100% | ✅ | **FE:** Verified user journey: `Wizard` -> `Generating` -> `Editor` -> `Present`.<br/>**BE:** N/A (client-side).<br/>**AI:** N/A. |
 | | **Performance Audit & Optimization** | 100% | ✅ | **FE:** Implemented and validated combined AI suggestions, image pre-loading, and component memoization.<br/>**BE:** N/A.<br/>**AI:** N/A. |
-| | **AI Feature Correctness Audit** | 100% | ✅ | **FE:** N/A.<br/>**BE:** N/A.<br/>**AI:** Manually examined and validated the output of all AI agents (Copilot, Visuals, Research, etc.) for correctness and reliability. |
-| | **Responsiveness & Cross-Browser Testing** | 100% | ✅ | **FE:** Checked layout and functionality on Chrome, Firefox, Safari and on mobile, tablet, and desktop viewports.<br/>**BE:** N/A.<br/>**AI:** N/A. |
-| | **Accessibility (A11y) Audit** | 100% | ✅ | **FE:** Examined the app for WCAG compliance, including keyboard navigation, ARIA attributes, and color contrast.<br/>**BE:** N/A.<br/>**AI:** N/A. |
-| **9. Full-Stack Migration** | **User Auth & DB Persistence** | 0% | 🔴 | **FE:** `supabaseClient.ts` uses a mock. `AuthProvider` provides a mock user.<br/>**BE:** No real backend exists. App uses mock services and `sessionStorage` for data.<br/>**AI:** All AI calls are currently client-side. |
-
----
-
-### End of Report Summary
-
--   **What’s working:** The entire frontend application is **feature-complete, stable, and visually polished**. All core user journeys, AI features, and UI/UX enhancements outlined in the project's documentation are implemented and validated.
--   **What’s partial:** The backend integration is intentionally mocked. `supabaseClient.ts` and `AuthProvider` are designed to allow the app to run in a "review mode" without a live database or authentication service.
--   **What’s missing:** A production backend. All logic for authentication, data persistence, and secure AI calls needs to be implemented on the server-side as per the migration plans.
--   **Overall Production Readiness Score: 85%**
-    -   **Justification:** The application is functionally ready for deployment *as a prototype*. The remaining 15% represents the critical work of migrating to a secure, scalable full-stack architecture. The current state is a testament to excellent frontend engineering and prototyping.
--   **💡 Next Action:** **Begin the full-stack migration.** Execute the plan outlined in `docs/50-supabase-integration-plan.md` to implement Supabase Auth, a real PostgreSQL database, and move all AI logic to secure Edge Functions. This is the final step to make the application 100% production-ready.
+| | **Responsiveness** | 100% | ✅ | **FE:** Verified mobile-first layout for all new Investor Suite screens (`InvestorDashboard`, `GTMStrategy`, etc.).<br/>**BE:** N/A.<br/>**AI:** N/A. |
+| **10. Full-Stack Migration** | **User Auth & DB Persistence** | 0% | 🔴 | **FE:** `supabaseClient.ts` uses a mock. `AuthProvider` provides a mock user.<br/>**BE:** No real backend exists. App uses mock services and `sessionStorage` for data.<br/>**AI:** All AI calls are currently client-side or mocked via `edgeFunctionService.ts`. |
+| **11. Polish & Optimization** | **PDF Export (GTM Strategy)** | 100% | ✅ | **FE:** Added Print/PDF support to `GTMStrategy.tsx`. |
+| | **Metrics Visuals** | 100% | ✅ | **FE:** Added conditional formatting to `MetricsTable.tsx` for better data scanning. |
+| | **Doc Builder Auto-Save** | 0% | 🔴 | **FE:** Pending. |
+| | **Streaming AI Responses** | 0% | 🔴 | **FE:** Pending migration to streaming API. |
