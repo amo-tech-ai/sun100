@@ -19,10 +19,13 @@ const ChevronRightIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="htt
 const FilePlus2Icon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="9" x2="15" y1="15" y2="15"/></svg>;
 const LightbulbIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M15 14c.2-1 .7-1.7 1.5-2.5C17.7 10.2 18 9 18 7c0-2.2-1.8-4-4-4S10 4.8 10 7c0 2 .3 3.2 1.5 4.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>;
 const TrendingUpIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+const UsersIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const FolderLockIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M10 20H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2v2"/><path d="M20 13v-1a2 2 0 1 0-4 0v1"/><rect width="8" height="7" x="14" y="13" rx="1"/></svg>;
+
 
 // --- MOCK DATA ---
 const mockInsights = [
-    { type: 'AI Suggestion', title: 'Update Your Traction Slide', description: 'AI suggests adding your latest user growth metrics to improve credibility.', link: '/pitch-decks/deck-123/edit' },
+    { type: 'AI Suggestion', title: 'Update Your Traction Slide', description: 'AI suggests adding your latest user growth metrics to improve credibility.', link: '/pitch-decks' },
     { type: 'New Perk Available', title: '90% off HubSpot for Startups', description: 'A new high-value perk has been added to the community portal.', link: '/perks/3' },
     { type: 'Upcoming Event', title: 'Founder Networking Night', description: 'Join our virtual networking event this Friday to connect with peers.', link: '/events/1' },
 ];
@@ -62,12 +65,12 @@ const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: number; 
     </div>
 );
 
-const QuickActionCard: React.FC<{ title: string; link: string; icon: React.ReactNode; }> = ({ title, link, icon }) => (
-    <Link to={link} className="block bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm text-center transform hover:-translate-y-1 hover:shadow-lg hover:border-brand-orange/50 transition-all duration-300 group">
-        <div className="w-12 h-12 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center mb-4 mx-auto transition-transform duration-300 group-hover:scale-110">
+const QuickActionCard: React.FC<{ title: string; link: string; icon: React.ReactNode; color?: string }> = ({ title, link, icon, color = "brand-orange" }) => (
+    <Link to={link} className={`block bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm text-center transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group hover:border-${color}/50`}>
+        <div className={`w-12 h-12 rounded-full bg-${color}/10 text-${color} flex items-center justify-center mb-4 mx-auto transition-transform duration-300 group-hover:scale-110`}>
             {icon}
         </div>
-        <h3 className="text-lg font-bold text-brand-blue transition-colors duration-300 group-hover:text-brand-orange">{title}</h3>
+        <h3 className={`text-lg font-bold text-brand-blue transition-colors duration-300 group-hover:text-${color}`}>{title}</h3>
     </Link>
 );
 
@@ -150,7 +153,6 @@ const PersonalizedFeed: React.FC = () => {
                     <button onClick={() => setActiveTab('insights')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm ${activeTab === 'insights' ? 'border-brand-orange text-brand-orange' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>AI Insights</button>
                     <button onClick={() => setActiveTab('tasks')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm ${activeTab === 'tasks' ? 'border-brand-orange text-brand-orange' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>My Tasks</button>
                     <button onClick={() => setActiveTab('activity')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm ${activeTab === 'activity' ? 'border-brand-orange text-brand-orange' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Activity</button>
-                    <button onClick={() => setActiveTab('decks')} className={`whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm ${activeTab === 'decks' ? 'border-brand-orange text-brand-orange' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Recent Decks</button>
                 </nav>
             </div>
             <div className="p-6 space-y-4">
@@ -186,9 +188,6 @@ const PersonalizedFeed: React.FC = () => {
                         </div>
                     </div>
                 ))}
-                {activeTab === 'decks' && (
-                     <div className="text-center py-8 text-gray-500">No recent decks viewed.</div>
-                )}
             </div>
         </div>
     );
@@ -340,10 +339,10 @@ const Dashboard: React.FC = () => {
             {/* Quick Actions (Desktop) */}
             <section ref={ref} className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                 <div className={`${animationClass}`} style={{animationDelay: '0ms'}}><QuickActionCard title="Create New Deck" link="/pitch-decks/new" icon={<Wand2Icon />} /></div>
-                <div className={`${animationClass}`} style={{animationDelay: '100ms'}}><QuickActionCard title="Manage Decks" link="/pitch-decks" icon={<PresentationIcon />} /></div>
-                <div className={`${animationClass}`} style={{animationDelay: '200ms'}}><QuickActionCard title="Generate Video" link="/dashboard/video-generator" icon={<VideoIcon />} /></div>
-                <div className={`${animationClass}`} style={{animationDelay: '300ms'}}><QuickActionCard title="Find a Job" link="/jobs" icon={<BriefcaseIcon />} /></div>
-                <div className={`${animationClass}`} style={{animationDelay: '400ms'}}><QuickActionCard title="Explore Perks" link="/perks" icon={<GiftIcon />} /></div>
+                <div className={`${animationClass}`} style={{animationDelay: '100ms'}}><QuickActionCard title="Investor Docs" link="/dashboard/investor-docs" icon={<BriefcaseIcon />} /></div>
+                <div className={`${animationClass}`} style={{animationDelay: '200ms'}}><QuickActionCard title="Find Investors" link="/directory" icon={<UsersIcon />} /></div>
+                 <div className={`${animationClass}`} style={{animationDelay: '300ms'}}><QuickActionCard title="Video Generator" link="/dashboard/video-generator" icon={<VideoIcon />} /></div>
+                 <div className={`${animationClass}`} style={{animationDelay: '400ms'}}><QuickActionCard title="Data Room" link="/dashboard/data-room" icon={<FolderLockIcon />} /></div>
             </section>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -352,9 +351,9 @@ const Dashboard: React.FC = () => {
                     {/* Stats Row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                        <StatCard icon={<PresentationIcon />} label="Decks Created" value={12} />
-                       <StatCard icon={<VideoIcon />} label="Videos Generated" value={3} />
-                       <StatCard icon={<BriefcaseIcon />} label="Jobs Applied" value={5} />
+                       <StatCard icon={<BriefcaseIcon />} label="Investors Tracked" value={8} />
                        <StatCard icon={<CheckCircleIcon />} label="Tasks Completed" value={28} />
+                       <StatCard icon={<UsersIcon />} label="Events Hosted" value={3} />
                     </div>
                     
                     {/* Charts Row */}

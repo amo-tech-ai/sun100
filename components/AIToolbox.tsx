@@ -1,18 +1,28 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import AICopilot from './AICopilot';
 import ImageEditorPanel from './ImageEditorPanel';
 import AnalysisPanel from './AnalysisPanel';
 import ResearchResultPanel from './ResearchResultPanel';
 import { useDeckEditor } from '../contexts/DeckEditorContext';
 
-type AITab = 'copilot' | 'image' | 'analysis' | 'research' | 'sync';
+// Exporting the type so RightSidebar can use it
+export type AITab = 'copilot' | 'image' | 'analysis' | 'research' | 'sync';
+
+interface AIToolboxProps {
+    activeTab: AITab;
+}
 
 const SyncPanel: React.FC = () => {
     const { handleCheckForUpdates, isSyncing, syncSuggestions, syncError, handleApplyUpdate } = useDeckEditor();
     const [url, setUrl] = useState('');
 
+    // Import useState locally for this sub-component since we removed it from the main file imports
+    // or ensure React is imported fully at top of file. 
+    // Ideally, we keep imports clean. I will assume React is imported as `import React, { useState } ...` below.
+    
     return (
-        <div className="p-4">
+        <div className="p-4 h-full overflow-y-auto">
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">Website → Deck Sync</h3>
                 <p className="text-sm text-gray-600 mb-4">Compare your deck against your live website to detect outdated information like pricing or features.</p>
@@ -64,25 +74,24 @@ const SyncPanel: React.FC = () => {
     );
 };
 
-const AIToolbox: React.FC = () => {
+// Need to import useState for SyncPanel since I removed it from the top level
+import { useState } from 'react';
+
+const AIToolbox: React.FC<AIToolboxProps> = ({ activeTab }) => {
     const { selectedSlide } = useDeckEditor();
-    const [activeTab, setActiveTab] = useState<AITab>('copilot');
 
     const isUrl = (url: string | undefined): boolean => !!url && (url.startsWith('http') || url.startsWith('data:image'));
     const showImageTab = selectedSlide && isUrl(selectedSlide.imageUrl);
-
-    useEffect(() => {
-        if (activeTab === 'image' && !showImageTab) {
-            setActiveTab('copilot');
-        }
-    }, [activeTab, showImageTab, selectedSlide]);
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'copilot':
                 return <AICopilot />;
             case 'image':
-                return showImageTab ? <ImageEditorPanel /> : null;
+                // If they select image tab but no image exists, we can show a placeholder or the editor
+                // For now, we render the editor which handles "no image" state internally usually, 
+                // or we show a message.
+                return <ImageEditorPanel />;
             case 'analysis':
                 return <AnalysisPanel />;
             case 'research':
@@ -94,24 +103,10 @@ const AIToolbox: React.FC = () => {
         }
     };
     
-    const getTabClass = (tabName: AITab) => {
-        return `py-2 px-3 font-medium text-xs sm:text-sm cursor-pointer border-b-2 transition-colors whitespace-nowrap ${
-            activeTab === tabName
-                ? 'border-[#E87C4D] text-[#E87C4D]'
-                : 'border-transparent text-gray-500 hover:text-gray-800'
-        }`;
-    };
-
     return (
-        <div className="w-full mt-8 bg-white border border-gray-200 rounded-lg shadow-sm">
-            <div className="flex border-b border-gray-200 px-2 overflow-x-auto scrollbar-hide">
-                <button onClick={() => setActiveTab('copilot')} className={getTabClass('copilot')}>Copilot</button>
-                {showImageTab && <button onClick={() => setActiveTab('image')} className={getTabClass('image')}>Image</button>}
-                <button onClick={() => setActiveTab('analysis')} className={getTabClass('analysis')}>Analysis</button>
-                <button onClick={() => setActiveTab('research')} className={getTabClass('research')}>Research</button>
-                <button onClick={() => setActiveTab('sync')} className={getTabClass('sync')}>Sync</button>
-            </div>
-            <div className="max-h-[60vh] overflow-y-auto">
+        <div className="w-full h-full bg-white flex flex-col">
+            {/* Content Area - No internal tabs anymore */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {renderTabContent()}
             </div>
         </div>

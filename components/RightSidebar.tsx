@@ -1,0 +1,116 @@
+
+import React, { useState, useEffect } from 'react';
+import AIToolbox, { AITab } from './AIToolbox';
+import { useDeckEditor } from '../contexts/DeckEditorContext';
+
+// Icons
+const WandIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/></svg>;
+const ImageIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
+const ChartIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>;
+const GlobeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>;
+const RefreshIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>;
+const ChevronRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
+
+const RightSidebar: React.FC = () => {
+    const [isCollapsed, setIsCollapsed] = useState(false); // Default open on desktop usually, or closed. Let's start open.
+    const [activeTab, setActiveTab] = useState<AITab>('copilot');
+    const { selectedSlide } = useDeckEditor();
+
+    // Auto-switch to image tab if slide has an image
+    useEffect(() => {
+        if (selectedSlide?.imageUrl && selectedSlide.imageUrl.startsWith('data:image')) {
+            // Optional: could auto-open image tab, but might be annoying.
+            // Keeping manual control for now.
+        }
+    }, [selectedSlide]);
+
+    const tabs: { id: AITab; icon: React.ReactNode; label: string }[] = [
+        { id: 'copilot', icon: <WandIcon />, label: 'Copilot' },
+        { id: 'image', icon: <ImageIcon />, label: 'Visuals' },
+        { id: 'analysis', icon: <ChartIcon />, label: 'Analysis' },
+        { id: 'research', icon: <GlobeIcon />, label: 'Research' },
+        { id: 'sync', icon: <RefreshIcon />, label: 'Sync' },
+    ];
+
+    const handleTabClick = (tabId: AITab) => {
+        if (isCollapsed) {
+            setIsCollapsed(false);
+        }
+        setActiveTab(tabId);
+    };
+
+    return (
+        <div className={`flex flex-col border-l border-gray-200 bg-white transition-all duration-300 ease-in-out h-full ${isCollapsed ? 'w-16' : 'w-80 lg:w-96'} flex-shrink-0 relative`}>
+            
+            {/* Header Area */}
+            <div className={`h-16 border-b border-gray-200 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-4'}`}>
+                {!isCollapsed && (
+                    <span className="font-bold text-brand-blue truncate">
+                        {tabs.find(t => t.id === activeTab)?.label}
+                    </span>
+                )}
+                <button 
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className="p-2 text-gray-400 hover:text-brand-blue hover:bg-gray-100 rounded-md transition-colors"
+                    title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                >
+                    <div className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}>
+                        <ChevronRightIcon />
+                    </div>
+                </button>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex overflow-hidden h-full">
+                
+                {/* 1. Navigation Strip (Always visible, but layout changes based on collapse state) */}
+                {isCollapsed ? (
+                    // Collapsed: Vertical Icon Strip
+                    <div className="w-full flex flex-col items-center py-4 gap-4">
+                        {tabs.map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => handleTabClick(tab.id)}
+                                className={`p-3 rounded-xl transition-all duration-200 group relative ${activeTab === tab.id ? 'bg-brand-orange/10 text-brand-orange' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+                            >
+                                {tab.icon}
+                                {/* Tooltip */}
+                                <span className="absolute right-full mr-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">
+                                    {tab.label}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                ) : (
+                   // Expanded: Content Area + Internal Nav (Optional: we can put nav at top or bottom)
+                   // Design Choice: Let's put a mini icon bar on the left of the expanded panel, essentially "Sidebar inside Sidebar" or just keep the content.
+                   // Better: The Header handles collapse. The Content fills the rest. Where do we switch tabs?
+                   // Let's add a tab bar at the top of the content area if expanded, OR
+                   // Keep a thin strip of icons on the left of the expanded panel.
+                   <div className="flex w-full h-full">
+                       {/* Icon Strip (Left side of expanded panel) */}
+                       <div className="w-16 flex-shrink-0 flex flex-col items-center py-4 gap-2 border-r border-gray-100 bg-gray-50/50">
+                           {tabs.map(tab => (
+                               <button
+                                   key={tab.id}
+                                   onClick={() => setActiveTab(tab.id)}
+                                   className={`p-2.5 rounded-lg transition-all ${activeTab === tab.id ? 'bg-white text-brand-orange shadow-sm border border-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                                   title={tab.label}
+                               >
+                                   {tab.icon}
+                               </button>
+                           ))}
+                       </div>
+
+                       {/* Panel Content */}
+                       <div className="flex-1 overflow-hidden bg-white">
+                           <AIToolbox activeTab={activeTab} />
+                       </div>
+                   </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default RightSidebar;

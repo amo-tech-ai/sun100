@@ -1,10 +1,11 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { OnePagerContent, MarketSizeAnalysis, InvestorUpdateContent } from './types';
+import { OnePagerContent, MarketSizeAnalysis, InvestorUpdateContent, StartupStrategicAnalysis } from './types';
 import { 
     generateInvestorUpdateFunctionDeclaration, 
     generateMarketSizingFunctionDeclaration, 
-    generateOnePagerFunctionDeclaration 
+    generateOnePagerFunctionDeclaration,
+    analyzeStartupStrategyFunctionDeclaration
 } from './prompts';
 
 export const generateOnePager = async (startupProfile: any): Promise<OnePagerContent> => {
@@ -101,5 +102,50 @@ export const generateInvestorUpdate = async (currentMetrics: any, previousMetric
     } catch (error) {
         console.error("Error generating investor update:", error);
         throw new Error("Failed to generate investor update.");
+    }
+};
+
+export const analyzeStartupStrategy = async (profileContext: string): Promise<StartupStrategicAnalysis> => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    const prompt = `
+    You are a Senior Investment Analyst.
+    
+    **Task:**
+    1. Analyze the provided startup profile.
+    2. Perform a Google Search to identify current market trends and key competitors in this specific industry.
+    3. Use 'Thinking' to synthesize this external data with the startup's internal strengths and weaknesses.
+    4. Generate a comprehensive SWOT analysis.
+    5. Calculate an 'Investor Readiness Score' (0-100) based on market timing, competitive positioning, and clarity of value prop.
+    
+    **Startup Profile:**
+    ${profileContext}
+    
+    Call 'analyzeStartupStrategy' with the detailed results.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-pro-preview',
+            contents: prompt,
+            config: {
+                tools: [
+                    { googleSearch: {} },
+                    { functionDeclarations: [analyzeStartupStrategyFunctionDeclaration] }
+                ],
+                thinkingConfig: { thinkingBudget: 4096 } // High reasoning for strategic analysis
+            }
+        });
+
+        const call = response.functionCalls?.[0];
+        
+        if (call && call.name === 'analyzeStartupStrategy' && call.args) {
+            return call.args as unknown as StartupStrategicAnalysis;
+        }
+        
+        throw new Error("AI did not return a valid strategic analysis.");
+    } catch (error) {
+        console.error("Error analyzing startup strategy:", error);
+        throw new Error("Failed to perform strategic analysis.");
     }
 };
