@@ -383,7 +383,7 @@ export const generateBudgetFunctionDeclaration: FunctionDeclaration = {
 
 export const generateEmailSequenceFunctionDeclaration: FunctionDeclaration = {
     name: 'generateEmailSequence',
-    description: 'Generates a 3-part email marketing sequence for an event.',
+    description: 'Generates a 3-part email sequence (Invitation, Reminder, Follow-up) for an event.',
     parameters: {
         type: Type.OBJECT,
         properties: {
@@ -543,7 +543,7 @@ export const generateMarketSizingFunctionDeclaration: FunctionDeclaration = {
 
 export const generateGTMStrategyFunctionDeclaration: FunctionDeclaration = {
     name: 'generateGTMStrategy',
-    description: 'Generates a Go-To-Market strategy including key channels and metrics based on business context.',
+    description: 'Generates a simple Go-To-Market strategy overview.',
     parameters: {
         type: Type.OBJECT,
         properties: {
@@ -560,6 +560,103 @@ export const generateGTMStrategyFunctionDeclaration: FunctionDeclaration = {
             }
         },
         required: ['strategy_summary', 'channels', 'key_metrics']
+    }
+};
+
+export const generateFullGTMStrategyFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateFullGTMStrategy',
+    description: 'Generates a comprehensive Go-To-Market strategy document.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            executiveSummary: { type: Type.STRING, description: "A concise summary of the entire strategy." },
+            icp: {
+                type: Type.OBJECT,
+                properties: {
+                    personaName: { type: Type.STRING, description: "Name of the persona (e.g. 'Technical Founder')." },
+                    painPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    motivations: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    role: { type: Type.STRING }
+                },
+                required: ['personaName', 'painPoints', 'motivations', 'role']
+            },
+            valueProposition: {
+                type: Type.OBJECT,
+                properties: {
+                    headline: { type: Type.STRING },
+                    benefits: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    differentiators: { type: Type.ARRAY, items: { type: Type.STRING } }
+                },
+                required: ['headline', 'benefits', 'differentiators']
+            },
+            channels: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        type: { type: Type.STRING, enum: ['Inbound', 'Outbound', 'Partnership', 'Community'] },
+                        tactic: { type: Type.STRING, description: "Specific action (e.g., 'SEO blog series')." },
+                        priority: { type: Type.STRING, enum: ['High', 'Medium', 'Low'] }
+                    },
+                    required: ['name', 'type', 'tactic', 'priority']
+                }
+            },
+            pricingStrategy: {
+                type: Type.OBJECT,
+                properties: {
+                    model: { type: Type.STRING },
+                    recommendation: { type: Type.STRING },
+                    tiers: { 
+                        type: Type.ARRAY, 
+                        items: { 
+                            type: Type.OBJECT, 
+                            properties: { 
+                                name: { type: Type.STRING }, 
+                                price: { type: Type.STRING }, 
+                                features: { type: Type.ARRAY, items: { type: Type.STRING } } 
+                            }, 
+                            required: ['name', 'price', 'features'] 
+                        } 
+                    }
+                },
+                required: ['model', 'recommendation', 'tiers']
+            },
+            launchRoadmap: {
+                type: Type.OBJECT,
+                properties: {
+                    phase1: { 
+                        type: Type.OBJECT, 
+                        properties: { name: {type: Type.STRING}, duration: {type: Type.STRING}, focus: {type: Type.STRING}, tasks: {type: Type.ARRAY, items: {type: Type.STRING}} },
+                        required: ['name', 'duration', 'focus', 'tasks']
+                    },
+                    phase2: { 
+                        type: Type.OBJECT, 
+                        properties: { name: {type: Type.STRING}, duration: {type: Type.STRING}, focus: {type: Type.STRING}, tasks: {type: Type.ARRAY, items: {type: Type.STRING}} },
+                        required: ['name', 'duration', 'focus', 'tasks']
+                    },
+                    phase3: { 
+                        type: Type.OBJECT, 
+                        properties: { name: {type: Type.STRING}, duration: {type: Type.STRING}, focus: {type: Type.STRING}, tasks: {type: Type.ARRAY, items: {type: Type.STRING}} },
+                        required: ['name', 'duration', 'focus', 'tasks']
+                    }
+                },
+                required: ['phase1', 'phase2', 'phase3']
+            },
+            risks: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        risk: { type: Type.STRING },
+                        mitigation: { type: Type.STRING },
+                        severity: { type: Type.STRING, enum: ['High', 'Medium', 'Low'] }
+                    },
+                    required: ['risk', 'mitigation', 'severity']
+                }
+            }
+        },
+        required: ['executiveSummary', 'icp', 'valueProposition', 'channels', 'pricingStrategy', 'launchRoadmap', 'risks']
     }
 };
 
@@ -612,5 +709,22 @@ export const rankInvestorsFunctionDeclaration: FunctionDeclaration = {
             }
         },
         required: ['matches']
+    }
+};
+
+export const auditDataRoomFunctionDeclaration: FunctionDeclaration = {
+    name: 'auditDataRoom',
+    description: 'Audits a list of filenames in a data room against a standard Venture Capital due diligence checklist.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            score: { type: Type.NUMBER, description: 'Readiness score from 0-100.' },
+            status: { type: Type.STRING, description: "'Ready', 'Needs Work', or 'Critical Gaps'." },
+            found_categories: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'List of categories that appear to be covered (e.g. "Financials").' },
+            missing_items: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Specific important documents that are missing (e.g. "IP Assignment").' },
+            warnings: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Potential issues (e.g. "Cap table seems outdated").' },
+            recommendations: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Actionable advice to improve the data room.' }
+        },
+        required: ['score', 'status', 'found_categories', 'missing_items', 'warnings', 'recommendations']
     }
 };

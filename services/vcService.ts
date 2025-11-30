@@ -21,12 +21,12 @@ export interface Investor {
     notable_investments: string[];
     application_link?: string;
     contact_email?: string;
-    terms_summary?: string; // New field for context on equity (e.g. "SAFE + MFN")
+    terms_summary?: string; // Context on equity (e.g. "SAFE + MFN")
 }
 
 const DEFAULT_MOCK_INVESTORS: Investor[] = [
     {
-        id: '2',
+        id: 'yc-1',
         name: 'Y Combinator',
         type: 'accelerator',
         slug: 'y-combinator',
@@ -38,7 +38,7 @@ const DEFAULT_MOCK_INVESTORS: Investor[] = [
         max_check_size: 500000,
         equity_percent_min: 7,
         equity_percent_max: 7,
-        terms_summary: '$125k for 7% + $375k on an uncapped SAFE with MFN',
+        terms_summary: '$125k for 7% equity + $375k on an uncapped SAFE with MFN',
         specialties: ['B2B SaaS', 'Consumer', 'Healthcare', 'Fintech', 'AI', 'Developer Tools', 'Hard Tech'],
         geographies: ['Global', 'San Francisco (HQ)'],
         benefits: ['Weekly Dinners', 'Office Hours', 'Alumni Network (Bookface)', 'Demo Day Exposure', 'Deals & Discounts'],
@@ -47,7 +47,7 @@ const DEFAULT_MOCK_INVESTORS: Investor[] = [
         application_link: 'https://www.ycombinator.com/apply'
     },
     {
-        id: '1',
+        id: 'seq-1',
         name: 'Sequoia Capital',
         type: 'vc',
         slug: 'sequoia',
@@ -67,7 +67,7 @@ const DEFAULT_MOCK_INVESTORS: Investor[] = [
         application_link: 'https://www.sequoiacap.com/pitch'
     },
     {
-        id: '3',
+        id: 'a16z-1',
         name: 'a16z (Andreessen Horowitz)',
         type: 'vc',
         slug: 'a16z',
@@ -87,7 +87,7 @@ const DEFAULT_MOCK_INVESTORS: Investor[] = [
         application_link: 'https://a16z.com/pitch'
     },
     {
-        id: '4',
+        id: 'techstars-1',
         name: 'Techstars',
         type: 'accelerator',
         slug: 'techstars',
@@ -107,7 +107,7 @@ const DEFAULT_MOCK_INVESTORS: Investor[] = [
         application_link: 'https://www.techstars.com/apply'
     },
     {
-        id: '5',
+        id: 'firstround-1',
         name: 'First Round Capital',
         type: 'vc',
         slug: 'first-round',

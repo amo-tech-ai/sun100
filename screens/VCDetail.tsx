@@ -118,7 +118,7 @@ const VCDetail: React.FC = () => {
                 {/* Left: Deep Dive */}
                 <div className="lg:col-span-2 space-y-10">
                     
-                    {/* Investment Strategy */}
+                    {/* Investment Strategy Section */}
                     <section>
                         <SectionHeader title="Investment Strategy" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>} />
                         <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm space-y-8">
@@ -132,16 +132,16 @@ const VCDetail: React.FC = () => {
                             <div>
                                 <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                                    Industries & Specialties
+                                    Specialties & Sectors
                                 </h4>
                                 <TagList tags={investor.specialties} color="blue" />
                             </div>
                         </div>
                     </section>
 
-                    {/* The Deal */}
+                    {/* The Deal Section */}
                     <section>
-                        <SectionHeader title="The Deal" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
+                        <SectionHeader title="The Deal & Equity" icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>} />
                         <div className="grid sm:grid-cols-2 gap-4 mb-4">
                             <DetailItem 
                                 label="Typical Check Size" 
@@ -149,15 +149,16 @@ const VCDetail: React.FC = () => {
                                 subtext={investor.type === 'accelerator' ? 'Often standardized' : 'Varies by conviction'}
                             />
                             <DetailItem 
-                                label="Equity Target" 
+                                label="Typical Equity Range" 
                                 value={investor.equity_percent_min ? `${investor.equity_percent_min}% - ${investor.equity_percent_max}%` : 'Negotiable'} 
-                                subtext={investor.terms_summary ? 'See terms summary' : 'Standard Terms'}
+                                subtext={investor.terms_summary ? 'See summary below' : 'Standard Market Terms'}
                                 highlight={investor.type === 'accelerator'}
                             />
                         </div>
                         {investor.terms_summary && (
-                            <div className="bg-orange-50/50 p-4 rounded-lg border border-orange-100 text-sm text-orange-900 flex gap-2 items-start">
-                                <span className="font-bold">Note:</span> {investor.terms_summary}
+                            <div className="bg-orange-50/50 p-5 rounded-lg border border-orange-100 text-sm text-orange-900 flex gap-3 items-start">
+                                <span className="font-bold flex-shrink-0 mt-0.5">Deal Summary:</span> 
+                                <span className="leading-relaxed">{investor.terms_summary}</span>
                             </div>
                         )}
                     </section>
@@ -221,12 +222,16 @@ const VCDetail: React.FC = () => {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-gray-500">Decision Speed</span>
-                                <span className="text-sm font-bold text-gray-900">{investor.time_to_decision}</span>
+                                <span className="text-sm font-bold text-gray-900">{investor.time_to_decision || 'Unknown'}</span>
                             </div>
-                            <div className="w-full bg-gray-100 rounded-full h-2">
-                                <div className="bg-green-500 h-2 rounded-full" style={{ width: '70%' }}></div>
-                            </div>
-                            <p className="text-xs text-gray-400 italic text-center">Faster than 70% of firms</p>
+                            {investor.time_to_decision && (
+                                <>
+                                    <div className="w-full bg-gray-100 rounded-full h-2">
+                                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '70%' }}></div>
+                                    </div>
+                                    <p className="text-xs text-gray-400 italic text-center">Faster than 70% of firms</p>
+                                </>
+                            )}
                         </div>
                     </div>
 

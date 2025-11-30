@@ -1,10 +1,9 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { Deck, Slide } from '../../data/decks';
 import { templates } from '../../styles/templates';
 import { invokeEdgeFunction } from '../edgeFunctionService';
 import { DeckUpdateSuggestion, FundingAnalysis } from './types';
-import { analyzeFundingGoalFunctionDeclaration, createRoadmapContentFunctionDeclaration, generateDeckOutlineFunctionDeclaration, generateDeckUpdateSuggestionsFunctionDeclaration } from './prompts';
+import { analyzeFundingGoalFunctionDeclaration, createRoadmapContentFunctionDeclaration, generateDeckUpdateSuggestionsFunctionDeclaration } from './prompts';
 import { generateSlideImage } from './image';
 
 const uuidv4 = () => {
@@ -51,57 +50,21 @@ interface GenerationPayload {
   };
 }
 
-export const generateFullDeck = async (payload: GenerationPayload): Promise<Omit<Deck, 'id'>> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
-    const prompt = `
-    Act as a professional pitch deck consultant. Generate a 10-slide pitch deck outline for the following company.
-    
-    Business Context: ${payload.businessContext}
-    Deck Type: ${payload.deckType}
-    Theme: ${payload.theme}
-    
-    Company Details:
-    Name: ${payload.companyDetails?.name}
-    Industry: ${payload.companyDetails?.industry}
-    Customer: ${payload.companyDetails?.customerType}
-    Business Model: ${payload.companyDetails?.revenueModel}
-    Stage: ${payload.companyDetails?.stage}
-    Traction: ${payload.companyDetails?.traction}
-    Focus: ${payload.companyDetails?.focus}
-    Team Size: ${payload.companyDetails?.teamSize}
-    
-    Call the 'generateDeckOutline' function with the result.
-    `;
-
+/**
+ * Calls the 'generate-pitch-deck' Edge Function.
+ * The backend handles Gemini interaction, JSON generation, and database insertion.
+ * Returns the ID of the newly created deck.
+ */
+export const generateFullDeck = async (payload: GenerationPayload): Promise<{ deckId: string }> => {
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-3-pro-preview',
-            contents: prompt,
-            config: {
-                tools: [{ functionDeclarations: [generateDeckOutlineFunctionDeclaration] }],
-                thinkingConfig: { thinkingBudget: 2048 }
-            }
-        });
-
-        const call = response.functionCalls?.[0];
-        if (call && call.name === 'generateDeckOutline' && call.args) {
-            const args = call.args as any;
-            return {
-                title: args.title,
-                template: payload.theme || 'default',
-                slides: (args.slides || []).map((s: any, i: number) => ({
-                    id: `slide-${uuidv4()}`,
-                    position: i,
-                    title: s.title,
-                    content: s.content,
-                    imageUrl: s.imageUrl,
-                    type: s.type,
-                    template: payload.theme
-                }))
-            };
+        // Call the secure backend function
+        const result = await invokeEdgeFunction<{ deckId: string }>('generate-pitch-deck', payload as any);
+        
+        if (!result || !result.deckId) {
+            throw new Error("Backend generation failed to return a deck ID.");
         }
-        throw new Error("The AI did not generate a valid deck structure.");
+
+        return result;
     } catch (error) {
         console.error("Error generating deck:", error);
         throw new Error("Failed to generate deck. Please try again.");

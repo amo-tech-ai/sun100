@@ -1,7 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { generateFullDeck } from '../services/ai/deck';
-import { createDeck } from '../services/deckService';
 import { useAuth } from '../hooks/useAuth';
 
 // Icons for different AI states
@@ -47,7 +47,7 @@ const GeneratingScreen: React.FC = () => {
             }
             
             setAiState('drafting');
-            setStatusMessage("Constructing your 10-slide deck...");
+            setStatusMessage("Constructing your 10-slide deck on the secure backend...");
         };
 
         const performGeneration = async () => {
@@ -55,17 +55,17 @@ const GeneratingScreen: React.FC = () => {
                 // Start visual sequence
                 statusSequence();
 
-                // 1. Generate the deck content
-                const generatedDeckData = await generateFullDeck(generationPayload);
+                // 1. Call the Backend to Generate & Persist the Deck
+                // The Edge Function handles Gemini interaction and database insertion.
+                const result = await generateFullDeck(generationPayload);
                 
-                // 2. Persist
-                const newDeck = await createDeck(generatedDeckData, user?.id || 'mock-user-id');
+                if (!result || !result.deckId) {
+                    throw new Error("Failed to retrieve deck ID from backend.");
+                }
 
-                // 3. Save fallback
-                sessionStorage.setItem('newlyGeneratedDeck', JSON.stringify(newDeck));
-
-                // 4. Navigate
-                navigate(`/pitch-decks/${newDeck.id}/edit`);
+                // 2. Navigate
+                // The DeckEditor will fetch the persisted deck using getDeckById
+                navigate(`/pitch-decks/${result.deckId}/edit`);
 
             } catch (err) {
                 console.error("Deck generation failed:", err);

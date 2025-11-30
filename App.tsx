@@ -1,4 +1,7 @@
 
+
+
+
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -49,6 +52,12 @@ const FounderProfile = lazy(() => import('./screens/FounderProfile'));
 const VCDirectory = lazy(() => import('./screens/VCDirectory'));
 const VCDetail = lazy(() => import('./screens/VCDetail'));
 const DirectoryAdmin = lazy(() => import('./screens/DirectoryAdmin'));
+
+// --- NEW GTM STRATEGY SCREEN ---
+const GTMStrategy = lazy(() => import('./screens/GTMStrategy'));
+
+// --- NEW DATA ROOM SCREEN ---
+const DataRoom = lazy(() => import('./screens/DataRoom'));
 
 
 // --- Renamed SunAIStartupDeck Screens ---
@@ -130,6 +139,8 @@ const App: React.FC = () => {
               <Route path="/dashboard/video-generator" element={<VideoGenerator />} />
               <Route path="/dashboard/investor-docs" element={<InvestorDashboard />} />
               <Route path="/dashboard/investor-docs/new" element={<DocBuilder />} />
+              <Route path="/dashboard/gtm-strategy" element={<GTMStrategy />} />
+              <Route path="/dashboard/data-room" element={<DataRoom />} />
               <Route path="/dashboard/sitemap" element={<Sitemap />} />
               <Route path="/dashboard/directory-admin" element={<DirectoryAdmin />} />
               
