@@ -12,15 +12,22 @@ const RefreshIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" hei
 const ChevronRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
 
 const RightSidebar: React.FC = () => {
-    const [isCollapsed, setIsCollapsed] = useState(false); // Default open on desktop usually, or closed. Let's start open.
+    // Initialize from localStorage
+    const [isCollapsed, setIsCollapsed] = useState(() => {
+        return localStorage.getItem('deckEditor_rightSidebarCollapsed') === 'true';
+    });
     const [activeTab, setActiveTab] = useState<AITab>('copilot');
     const { selectedSlide } = useDeckEditor();
 
-    // Auto-switch to image tab if slide has an image
+    // Persist to localStorage
+    useEffect(() => {
+        localStorage.setItem('deckEditor_rightSidebarCollapsed', String(isCollapsed));
+    }, [isCollapsed]);
+
+    // Auto-switch to image tab if slide has an image (Optional UX enhancement)
     useEffect(() => {
         if (selectedSlide?.imageUrl && selectedSlide.imageUrl.startsWith('data:image')) {
-            // Optional: could auto-open image tab, but might be annoying.
-            // Keeping manual control for now.
+           // Optionally switch to image tab
         }
     }, [selectedSlide]);
 
@@ -40,7 +47,7 @@ const RightSidebar: React.FC = () => {
     };
 
     return (
-        <div className={`flex flex-col border-l border-gray-200 bg-white transition-all duration-300 ease-in-out h-full ${isCollapsed ? 'w-16' : 'w-80 lg:w-96'} flex-shrink-0 relative`}>
+        <div className={`flex flex-col border-l border-gray-200 bg-white transition-all duration-300 ease-in-out h-full ${isCollapsed ? 'w-16' : 'w-80 lg:w-96'} flex-shrink-0 relative shadow-xl z-20`}>
             
             {/* Header Area */}
             <div className={`h-16 border-b border-gray-200 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-4'}`}>
@@ -60,53 +67,34 @@ const RightSidebar: React.FC = () => {
                 </button>
             </div>
 
-            {/* Main Content Area */}
+            {/* Main Body */}
             <div className="flex-1 flex overflow-hidden h-full">
                 
-                {/* 1. Navigation Strip (Always visible, but layout changes based on collapse state) */}
-                {isCollapsed ? (
-                    // Collapsed: Vertical Icon Strip
-                    <div className="w-full flex flex-col items-center py-4 gap-4">
-                        {tabs.map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => handleTabClick(tab.id)}
-                                className={`p-3 rounded-xl transition-all duration-200 group relative ${activeTab === tab.id ? 'bg-brand-orange/10 text-brand-orange' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
-                            >
-                                {tab.icon}
-                                {/* Tooltip */}
+                {/* Navigation Rail (Visible when Expanded OR Collapsed, but style changes) */}
+                <div className={`flex flex-col items-center py-4 gap-2 bg-gray-50/50 border-r border-gray-100 transition-all duration-300 ${isCollapsed ? 'w-full' : 'w-14'}`}>
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => handleTabClick(tab.id)}
+                            className={`p-2.5 rounded-lg transition-all group relative ${activeTab === tab.id ? 'bg-white text-brand-orange shadow-sm border border-gray-200' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                            title={tab.label}
+                        >
+                            {tab.icon}
+                            {/* Tooltip for collapsed state */}
+                            {isCollapsed && (
                                 <span className="absolute right-full mr-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">
                                     {tab.label}
                                 </span>
-                            </button>
-                        ))}
-                    </div>
-                ) : (
-                   // Expanded: Content Area + Internal Nav (Optional: we can put nav at top or bottom)
-                   // Design Choice: Let's put a mini icon bar on the left of the expanded panel, essentially "Sidebar inside Sidebar" or just keep the content.
-                   // Better: The Header handles collapse. The Content fills the rest. Where do we switch tabs?
-                   // Let's add a tab bar at the top of the content area if expanded, OR
-                   // Keep a thin strip of icons on the left of the expanded panel.
-                   <div className="flex w-full h-full">
-                       {/* Icon Strip (Left side of expanded panel) */}
-                       <div className="w-16 flex-shrink-0 flex flex-col items-center py-4 gap-2 border-r border-gray-100 bg-gray-50/50">
-                           {tabs.map(tab => (
-                               <button
-                                   key={tab.id}
-                                   onClick={() => setActiveTab(tab.id)}
-                                   className={`p-2.5 rounded-lg transition-all ${activeTab === tab.id ? 'bg-white text-brand-orange shadow-sm border border-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
-                                   title={tab.label}
-                               >
-                                   {tab.icon}
-                               </button>
-                           ))}
-                       </div>
+                            )}
+                        </button>
+                    ))}
+                </div>
 
-                       {/* Panel Content */}
-                       <div className="flex-1 overflow-hidden bg-white">
-                           <AIToolbox activeTab={activeTab} />
-                       </div>
-                   </div>
+                {/* Content Area (Hidden when collapsed) */}
+                {!isCollapsed && (
+                    <div className="flex-1 overflow-hidden bg-white">
+                        <AIToolbox activeTab={activeTab} />
+                    </div>
                 )}
             </div>
         </div>

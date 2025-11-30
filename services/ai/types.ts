@@ -148,24 +148,6 @@ export interface FullGTMStrategy {
 
 export type InvestorDocType = 'one_pager' | 'update' | 'memo' | 'gtm_strategy';
 
-export interface InvestorDoc {
-    id: string;
-    title: string;
-    type: InvestorDocType;
-    status: 'draft' | 'final' | 'sent';
-    lastUpdated: string;
-    previewUrl?: string; // For thumbnail generation
-}
-
-export interface MarketSizeAnalysis {
-  icp: string;
-  beachhead: string;
-  tam: { value: string; description: string; sourceUrl: string };
-  sam: { value: string; description: string; sourceUrl: string };
-  som: { value: string; description: string; sourceUrl: string };
-  methodology: string;
-}
-
 export interface OnePagerContent {
     headline: string;
     problem_summary: string;
@@ -185,6 +167,35 @@ export interface InvestorUpdateContent {
     lowlights: string[];
     kpi_summary: string; // Markdown table or list
     ask: string;
+}
+
+export interface InvestmentMemoContent {
+    investment_thesis: string;
+    key_risks: string[];
+    market_dynamics: string;
+    competitor_analysis: string;
+    team_assessment: string;
+    verdict_score: number; // 0-100
+    verdict_summary: string;
+}
+
+export interface InvestorDoc {
+    id: string;
+    title: string;
+    type: InvestorDocType;
+    status: 'draft' | 'final' | 'sent';
+    lastUpdated: string;
+    previewUrl?: string; // For thumbnail generation
+    content?: OnePagerContent | InvestorUpdateContent | InvestmentMemoContent | FullGTMStrategy;
+}
+
+export interface MarketSizeAnalysis {
+  icp: string;
+  beachhead: string;
+  tam: { value: string; description: string; sourceUrl: string };
+  sam: { value: string; description: string; sourceUrl: string };
+  som: { value: string; description: string; sourceUrl: string };
+  methodology: string;
 }
 
 // --- VC Matching Types ---

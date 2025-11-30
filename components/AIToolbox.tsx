@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import AICopilot from './AICopilot';
 import ImageEditorPanel from './ImageEditorPanel';
 import AnalysisPanel from './AnalysisPanel';
@@ -16,10 +16,6 @@ interface AIToolboxProps {
 const SyncPanel: React.FC = () => {
     const { handleCheckForUpdates, isSyncing, syncSuggestions, syncError, handleApplyUpdate } = useDeckEditor();
     const [url, setUrl] = useState('');
-
-    // Import useState locally for this sub-component since we removed it from the main file imports
-    // or ensure React is imported fully at top of file. 
-    // Ideally, we keep imports clean. I will assume React is imported as `import React, { useState } ...` below.
     
     return (
         <div className="p-4 h-full overflow-y-auto">
@@ -74,23 +70,14 @@ const SyncPanel: React.FC = () => {
     );
 };
 
-// Need to import useState for SyncPanel since I removed it from the top level
-import { useState } from 'react';
-
 const AIToolbox: React.FC<AIToolboxProps> = ({ activeTab }) => {
     const { selectedSlide } = useDeckEditor();
-
-    const isUrl = (url: string | undefined): boolean => !!url && (url.startsWith('http') || url.startsWith('data:image'));
-    const showImageTab = selectedSlide && isUrl(selectedSlide.imageUrl);
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'copilot':
                 return <AICopilot />;
             case 'image':
-                // If they select image tab but no image exists, we can show a placeholder or the editor
-                // For now, we render the editor which handles "no image" state internally usually, 
-                // or we show a message.
                 return <ImageEditorPanel />;
             case 'analysis':
                 return <AnalysisPanel />;

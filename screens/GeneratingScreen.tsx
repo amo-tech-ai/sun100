@@ -3,11 +3,17 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { generateFullDeck } from '../services/ai/deck';
 import { useAuth } from '../hooks/useAuth';
+import { useTypewriter } from '../hooks/useTypewriter';
 
 // Icons for different AI states
 const BrainIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-500 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M9 13a3 3 0 1 1 5.997.129 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 9a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 18 18Z"/><path d="M12 5v13"/><path d="M9 13h6"/><path d="M12 18h6"/></svg>;
 const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500 animate-bounce" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
 const PenIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>;
+
+const TypewriterStatus: React.FC<{ message: string }> = ({ message }) => {
+    const { displayedText } = useTypewriter(message, { speed: 20 });
+    return <p className="text-gray-600 mb-8 h-6 transition-all duration-300">{displayedText}</p>;
+}
 
 const GeneratingScreen: React.FC = () => {
     const navigate = useNavigate();
@@ -114,9 +120,8 @@ const GeneratingScreen: React.FC = () => {
                      'Drafting Content'}
                 </h1>
                 
-                <p className="text-gray-600 mb-8 h-6 transition-all duration-300">
-                    {statusMessage}
-                </p>
+                {/* Typewriter Effect for Status Message */}
+                <TypewriterStatus message={statusMessage} />
                 
                 {/* Progress Bar */}
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-4 overflow-hidden">

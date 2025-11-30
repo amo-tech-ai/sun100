@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useDeckEditor } from '../contexts/DeckEditorContext';
 
@@ -15,7 +16,8 @@ const AICopilot: React.FC = () => {
         handleSummarizeBio,
         handleGenerateFinancials,
         isGeneratingFinancials,
-        financialError
+        financialError,
+        copilotError
     } = useDeckEditor();
 
     const [prompt, setPrompt] = useState('');
@@ -71,6 +73,10 @@ const AICopilot: React.FC = () => {
                         'Generate Suggestions'
                     )}
                 </button>
+                
+                {copilotError && (
+                    <p className="mt-2 text-sm text-red-600 border border-red-200 bg-red-50 p-2 rounded">{copilotError}</p>
+                )}
 
                 <div className="border-t border-gray-200 mt-4 pt-3">
                     <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Suggestions</h4>

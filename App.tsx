@@ -2,6 +2,7 @@
 
 
 
+
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -78,6 +79,9 @@ const VideoGenerator = lazy(() => import('./screens/VideoGenerator'));
 const InvestorDashboard = lazy(() => import('./screens/InvestorDashboard'));
 const DocBuilder = lazy(() => import('./screens/DocBuilder'));
 
+// New Metrics Component import
+import { MetricsTable } from './components/investor/MetricsTable';
+
 
 // Loading fallback component
 const LoadingSpinner: React.FC = () => (
@@ -139,6 +143,7 @@ const App: React.FC = () => {
               <Route path="/dashboard/video-generator" element={<VideoGenerator />} />
               <Route path="/dashboard/investor-docs" element={<InvestorDashboard />} />
               <Route path="/dashboard/investor-docs/new" element={<DocBuilder />} />
+              <Route path="/dashboard/metrics" element={<div className="p-8"><h1 className="text-2xl font-bold text-brand-blue mb-6">Manage Metrics</h1><MetricsTable /></div>} />
               <Route path="/dashboard/gtm-strategy" element={<GTMStrategy />} />
               <Route path="/dashboard/data-room" element={<DataRoom />} />
               <Route path="/dashboard/sitemap" element={<Sitemap />} />

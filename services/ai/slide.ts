@@ -1,8 +1,9 @@
 
-import { GoogleGenAI } from "@google/genai";
 import { templates } from '../../styles/templates';
 import { Slide, ChartData, TableData } from '../../data/decks';
 import { SlideAnalysis, ExtractedMetric, BioSummary, FinancialData, GTMStrategy } from './types';
+import { handleAIError } from './utils';
+import { edgeClient } from './edgeClient';
 import { 
     analyzeSlideContentFunctionDeclaration, 
     chooseLayoutFunctionDeclaration,
@@ -20,18 +21,25 @@ import {
 } from './prompts';
 
 export const modifySlideContent = async (slideTitle: string, slideContent: string, instruction: string): Promise<{ newTitle: string; newContent: string }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Rewrite the following slide content based on the instruction.
+    You are a Professional Pitch Deck Editor.
+    
+    **Task:** Rewrite the slide content based on the user's instruction.
+    **Instruction:** "${instruction}"
+    
+    **Current Slide:**
+    - Title: "${slideTitle}"
+    - Content: "${slideContent}"
+    
+    **Requirements:**
+    - Maintain a professional, persuasive tone.
+    - Keep it concise and readable for a presentation.
+    
     Call 'rewriteSlide' with the new title and content.
-
-    Slide Title: "${slideTitle}"
-    Slide Content: "${slideContent}"
-    Instruction: "${instruction}"
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -46,21 +54,30 @@ export const modifySlideContent = async (slideTitle: string, slideContent: strin
         }
         throw new Error("AI did not return rewritten content.");
     } catch (error) {
-        console.error("Error modifying slide content:", error);
-        throw new Error("Failed to modify slide content.");
+        handleAIError(error);
     }
 };
 
 export const analyzeSlide = async (slideTitle: string, slideContent: string): Promise<SlideAnalysis> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = `Analyze the following presentation slide content for Clarity, Impact, and Tone. Provide a rating (Good, Average, Needs Improvement) and specific, actionable feedback for each category.
-
-    Slide Title: "${slideTitle}"
-    Slide Content:
-    "${slideContent}"`;
+    const prompt = `
+    You are a Venture Capital Associate.
+    
+    **Task:** Analyze this slide for:
+    1. **Clarity:** Is the message instant?
+    2. **Impact:** Is it persuasive?
+    3. **Tone:** Is it professional and confident?
+    
+    **Slide:**
+    Title: "${slideTitle}"
+    Content: "${slideContent}"
+    
+    **Output:** Provide a rating and *specific, actionable* feedback for improvement.
+    
+    Call 'analyzeSlideContent' with your analysis.
+    `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -75,24 +92,30 @@ export const analyzeSlide = async (slideTitle: string, slideContent: string): Pr
         }
         throw new Error("The AI did not return a valid analysis.");
     } catch (error) {
-        console.error("Error analyzing slide:", error);
-        throw new Error("Failed to analyze slide content.");
+        handleAIError(error);
     }
 };
 
 export const suggestLayout = async (slideTitle: string, slideContent: string): Promise<{ layout: keyof typeof templates }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Analyze the slide content and title to determine the most effective visual layout.
-    Available layouts: ${Object.keys(templates).join(', ')}.
-    Call 'chooseLayout' with the suggested layout key.
-
-    Slide Title: "${slideTitle}"
-    Slide Content: "${slideContent}"
+    You are a Presentation Designer.
+    
+    **Task:** Choose the most effective visual layout for this slide.
+    **Content:** Title: "${slideTitle}", Body: "${slideContent}"
+    
+    **Layout Options:** ${Object.keys(templates).join(', ')}.
+    
+    **Rules:**
+    - Use 'vibrantCover' for title slides.
+    - Use 'vibrantTimeline' if the content lists dates or steps.
+    - Use 'vibrantVision' for high-level mission statements.
+    - Use 'vibrantSolutions' for feature lists.
+    
+    Call 'chooseLayout' with the key.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -109,49 +132,52 @@ export const suggestLayout = async (slideTitle: string, slideContent: string): P
         }
         return { layout: 'default' };
     } catch (error) {
-        console.error("Error suggesting layout:", error);
-        return { layout: 'default' };
+        handleAIError(error);
     }
 };
 
 export const fetchAllSuggestions = async (slide: Slide): Promise<{ copilotSuggestions: string[], imageSuggestions: string[], researchSuggestions: string[] }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
     let suggestionsPrompt = `
-    Analyze the slide content below and generate three distinct sets of suggestions:
-    1. Copilot: Actionable ideas to improve the text.
-    2. Image: Creative visual ideas for the slide.
-    3. Research: Relevant topics or queries for supporting data (for Google Search).
-    Call 'generateAllSuggestions' with these lists.
-
-    Slide Title: "${slide.title}"
-    Slide Content: "${slide.content}"
-    Slide Type: "${slide.type || 'generic'}"
+    Analyze the slide content and generate three sets of suggestions.
+    
+    1. **Copilot (Text):** Actionable ways to improve the copy (e.g., "Make it punchier").
+    2. **Image (Visuals):** Creative prompts for a background image or diagram.
+    3. **Research (Data):** Specific Google Search queries to find supporting evidence.
+    
+    **Slide Context:**
+    - Title: "${slide.title}"
+    - Content: "${slide.content}"
+    - Type: "${slide.type || 'generic'}"
     `;
 
     if (slide.type === 'solution') {
         suggestionsPrompt += `
-        Since this is a "Solution" slide, ensure the Copilot suggestions include "Rewrite to focus on benefits" and "Summarize into 3 core pillars".
-        Ensure the Image suggestions include prompts for a "How it Works" workflow diagram.
+        **Specific Solution Context:**
+        - Copilot: Suggest "Rewrite to focus on benefits".
+        - Image: Suggest a "How it Works" workflow diagram.
         `;
     } else if (slide.type === 'product') {
         suggestionsPrompt += `
-        Since this is a "Product" slide, ensure the Copilot suggestions include "Simplify technical language" and "Format as a numbered list".
+        **Specific Product Context:**
+        - Copilot: Suggest "Simplify technical language".
         `;
     } else if (slide.type === 'traction') {
         suggestionsPrompt += `
-        Since this is a "Traction" slide, ensure the Copilot suggestions include "Highlight key metrics" and "Format as a testimonial".
+        **Specific Traction Context:**
+        - Copilot: Suggest "Highlight key metrics" (bolding).
         `;
     } else if (slide.type === 'competition') {
         suggestionsPrompt += `
-        Since this is a "Competition" slide:
-        - Copilot suggestions should include "Create a 'Why We Win' summary".
-        - Image suggestions should include a detailed prompt for a "2x2 competitive matrix diagram".
+        **Specific Competition Context:**
+        - Copilot: Suggest "Create a 'Why We Win' summary".
+        - Image: Suggest a "2x2 competitive matrix".
         `;
     }
 
+    suggestionsPrompt += `\nCall 'generateAllSuggestions' with the lists.`;
+
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: suggestionsPrompt,
             config: {
@@ -170,25 +196,25 @@ export const fetchAllSuggestions = async (slide: Slide): Promise<{ copilotSugges
         }
         return { copilotSuggestions: [], imageSuggestions: [], researchSuggestions: [] };
     } catch (error) {
-        console.error("Error fetching suggestions:", error);
+        handleAIError(error);
         return { copilotSuggestions: [], imageSuggestions: [], researchSuggestions: [] };
     }
 };
 
 export const suggestChart = async (slideTitle: string, slideContent: string): Promise<{ chartData: ChartData | null }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    You are a data visualization expert. Analyze the following slide content for numerical data that can be represented as a bar chart. 
-    If suitable data is found (at least 2 data points), call the 'suggestChart' function. Otherwise, do not call the function.
-
-    Slide Title: "${slideTitle}"
-    Slide Content: "${slideContent}"
-
-    Look for patterns like "Metric: Value", "Category: Amount", or "Year: Number". Extract these into labels and values.
+    You are a Data Visualization Expert.
+    
+    **Task:** Analyze text for numerical data suitable for a Bar Chart.
+    **Content:** "${slideContent}"
+    
+    **Rule:** Only call the function if you find at least 2 comparable data points (e.g. "Revenue 2023 vs 2024").
+    
+    Call 'suggestChart' if applicable.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -205,19 +231,23 @@ export const suggestChart = async (slideTitle: string, slideContent: string): Pr
         }
         return { chartData: null };
     } catch (error) {
-        console.error("Error suggesting chart:", error);
-        return { chartData: null };
+        handleAIError(error);
     }
 };
 
 export const suggestPieChart = async (slideContent: string): Promise<{ chartData: ChartData | null }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = `Analyze the text for fund allocation percentages (e.g., "40% to R&D, 30% to Marketing"). Extract this data and call the 'suggestPieChart' function. The total should add up to 100.
-
-    Content: "${slideContent}"`;
+    const prompt = `
+    You are a Data Visualization Expert.
+    
+    **Task:** Analyze text for percentage allocations (e.g., "Budget breakdown: 40% R&D, 60% Sales").
+    
+    **Content:** "${slideContent}"
+    
+    Call 'suggestPieChart' if you find components that sum to ~100%.
+    `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -232,21 +262,22 @@ export const suggestPieChart = async (slideContent: string): Promise<{ chartData
         }
         return { chartData: null };
     } catch (error) {
-        console.error("Error suggesting pie chart:", error);
-        return { chartData: null };
+        handleAIError(error);
     }
 };
 
 export const generateHeadlineVariations = async (slideTitle: string): Promise<{ headlines: string[] }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    You are an expert pitch deck copywriter. Based on the original title, generate five compelling and distinct headline variations that would capture an investor's attention by calling the 'generateHeadlineVariations' function.
-
-    Original Title: "${slideTitle}"
+    You are a Copywriter specializing in Pitch Decks.
+    
+    **Task:** Brainstorm 5 punchy, investor-focused headlines based on this original title.
+    **Original:** "${slideTitle}"
+    
+    Call 'generateHeadlineVariations' with the list.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -261,21 +292,22 @@ export const generateHeadlineVariations = async (slideTitle: string): Promise<{ 
         }
         throw new Error("AI did not generate headlines.");
     } catch (error) {
-        console.error("Error generating headlines:", error);
-        throw new Error("Failed to generate headline ideas.");
+        handleAIError(error);
     }
 };
 
 export const extractMetrics = async (slideContent: string): Promise<{ metrics: ExtractedMetric[] }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Analyze the following text from a pitch deck's "Problem" slide. Identify all quantifiable metrics that highlight the customer's pain point. Call the 'extractMetrics' function with the data you find.
-
-    Slide Content: "${slideContent}"
+    You are a Business Analyst.
+    
+    **Task:** Scan this text for impressive numbers/metrics (e.g., "20% Growth", "$1M ARR").
+    **Text:** "${slideContent}"
+    
+    Call 'extractMetrics' with the key findings.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -290,19 +322,20 @@ export const extractMetrics = async (slideContent: string): Promise<{ metrics: E
         }
         return { metrics: [] };
     } catch (error) {
-        console.error("Error extracting metrics:", error);
-        throw new Error("Failed to extract metrics.");
+        handleAIError(error);
     }
 };
 
 export const generatePricingTable = async (slideContent: string): Promise<{ tableData: TableData | null }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = `Analyze the following text describing a business model and its pricing. Convert it into a structured format by calling the 'generatePricingTable' function.
-
-    Slide Content: "${slideContent}"`;
+    const prompt = `
+    **Task:** Structure this pricing text into a comparison table.
+    **Text:** "${slideContent}"
+    
+    Call 'generatePricingTable'.
+    `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -317,19 +350,22 @@ export const generatePricingTable = async (slideContent: string): Promise<{ tabl
         }
         return { tableData: null };
     } catch (error) {
-        console.error("Error generating pricing table:", error);
-        throw new Error("Failed to generate pricing table.");
+        handleAIError(error);
     }
 };
 
 export const summarizeBio = async (bio: string): Promise<BioSummary> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = `Analyze the following professional bio. Distill it into a powerful one-sentence summary and extract the most impressive highlights by calling the 'summarizeBio' function.
-
-    Original Bio: "${bio}"`;
+    const prompt = `
+    You are a PR Specialist.
+    
+    **Task:** Shorten this bio into a single credibility-building sentence and extract 3 key badges (e.g. "Ex-Google").
+    **Bio:** "${bio}"
+    
+    Call 'summarizeBio'.
+    `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -343,21 +379,22 @@ export const summarizeBio = async (bio: string): Promise<BioSummary> => {
         }
         throw new Error("AI did not summarize bio.");
     } catch (error) {
-        console.error("Error summarizing bio:", error);
-        throw new Error("Failed to summarize bio.");
+        handleAIError(error);
     }
 };
 
 export const generateFinancialProjections = async (assumptions: string): Promise<FinancialData> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Generate a 3-year financial projection table based on the following assumptions: "${assumptions}".
-    Include rows for Revenue, COGS, Gross Margin, Operating Expenses, and Net Income.
-    Call 'generateFinancials' with the data.
+    You are a CFO.
+    
+    **Task:** Build a 3-year financial projection model based on these assumptions: "${assumptions}".
+    **Reasoning:** Calculate logical growth for Revenue and Expenses. Ensure margins make sense for the industry.
+    
+    Call 'generateFinancials' with the table.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -372,24 +409,24 @@ export const generateFinancialProjections = async (assumptions: string): Promise
         }
         throw new Error("AI did not return financial data.");
     } catch (error) {
-        console.error("Error generating financials:", error);
-        throw new Error("Failed to generate financial projections.");
+        handleAIError(error);
     }
 };
 
 export const generateCompetitorSWOT = async (slideContent: string): Promise<{ tableData: TableData | null }> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Analyze the slide content to identify the user's company and potential competitors.
-    Perform a Google Search to find detailed information about these competitors.
-    Then, generate a SWOT analysis table for these competitors comparing them to the user's company.
-    Call 'generateSWOTAnalysis' with the result.
-
-    Slide Content: "${slideContent}"
+    You are a Strategic Consultant.
+    
+    **Task:**
+    1. Identify the company and competitors from this text: "${slideContent}".
+    2. Use Google Search to find *current* strengths and weaknesses of these competitors.
+    3. Create a SWOT table.
+    
+    Call 'generateSWOTAnalysis'.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: "gemini-2.5-flash", // Use Flash for Search Grounding
             contents: prompt,
             config: {
@@ -413,22 +450,26 @@ export const generateCompetitorSWOT = async (slideContent: string): Promise<{ ta
         }
         return { tableData: null };
     } catch (error) {
-        console.error("Error generating SWOT:", error);
-        throw new Error("Failed to generate SWOT analysis.");
+        handleAIError(error);
     }
 };
 
 export const generateGTMStrategy = async (context: string): Promise<GTMStrategy> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `
-    Analyze the following business context and suggest a high-impact Go-To-Market (GTM) strategy.
-    Identify the best channels for user acquisition and the key metrics to track.
-    Context: "${context}"
-    Call 'generateGTMStrategy' with the results.
+    You are a Chief Marketing Officer (CMO).
+    
+    **Task:** Develop a high-impact Go-To-Market strategy for this business.
+    **Context:** "${context}"
+    
+    **Reasoning:**
+    - Consider the stage (Seed/Series A).
+    - Focus on the most efficient channels for this specific customer type.
+    
+    Call 'generateGTMStrategy'.
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -443,7 +484,6 @@ export const generateGTMStrategy = async (context: string): Promise<GTMStrategy>
         }
         throw new Error("AI did not return GTM strategy.");
     } catch (error) {
-        console.error("Error generating GTM strategy:", error);
-        throw new Error("Failed to generate GTM strategy.");
+        handleAIError(error);
     }
 };

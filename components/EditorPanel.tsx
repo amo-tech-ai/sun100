@@ -35,7 +35,7 @@ const EditorPanel: React.FC = () => {
      } = useDeckEditor();
 
     if (!deck || !selectedSlide) {
-        return null; // Or a loading state
+        return null;
     }
 
     const selectedSlideIndex = deck.slides.findIndex(s => s.id === selectedSlide.id);
@@ -58,13 +58,12 @@ const EditorPanel: React.FC = () => {
         });
     };
 
-    // Helper to determine if we should stack Chart and Table (common in financials)
     const showStackedVisuals = selectedSlide.chartData && selectedSlide.tableData;
 
     return (
         <main className="flex-1 flex flex-col h-full bg-gray-50/50 relative">
             
-            {/* Canvas Area - Centered and Scrollable */}
+            {/* Canvas Area */}
             <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center min-h-0">
                 <div className="w-full max-w-5xl aspect-video bg-white rounded-lg shadow-xl transition-all duration-300 transform origin-center hover:shadow-2xl">
                     <div className={`w-full h-full shadow-inner rounded-lg overflow-hidden ${templateStyles.slide}`}>
@@ -118,13 +117,12 @@ const EditorPanel: React.FC = () => {
                                     </ul>
                                 )}
                             </div>
-                            
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Bottom Navigation Bar - Fixed height at bottom of center panel */}
+            {/* Bottom Navigation Bar */}
             <div className="h-16 border-t border-gray-200 bg-white flex items-center justify-between px-8 flex-shrink-0 z-10">
                  <div className="flex items-center gap-4">
                     <button onClick={handlePrevSlide} disabled={selectedSlideIndex === 0} className="p-2 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-100 disabled:opacity-50 transition-colors" aria-label="Previous slide"><ChevronLeftIcon /></button>

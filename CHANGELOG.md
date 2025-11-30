@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2024-09-03
+
+### Added
+- **Investor Command Center:** A new dedicated dashboard (`InvestorDashboard.tsx`) for managing fundraising activities, tracking runway, and organizing documents.
+- **Document Builder:** A powerful wizard (`DocBuilder.tsx`) to generate AI-powered One-Pagers, Investor Updates, and Investment Memos. Includes PDF-style previews (`DocPreview.tsx`).
+- **Metrics Management:** A spreadsheet-like interface (`MetricsTable.tsx`) for tracking monthly KPIs (Revenue, Burn, Cash, Users).
+- **GTM Strategy Generator:** A comprehensive tool (`GTMStrategy.tsx`) that uses Gemini 3 to generate Go-To-Market plans, including ICP analysis, channel strategy, and launch roadmaps.
+- **Data Room:** A secure file management interface (`DataRoom.tsx`) with an "AI Audit" feature that checks for missing due diligence documents.
+- **VC Directory:** A browsable database of investors (`VCDirectory.tsx`) with deep profile views (`VCDetail.tsx`) and an AI-powered "Fit Check" matchmaking tool.
+- **Financial Forecasting:** Added `generateFinancialForecast` AI service to create 3-year projections based on historical metrics.
+- **Strategic Analysis:** Added `analyzeStartupStrategy` AI service to perform SWOT and market trend analysis for founder profiles.
+
+### Improved
+- **Landing Page:** Refactored `Landing.tsx` to use a consistent 8-point grid system (`py-16`, `gap-12`) and improved responsive stacking for mobile devices.
+- **Navigation:** Updated `Sitemap.tsx` to include all new Investor Suite routes.
+
 ## [2.1.1] - 2024-08-28
 
 ### Fixed
@@ -70,7 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Collapsible Sidebar:** The left slide outline panel can now be collapsed to a minimal view, maximizing editor space.
-- **Full-Screen Editing:** The editor panel expands to fill the available area when the sidebar is collapsed, creating a more focused workspace.
+-   **Full-Screen Editing:** The editor panel expands to fill the available area when the sidebar is collapsed, creating a more focused workspace.
 - **Slide Navigation Controls:** Added "Previous" and "Next" arrow buttons to the editor panel for easier navigation between slides.
 - **Keyboard Shortcuts:** Implemented keyboard shortcuts for navigating slides (Arrow Keys) and toggling the sidebar (Cmd/Ctrl + [).
 

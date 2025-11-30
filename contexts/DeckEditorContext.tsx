@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Deck, Slide, ChartData, TableData } from '../data/decks';
@@ -70,6 +71,7 @@ interface DeckEditorContextType {
     isGeneratingSWOT: boolean;
     swotError: string | null;
     isGeneratingGTM: boolean;
+    copilotError: string | null;
     handleSlideSelect: (slide: Slide) => void;
     handleTitleSave: (newTitle: string) => void;
     handleGenerateRoadmapSlide: () => void;
@@ -156,6 +158,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [isGeneratingSWOT, setIsGeneratingSWOT] = useState(false);
     const [swotError, setSwotError] = useState<string | null>(null);
     const [isGeneratingGTM, setIsGeneratingGTM] = useState(false);
+    const [copilotError, setCopilotError] = useState<string | null>(null);
 
 
     useEffect(() => {
@@ -237,6 +240,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setExtractedMetrics([]);
         setFinancialError(null);
         setSwotError(null);
+        setCopilotError(null);
     }, []);
 
     const updateSlideStateAndPersist = useCallback(async (slideId: string, updates: Partial<Slide>) => {
@@ -346,6 +350,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const handleCopilotGenerate = useCallback(async (prompt: string, newTitle?: string) => {
         if (!selectedSlide) return;
         setIsCopilotLoading(true);
+        setCopilotError(null);
         try {
             const instruction = newTitle ? `Set the title to "${newTitle}" and keep the content the same.` : prompt;
             const { newTitle: updatedTitle, newContent } = await modifySlideContent(
@@ -364,6 +369,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             await updateSlideStateAndPersist(selectedSlide.id, finalUpdates);
         } catch (err) {
             console.error("Copilot error:", err);
+            setCopilotError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
             setIsCopilotLoading(false);
         }
@@ -400,13 +406,14 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const handleApplyResearch = useCallback(async (researchSummary: string) => {
         if (!selectedSlide) return;
         setIsCopilotLoading(true); // Reuse copilot loading state for content modification
+        setCopilotError(null);
         try {
             const instruction = `Rewrite the slide content to incorporate the following market research findings. Structure it clearly (e.g., with sections for Market Size and Trends if applicable) and keep it concise for a presentation.\n\nResearch Insights:\n${researchSummary}`;
             const { newContent } = await modifySlideContent(selectedSlide.title, selectedSlide.content, instruction);
             await updateSlideStateAndPersist(selectedSlide.id, { content: newContent });
         } catch (err) {
             console.error("Failed to apply research:", err);
-            alert("Failed to update slide with research data.");
+            setCopilotError(err instanceof Error ? err.message : "Failed to update slide with research data.");
         } finally {
             setIsCopilotLoading(false);
         }
@@ -508,12 +515,14 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const handleSummarizeBio = useCallback(async () => {
         if (!selectedSlide) return;
         setIsCopilotLoading(true);
+        setCopilotError(null);
         try {
             const { summary, highlights } = await summarizeBio(selectedSlide.content);
             const newContent = `${summary}\n\n**Key Highlights:**\n- ${highlights.join('\n- ')}`;
             await handleCopilotGenerate(`Replace the content with the following summary:\n${newContent}`);
         } catch (err) {
             console.error("Bio summarization error:", err);
+            setCopilotError(err instanceof Error ? err.message : "Failed to summarize bio.");
         } finally {
             setIsCopilotLoading(false);
         }
@@ -625,6 +634,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         // Use AI to apply the specific update instruction
         // We pass the context to modifySlideContent
         setIsCopilotLoading(true); // Reuse copilot loading state
+        setCopilotError(null);
         try {
             const instruction = `Update this slide based on new website data. Change "${suggestion.currentValue}" to "${suggestion.newValue}". Context: ${suggestion.reason}`;
             const { newContent } = await modifySlideContent(targetSlide.title, targetSlide.content, instruction);
@@ -635,7 +645,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
         } catch (err) {
             console.error("Failed to apply update:", err);
-            alert("Failed to apply update automatically.");
+            setCopilotError(err instanceof Error ? err.message : "Failed to apply update automatically.");
         } finally {
             setIsCopilotLoading(false);
         }
@@ -750,6 +760,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         areSuggestionsLoading, isPublishing, publishProgressMessage, loading, isGeneratingFinancials, financialError,
         isSyncing, syncSuggestions, syncError,
         isGeneratingSWOT, swotError, isGeneratingGTM,
+        copilotError,
         handleSlideSelect, handleTitleSave, 
         handleGenerateRoadmapSlide, handleGenerateImage, handleEditImage, handleCopilotGenerate, 
         handleAnalyzeSlide, handleResearch, handleApplyResearch, handleSuggestLayout, handleSuggestChart, handleGenerateHeadlines, 

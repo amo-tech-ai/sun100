@@ -1,14 +1,13 @@
 
-import { GoogleGenAI } from "@google/genai";
 import { FullGTMStrategy, GTMInput } from './types';
 import { generateFullGTMStrategyFunctionDeclaration } from './prompts';
+import { handleAIError } from './utils';
+import { edgeClient } from './edgeClient';
 
 /**
  * Generates a comprehensive Go-To-Market strategy using Gemini 3 Pro with Thinking.
  */
 export const generateFullGTMStrategy = async (input: GTMInput): Promise<FullGTMStrategy> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
     const prompt = `
     Act as a Chief Marketing Officer and Product Strategist. 
     Create a detailed Go-To-Market (GTM) strategy for the following startup.
@@ -35,7 +34,7 @@ export const generateFullGTMStrategy = async (input: GTMInput): Promise<FullGTMS
     `;
 
     try {
-        const response = await ai.models.generateContent({
+        const response = await edgeClient.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
@@ -52,7 +51,6 @@ export const generateFullGTMStrategy = async (input: GTMInput): Promise<FullGTMS
         
         throw new Error("AI did not return a valid GTM strategy.");
     } catch (error) {
-        console.error("Error generating GTM strategy:", error);
-        throw new Error("Failed to generate strategy. Please try again.");
+        handleAIError(error);
     }
 };
