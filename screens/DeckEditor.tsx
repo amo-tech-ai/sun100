@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import SlideOutline from '../components/SlideOutline';
 import EditorPanel from '../components/EditorPanel';
+import RightSidebar from '../components/RightSidebar';
 import { DeckEditorProvider, useDeckEditor } from '../contexts/DeckEditorContext';
 
 // ICONS
@@ -13,7 +14,7 @@ const PanelLeftCloseIcon = () => (
 );
 
 const DeckEditorContent: React.FC = () => {
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
     const { deck, loading } = useDeckEditor();
 
     if (loading) {
@@ -30,23 +31,28 @@ const DeckEditorContent: React.FC = () => {
 
     return (
         <div className="flex h-screen bg-[#FBF8F5] overflow-hidden">
-            {/* Sidebar */}
-            <div className="relative flex h-full z-20 shadow-xl">
-                <SlideOutline isCollapsed={isSidebarCollapsed} />
+            {/* Left Sidebar (Slide Outline) */}
+            <div className="relative flex h-full z-20 shadow-xl flex-shrink-0">
+                <SlideOutline isCollapsed={isLeftSidebarCollapsed} />
                 
-                {/* Toggle Button */}
+                {/* Toggle Button for Left Sidebar */}
                 <button
-                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
                     className="absolute -right-4 top-6 z-30 bg-white border border-gray-200 rounded-full p-1 shadow-md hover:bg-gray-50 transition-colors text-gray-600"
-                    title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                    title={isLeftSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 >
-                    {isSidebarCollapsed ? <PanelLeftOpenIcon /> : <PanelLeftCloseIcon />}
+                    {isLeftSidebarCollapsed ? <PanelLeftOpenIcon /> : <PanelLeftCloseIcon />}
                 </button>
             </div>
 
-            {/* Main Editor Area */}
-            <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
+            {/* Center (Editor Canvas) */}
+            <div className="flex-1 flex flex-col h-full relative z-10 min-w-0">
                 <EditorPanel />
+            </div>
+
+            {/* Right Sidebar (AI Tools) */}
+            <div className="h-full z-20 shadow-xl flex-shrink-0">
+                <RightSidebar />
             </div>
         </div>
     );

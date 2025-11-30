@@ -11,6 +11,7 @@ const UploadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" heig
 const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>;
 const AlertIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
 const LockIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
 
 const DataRoom: React.FC = () => {
     const [files, setFiles] = useState<DataRoomFile[]>([
@@ -20,6 +21,7 @@ const DataRoom: React.FC = () => {
     ]);
     const [auditResult, setAuditResult] = useState<DataRoomAudit | null>(null);
     const [isAuditing, setIsAuditing] = useState(false);
+    const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
 
     // Mock Upload
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,6 +48,29 @@ const DataRoom: React.FC = () => {
         } finally {
             setIsAuditing(false);
         }
+    };
+
+    const handleGenerateDraft = (missingItem: string) => {
+        setIsGeneratingDraft(true);
+        // Simulate AI generation delay
+        setTimeout(() => {
+            const newFile: DataRoomFile = {
+                id: Date.now().toString(),
+                name: `${missingItem.replace(/\s+/g, '_')}_Draft.docx`,
+                category: 'Legal', // Simplification: assumes legal doc
+                size: '15 KB',
+                uploadDate: new Date().toISOString().split('T')[0]
+            };
+            setFiles([...files, newFile]);
+            // Clear the item from the missing list in the local state to reflect the fix
+            if (auditResult) {
+                setAuditResult({
+                    ...auditResult,
+                    missing_items: auditResult.missing_items.filter(i => i !== missingItem)
+                });
+            }
+            setIsGeneratingDraft(false);
+        }, 1500);
     };
 
     const getScoreColor = (score: number) => {
@@ -132,8 +157,19 @@ const DataRoom: React.FC = () => {
                                     <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Missing Critical Items</h4>
                                     <ul className="space-y-2">
                                         {auditResult.missing_items.length > 0 ? auditResult.missing_items.map((item, i) => (
-                                            <li key={i} className="text-sm text-red-700 bg-red-50 p-2 rounded flex items-start gap-2">
-                                                <span className="mt-0.5"><AlertIcon /></span> {item}
+                                            <li key={i} className="text-sm text-red-700 bg-red-50 p-2 rounded flex justify-between items-start gap-2">
+                                                <div className="flex items-start gap-2">
+                                                    <span className="mt-0.5"><AlertIcon /></span> 
+                                                    <span>{item}</span>
+                                                </div>
+                                                <button 
+                                                    onClick={() => handleGenerateDraft(item)}
+                                                    disabled={isGeneratingDraft}
+                                                    className="text-xs bg-white border border-red-200 text-red-600 px-2 py-1 rounded hover:bg-red-100 transition-colors flex-shrink-0 flex items-center gap-1"
+                                                    title="Generate a draft template for this document"
+                                                >
+                                                    {isGeneratingDraft ? '...' : <><PlusIcon /> Draft</>}
+                                                </button>
                                             </li>
                                         )) : <p className="text-sm text-green-600">All critical items present!</p>}
                                     </ul>

@@ -244,3 +244,18 @@ export interface DataRoomAudit {
     warnings: string[];
     recommendations: string[];
 }
+
+// --- Strategic Analysis Types ---
+
+export interface StartupStrategicAnalysis {
+    investorReadinessScore: number; // 0-100
+    readinessReasoning: string;
+    swot: {
+        strengths: string[];
+        weaknesses: string[];
+        opportunities: string[];
+        threats: string[];
+    };
+    marketTrends: string[];
+    keyCompetitors: string[];
+}

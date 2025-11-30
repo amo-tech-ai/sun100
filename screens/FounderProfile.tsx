@@ -1,9 +1,9 @@
 
 import React, { useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { summarizeBio, extractMetrics, generateCompetitorSWOT } from '../services/ai/slide';
-import { BioSummary, ExtractedMetric, TableData } from '../services/ai/types';
-import Table from '../components/Table';
+import { summarizeBio, extractMetrics } from '../services/ai/slide';
+import { analyzeStartupStrategy } from '../services/ai/investor';
+import { BioSummary, ExtractedMetric, StartupStrategicAnalysis } from '../services/ai/types';
 
 // --- ICONS ---
 const LinkIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>;
@@ -74,8 +74,8 @@ const FounderProfile: React.FC = () => {
     const [isExtractingMetrics, setIsExtractingMetrics] = useState(false);
     const [extractedMetrics, setExtractedMetrics] = useState<ExtractedMetric[] | null>(null);
 
-    const [isGeneratingSWOT, setIsGeneratingSWOT] = useState(false);
-    const [swotAnalysis, setSwotAnalysis] = useState<TableData | null>(null);
+    const [isAnalyzingStrategy, setIsAnalyzingStrategy] = useState(false);
+    const [strategicAnalysis, setStrategicAnalysis] = useState<StartupStrategicAnalysis | null>(null);
 
     const [aiError, setAiError] = useState<string | null>(null);
 
@@ -107,20 +107,25 @@ const FounderProfile: React.FC = () => {
         }
     }, [profile.bio, profile.startup.tagline]);
 
-    const handleGenerateSWOT = useCallback(async () => {
-        setIsGeneratingSWOT(true);
+    const handleStrategicAnalysis = useCallback(async () => {
+        setIsAnalyzingStrategy(true);
         setAiError(null);
         try {
-            // Use Gemini 3 Reasoning to infer SWOT from limited context
             const context = `Startup: ${profile.startup.name}. Industry: ${profile.startup.industry}. Tagline: ${profile.startup.tagline}. Founder Bio: ${profile.bio}`;
-            const { tableData } = await generateCompetitorSWOT(context);
-            setSwotAnalysis(tableData);
+            const result = await analyzeStartupStrategy(context);
+            setStrategicAnalysis(result);
         } catch (err) {
-            setAiError(err instanceof Error ? err.message : "Failed to generate SWOT.");
+            setAiError(err instanceof Error ? err.message : "Failed to perform strategic analysis.");
         } finally {
-            setIsGeneratingSWOT(false);
+            setIsAnalyzingStrategy(false);
         }
     }, [profile]);
+
+    const getScoreColor = (score: number) => {
+        if (score >= 80) return 'text-green-600 border-green-500 bg-green-50';
+        if (score >= 60) return 'text-yellow-600 border-yellow-500 bg-yellow-50';
+        return 'text-red-600 border-red-500 bg-red-50';
+    };
 
 
     return (
@@ -246,29 +251,102 @@ const FounderProfile: React.FC = () => {
                                 Strategic Analysis
                             </h3>
                              <button 
-                                onClick={handleGenerateSWOT} 
-                                disabled={isGeneratingSWOT}
+                                onClick={handleStrategicAnalysis} 
+                                disabled={isAnalyzingStrategy}
                                 className="text-sm bg-white border border-gray-300 text-gray-700 font-semibold py-1.5 px-4 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
                             >
-                                {isGeneratingSWOT ? 'Analyzing...' : 'Generate SWOT with Gemini 3'}
+                                {isAnalyzingStrategy ? 'Analyzing Market...' : 'Run Deep Analysis with Gemini 3'}
                             </button>
                         </div>
                         
-                        {swotAnalysis ? (
-                            <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
-                                <Table tableData={swotAnalysis} />
+                        {strategicAnalysis ? (
+                            <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden animate-fade-in-up">
+                                {/* Score Header */}
+                                <div className="flex items-center gap-6 p-6 bg-white border-b border-gray-100">
+                                    <div className={`w-20 h-20 rounded-full border-8 flex items-center justify-center flex-shrink-0 ${getScoreColor(strategicAnalysis.investorReadinessScore)}`}>
+                                        <span className="text-2xl font-extrabold">{strategicAnalysis.investorReadinessScore}</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-gray-900">Investor Readiness</h4>
+                                        <p className="text-sm text-gray-600 mt-1 leading-relaxed">{strategicAnalysis.readinessReasoning}</p>
+                                    </div>
+                                </div>
+
+                                {/* SWOT Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-1 bg-gray-200 border-b border-gray-200">
+                                    <div className="bg-white p-5">
+                                        <h5 className="text-xs font-bold text-green-600 uppercase mb-3">Strengths</h5>
+                                        <ul className="space-y-2">
+                                            {strategicAnalysis.swot.strengths.map((item, i) => (
+                                                <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-green-400 text-xs mt-1">●</span> {item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div className="bg-white p-5">
+                                        <h5 className="text-xs font-bold text-red-500 uppercase mb-3">Weaknesses</h5>
+                                        <ul className="space-y-2">
+                                            {strategicAnalysis.swot.weaknesses.map((item, i) => (
+                                                <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-red-400 text-xs mt-1">●</span> {item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div className="bg-white p-5">
+                                        <h5 className="text-xs font-bold text-blue-500 uppercase mb-3">Opportunities</h5>
+                                        <ul className="space-y-2">
+                                            {strategicAnalysis.swot.opportunities.map((item, i) => (
+                                                <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-blue-400 text-xs mt-1">●</span> {item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div className="bg-white p-5">
+                                        <h5 className="text-xs font-bold text-orange-500 uppercase mb-3">Threats</h5>
+                                        <ul className="space-y-2">
+                                            {strategicAnalysis.swot.threats.map((item, i) => (
+                                                <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-orange-400 text-xs mt-1">●</span> {item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                {/* Market Trends & Competitors */}
+                                <div className="p-6 bg-gray-50 grid md:grid-cols-2 gap-8">
+                                    <div>
+                                        <h5 className="font-bold text-sm text-gray-900 mb-3">Live Market Trends</h5>
+                                        <ul className="space-y-2">
+                                            {strategicAnalysis.marketTrends.map((trend, i) => (
+                                                <li key={i} className="text-xs text-gray-600 bg-white px-3 py-2 rounded border border-gray-200 shadow-sm">
+                                                    🔥 {trend}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h5 className="font-bold text-sm text-gray-900 mb-3">Key Competitors</h5>
+                                        <div className="flex flex-wrap gap-2">
+                                            {strategicAnalysis.keyCompetitors.map((comp, i) => (
+                                                <span key={i} className="text-xs font-semibold text-gray-600 bg-gray-200 px-3 py-1 rounded-full">
+                                                    {comp}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         ) : (
-                            !isGeneratingSWOT && (
+                            !isAnalyzingStrategy && (
                                 <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                    <p className="text-gray-500 text-sm">Run a deep strategic analysis of this startup profile using Gemini 3's reasoning capabilities.</p>
+                                    <p className="text-gray-500 text-sm">
+                                        Gemini 3 will research live market data, identify competitors, and perform a strategic SWOT analysis.
+                                    </p>
                                 </div>
                             )
                         )}
-                        {isGeneratingSWOT && (
-                             <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-                                <Spinner />
-                                <p className="text-gray-500 text-sm mt-2">Gemini 3 is thinking deeply about market position...</p>
+                        
+                        {isAnalyzingStrategy && (
+                             <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
+                                <div className="w-12 h-12 mx-auto mb-4 border-4 border-dashed rounded-full animate-spin border-brand-orange"></div>
+                                <p className="text-gray-800 font-semibold">Gemini 3 is thinking...</p>
+                                <p className="text-gray-500 text-sm mt-2">Analyzing market trends and competitors via Google Search.</p>
                             </div>
                         )}
                     </div>

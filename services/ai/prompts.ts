@@ -728,3 +728,28 @@ export const auditDataRoomFunctionDeclaration: FunctionDeclaration = {
         required: ['score', 'status', 'found_categories', 'missing_items', 'warnings', 'recommendations']
     }
 };
+
+export const analyzeStartupStrategyFunctionDeclaration: FunctionDeclaration = {
+    name: 'analyzeStartupStrategy',
+    description: 'Performs a strategic analysis of a startup including SWOT, Investor Readiness Score, and Market Trends.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            investorReadinessScore: { type: Type.NUMBER, description: '0-100 score reflecting how ready the startup is for investment.' },
+            readinessReasoning: { type: Type.STRING },
+            swot: {
+                type: Type.OBJECT,
+                properties: {
+                    strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    threats: { type: Type.ARRAY, items: { type: Type.STRING } },
+                },
+                required: ['strengths', 'weaknesses', 'opportunities', 'threats']
+            },
+            marketTrends: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Relevant current market trends.' },
+            keyCompetitors: { type: Type.ARRAY, items: { type: Type.STRING } }
+        },
+        required: ['investorReadinessScore', 'readinessReasoning', 'swot', 'marketTrends', 'keyCompetitors']
+    }
+};
