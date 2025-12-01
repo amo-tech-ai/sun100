@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DataRoomAudit, DataRoomFile } from '../services/ai/types';
 import { auditDataRoom } from '../services/ai/dataroom';
+import { getDataRoomFiles, uploadDataRoomFile, deleteDataRoomFile, getDataRoomAudit, saveDataRoomAudit } from '../services/dataRoomService';
 import { Link } from 'react-router-dom';
 
 // Icons
@@ -14,33 +15,59 @@ const LockIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height
 const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
 
 const DataRoom: React.FC = () => {
-    const [files, setFiles] = useState<DataRoomFile[]>([
-        { id: '1', name: 'Pitch_Deck_v3.pdf', category: 'Uncategorized', size: '2.4 MB', uploadDate: '2024-08-20' },
-        { id: '2', name: 'Cap_Table_Draft.xlsx', category: 'Financials', size: '45 KB', uploadDate: '2024-08-22' },
-        { id: '3', name: 'Incorporation_Docs.pdf', category: 'Legal', size: '1.2 MB', uploadDate: '2024-08-15' }
-    ]);
+    const [files, setFiles] = useState<DataRoomFile[]>([]);
     const [auditResult, setAuditResult] = useState<DataRoomAudit | null>(null);
     const [isAuditing, setIsAuditing] = useState(false);
     const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    // Mock Upload
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                const [fetchedFiles, fetchedAudit] = await Promise.all([
+                    getDataRoomFiles(),
+                    getDataRoomAudit()
+                ]);
+                setFiles(fetchedFiles);
+                setAuditResult(fetchedAudit);
+            } catch (e) {
+                console.error("Failed to load data room", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            const newFile: DataRoomFile = {
-                id: Date.now().toString(),
-                name: e.target.files[0].name,
-                category: 'Uncategorized',
-                size: `${(e.target.files[0].size / 1024 / 1024).toFixed(2)} MB`,
-                uploadDate: new Date().toISOString().split('T')[0]
-            };
-            setFiles([...files, newFile]);
+            try {
+                const file = e.target.files[0];
+                const newFile = await uploadDataRoomFile({
+                    name: file.name,
+                    category: 'Uncategorized',
+                    size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+                });
+                setFiles(prev => [...prev, newFile]);
+                // Invalidate audit if new files added
+                setAuditResult(null);
+            } catch (e) {
+                alert("Upload failed");
+            }
         }
+    };
+
+    const handleDeleteFile = async (id: string) => {
+        await deleteDataRoomFile(id);
+        setFiles(prev => prev.filter(f => f.id !== id));
     };
 
     const handleAudit = async () => {
         setIsAuditing(true);
         try {
             const result = await auditDataRoom(files);
+            await saveDataRoomAudit(result);
             setAuditResult(result);
         } catch (err) {
             console.error(err);
@@ -50,25 +77,29 @@ const DataRoom: React.FC = () => {
         }
     };
 
-    const handleGenerateDraft = (missingItem: string) => {
+    const handleGenerateDraft = async (missingItem: string) => {
         setIsGeneratingDraft(true);
         // Simulate AI generation delay
-        setTimeout(() => {
-            const newFile: DataRoomFile = {
-                id: Date.now().toString(),
+        setTimeout(async () => {
+            const newFile = await uploadDataRoomFile({
                 name: `${missingItem.replace(/\s+/g, '_')}_Draft.docx`,
-                category: 'Legal', // Simplification: assumes legal doc
-                size: '15 KB',
-                uploadDate: new Date().toISOString().split('T')[0]
-            };
-            setFiles([...files, newFile]);
-            // Clear the item from the missing list in the local state to reflect the fix
+                category: 'Legal',
+                size: '15 KB'
+            });
+            
+            setFiles(prev => [...prev, newFile]);
+            
+            // Update audit result locally to reflect fix
             if (auditResult) {
-                setAuditResult({
+                const updatedAudit = {
                     ...auditResult,
-                    missing_items: auditResult.missing_items.filter(i => i !== missingItem)
-                });
+                    missing_items: auditResult.missing_items.filter(i => i !== missingItem),
+                    score: Math.min(100, auditResult.score + 5) // Arbitrary score bump
+                };
+                setAuditResult(updatedAudit);
+                await saveDataRoomAudit(updatedAudit);
             }
+            
             setIsGeneratingDraft(false);
         }, 1500);
     };
@@ -78,6 +109,8 @@ const DataRoom: React.FC = () => {
         if (score >= 50) return 'text-yellow-600 border-yellow-500 bg-yellow-50';
         return 'text-red-600 border-red-500 bg-red-50';
     };
+
+    if (loading) return <div className="p-12 text-center text-gray-500">Loading Data Room...</div>;
 
     return (
         <div className="p-6 max-w-7xl mx-auto min-h-screen bg-[#FBF8F5]">
@@ -129,7 +162,7 @@ const DataRoom: React.FC = () => {
                                     <div className="flex items-center gap-3">
                                         <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md">{file.category}</span>
                                         <button 
-                                            onClick={() => setFiles(files.filter(f => f.id !== file.id))}
+                                            onClick={() => handleDeleteFile(file.id)}
                                             className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                                         >
                                             &times;
