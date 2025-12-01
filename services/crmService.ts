@@ -21,6 +21,8 @@ export interface Customer {
     companySummary?: string;
     tags?: string[];
     linkedDeckIds?: string[]; // IDs of linked pitch decks
+    fundingHistory?: { round: string; amount: string; date: string; investors: string }[];
+    hiringTrends?: { trend: 'up' | 'flat' | 'down'; roles: string[] };
 }
 
 export interface CRMStats {
@@ -145,7 +147,9 @@ export const getCustomers = async (): Promise<Customer[]> => {
         companySummary: c.extended_info?.companySummary,
         tags: c.extended_info?.tags || [],
         linkedDeckIds: c.extended_info?.linkedDeckIds || [],
-        lastEnrichedAt: c.last_enriched_at ? new Date(c.last_enriched_at).toLocaleDateString() : undefined
+        lastEnrichedAt: c.last_enriched_at ? new Date(c.last_enriched_at).toLocaleDateString() : undefined,
+        fundingHistory: c.extended_info?.fundingHistory,
+        hiringTrends: c.extended_info?.hiringTrends
     }));
 };
 
@@ -174,6 +178,8 @@ export const createCustomer = async (customer: Omit<Customer, 'id' | 'lastIntera
         latestNews: customer.latestNews,
         companySummary: customer.companySummary,
         tags: customer.tags || [],
+        fundingHistory: customer.fundingHistory,
+        hiringTrends: customer.hiringTrends,
         linkedDeckIds: []
     };
 
@@ -214,7 +220,9 @@ export const createCustomer = async (customer: Omit<Customer, 'id' | 'lastIntera
         companySummary: data.extended_info?.companySummary,
         tags: data.extended_info?.tags || [],
         linkedDeckIds: data.extended_info?.linkedDeckIds || [],
-        lastEnrichedAt: data.last_enriched_at ? new Date(data.last_enriched_at).toLocaleDateString() : undefined
+        lastEnrichedAt: data.last_enriched_at ? new Date(data.last_enriched_at).toLocaleDateString() : undefined,
+        fundingHistory: data.extended_info?.fundingHistory,
+        hiringTrends: data.extended_info?.hiringTrends
     };
 };
 

@@ -20,6 +20,7 @@ import { CSVImportModal } from '../components/crm/CSVImportModal';
 import { DealBoard } from '../components/crm/DealBoard';
 import { EmptyState } from '../components/common/EmptyState';
 import { OnboardingTour, TourStep } from '../components/common/OnboardingTour';
+import { useToast } from '../contexts/ToastContext';
 
 // --- Icons ---
 const UsersIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
@@ -90,6 +91,7 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 };
 
 const CustomerCRM: React.FC = () => {
+    const { success, error: toastError } = useToast();
     const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
     const [stats, setStats] = useState<CRMStats | null>(null);
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -152,6 +154,7 @@ const CustomerCRM: React.FC = () => {
             setTasks(data.tasks);
         } catch (error) {
             console.error("Error fetching CRM data:", error);
+            toastError("Failed to load CRM data.");
         } finally {
             setLoading(false);
         }
@@ -175,6 +178,7 @@ const CustomerCRM: React.FC = () => {
 
     const handleCreateCustomer = async (customerData: any) => {
         await createCustomer(customerData);
+        success("Customer created successfully.");
         load(); // Refresh list
     };
 
@@ -209,9 +213,11 @@ const CustomerCRM: React.FC = () => {
             if (customers.length > 0) {
                  const newInsights = await generateCRMInsights(customers);
                  setInsights(newInsights as Insight[]);
+                 success("Insights updated.");
             }
         } catch (e) {
             console.error("Failed to refresh insights", e);
+            toastError("Failed to refresh insights.");
         } finally {
             setIsRefreshingInsights(false);
         }
@@ -255,10 +261,11 @@ const CustomerCRM: React.FC = () => {
         try {
             await bulkDeleteCustomers(Array.from(selectedIds));
             setSelectedIds(new Set());
+            success(`Deleted ${selectedIds.size} customers.`);
             load();
         } catch (e) {
             console.error("Bulk delete failed:", e);
-            alert("Failed to delete selected customers.");
+            toastError("Failed to delete selected customers.");
         }
     };
 
@@ -286,6 +293,7 @@ const CustomerCRM: React.FC = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        success("Export started.");
     };
 
     if (loading) {
