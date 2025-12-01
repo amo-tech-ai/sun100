@@ -31,4 +31,6 @@
 | | **Sales Outreach** | 100% | ✅ | **AI:** `generate-cold-email` (Context-aware drafts). |
 | | **Sales Pipeline Board** | 100% | ✅ | **FE:** `DealBoard.tsx` Drag-n-Drop, Probability Viz, AI Scoring.<br/>**AI:** `analyze-deal-score` integration. |
 | | **Infrastructure** | 100% | ✅ | **BE:** `20250118_ai_prospecting_schema.sql` migration applied. RLS policies active. |
+| | **Bulk Actions** | 100% | ✅ | **FE:** Multi-select, Bulk Delete, Export CSV added to CRM Dashboard. |
+| | **Email Integration** | 100% | ✅ | **BE:** `send-email` Edge Function updated to support Resend API. |
 | ... | ... | ... | ... | ... |
