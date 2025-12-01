@@ -19,6 +19,7 @@ const BriefcaseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" h
 const MapIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>;
 const LockIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
 const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
 
 
 const PanelLeftCloseIcon = () => (
@@ -88,6 +89,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                 >
                     <UsersIcon />
                     {!isCollapsed && <span className="ml-3 font-semibold">Investor Directory</span>}
+                </NavLink>
+                 <NavLink
+                    to="/dashboard/funding-manager"
+                    className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
+                >
+                    <SendIcon />
+                    {!isCollapsed && <span className="ml-3 font-semibold">Applications</span>}
                 </NavLink>
                 <NavLink
                     to="/dashboard/data-room"

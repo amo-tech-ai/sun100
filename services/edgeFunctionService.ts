@@ -145,6 +145,20 @@ export const invokeEdgeFunction = async <T>(
          return mockMemo as unknown as T;
      }
 
+     if (functionName === 'ask-investor-data') {
+         await new Promise(resolve => setTimeout(resolve, 1500));
+         const query = (payload?.query as string || '').toLowerCase();
+         
+         if (query.includes('burn')) {
+             return "Based on your last 3 months, your average net burn is **$43,666/month**. With your current cash balance of $380,000, you have approximately **8.7 months of runway** left." as unknown as T;
+         }
+         if (query.includes('revenue') || query.includes('grow')) {
+             return "Your revenue has grown from $9,800 to $12,450 over the last quarter, representing a **27% increase**. This is a strong positive trend." as unknown as T;
+         }
+         
+         return "I've analyzed your metrics. Your current cash position is strong, but keep an eye on the increasing burn rate which has risen by 7% since June." as unknown as T;
+     }
+
      // Generic fallback
      return Promise.resolve({} as T);
   }

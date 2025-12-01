@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateFullGTMStrategy } from '../services/ai/gtm';
 import { FullGTMStrategy, GTMInput } from '../services/ai/types';
 import { useTypewriter } from '../hooks/useTypewriter';
+import { useStartup } from '../hooks/useStartup';
 
 // Icons
 const StrategyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>;
@@ -21,15 +22,29 @@ const TypewriterBlock: React.FC<{ text: string; className?: string; speed?: numb
 
 const GTMStrategy: React.FC = () => {
     const [step, setStep] = useState<'input' | 'generating' | 'result'>('input');
+    const { profile } = useStartup();
     const [input, setInput] = useState<GTMInput>({
         startupName: 'My Startup',
         industry: 'SaaS',
-        description: 'An AI-powered platform for automated bookkeeping.',
-        targetAudience: 'Small Business Owners',
+        description: '',
+        targetAudience: '',
         stage: 'Seed'
     });
     const [strategy, setStrategy] = useState<FullGTMStrategy | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    // Auto-fill from context
+    useEffect(() => {
+        if (profile.name !== 'My Startup') {
+            setInput(prev => ({
+                ...prev,
+                startupName: profile.name,
+                industry: profile.industry,
+                description: profile.description,
+                stage: profile.stage
+            }));
+        }
+    }, [profile]);
 
     const handleGenerate = async () => {
         setStep('generating');

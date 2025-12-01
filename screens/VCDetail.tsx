@@ -1,8 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getInvestorById, Investor } from '../services/vcService';
 import { FitCheckModal } from '../components/directory/FitCheckModal';
+import { createApplication } from '../services/fundingService';
+import { useToast } from '../contexts/ToastContext';
 
 const DetailItem = ({ label, value, subtext, highlight }: { label: string, value: string | number | undefined, subtext?: string, highlight?: boolean }) => (
     <div className={`p-5 rounded-xl border ${highlight ? 'bg-orange-50 border-orange-100' : 'bg-gray-50 border-gray-100'}`}>
@@ -39,9 +41,12 @@ const TagList = ({ tags, color = 'blue' }: { tags: string[], color?: string }) =
 
 const VCDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
     const [investor, setInvestor] = useState<Investor | undefined>();
     const [loading, setLoading] = useState(true);
     const [isFitModalOpen, setIsFitModalOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const { success, error } = useToast();
 
     useEffect(() => {
         if (id) {
@@ -51,6 +56,21 @@ const VCDetail: React.FC = () => {
             });
         }
     }, [id]);
+
+    const handleSaveApplication = async () => {
+        if (!investor) return;
+        setIsSaving(true);
+        try {
+            await createApplication(investor);
+            success(`Added ${investor.name} to your funding tracker.`);
+            // Optional: navigate to tracker
+            // navigate('/dashboard/funding-manager');
+        } catch (err) {
+            error(err instanceof Error ? err.message : "Failed to save application.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-[#FBF8F5]">
@@ -89,9 +109,13 @@ const VCDetail: React.FC = () => {
                                     <a href={investor.application_link || '#'} target="_blank" rel="noreferrer" className="w-full py-3 bg-brand-blue text-white font-bold rounded-lg hover:bg-opacity-90 transition-all shadow-md text-center">
                                         Apply Now
                                     </a>
-                                    <button className="w-full py-3 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors text-center flex items-center justify-center gap-2">
+                                    <button 
+                                        onClick={handleSaveApplication}
+                                        disabled={isSaving}
+                                        className="w-full py-3 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors text-center flex items-center justify-center gap-2 disabled:opacity-50"
+                                    >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
-                                        Save Profile
+                                        {isSaving ? 'Saving...' : 'Save to Tracker'}
                                     </button>
                                 </div>
                             </div>

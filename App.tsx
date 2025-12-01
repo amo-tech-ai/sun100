@@ -1,11 +1,9 @@
 
-
-
-
-
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { StartupProvider } from './contexts/StartupContext';
+import { ToastProvider } from './contexts/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Layouts
@@ -53,13 +51,13 @@ const FounderProfile = lazy(() => import('./screens/FounderProfile'));
 const VCDirectory = lazy(() => import('./screens/VCDirectory'));
 const VCDetail = lazy(() => import('./screens/VCDetail'));
 const DirectoryAdmin = lazy(() => import('./screens/DirectoryAdmin'));
+const FundingManager = lazy(() => import('./screens/FundingManager')); 
 
 // --- NEW GTM STRATEGY SCREEN ---
 const GTMStrategy = lazy(() => import('./screens/GTMStrategy'));
 
 // --- NEW DATA ROOM SCREEN ---
 const DataRoom = lazy(() => import('./screens/DataRoom'));
-
 
 // --- Renamed SunAIStartupDeck Screens ---
 const SunAIStartupDeckLayout = lazy(() => import('./screens/SponsorDeckLayout'));
@@ -80,7 +78,7 @@ const InvestorDashboard = lazy(() => import('./screens/InvestorDashboard'));
 const DocBuilder = lazy(() => import('./screens/DocBuilder'));
 
 // New Metrics Component import
-import { MetricsTable } from './components/investor/MetricsTable';
+const Metrics = lazy(() => import('./screens/Metrics'));
 
 
 // Loading fallback component
@@ -94,78 +92,83 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            {/* --- Public Routes --- */}
-            <Route element={<PublicLayout />}>
-              <Route path="/" element={<Landing />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/perks" element={<Perks />} />
-              <Route path="/perks/:id" element={<PerkDetail />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/events/:id" element={<EventDetail />} />
-              <Route path="/jobs" element={<Jobs />} />
-              <Route path="/jobs/:id" element={<JobDetail />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/business-model" element={<BusinessModel />} />
-              <Route path="/blogs" element={<Blogs />} />
-              <Route path="/blogs/:id" element={<BlogDetail />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/services/web-design" element={<WebDesign />} />
-              <Route path="/services/logo-branding" element={<LogoBranding />} />
-              <Route path="/services/mvp-development" element={<MvpDevelopment />} />
-              <Route path="/community/profile/:username" element={<FounderProfile />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              
-              {/* VC Directory Routes (Public for now, or move to protected if needed) */}
-              <Route path="/directory" element={<VCDirectory />} />
-              <Route path="/directory/:id" element={<VCDetail />} />
-              
-              {/* SunAIStartupDeck routes now have their own nested layout for sub-navigation */}
-              <Route path="/sunaistartup-deck" element={<SunAIStartupDeckLayout />}>
-                <Route index element={<SunAIStartupDeckOverview />} />
-                <Route path="showcase" element={<SunAIStartupDeckShowcase />} />
-                <Route path="categories" element={<SunAIStartupDeckCategories />} />
-                <Route path="apply" element={<SunAIStartupDeckApply />} />
-                <Route path="stories" element={<SunAIStartupDeckStories />} />
-              </Route>
-            </Route>
+        <StartupProvider>
+          <ToastProvider>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                {/* --- Public Routes --- */}
+                <Route element={<PublicLayout />}>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/perks" element={<Perks />} />
+                  <Route path="/perks/:id" element={<PerkDetail />} />
+                  <Route path="/events" element={<Events />} />
+                  <Route path="/events/:id" element={<EventDetail />} />
+                  <Route path="/jobs" element={<Jobs />} />
+                  <Route path="/jobs/:id" element={<JobDetail />} />
+                  <Route path="/how-it-works" element={<HowItWorks />} />
+                  <Route path="/business-model" element={<BusinessModel />} />
+                  <Route path="/blogs" element={<Blogs />} />
+                  <Route path="/blogs/:id" element={<BlogDetail />} />
+                  <Route path="/services" element={<Services />} />
+                  <Route path="/services/web-design" element={<WebDesign />} />
+                  <Route path="/services/logo-branding" element={<LogoBranding />} />
+                  <Route path="/services/mvp-development" element={<MvpDevelopment />} />
+                  <Route path="/community/profile/:username" element={<FounderProfile />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  
+                  {/* VC Directory Routes (Public for now, or move to protected if needed) */}
+                  <Route path="/directory" element={<VCDirectory />} />
+                  <Route path="/directory/:id" element={<VCDetail />} />
+                  
+                  {/* SunAIStartupDeck routes */}
+                  <Route path="/sunaistartup-deck" element={<SunAIStartupDeckLayout />}>
+                    <Route index element={<SunAIStartupDeckOverview />} />
+                    <Route path="showcase" element={<SunAIStartupDeckShowcase />} />
+                    <Route path="categories" element={<SunAIStartupDeckCategories />} />
+                    <Route path="apply" element={<SunAIStartupDeckApply />} />
+                    <Route path="stories" element={<SunAIStartupDeckStories />} />
+                  </Route>
+                </Route>
 
-            {/* --- App Routes (Protected) --- */}
-            <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/startup-wizard" element={<StartupWizard />} />
-              <Route path="/dashboard/my-events" element={<MyEvents />} />
-              <Route path="/dashboard/events/new" element={<EventWizard />} />
-              <Route path="/dashboard/video-generator" element={<VideoGenerator />} />
-              <Route path="/dashboard/investor-docs" element={<InvestorDashboard />} />
-              <Route path="/dashboard/investor-docs/new" element={<DocBuilder />} />
-              <Route path="/dashboard/metrics" element={<div className="p-8"><h1 className="text-2xl font-bold text-brand-blue mb-6">Manage Metrics</h1><MetricsTable /></div>} />
-              <Route path="/dashboard/gtm-strategy" element={<GTMStrategy />} />
-              <Route path="/dashboard/data-room" element={<DataRoom />} />
-              <Route path="/dashboard/sitemap" element={<Sitemap />} />
-              <Route path="/dashboard/directory-admin" element={<DirectoryAdmin />} />
-              
-              <Route path="/pitch-decks" element={<PitchDecks />} />
-              <Route path="/pitch-decks/new" element={<WizardSteps />} />
-              <Route path="/pitch-decks/generating" element={<GeneratingScreen />} />
-              <Route path="/pitch-decks/:id/edit" element={<DeckEditor />} />
-              <Route path="/pitch-decks/:id/publish-success" element={<PublishSuccessScreen />} />
-            </Route>
+                {/* --- App Routes (Protected) --- */}
+                <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/dashboard/startup-wizard" element={<StartupWizard />} />
+                  <Route path="/dashboard/my-events" element={<MyEvents />} />
+                  <Route path="/dashboard/events/new" element={<EventWizard />} />
+                  <Route path="/dashboard/video-generator" element={<VideoGenerator />} />
+                  <Route path="/dashboard/investor-docs" element={<InvestorDashboard />} />
+                  <Route path="/dashboard/investor-docs/new" element={<DocBuilder />} />
+                  <Route path="/dashboard/metrics" element={<Metrics />} />
+                  <Route path="/dashboard/gtm-strategy" element={<GTMStrategy />} />
+                  <Route path="/dashboard/data-room" element={<DataRoom />} />
+                  <Route path="/dashboard/sitemap" element={<Sitemap />} />
+                  <Route path="/dashboard/directory-admin" element={<DirectoryAdmin />} />
+                  <Route path="/dashboard/funding-manager" element={<FundingManager />} />
+                  
+                  <Route path="/pitch-decks" element={<PitchDecks />} />
+                  <Route path="/pitch-decks/new" element={<WizardSteps />} />
+                  <Route path="/pitch-decks/generating" element={<GeneratingScreen />} />
+                  <Route path="/pitch-decks/:id/edit" element={<DeckEditor />} />
+                  <Route path="/pitch-decks/:id/publish-success" element={<PublishSuccessScreen />} />
+                </Route>
 
-            {/* --- Full-screen Route (Protected) --- */}
-            <Route
-              path="/pitch-decks/:id/present"
-              element={<ProtectedRoute><PresentationScreen /></ProtectedRoute>}
-            />
+                {/* --- Full-screen Route (Protected) --- */}
+                <Route
+                  path="/pitch-decks/:id/present"
+                  element={<ProtectedRoute><PresentationScreen /></ProtectedRoute>}
+                />
 
-            {/* --- Fallback Route --- */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+                {/* --- Fallback Route --- */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </ToastProvider>
+        </StartupProvider>
       </AuthProvider>
     </BrowserRouter>
   );

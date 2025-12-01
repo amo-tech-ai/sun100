@@ -24,13 +24,6 @@ const RightSidebar: React.FC = () => {
         localStorage.setItem('deckEditor_rightSidebarCollapsed', String(isCollapsed));
     }, [isCollapsed]);
 
-    // Auto-switch to image tab if slide has an image (Optional UX enhancement)
-    useEffect(() => {
-        if (selectedSlide?.imageUrl && selectedSlide.imageUrl.startsWith('data:image')) {
-           // Optionally switch to image tab
-        }
-    }, [selectedSlide]);
-
     const tabs: { id: AITab; icon: React.ReactNode; label: string }[] = [
         { id: 'copilot', icon: <WandIcon />, label: 'Copilot' },
         { id: 'image', icon: <ImageIcon />, label: 'Visuals' },
@@ -47,19 +40,20 @@ const RightSidebar: React.FC = () => {
     };
 
     return (
-        <div className={`flex flex-col border-l border-gray-200 bg-white transition-all duration-300 ease-in-out h-full ${isCollapsed ? 'w-16' : 'w-80 lg:w-96'} flex-shrink-0 relative shadow-xl z-20`}>
+        <div className={`flex flex-col border-l border-gray-200 bg-white transition-all duration-300 ease-in-out h-full ${isCollapsed ? 'w-14' : 'w-[340px]'} flex-shrink-0 relative shadow-xl z-30`}>
             
             {/* Header Area */}
-            <div className={`h-16 border-b border-gray-200 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-4'}`}>
+            <div className={`h-14 border-b border-gray-200 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-4'} bg-white`}>
                 {!isCollapsed && (
-                    <span className="font-bold text-brand-blue truncate">
+                    <span className="font-bold text-sm text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                        {tabs.find(t => t.id === activeTab)?.icon}
                         {tabs.find(t => t.id === activeTab)?.label}
                     </span>
                 )}
                 <button 
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="p-2 text-gray-400 hover:text-brand-blue hover:bg-gray-100 rounded-md transition-colors"
-                    title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                    className="p-1.5 text-gray-400 hover:text-brand-blue hover:bg-gray-100 rounded-md transition-colors"
+                    title={isCollapsed ? "Expand AI Tools" : "Collapse Sidebar"}
                 >
                     <div className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}>
                         <ChevronRightIcon />
@@ -70,19 +64,19 @@ const RightSidebar: React.FC = () => {
             {/* Main Body */}
             <div className="flex-1 flex overflow-hidden h-full">
                 
-                {/* Navigation Rail (Visible when Expanded OR Collapsed, but style changes) */}
-                <div className={`flex flex-col items-center py-4 gap-2 bg-gray-50/50 border-r border-gray-100 transition-all duration-300 ${isCollapsed ? 'w-full' : 'w-14'}`}>
+                {/* Navigation Rail (Visible when Expanded OR Collapsed) */}
+                <div className={`flex flex-col items-center py-3 gap-1 bg-gray-50 border-r border-gray-100 transition-all duration-300 ${isCollapsed ? 'w-full' : 'w-14'}`}>
                     {tabs.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => handleTabClick(tab.id)}
-                            className={`p-2.5 rounded-lg transition-all group relative ${activeTab === tab.id ? 'bg-white text-brand-orange shadow-sm border border-gray-200' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                            className={`p-2.5 rounded-lg transition-all group relative ${activeTab === tab.id ? 'bg-white text-brand-orange shadow-sm border border-gray-200' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}
                             title={tab.label}
                         >
                             {tab.icon}
                             {/* Tooltip for collapsed state */}
                             {isCollapsed && (
-                                <span className="absolute right-full mr-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">
+                                <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-lg">
                                     {tab.label}
                                 </span>
                             )}
@@ -92,8 +86,10 @@ const RightSidebar: React.FC = () => {
 
                 {/* Content Area (Hidden when collapsed) */}
                 {!isCollapsed && (
-                    <div className="flex-1 overflow-hidden bg-white">
-                        <AIToolbox activeTab={activeTab} />
+                    <div className="flex-1 overflow-hidden bg-white relative">
+                         <div className="absolute inset-0 overflow-y-auto custom-scrollbar">
+                             <AIToolbox activeTab={activeTab} />
+                         </div>
                     </div>
                 )}
             </div>
