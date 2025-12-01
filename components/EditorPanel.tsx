@@ -4,6 +4,7 @@ import { templates } from '../styles/templates';
 import Chart from './Chart';
 import Table from './Table';
 import { useDeckEditor } from '../contexts/DeckEditorContext';
+import { Slide, Deck } from '../data/decks';
 
 // Icons
 const ChevronLeftIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
@@ -13,6 +14,7 @@ const PieChartIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" he
 const TableIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="3" x2="21" y1="15" y2="15"/><line x1="12" x2="12" y1="3" y2="21"/></svg>;
 const LayoutIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>;
 const MagicIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
+const PrinterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>;
 
 
 const ToolbarButton: React.FC<{
@@ -44,6 +46,86 @@ const ToolbarButton: React.FC<{
         )}
     </div>
 );
+
+const isUrl = (str: string | undefined): boolean => {
+    if (!str) return false;
+    return str.startsWith('http') || str.startsWith('data:image');
+};
+
+const renderWithMarkdown = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={i}>{part.slice(2, -2)}</strong>;
+        }
+        return part;
+    });
+};
+
+// Extract slide rendering for reuse in print loop
+const SlideRenderer: React.FC<{ slide: Slide, templateKey: string, isGeneratingImage?: boolean, imageError?: string | null, onGenerateImage?: () => void }> = ({ slide, templateKey, isGeneratingImage, imageError, onGenerateImage }) => {
+    const templateStyles = templates[slide.template || templateKey] || templates.default;
+    const showStackedVisuals = slide.chartData && slide.tableData;
+
+    return (
+        <div className={`w-full h-full overflow-hidden rounded-sm ${templateStyles.slide}`}>
+            {/* Image Logic */}
+            {slide.imageUrl && isUrl(slide.imageUrl) && (
+                <div className={templateStyles.imageContainer}>
+                    <img src={slide.imageUrl} alt={slide.title} className={templateStyles.image} />
+                </div>
+            )}
+            {slide.imageUrl && !isUrl(slide.imageUrl) && (
+                <div className={`${templateStyles.imageContainer} flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg m-4 print:hidden`}>
+                    {isGeneratingImage ? (
+                        <div className="flex flex-col items-center justify-center text-center p-6">
+                            <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-brand-orange mb-3"></div>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Generating Visual...</p>
+                        </div>
+                    ) : (
+                        <div className="text-center p-6 max-w-sm">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Image Prompt</p>
+                            <p className="text-sm text-gray-600 mb-4 italic line-clamp-3">"{slide.imageUrl}"</p>
+                            {onGenerateImage && (
+                                <button
+                                    onClick={onGenerateImage}
+                                    className="bg-brand-blue text-white text-xs font-bold py-2 px-4 rounded-full hover:bg-opacity-90 transition-colors shadow-sm"
+                                >
+                                    Generate Image
+                                </button>
+                            )}
+                            {imageError && <p className="mt-2 text-xs text-red-500 font-medium">{imageError}</p>}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Content Logic */}
+            <div className={templateStyles.textContainer ?? ''}>
+                <h1 className={templateStyles.title}>{slide.title}</h1>
+                
+                <div className="flex-1 overflow-auto custom-scrollbar">
+                    {showStackedVisuals ? (
+                        <div className="flex flex-col h-full gap-4">
+                            <div className="h-1/2"><Chart chartData={slide.chartData!} /></div>
+                            <div className="h-1/2"><Table tableData={slide.tableData!} /></div>
+                        </div>
+                    ) : slide.chartData ? (
+                        <Chart chartData={slide.chartData} />
+                    ) : slide.tableData ? (
+                        <Table tableData={slide.tableData} />
+                    ) : (
+                        <ul className={templateStyles.content}>
+                            {slide.content.split('\n').map((point, i) => (
+                                point && <li key={i} className={templateStyles.bullet}>{renderWithMarkdown(point)}</li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
 
 const EditorPanel: React.FC = () => {
     const { 
@@ -77,30 +159,16 @@ const EditorPanel: React.FC = () => {
 
     const selectedSlideIndex = deck.slides.findIndex(s => s.id === selectedSlide.id);
     const totalSlides = deck.slides.length;
-    const templateStyles = templates[selectedSlide.template || deck.template] || templates.default;
 
-    const isUrl = (str: string | undefined): boolean => {
-        if (!str) return false;
-        return str.startsWith('http') || str.startsWith('data:image');
+    const handlePrint = () => {
+        window.print();
     };
-
-    const renderWithMarkdown = (text: string) => {
-        const parts = text.split(/(\*\*.*?\*\*)/g);
-        return parts.map((part, i) => {
-            if (part.startsWith('**') && part.endsWith('**')) {
-                return <strong key={i}>{part.slice(2, -2)}</strong>;
-            }
-            return part;
-        });
-    };
-
-    const showStackedVisuals = selectedSlide.chartData && selectedSlide.tableData;
 
     return (
         <main className="flex-1 flex flex-col h-full relative bg-[#F3F4F6]">
             
-            {/* Top Toolbar */}
-            <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 flex-shrink-0 z-20 shadow-sm">
+            {/* Top Toolbar - Hidden in Print */}
+            <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 flex-shrink-0 z-20 shadow-sm print:hidden">
                 {/* Left: Navigation */}
                 <div className="flex items-center gap-2">
                      <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
@@ -162,68 +230,40 @@ const EditorPanel: React.FC = () => {
                     )}
                 </div>
                 
-                {/* Right: Spacer for now (could act as zoom or presentation toggle) */}
-                <div className="w-20"></div>
+                {/* Right: Actions */}
+                <div className="flex items-center gap-2">
+                     <button 
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-brand-blue bg-blue-50 hover:bg-blue-100 transition-colors"
+                        title="Export as PDF (via Print)"
+                    >
+                        <PrinterIcon />
+                        <span className="hidden sm:inline">Print / PDF</span>
+                    </button>
+                </div>
             </div>
             
             {/* Canvas Area */}
-            <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center min-h-0 bg-[#F3F4F6]">
-                <div className="w-full max-w-5xl aspect-video bg-white shadow-2xl rounded-sm transition-transform duration-200 ease-out transform origin-center hover:scale-[1.005]">
-                    <div className={`w-full h-full overflow-hidden rounded-sm ${templateStyles.slide}`}>
-                        
-                        {/* Image Logic */}
-                        {selectedSlide.imageUrl && isUrl(selectedSlide.imageUrl) && (
-                            <div className={templateStyles.imageContainer}>
-                                <img src={selectedSlide.imageUrl} alt={selectedSlide.title} className={templateStyles.image} />
-                            </div>
-                        )}
-                        {selectedSlide.imageUrl && !isUrl(selectedSlide.imageUrl) && (
-                            <div className={`${templateStyles.imageContainer} flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg m-4`}>
-                                {isGeneratingImage ? (
-                                    <div className="flex flex-col items-center justify-center text-center p-6">
-                                        <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-brand-orange mb-3"></div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Generating Visual...</p>
-                                    </div>
-                                ) : (
-                                    <div className="text-center p-6 max-w-sm">
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Image Prompt</p>
-                                        <p className="text-sm text-gray-600 mb-4 italic line-clamp-3">"{selectedSlide.imageUrl}"</p>
-                                        <button
-                                            onClick={handleGenerateImage}
-                                            className="bg-brand-blue text-white text-xs font-bold py-2 px-4 rounded-full hover:bg-opacity-90 transition-colors shadow-sm"
-                                        >
-                                            Generate Image
-                                        </button>
-                                        {imageError && <p className="mt-2 text-xs text-red-500 font-medium">{imageError}</p>}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+            <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center min-h-0 bg-[#F3F4F6] print:bg-white print:p-0 print:overflow-visible">
+                {/* Standard Editor View */}
+                <div className="w-full max-w-5xl aspect-video bg-white shadow-2xl rounded-sm transition-transform duration-200 ease-out transform origin-center hover:scale-[1.005] print:hidden">
+                    <SlideRenderer 
+                        slide={selectedSlide} 
+                        templateKey={String(deck.template)} 
+                        isGeneratingImage={isGeneratingImage} 
+                        imageError={imageError}
+                        onGenerateImage={handleGenerateImage}
+                    />
+                </div>
 
-                        {/* Content Logic */}
-                        <div className={templateStyles.textContainer ?? ''}>
-                            <h1 className={templateStyles.title}>{selectedSlide.title}</h1>
-                            
-                            <div className="flex-1 overflow-auto custom-scrollbar">
-                                {showStackedVisuals ? (
-                                    <div className="flex flex-col h-full gap-4">
-                                        <div className="h-1/2"><Chart chartData={selectedSlide.chartData!} /></div>
-                                        <div className="h-1/2"><Table tableData={selectedSlide.tableData!} /></div>
-                                    </div>
-                                ) : selectedSlide.chartData ? (
-                                    <Chart chartData={selectedSlide.chartData} />
-                                ) : selectedSlide.tableData ? (
-                                    <Table tableData={selectedSlide.tableData} />
-                                ) : (
-                                    <ul className={templateStyles.content}>
-                                        {selectedSlide.content.split('\n').map((point, i) => (
-                                            point && <li key={i} className={templateStyles.bullet}>{renderWithMarkdown(point)}</li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
+                {/* Print-Only View: Renders ALL slides vertically */}
+                <div className="hidden print:block w-full">
+                    {deck.slides.map((slide, index) => (
+                        <div key={slide.id} className="w-full aspect-video bg-white mb-0 page-break-after-always border-none">
+                             {/* We reuse the renderer but disable interactive elements/loading states for print */}
+                            <SlideRenderer slide={slide} templateKey={String(deck.template)} />
                         </div>
-                    </div>
+                    ))}
                 </div>
             </div>
         </main>

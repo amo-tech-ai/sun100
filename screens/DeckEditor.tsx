@@ -43,7 +43,7 @@ const DeckEditorContent: React.FC = () => {
     return (
         <div className="flex h-screen bg-white overflow-hidden font-sans text-slate-900">
             {/* Left Sidebar (Slide Outline) */}
-            <div className={`relative flex h-full border-r border-gray-200 bg-white z-20 transition-all duration-300 ease-in-out ${isLeftSidebarCollapsed ? 'w-16' : 'w-[280px]'} flex-shrink-0`}>
+            <div className={`relative flex h-full border-r border-gray-200 bg-white z-20 transition-all duration-300 ease-in-out ${isLeftSidebarCollapsed ? 'w-16' : 'w-[280px]'} flex-shrink-0 print:hidden`}>
                 <SlideOutline isCollapsed={isLeftSidebarCollapsed} />
                 
                 {/* Toggle Button for Left Sidebar */}
@@ -62,7 +62,9 @@ const DeckEditorContent: React.FC = () => {
             </div>
 
             {/* Right Sidebar (AI Tools) */}
-            <RightSidebar />
+            <div className="print:hidden h-full">
+                <RightSidebar />
+            </div>
         </div>
     );
 };

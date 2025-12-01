@@ -6,6 +6,7 @@ import { MarketSizeAnalysis, FinancialData, InvestorDoc, DataRoomAudit } from '.
 import { getLatestMetrics, getMetrics, MetricEntry } from '../services/metricsService';
 import { getInvestorDocs } from '../services/investorDocService';
 import { getDataRoomAudit } from '../services/dataRoomService';
+import { getStartupTeamStats, getStartupMilestones, TeamStats, Milestone } from '../services/startupService';
 import { MetricsTable } from '../components/investor/MetricsTable';
 import { InvestorChat } from '../components/investor/InvestorChat';
 import Table from '../components/Table';
@@ -122,30 +123,41 @@ const StartupCommandCenter: React.FC = () => {
     const [docsLoading, setDocsLoading] = useState(true);
     const [showMetricsManager, setShowMetricsManager] = useState(false);
     const [dataRoomAudit, setDataRoomAudit] = useState<DataRoomAudit | null>(null);
+    const [teamStats, setTeamStats] = useState<TeamStats>({ total: 0, openRoles: 0, distribution: [] });
+    const [milestones, setMilestones] = useState<Milestone[]>([]);
 
-    // Mock Values
-    const [tam, setTam] = useState("$45B");
-    const [sam, setSam] = useState("$12B");
-    const [som, setSom] = useState("$150M");
+    // Mock Values for uninitialized state
+    const [tam, setTam] = useState("N/A");
+    const [sam, setSam] = useState("N/A");
+    const [som, setSom] = useState("N/A");
 
     useEffect(() => {
         const loadData = async () => {
             setMetricsLoading(true);
             setDocsLoading(true);
             try {
-                const history = await getMetrics();
+                // Parallel fetching
+                const [history, docData, audit, team, milestoneList] = await Promise.all([
+                    getMetrics(),
+                    getInvestorDocs(),
+                    getDataRoomAudit(),
+                    getStartupTeamStats(),
+                    getStartupMilestones()
+                ]);
+
                 setAllMetrics(history);
-                const metricData = await getLatestMetrics(2);
-                if (metricData.length > 0) setLatestMetrics(metricData[0]);
-                if (metricData.length > 1) setPreviousMetrics(metricData[1]);
+                // Sort by date if not already
+                const sortedMetrics = [...history].sort((a, b) => b.month.localeCompare(a.month));
+                if (sortedMetrics.length > 0) setLatestMetrics(sortedMetrics[0]);
+                if (sortedMetrics.length > 1) setPreviousMetrics(sortedMetrics[1]);
                 
-                const docData = await getInvestorDocs();
                 setDocs(docData);
-                
-                const audit = await getDataRoomAudit();
                 setDataRoomAudit(audit);
+                setTeamStats(team);
+                setMilestones(milestoneList);
+
             } catch (error) {
-                console.error(error);
+                console.error("Error loading dashboard data", error);
             } finally {
                 setMetricsLoading(false);
                 setDocsLoading(false);
@@ -157,6 +169,7 @@ const StartupCommandCenter: React.FC = () => {
     const handleRecalculateMarket = async () => {
         setIsCalculatingMarket(true);
         try {
+            // In a real app, these would come from the startup profile
             const result = await generateMarketSizing("SaaS", "US", "Subscription");
             setMarketData(result);
             setTam(result.tam.value);
@@ -172,7 +185,8 @@ const StartupCommandCenter: React.FC = () => {
     const handleGenerateForecast = async () => {
         setIsForecasting(true);
         try {
-            const history = await getMetrics();
+            // Use local metrics if available
+            const history = allMetrics.length > 0 ? allMetrics : await getMetrics();
             const result = await generateFinancialForecast(history);
             setForecastData(result);
         } catch (error) {
@@ -289,27 +303,25 @@ const StartupCommandCenter: React.FC = () => {
                             <DashboardCard title="Team Snapshot" icon={<UsersIcon />}>
                                 <div className="flex justify-between items-center mb-4">
                                     <div>
-                                        <span className="text-3xl font-extrabold text-slate-900">8</span>
+                                        <span className="text-3xl font-extrabold text-slate-900">{teamStats.total}</span>
                                         <span className="text-sm text-slate-500 font-medium ml-2">FTEs</span>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-3xl font-extrabold text-brand-orange">2</span>
+                                        <span className="text-3xl font-extrabold text-brand-orange">{teamStats.openRoles}</span>
                                         <span className="text-sm text-slate-500 font-medium ml-2">Open Roles</span>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="flex justify-between text-xs text-slate-600 bg-slate-50 p-2 rounded">
-                                        <span>Engineering</span>
-                                        <span className="font-bold">5</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs text-slate-600 bg-slate-50 p-2 rounded">
-                                        <span>Product</span>
-                                        <span className="font-bold">2</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs text-slate-600 bg-slate-50 p-2 rounded">
-                                        <span>Growth</span>
-                                        <span className="font-bold">1</span>
-                                    </div>
+                                    {teamStats.distribution.length > 0 ? (
+                                        teamStats.distribution.map((dept, i) => (
+                                            <div key={i} className="flex justify-between text-xs text-slate-600 bg-slate-50 p-2 rounded">
+                                                <span>{dept.department}</span>
+                                                <span className="font-bold">{dept.count}</span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-xs text-slate-400 text-center py-2">No team data available.</div>
+                                    )}
                                 </div>
                             </DashboardCard>
 
@@ -319,11 +331,7 @@ const StartupCommandCenter: React.FC = () => {
                                     {/* Connector Line */}
                                     <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-100"></div>
                                     
-                                    {[
-                                        { title: "Mobile App Beta", date: "Sep 15", status: "done" },
-                                        { title: "Payments Integration", date: "Oct 01", status: "active" },
-                                        { title: "Series A Launch", date: "Nov 15", status: "pending" }
-                                    ].map((item, i) => (
+                                    {milestones.length > 0 ? milestones.map((item, i) => (
                                         <div key={i} className="flex items-start gap-3 relative z-10">
                                             <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center bg-white ${item.status === 'done' ? 'border-green-500 text-green-500' : item.status === 'active' ? 'border-brand-orange text-brand-orange' : 'border-slate-300 text-slate-300'}`}>
                                                 <div className={`w-2 h-2 rounded-full ${item.status === 'done' ? 'bg-green-500' : item.status === 'active' ? 'bg-brand-orange' : 'bg-slate-300'}`}></div>
@@ -333,7 +341,9 @@ const StartupCommandCenter: React.FC = () => {
                                                 <p className="text-xs text-slate-400 font-mono">{item.date}</p>
                                             </div>
                                         </div>
-                                    ))}
+                                    )) : (
+                                         <div className="text-center text-slate-400 text-sm py-4">No milestones set.</div>
+                                    )}
                                 </div>
                             </DashboardCard>
                         </div>
