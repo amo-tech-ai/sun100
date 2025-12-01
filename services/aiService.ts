@@ -9,3 +9,4 @@ export * from './ai/event';
 export * from './ai/research';
 export * from './ai/prompts';
 export * from './ai/types';
+export * from './ai/sales'; // Export new sales service
