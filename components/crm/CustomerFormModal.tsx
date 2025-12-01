@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Customer } from '../../services/crmService';
 
 interface CustomerFormModalProps {
@@ -85,6 +85,7 @@ export const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, on
                                 onChange={e => setFormData({...formData, status: e.target.value as any})}
                             >
                                 <option value="Active">Active</option>
+                                <option value="Lead">Lead</option>
                                 <option value="Trial">Trial</option>
                                 <option value="Churned">Churned</option>
                             </select>

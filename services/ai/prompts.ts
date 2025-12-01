@@ -55,6 +55,47 @@ export const generateSalesDeckFunctionDeclaration: FunctionDeclaration = {
     }
 };
 
+export const findLeadsFunctionDeclaration: FunctionDeclaration = {
+    name: 'findLeads',
+    description: 'Finds potential B2B leads or companies based on search criteria.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            leads: {
+                type: Type.ARRAY,
+                description: 'A list of found companies matching the criteria.',
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING, description: 'Company name.' },
+                        website: { type: Type.STRING, description: 'Company website URL.' },
+                        description: { type: Type.STRING, description: 'Brief description of what they do.' },
+                        location: { type: Type.STRING, description: 'Headquarters location.' },
+                        industry: { type: Type.STRING, description: 'Primary industry.' },
+                        fitScore: { type: Type.NUMBER, description: 'Match score (0-100) based on the user criteria.' },
+                        reason: { type: Type.STRING, description: 'Why this company is a good match.' }
+                    },
+                    required: ['name', 'description', 'fitScore', 'reason']
+                }
+            }
+        },
+        required: ['leads']
+    }
+};
+
+export const generateColdEmailFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateColdEmail',
+    description: 'Generates a cold email draft based on the recipient profile.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            subject: { type: Type.STRING, description: 'A catchy, short subject line (under 60 chars).' },
+            body: { type: Type.STRING, description: 'The email body content.' }
+        },
+        required: ['subject', 'body']
+    }
+};
+
 export const rewriteSlideFunctionDeclaration: FunctionDeclaration = {
     name: 'rewriteSlide',
     description: 'Rewrites slide content to improve clarity, impact, and persuasion based on specific instructions.',
@@ -842,5 +883,66 @@ export const generateCRMInsightsFunctionDeclaration: FunctionDeclaration = {
             }
         },
         required: ['insights']
+    }
+};
+
+export const generateFinancialProjectionsFunctionDeclaration: FunctionDeclaration = {
+  name: 'generateFinancialProjections',
+  description: 'Generates financial projections based on provided assumptions.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      headers: { type: Type.ARRAY, items: { type: Type.STRING } },
+      rows: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            label: { type: Type.STRING },
+            values: { type: Type.ARRAY, items: { type: Type.STRING } },
+          },
+          required: ['label', 'values'],
+        },
+      },
+      summary: { type: Type.STRING },
+    },
+    required: ['headers', 'rows', 'summary'],
+  },
+};
+
+export const generateBattlecardFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateBattlecard',
+    description: 'Generates a competitor battlecard analyzing strengths, weaknesses, and sales tactics.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            competitors: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING, description: "Competitor Name" },
+                        strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        pricing_model: { type: Type.STRING },
+                        kill_points: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Key arguments to win against them." }
+                    },
+                    required: ['name', 'strengths', 'weaknesses', 'pricing_model', 'kill_points']
+                }
+            },
+            our_advantages: { type: Type.ARRAY, items: { type: Type.STRING } },
+            objection_handling: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        objection: { type: Type.STRING },
+                        counter: { type: Type.STRING }
+                    },
+                    required: ['objection', 'counter']
+                }
+            }
+        },
+        required: ['competitors', 'our_advantages', 'objection_handling']
     }
 };

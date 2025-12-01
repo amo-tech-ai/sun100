@@ -6,6 +6,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2024-09-09
+
+### Added
+- **AI Prospecting Engine:** A new module (`/dashboard/prospecting`) to find and enrich B2B leads using Google Search Grounding.
+  - **Lead Search:** Find companies by industry, location, and stage.
+  - **Deep Enrichment:** One-click retrieval of CEO info, funding history, and recent news.
+  - **CRM Integration:** Seamlessly add found leads to the Customer CRM.
+- **Lead Scoring System:** An intelligent scoring agent that uses Gemini 3 Reasoning to evaluate leads based on Fit, Intent, and Risk (0-100 Score).
+- **Sales Outreach Suite:**
+  - **AI Email Drafter:** Generate personalized cold emails based on prospect context and selected tone.
+  - **Competitor Battlecards:** Auto-generate strengths, weaknesses, and "kill points" for competitors.
+- **Data Import:** CSV Import feature with AI-powered column mapping suggestions.
+
+### Improved
+- **Customer CRM:** Updated detail view to display enriched data (CEO, News) and Lead Scores.
+- **CRM Insights:** Enhanced AI insights to trigger specific actions like "Draft Email" or "Upsell".
+
+## [2.5.0] - 2024-09-08
+
+### Added
+- **Actionable AI CRM Insights:** Upgraded the CRM dashboard to feature a dedicated "Gemini Insights" widget.
+- **Action-Driven UI:** Insights now come with clear, specific action buttons (e.g., "Follow up", "Upsell", "Close").
+- **Enhanced Mock Logic:** The `crmService` now generates highly specific, verb-driven insights in mock mode to better simulate the Gemini experience.
+
 ## [2.4.0] - 2024-09-07
 
 ### Added
@@ -126,8 +150,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2024-08-05
 
 ### Changed
-- **Layout Redesign:** Overhauled the `DeckEditor` to use a two-column, Decktopus-style layout. This provides a more focused editing experience with a slide outline on the left and the main editor panel on the right.
-- **Component Refactor:** Broke down the monolithic `DeckEditor` into smaller, reusable components: `SlideOutline`, `EditorPanel`, and `AIToolbox`.
+- **Layout Redesign:** Overhauled the `DeckEditor.tsx` to use a two-column, Decktopus-style layout. This provides a more focused editing experience with a slide outline on the left and the main editor panel on the right.
+- **Component Refactor:** Broke down the monolithic `DeckEditor.tsx` into smaller, reusable components: `SlideOutline`, `EditorPanel`, and `AIToolbox`.
 - **AI Tools UI:** Consolidated all AI panels (Copilot, Image, Analysis, Research) into a single, tabbed `AIToolbox` component to reduce clutter and improve usability.
 
 ## [1.0.0] - 2024-08-04

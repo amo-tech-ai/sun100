@@ -29,8 +29,8 @@ serve(async (req) => {
 
   try {
     const { account } = await req.json();
-    const apiKey = Deno.env.get('GEMINI_API_KEY');
-    if (!apiKey) throw new Error("GEMINI_API_KEY not set");
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) throw new Error("API_KEY not set");
 
     const ai = new GoogleGenAI({ apiKey });
 
@@ -51,7 +51,7 @@ serve(async (req) => {
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-pro',
+      model: 'gemini-3-pro-preview',
       contents: prompt,
       config: {
         tools: [{ functionDeclarations: [analyzeAccountHealthFunctionDeclaration] }]
