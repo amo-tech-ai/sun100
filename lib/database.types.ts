@@ -36,351 +36,86 @@ export interface Database {
           updated_at?: string
         }
       }
-      startups: {
-        Row: {
-          id: string
-          name: string
-          industry: string | null
-          stage: 'Idea' | 'Pre-Seed' | 'Seed' | 'Series A' | 'Series B' | 'Growth'
-          website_url: string | null
-          tagline: string | null
-          logo_url: string | null
-          description: string | null
-          founded_year: number | null
-          location: string | null
-          team_size: string | null
-          funding_ask: string | null
-          contact_email: string | null
-          socials: Json | null
-          is_deleted: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          industry?: string | null
-          stage?: 'Idea' | 'Pre-Seed' | 'Seed' | 'Series A' | 'Series B' | 'Growth'
-          website_url?: string | null
-          tagline?: string | null
-          logo_url?: string | null
-          description?: string | null
-          founded_year?: number | null
-          location?: string | null
-          team_size?: string | null
-          funding_ask?: string | null
-          contact_email?: string | null
-          socials?: Json | null
-          is_deleted?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          industry?: string | null
-          stage?: 'Idea' | 'Pre-Seed' | 'Seed' | 'Series A' | 'Series B' | 'Growth'
-          website_url?: string | null
-          tagline?: string | null
-          logo_url?: string | null
-          description?: string | null
-          founded_year?: number | null
-          location?: string | null
-          team_size?: string | null
-          funding_ask?: string | null
-          contact_email?: string | null
-          socials?: Json | null
-          is_deleted?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      team_members: {
-        Row: {
-            startup_id: string
-            user_id: string
-            role: 'owner' | 'admin' | 'editor' | 'viewer'
-            department: string | null
-            created_at: string
-        }
-        Insert: {
-            startup_id: string
-            user_id: string
-            role: 'owner' | 'admin' | 'editor' | 'viewer'
-            department?: string | null
-            created_at?: string
-        }
-        Update: {
-            startup_id?: string
-            user_id?: string
-            role?: 'owner' | 'admin' | 'editor' | 'viewer'
-            department?: string | null
-            created_at?: string
-        }
-      }
-      financial_metrics: {
-        Row: {
-          id: string
-          startup_id: string
-          month: string
-          revenue: number
-          burn_rate: number
-          cash_balance: number
-          expenses: number
-          active_users: number
-          churn_rate: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          startup_id: string
-          month: string
-          revenue?: number
-          burn_rate?: number
-          cash_balance?: number
-          expenses?: number
-          active_users?: number
-          churn_rate?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          startup_id?: string
-          month?: string
-          revenue?: number
-          burn_rate?: number
-          cash_balance?: number
-          expenses?: number
-          active_users?: number
-          churn_rate?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      documents: {
-        Row: {
-          id: string
-          startup_id: string
-          name: string
-          storage_path: string
-          category: 'Financial' | 'Legal' | 'Pitch Deck' | 'Product' | 'Market' | 'Other'
-          size_bytes: number | null
-          content_type: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          startup_id: string
-          name: string
-          storage_path: string
-          category?: 'Financial' | 'Legal' | 'Pitch Deck' | 'Product' | 'Market' | 'Other'
-          size_bytes?: number | null
-          content_type?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          startup_id?: string
-          name?: string
-          storage_path?: string
-          category?: 'Financial' | 'Legal' | 'Pitch Deck' | 'Product' | 'Market' | 'Other'
-          size_bytes?: number | null
-          content_type?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      investor_docs: {
-        Row: {
-          id: string
-          startup_id: string
-          title: string
-          type: 'one_pager' | 'update' | 'memo' | 'gtm_strategy'
-          content: Json
-          status: string | null
-          preview_url: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          startup_id: string
-          title: string
-          type: 'one_pager' | 'update' | 'memo' | 'gtm_strategy'
-          content?: Json
-          status?: string | null
-          preview_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          startup_id?: string
-          title?: string
-          type?: 'one_pager' | 'update' | 'memo' | 'gtm_strategy'
-          content?: Json
-          status?: string | null
-          preview_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      investor_contacts: {
-        Row: {
-          id: string
-          startup_id: string
-          firm_name: string
-          contact_name: string | null
-          type: 'VC' | 'Accelerator' | 'Angel Group' | 'CVC'
-          status: 'Draft' | 'Submitted' | 'In Review' | 'Interview' | 'Due Diligence' | 'Accepted' | 'Rejected'
-          check_size: string | null
-          fit_score: number | null
-          last_interaction_at: string
-          next_step: string | null
-          notes: string | null
-          investor_id: string | null
-          logo_url: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          startup_id: string
-          firm_name: string
-          contact_name?: string | null
-          type?: 'VC' | 'Accelerator' | 'Angel Group' | 'CVC'
-          status?: 'Draft' | 'Submitted' | 'In Review' | 'Interview' | 'Due Diligence' | 'Accepted' | 'Rejected'
-          check_size?: string | null
-          fit_score?: number | null
-          last_interaction_at?: string
-          next_step?: string | null
-          notes?: string | null
-          investor_id?: string | null
-          logo_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          startup_id?: string
-          firm_name?: string
-          contact_name?: string | null
-          type?: 'VC' | 'Accelerator' | 'Angel Group' | 'CVC'
-          status?: 'Draft' | 'Submitted' | 'In Review' | 'Interview' | 'Due Diligence' | 'Accepted' | 'Rejected'
-          check_size?: string | null
-          fit_score?: number | null
-          last_interaction_at?: string
-          next_step?: string | null
-          notes?: string | null
-          investor_id?: string | null
-          logo_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      investors: {
-        Row: {
-          id: string
-          name: string
-          type: 'vc' | 'accelerator' | 'angel_group' | 'corporate_vc'
-          slug: string
-          logo_url: string | null
-          description: string | null
-          website_url: string | null
-          stages: string[]
-          specialties: string[]
-          geographies: string[]
-          min_check_size: number | null
-          max_check_size: number | null
-          equity_percent_min: number | null
-          equity_percent_max: number | null
-          benefits: string[] | null
-          time_to_decision: string | null
-          notable_investments: string[] | null
-          application_link: string | null
-          contact_email: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          type: 'vc' | 'accelerator' | 'angel_group' | 'corporate_vc'
-          slug: string
-          logo_url?: string | null
-          description?: string | null
-          website_url?: string | null
-          stages?: string[]
-          specialties?: string[]
-          geographies?: string[]
-          min_check_size?: number | null
-          max_check_size?: number | null
-          equity_percent_min?: number | null
-          equity_percent_max?: number | null
-          benefits?: string[] | null
-          time_to_decision?: string | null
-          notable_investments?: string[] | null
-          application_link?: string | null
-          contact_email?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          type?: 'vc' | 'accelerator' | 'angel_group' | 'corporate_vc'
-          slug?: string
-          logo_url?: string | null
-          description?: string | null
-          website_url?: string | null
-          stages?: string[]
-          specialties?: string[]
-          geographies?: string[]
-          min_check_size?: number | null
-          max_check_size?: number | null
-          equity_percent_min?: number | null
-          equity_percent_max?: number | null
-          benefits?: string[] | null
-          time_to_decision?: string | null
-          notable_investments?: string[] | null
-          application_link?: string | null
-          contact_email?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      // --- CRM Tables ---
       crm_accounts: {
         Row: {
           id: string
           startup_id: string
           name: string
           logo_url: string | null
-          segment: 'Enterprise' | 'SMB' | 'Mid-Market'
-          status: 'Active' | 'Churned' | 'Trial'
+          segment: 'Enterprise' | 'SMB' | 'Mid-Market' | 'Partner' | null
+          status: 'Active' | 'Churned' | 'Trial' | 'Lead' | null
           mrr: number
           health_score: number
-          last_interaction_at: string
+          last_interaction_at: string | null
           renewal_date: string | null
-          owner_id: string | null // Reference to user_id (team member)
+          owner_id: string | null
           created_at: string
           updated_at: string
+          extended_info: Json | null
+          last_enriched_at: string | null
         }
         Insert: {
           id?: string
           startup_id: string
           name: string
           logo_url?: string | null
-          segment?: 'Enterprise' | 'SMB' | 'Mid-Market'
-          status?: 'Active' | 'Churned' | 'Trial'
+          segment?: 'Enterprise' | 'SMB' | 'Mid-Market' | 'Partner' | null
+          status?: 'Active' | 'Churned' | 'Trial' | 'Lead' | null
           mrr?: number
           health_score?: number
-          last_interaction_at?: string
+          last_interaction_at?: string | null
           renewal_date?: string | null
+          owner_id?: string | null
+          created_at?: string
+          updated_at?: string
+          extended_info?: Json | null
+          last_enriched_at?: string | null
+        }
+        Update: {
+          id?: string
+          startup_id?: string
+          name?: string
+          logo_url?: string | null
+          segment?: 'Enterprise' | 'SMB' | 'Mid-Market' | 'Partner' | null
+          status?: 'Active' | 'Churned' | 'Trial' | 'Lead' | null
+          mrr?: number
+          health_score?: number
+          last_interaction_at?: string | null
+          renewal_date?: string | null
+          owner_id?: string | null
+          created_at?: string
+          updated_at?: string
+          extended_info?: Json | null
+          last_enriched_at?: string | null
+        }
+      }
+      crm_contacts: {
+        Row: {
+          id: string
+          startup_id: string
+          account_id: string | null
+          first_name: string
+          last_name: string | null
+          email: string | null
+          role: string | null
+          linkedin_url: string | null
+          title: string | null
+          status: string | null
+          owner_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          startup_id: string
+          account_id?: string | null
+          first_name: string
+          last_name?: string | null
+          email?: string | null
+          role?: string | null
+          linkedin_url?: string | null
+          title?: string | null
+          status?: string | null
           owner_id?: string | null
           created_at?: string
           updated_at?: string
@@ -388,15 +123,59 @@ export interface Database {
         Update: {
           id?: string
           startup_id?: string
-          name?: string
-          logo_url?: string | null
-          segment?: 'Enterprise' | 'SMB' | 'Mid-Market'
-          status?: 'Active' | 'Churned' | 'Trial'
-          mrr?: number
-          health_score?: number
-          last_interaction_at?: string
-          renewal_date?: string | null
+          account_id?: string | null
+          first_name?: string
+          last_name?: string | null
+          email?: string | null
+          role?: string | null
+          linkedin_url?: string | null
+          title?: string | null
+          status?: string | null
           owner_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      crm_deals: {
+        Row: {
+          id: string
+          startup_id: string
+          account_id: string | null
+          name: string
+          value: number
+          stage: string | null
+          probability: number
+          expected_close_date: string | null
+          ai_score: number | null
+          ai_reasoning: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          startup_id: string
+          account_id?: string | null
+          name: string
+          value?: number
+          stage?: string | null
+          probability?: number
+          expected_close_date?: string | null
+          ai_score?: number | null
+          ai_reasoning?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          startup_id?: string
+          account_id?: string | null
+          name?: string
+          value?: number
+          stage?: string | null
+          probability?: number
+          expected_close_date?: string | null
+          ai_score?: number | null
+          ai_reasoning?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -405,73 +184,35 @@ export interface Database {
         Row: {
           id: string
           startup_id: string
-          account_id: string
-          user_id: string // Team member who logged it
-          type: 'email' | 'call' | 'meeting' | 'note'
+          account_id: string | null
+          user_id: string | null
+          type: string | null
           summary: string
           date: string
-          sentiment: 'Positive' | 'Neutral' | 'Negative' | null
+          sentiment: string | null
           created_at: string
         }
         Insert: {
           id?: string
           startup_id: string
-          account_id: string
-          user_id: string
-          type: 'email' | 'call' | 'meeting' | 'note'
+          account_id?: string | null
+          user_id?: string | null
+          type?: string | null
           summary: string
           date?: string
-          sentiment?: 'Positive' | 'Neutral' | 'Negative' | null
+          sentiment?: string | null
           created_at?: string
         }
         Update: {
           id?: string
           startup_id?: string
-          account_id?: string
-          user_id?: string
-          type?: 'email' | 'call' | 'meeting' | 'note'
+          account_id?: string | null
+          user_id?: string | null
+          type?: string | null
           summary?: string
           date?: string
-          sentiment?: 'Positive' | 'Neutral' | 'Negative' | null
+          sentiment?: string | null
           created_at?: string
-        }
-      }
-      crm_deals: {
-        Row: {
-          id: string
-          startup_id: string
-          account_id: string
-          name: string
-          value: number
-          stage: 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Closed Won' | 'Closed Lost'
-          probability: number
-          expected_close_date: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          startup_id: string
-          account_id: string
-          name: string
-          value?: number
-          stage?: 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Closed Won' | 'Closed Lost'
-          probability?: number
-          expected_close_date?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          startup_id?: string
-          account_id?: string
-          name?: string
-          value?: number
-          stage?: 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Closed Won' | 'Closed Lost'
-          probability?: number
-          expected_close_date?: string | null
-          created_at?: string
-          updated_at?: string
         }
       }
       crm_tasks: {
@@ -479,31 +220,175 @@ export interface Database {
           id: string
           startup_id: string
           account_id: string | null
-          assigned_to: string // user_id
+          assigned_to: string | null
           title: string
-          due_date: string
+          due_date: string | null
           completed: boolean
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
           startup_id: string
           account_id?: string | null
-          assigned_to: string
+          assigned_to?: string | null
           title: string
-          due_date: string
+          due_date?: string | null
           completed?: boolean
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
           startup_id?: string
           account_id?: string | null
-          assigned_to?: string
+          assigned_to?: string | null
           title?: string
-          due_date?: string
+          due_date?: string | null
           completed?: boolean
           created_at?: string
+          updated_at?: string
+        }
+      }
+      team_members: {
+        Row: {
+          startup_id: string
+          user_id: string
+          role: string
+          created_at: string
+        }
+        Insert: {
+          startup_id: string
+          user_id: string
+          role?: string
+          created_at?: string
+        }
+        Update: {
+          startup_id?: string
+          user_id?: string
+          role?: string
+          created_at?: string
+        }
+      }
+      crm_lead_enrichment: {
+        Row: {
+          id: string
+          lead_id: string
+          company_id: string | null
+          ceo_name: string | null
+          ceo_linkedin: string | null
+          linkedin_company_url: string | null
+          recent_news: Json | null
+          funding_history: Json | null
+          hiring_trends: Json | null
+          market_presence_score: number | null
+          search_trend_score: number | null
+          gemini_summary: string | null
+          evidence_links: Json | null
+          raw_model_response: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          company_id?: string | null
+          ceo_name?: string | null
+          ceo_linkedin?: string | null
+          linkedin_company_url?: string | null
+          recent_news?: Json | null
+          funding_history?: Json | null
+          hiring_trends?: Json | null
+          market_presence_score?: number | null
+          search_trend_score?: number | null
+          gemini_summary?: string | null
+          evidence_links?: Json | null
+          raw_model_response?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          company_id?: string | null
+          ceo_name?: string | null
+          ceo_linkedin?: string | null
+          linkedin_company_url?: string | null
+          recent_news?: Json | null
+          funding_history?: Json | null
+          hiring_trends?: Json | null
+          market_presence_score?: number | null
+          search_trend_score?: number | null
+          gemini_summary?: string | null
+          evidence_links?: Json | null
+          raw_model_response?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      crm_lead_scores: {
+        Row: {
+          id: string
+          lead_id: string
+          overall_score: number
+          confidence: number | null
+          status_band: string | null
+          stage_recommendation: string | null
+          industry_fit: number | null
+          company_size_fit: number | null
+          budget_fit: number | null
+          problem_fit: number | null
+          engagement_fit: number | null
+          search_trend_score: number | null
+          risk_score: number | null
+          ai_findings: Json | null
+          risks: Json | null
+          recommended_next_actions: Json | null
+          model_version: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          overall_score: number
+          confidence?: number | null
+          status_band?: string | null
+          stage_recommendation?: string | null
+          industry_fit?: number | null
+          company_size_fit?: number | null
+          budget_fit?: number | null
+          problem_fit?: number | null
+          engagement_fit?: number | null
+          search_trend_score?: number | null
+          risk_score?: number | null
+          ai_findings?: Json | null
+          risks?: Json | null
+          recommended_next_actions?: Json | null
+          model_version?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          overall_score?: number
+          confidence?: number | null
+          status_band?: string | null
+          stage_recommendation?: string | null
+          industry_fit?: number | null
+          company_size_fit?: number | null
+          budget_fit?: number | null
+          problem_fit?: number | null
+          engagement_fit?: number | null
+          search_trend_score?: number | null
+          risk_score?: number | null
+          ai_findings?: Json | null
+          risks?: Json | null
+          recommended_next_actions?: Json | null
+          model_version?: string | null
+          created_at?: string
+          updated_at?: string
         }
       }
     }

@@ -9,4 +9,11 @@ export * from './ai/event';
 export * from './ai/research';
 export * from './ai/prompts';
 export * from './ai/types';
-export * from './ai/sales'; // Export new sales service
+export * from './ai/sales'; 
+export * from './ai/prospecting';
+export * from './ai/outreach'; // New Outreach Service
+export * from './ai/dataroom';
+export * from './ai/investor';
+export * from './ai/crm';
+export * from './ai/gtm';
+export * from './ai/vcMatcher';

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useWizardStore } from '../stores/wizardStore';
 import UrlInput from '../components/UrlInput';
 import TemplateSelector from '../components/TemplateSelector';
-import { FinancialSettings, analyzeFundingGoal } from '../services/ai/deck';
+import { FinancialSettings } from '../services/ai/deck';
 import { templates } from '../styles/templates';
 
 // --- ICONS ---

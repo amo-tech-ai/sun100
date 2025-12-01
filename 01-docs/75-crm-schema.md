@@ -1,135 +1,229 @@
 
-# 🗄️ Database Schema: CRM Module
+# 🗄️ Master Database Schema: CRM & AI Prospecting Module
 
-**Document Status:** Published - 2024-09-06
-**Author:** Lead Database Architect
-**Goal:** Define the SQL schema for the Customer CRM module, enabling relationship tracking for startups.
+**Document Status:** Production Specification - 2024-09-10  
+**Author:** Lead Database Architect  
+**Goal:** Define the authoritative data model for the Customer CRM, Sales Pipeline, and AI Prospecting engine.
 
 ---
 
-### 1. Tables Overview
+## 1. System Architecture Overview
 
-The CRM module introduces five new tables designed for multi-tenancy (linked to `startups` via `startup_id`).
+The CRM module is designed as a **multi-tenant system** rooted in the `startups` table. All CRM data (`accounts`, `contacts`, `deals`) belongs to a specific startup, ensured by Row-Level Security (RLS).
 
-| Table | Purpose | Key Fields |
+This schema supports two distinct operational modes:
+1.  **Core CRM:** Manual entry and management of business relationships.
+2.  **AI Intelligence Layer:** Automated enrichment, scoring, and insights powered by Gemini 3 and Google Search Grounding.
+
+### Entity Relationship Diagram (ERD)
+
+```mermaid
+erDiagram
+    startups ||--o{ crm_accounts : "owns"
+    crm_accounts ||--o{ crm_contacts : "has people"
+    crm_accounts ||--o{ crm_deals : "has opportunities"
+    crm_accounts ||--o{ crm_interactions : "has history"
+    
+    crm_contacts ||--o{ crm_lead_enrichment : "enriched by AI"
+    crm_contacts ||--o{ crm_lead_scores : "scored by AI"
+    crm_contacts ||--o{ crm_lead_events : "generates signals"
+
+    crm_accounts {
+        uuid id PK
+        uuid startup_id FK
+        text name
+        text status
+        jsonb extended_info
+    }
+
+    crm_lead_enrichment {
+        uuid id PK
+        uuid lead_id FK
+        text ceo_name
+        jsonb funding_history
+        int market_presence_score
+    }
+```
+
+---
+
+## 2. Core CRM Data Model
+
+### 2.1. `crm_accounts` (Companies)
+**Purpose:** The central entity representing a business relationship (Customer, Partner, or Investor).
+
+| Column | Type | Description |
 | :--- | :--- | :--- |
-| **`crm_accounts`** | Stores companies/clients. | `name`, `segment`, `status`, `mrr`, `health_score` |
-| **`crm_contacts`** | Individual people at accounts. | `email`, `role`, `account_id` |
-| **`crm_deals`** | Potential revenue opportunities. | `value`, `stage`, `probability`, `expected_close_date` |
-| **`crm_interactions`** | History of emails, calls, notes. | `type`, `summary`, `sentiment` |
-| **`crm_tasks`** | Action items linked to accounts. | `title`, `due_date`, `completed` |
+| `id` | `uuid` | Primary Key. |
+| `startup_id` | `uuid` | Foreign Key to `startups`. Critical for RLS. |
+| `name` | `text` | Company name (e.g., "Acme Corp"). |
+| `domain` | `text` | Website domain. Used for auto-enrichment. |
+| `segment` | `text` | 'Enterprise', 'SMB', 'Mid-Market'. |
+| `status` | `text` | 'Lead', 'Trial', 'Active', 'Churned'. |
+| `mrr` | `numeric` | Monthly Recurring Revenue value. |
+| `health_score` | `int` | 0–100 calculated metric of account health. |
+| `owner_id` | `uuid` | FK to `auth.users`. The team member responsible. |
+| `last_enriched_at`| `timestamptz`| Timestamp of last Gemini enrichment run. |
+
+**Usage:** Used in the main CRM dashboard list view and the primary detail panel.
 
 ---
 
-### 2. DDL (SQL)
+### 2.2. `crm_contacts` (People)
+**Purpose:** Individuals associated with an account. The primary target for outreach.
 
-```sql
---
--- CRM ACCOUNTS (Companies/Customers)
---
-CREATE TABLE public.crm_accounts (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    startup_id uuid NOT NULL REFERENCES public.startups(id) ON DELETE CASCADE,
-    name text NOT NULL,
-    logo_url text,
-    segment text CHECK (segment IN ('Enterprise', 'SMB', 'Mid-Market', 'Partner')),
-    status text CHECK (status IN ('Active', 'Churned', 'Trial', 'Lead')),
-    mrr numeric DEFAULT 0,
-    health_score integer DEFAULT 50, -- 0-100
-    last_interaction_at timestamptz,
-    renewal_date date,
-    owner_id uuid REFERENCES auth.users(id), -- Assigned team member
-    created_at timestamptz NOT NULL DEFAULT now(),
-    updated_at timestamptz NOT NULL DEFAULT now()
-);
-ALTER TABLE public.crm_accounts ENABLE ROW LEVEL SECURITY;
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `uuid` | Primary Key. |
+| `account_id` | `uuid` | Foreign Key to `crm_accounts`. |
+| `email` | `text` | Primary contact method. |
+| `first_name` | `text` | Personal name. |
+| `last_name` | `text` | Family name. |
+| `role` | `text` | Job title (e.g., "CTO", "VP of Sales"). |
+| `linkedin_url` | `text` | Profile link for research. |
 
---
--- CRM CONTACTS (People)
---
-CREATE TABLE public.crm_contacts (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    startup_id uuid NOT NULL REFERENCES public.startups(id) ON DELETE CASCADE,
-    account_id uuid REFERENCES public.crm_accounts(id) ON DELETE CASCADE,
-    first_name text NOT NULL,
-    last_name text,
-    email text,
-    role text,
-    linkedin_url text,
-    created_at timestamptz NOT NULL DEFAULT now(),
-    updated_at timestamptz NOT NULL DEFAULT now()
-);
-ALTER TABLE public.crm_contacts ENABLE ROW LEVEL SECURITY;
+**Usage:** Displayed in the "Contacts" tab of the Customer Detail Panel.
 
---
--- CRM DEALS (Pipeline)
---
-CREATE TABLE public.crm_deals (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    startup_id uuid NOT NULL REFERENCES public.startups(id) ON DELETE CASCADE,
-    account_id uuid REFERENCES public.crm_accounts(id) ON DELETE SET NULL,
-    name text NOT NULL,
-    value numeric DEFAULT 0,
-    stage text CHECK (stage IN ('Lead', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost')),
-    probability integer DEFAULT 0, -- 0-100%
-    expected_close_date date,
-    created_at timestamptz NOT NULL DEFAULT now(),
-    updated_at timestamptz NOT NULL DEFAULT now()
-);
-ALTER TABLE public.crm_deals ENABLE ROW LEVEL SECURITY;
+---
 
---
--- CRM INTERACTIONS (Activity Feed)
---
-CREATE TABLE public.crm_interactions (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    startup_id uuid NOT NULL REFERENCES public.startups(id) ON DELETE CASCADE,
-    account_id uuid REFERENCES public.crm_accounts(id) ON DELETE CASCADE,
-    user_id uuid REFERENCES auth.users(id), -- Who logged it
-    type text CHECK (type IN ('email', 'call', 'meeting', 'note')),
-    summary text NOT NULL,
-    date timestamptz DEFAULT now(),
-    sentiment text CHECK (sentiment IN ('Positive', 'Neutral', 'Negative')),
-    created_at timestamptz NOT NULL DEFAULT now()
-);
-ALTER TABLE public.crm_interactions ENABLE ROW LEVEL SECURITY;
+### 2.3. `crm_deals` (Opportunities)
+**Purpose:** Tracks potential revenue through a sales pipeline.
 
---
--- CRM TASKS (To-Do)
---
-CREATE TABLE public.crm_tasks (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    startup_id uuid NOT NULL REFERENCES public.startups(id) ON DELETE CASCADE,
-    account_id uuid REFERENCES public.crm_accounts(id) ON DELETE CASCADE,
-    assigned_to uuid REFERENCES auth.users(id),
-    title text NOT NULL,
-    due_date timestamptz,
-    completed boolean DEFAULT false,
-    created_at timestamptz NOT NULL DEFAULT now(),
-    updated_at timestamptz NOT NULL DEFAULT now()
-);
-ALTER TABLE public.crm_tasks ENABLE ROW LEVEL SECURITY;
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `uuid` | Primary Key. |
+| `account_id` | `uuid` | Foreign Key to `crm_accounts`. |
+| `amount` | `numeric` | Estimated deal value ($). |
+| `stage` | `text` | 'Qualified', 'Proposal', 'Negotiation', 'Closed Won'. |
+| `probability` | `int` | 0–100% likelihood of closing. |
+| `expected_close` | `date` | Target date for conversion. |
+| `ai_score` | `int` | AI-predicted probability (0-100) based on deal signals. |
+| `ai_reasoning` | `text` | Explanation for the AI score. |
 
---
--- Automation Triggers
---
-CREATE TRIGGER on_crm_account_update BEFORE UPDATE ON public.crm_accounts FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
-CREATE TRIGGER on_crm_contact_update BEFORE UPDATE ON public.crm_contacts FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
-CREATE TRIGGER on_crm_deal_update BEFORE UPDATE ON public.crm_deals FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
-CREATE TRIGGER on_crm_task_update BEFORE UPDATE ON public.crm_tasks FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
+**Usage:** Visualized in the Kanban board and Deal Pipeline charts.
+
+---
+
+### 2.4. `crm_interactions` (Activity Log)
+**Purpose:** An immutable history of touchpoints with a customer.
+
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `uuid` | Primary Key. |
+| `account_id` | `uuid` | Foreign Key to `crm_accounts`. |
+| `type` | `text` | 'Email', 'Call', 'Meeting', 'Note'. |
+| `summary` | `text` | Content or summary of the interaction. |
+| `sentiment` | `text` | AI-analyzed sentiment ('Positive', 'Neutral', 'Negative'). |
+| `occurred_at` | `timestamptz` | When the interaction happened. |
+
+---
+
+## 3. AI Intelligence Layer Schema
+
+These tables store data generated by Gemini 3 and Google Search Grounding. They are "read-heavy" for the UI but "write-heavy" for the background agents.
+
+### 3.1. `crm_lead_enrichment` (Deep Research)
+**Purpose:** Stores high-fidelity data fetched from the web to augment lead profiles.
+
+| Column | Type | Content / Description |
+| :--- | :--- | :--- |
+| `lead_id` | `uuid` | FK to `crm_contacts`. |
+| `ceo_name` | `text` | Verified CEO name. |
+| `recent_news` | `jsonb` | Array of recent news articles `{title, url, date}`. |
+| `funding_history`| `jsonb` | Array of funding rounds `{round, amount, investors}`. |
+| `hiring_trends` | `jsonb` | Struct `{trend: 'up/down', roles: ['eng', 'sales']}`. |
+| `market_score` | `int` | 0-100 score based on news volume and authority. |
+| `gemini_summary` | `text` | A concise, AI-written overview of the company. |
+
+**Enrichment Flow:**
+```mermaid
+flowchart TD
+    A[New Lead Added] --> B[AI Enrichment Trigger]
+    B --> C[Gemini + Search Grounding Fetch Data]
+    C --> D[Store in crm_lead_enrichment]
+    D --> E[Surfaced in CRM Detail Panel]
 ```
 
-### 3. RLS Policies (Standard Template)
+---
 
-Apply these policies to all CRM tables (`crm_accounts`, `crm_contacts`, etc.) to ensure users only access data belonging to their startup.
+### 3.2. `crm_lead_scores` (Predictive Scoring)
+**Purpose:** Stores the output of the "Scoring Agent" which uses Gemini Reasoning to qualify leads.
 
-```sql
-CREATE POLICY "Users can manage their startup's CRM data."
-    ON public.crm_accounts -- Repeat for all CRM tables
-    FOR ALL
-    USING (
-        startup_id IN (
-            SELECT startup_id FROM public.team_members WHERE user_id = auth.uid()
-        )
-    );
+| Column | Type | Content / Description |
+| :--- | :--- | :--- |
+| `lead_id` | `uuid` | FK to `crm_contacts`. |
+| `overall_score` | `int` | 0-100 aggregate score. |
+| `fit_breakdown` | `jsonb` | Scores for specific dimensions: `{industry: 90, size: 40, tech: 80}`. |
+| `intent_signals` | `jsonb` | Detected signals (e.g., "Hiring Sales VP"). |
+| `risk_factors` | `jsonb` | Detected risks (e.g., "Recent layoffs"). |
+| `next_actions` | `jsonb` | AI-recommended next steps (e.g., "Email CTO"). |
+
+**Scoring Logic:**
+The score is a weighted average of:
+1.  **ICP Fit (40%):** Industry, Size, Region match.
+2.  **Intent (40%):** Hiring trends, Funding news, Website keywords.
+3.  **Engagement (20%):** (Future) Email opens, clicks.
+
+**Scoring Flow:**
+```mermaid
+flowchart TD
+    A[Lead Updated / Enriched] --> B[Score Processor]
+    B --> C[Gemini 3 Reasoning (Step-by-Step)]
+    C --> D[Store Score in crm_lead_scores]
+    D --> E[Update Lead Priority / Sort Order]
 ```
+
+---
+
+## 4. Security & Access Control (RLS)
+
+The architecture relies on **PostgreSQL Row-Level Security (RLS)** to enforce multi-tenancy.
+
+### Strategy
+*   **Data Isolation:** Every query automatically filters by `startup_id`. A user belonging to Startup A can *never* query rows belonging to Startup B.
+*   **Role-Based Access:**
+    *   **Owners/Admins:** Full CRUD access.
+    *   **Editors:** Can update Deals and Contacts but cannot delete Accounts.
+    *   **Viewers:** Read-only access to all CRM data.
+
+### Implementation Concept
+```sql
+-- Concept only
+CREATE POLICY "Tenant Isolation" ON crm_accounts
+USING (startup_id IN (SELECT startup_id FROM team_members WHERE user_id = auth.uid()));
+```
+
+---
+
+## 5. Automation & Triggers
+
+### 5.1. Timestamp Maintenance
+*   **Logic:** Any update to a row in any CRM table must automatically update the `updated_at` column to `NOW()`.
+*   **Mechanism:** PostgreSQL `BEFORE UPDATE` triggers.
+
+### 5.2. Enrichment Staleness
+*   **Logic:** If `last_enriched_at` is older than 30 days, the UI should flag the record as "Stale" or trigger a background re-enrichment job.
+
+### 5.3. Interaction Rollups
+*   **Logic:** When a new row is added to `crm_interactions`, the parent `crm_account.last_interaction_at` field should be updated to the current timestamp. This ensures sorting by "Last Contacted" is efficient without complex joins.
+
+---
+
+## 6. Indexing Strategy
+
+To ensure performance at scale, the following fields must be indexed:
+
+*   **Foreign Keys:** `startup_id`, `account_id`, `owner_id`. (Critical for RLS performance).
+*   **Search Fields:** `name`, `domain`, `email` (using GIN/Trigram indexes for fuzzy search).
+*   **Sorting Fields:** `created_at`, `last_interaction_at`, `health_score` (B-Tree indexes).
+*   **JSONB Fields:** `extended_info` (GIN index) to allow querying specific enriched data points.
+
+---
+
+## 7. Future Roadmap (Expansion)
+
+1.  **Predictive Close-Likelihood:** Use historical deal data to train a custom model that predicts the probability of a deal closing based on interaction patterns.
+2.  **Smart Follow-up Recommendations:** An agent that scans `crm_interactions` for unanswered emails and automatically queues draft follow-ups.
+3.  **Buying Intent Heatmap:** Visualizing which accounts are surging in activity/intent based on web signals.
+4.  **Company Tech Stack Detection:** Expanding enrichment to detect what software a prospect is already using (e.g., "Uses Salesforce", "Uses AWS").
+5.  **Multi-Touch Attribution:** Tracking which marketing channel (LinkedIn, Blog, Referral) originated the high-value deals.

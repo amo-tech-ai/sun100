@@ -22,7 +22,7 @@ export interface FinancialSettings {
 interface GenerationPayload {
   businessContext: string;
   urls: string[];
-  deckType: string;
+  deckType: string; // Updated to include deckType
   theme: keyof typeof templates;
   config?: {
     model: string;
