@@ -28,22 +28,22 @@ const KPICard: React.FC<{
     trendUp?: boolean;
     neutral?: boolean;
 }> = ({ title, subtitle, value, icon, trend, trendUp, neutral }) => (
-    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between h-full transition-shadow hover:shadow-md">
+    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(6,81,237,0.12)] transition-all duration-300 flex flex-col justify-between h-full group">
         <div className="flex justify-between items-start mb-4">
-            <div className="p-2.5 bg-gray-50 rounded-lg text-gray-600 border border-gray-100">
+            <div className="p-3 bg-slate-50 rounded-xl text-slate-500 group-hover:text-brand-blue group-hover:bg-blue-50 transition-colors">
                 {icon}
             </div>
             {trend && (
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${neutral ? 'bg-gray-100 text-gray-600' : trendUp ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                    {neutral ? null : trendUp ? <TrendingUpIcon className="w-3 h-3" /> : <TrendingDownIcon className="w-3 h-3" />}
+                <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide ${neutral ? 'bg-slate-100 text-slate-500' : trendUp ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                    {neutral ? null : trendUp ? <TrendingUpIcon className="w-3.5 h-3.5" /> : <TrendingDownIcon className="w-3.5 h-3.5" />}
                     {trend}
                 </div>
             )}
         </div>
         <div>
-            <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight">{value}</h3>
-            <p className="text-xs font-semibold text-gray-400 mt-1 uppercase tracking-wide">{title}</p>
-            <p className="text-[11px] text-gray-400 mt-1">{subtitle}</p>
+            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-1">{value}</h3>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{title}</p>
+            <p className="text-xs text-slate-400 mt-1.5">{subtitle}</p>
         </div>
     </div>
 );
@@ -117,7 +117,7 @@ const BurnAnalysisChart = () => {
 };
 
 const ScenarioCard = ({ type, months, assumptions, color }: { type: string, months: string, assumptions: string[], color: string }) => (
-    <div className={`p-4 rounded-xl border ${color} bg-white flex-1 min-w-[200px]`}>
+    <div className={`p-5 rounded-2xl border ${color} bg-white flex-1 min-w-[200px] shadow-sm`}>
         <div className="flex justify-between items-center mb-3">
             <span className={`text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded ${color.replace('border', 'bg').replace('200', '100')} text-gray-800`}>
                 {type}
@@ -218,7 +218,7 @@ const FinancialOverview: React.FC = () => {
                     <div className="lg:col-span-2 space-y-8">
                         
                         {/* Revenue vs Expenses */}
-                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <h3 className="text-lg font-bold text-brand-blue">Revenue vs Expenses</h3>
@@ -242,7 +242,7 @@ const FinancialOverview: React.FC = () => {
                         {/* Row: Burn & Spend */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                              {/* Burn Analysis */}
-                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col">
+                            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
                                 <div className="mb-4">
                                     <h3 className="text-sm font-bold text-brand-blue mb-1">Net Burn Analysis</h3>
                                     <div className="flex items-baseline gap-2">
@@ -258,7 +258,7 @@ const FinancialOverview: React.FC = () => {
                             </div>
 
                             {/* Spend Breakdown */}
-                             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                                 <h3 className="text-sm font-bold text-brand-blue mb-4">Spend Breakdown</h3>
                                 <div className="space-y-4">
                                     {[
@@ -321,7 +321,7 @@ const FinancialOverview: React.FC = () => {
                     <aside className="space-y-6">
                         
                         {/* AI Insights Panel */}
-                        <div className="bg-white p-6 rounded-xl border border-indigo-100 shadow-sm relative overflow-hidden">
+                        <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-50 rounded-full blur-2xl -mr-10 -mt-10"></div>
                             <h3 className="font-bold text-brand-blue mb-4 flex items-center gap-2 relative z-10">
                                 <SparklesIcon className="text-indigo-500" />
@@ -342,7 +342,7 @@ const FinancialOverview: React.FC = () => {
                         </div>
 
                         {/* Expense Shifts */}
-                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                             <h3 className="font-bold text-sm text-gray-900 mb-4 uppercase tracking-wide">Top Expense Shifts</h3>
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
