@@ -4,6 +4,9 @@ import { generateFullGTMStrategy } from '../services/ai/gtm';
 import { FullGTMStrategy, GTMInput } from '../services/ai/types';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { useStartup } from '../hooks/useStartup';
+import { saveInvestorDoc } from '../services/investorDocService';
+import { useToast } from '../contexts/ToastContext';
+import { useNavigate } from 'react-router-dom';
 
 // Icons
 const StrategyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>;
@@ -13,6 +16,8 @@ const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" he
 const TagIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>;
 const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>;
 const PrinterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>;
+const SaveIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
+
 
 // Wrapper component to apply typewriter effect cleanly
 const TypewriterBlock: React.FC<{ text: string; className?: string; speed?: number }> = ({ text, className, speed = 5 }) => {
@@ -23,6 +28,8 @@ const TypewriterBlock: React.FC<{ text: string; className?: string; speed?: numb
 const GTMStrategy: React.FC = () => {
     const [step, setStep] = useState<'input' | 'generating' | 'result'>('input');
     const { profile } = useStartup();
+    const { success, error: toastError } = useToast();
+    const navigate = useNavigate();
     const [input, setInput] = useState<GTMInput>({
         startupName: 'My Startup',
         industry: 'SaaS',
@@ -32,6 +39,7 @@ const GTMStrategy: React.FC = () => {
     });
     const [strategy, setStrategy] = useState<FullGTMStrategy | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Auto-fill from context
     useEffect(() => {
@@ -56,6 +64,26 @@ const GTMStrategy: React.FC = () => {
         } catch (err) {
             setError(err instanceof Error ? err.message : "Generation failed");
             setStep('input');
+        }
+    };
+
+    const handleSave = async () => {
+        if (!strategy) return;
+        setIsSaving(true);
+        try {
+            await saveInvestorDoc({
+                title: `${input.startupName} GTM Strategy`,
+                type: 'gtm_strategy',
+                status: 'draft',
+                content: strategy
+            });
+            success("Strategy saved to Investor Dashboard!");
+            navigate('/dashboard/investor-docs');
+        } catch (e) {
+            console.error(e);
+            toastError("Failed to save strategy.");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -160,6 +188,13 @@ const GTMStrategy: React.FC = () => {
                     <div className="flex gap-3">
                         <button onClick={() => setStep('input')} className="text-gray-600 hover:text-brand-orange font-medium px-4 py-2">
                             Create New
+                        </button>
+                        <button 
+                            onClick={handleSave} 
+                            disabled={isSaving}
+                            className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                        >
+                            {isSaving ? 'Saving...' : <><SaveIcon /> Save to Docs</>}
                         </button>
                         <button onClick={handlePrint} className="bg-brand-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 flex items-center gap-2">
                             <PrinterIcon /> Export PDF

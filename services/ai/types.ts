@@ -231,6 +231,7 @@ export interface RankedInvestor {
     investorName: string;
     matchScore: number;
     reasoning: string;
+    type?: 'vc' | 'accelerator' | 'angel_group' | 'corporate_vc';
 }
 
 export interface InvestorRanking {
