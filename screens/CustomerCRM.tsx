@@ -9,7 +9,8 @@ import {
     DealStage, 
     Insight, 
     Task,
-    getDealsForCustomer
+    getDealsForCustomer,
+    bulkDeleteCustomers
 } from '../services/crmService';
 import { generateCRMInsights } from '../services/ai/crm';
 import { CustomerFormModal } from '../components/crm/CustomerFormModal';
@@ -17,6 +18,8 @@ import { CustomerDetailPanel } from '../components/crm/CustomerDetailPanel';
 import { EmailComposeModal } from '../components/crm/EmailComposeModal';
 import { CSVImportModal } from '../components/crm/CSVImportModal';
 import { DealBoard } from '../components/crm/DealBoard';
+import { EmptyState } from '../components/common/EmptyState';
+import { OnboardingTour, TourStep } from '../components/common/OnboardingTour';
 
 // --- Icons ---
 const UsersIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
@@ -34,6 +37,8 @@ const UploadIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://ww
 const LinkedinIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>;
 const LayoutIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="9" x2="9" y1="21" y2="9"/></svg>;
 const ListIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>;
+const DownloadIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
+const TrashIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>;
 
 
 // --- Components ---
@@ -109,6 +114,33 @@ const CustomerCRM: React.FC = () => {
     // Email State
     const [emailTarget, setEmailTarget] = useState<Customer | null>(null);
 
+    // Bulk Actions
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    // Tour State
+    const [isTourOpen, setIsTourOpen] = useState(false);
+
+    const tourSteps: TourStep[] = [
+        {
+            targetId: 'crm-enriched-col',
+            title: 'AI Data Enrichment',
+            content: 'Gemini 3 automatically researches your leads to find CEO names, LinkedIn profiles, and recent news. Look for this data here.',
+            position: 'bottom'
+        },
+        {
+            targetId: 'crm-insights-widget',
+            title: 'Strategic Intelligence',
+            content: 'This widget analyzes your entire CRM to find churn risks and upsell opportunities automatically.',
+            position: 'left'
+        },
+        {
+            targetId: 'crm-import-btn',
+            title: 'Smart CSV Import',
+            content: 'Upload any messy CSV. Our AI will map the columns to the right fields for you.',
+            position: 'bottom'
+        }
+    ];
+
     const load = async () => {
         setLoading(true);
         try {
@@ -127,7 +159,19 @@ const CustomerCRM: React.FC = () => {
 
     useEffect(() => {
         load();
+        
+        // Check if tour has been seen
+        const hasSeenTour = localStorage.getItem('hasSeenCRMTour');
+        if (!hasSeenTour) {
+            // Small delay to ensure layout is ready
+            setTimeout(() => setIsTourOpen(true), 1000);
+        }
     }, []);
+
+    const handleTourComplete = () => {
+        setIsTourOpen(false);
+        localStorage.setItem('hasSeenCRMTour', 'true');
+    };
 
     const handleCreateCustomer = async (customerData: any) => {
         await createCustomer(customerData);
@@ -189,7 +233,62 @@ const CustomerCRM: React.FC = () => {
         });
     }, [customers, searchTerm, minHealth, pipelineFilter]);
 
-    if (loading && customers.length === 0) {
+    // Bulk Selection Logic
+    const toggleSelectAll = () => {
+        if (selectedIds.size === filteredCustomers.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(filteredCustomers.map(c => c.id)));
+        }
+    };
+
+    const toggleSelect = (id: string) => {
+        const newSet = new Set(selectedIds);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        setSelectedIds(newSet);
+    };
+
+    const handleBulkDelete = async () => {
+        if (!window.confirm(`Are you sure you want to delete ${selectedIds.size} customers?`)) return;
+        
+        try {
+            await bulkDeleteCustomers(Array.from(selectedIds));
+            setSelectedIds(new Set());
+            load();
+        } catch (e) {
+            console.error("Bulk delete failed:", e);
+            alert("Failed to delete selected customers.");
+        }
+    };
+
+    const handleExportCSV = () => {
+        const headers = ['Name', 'Segment', 'Status', 'MRR', 'Health Score', 'Last Interaction', 'CEO', 'News'];
+        const csvContent = [
+            headers.join(','),
+            ...filteredCustomers.map(c => [
+                `"${c.name}"`,
+                c.segment,
+                c.status,
+                c.mrr,
+                c.healthScore,
+                c.lastInteraction,
+                `"${c.ceoName || ''}"`,
+                `"${c.latestNews ? c.latestNews.replace(/"/g, '""') : ''}"`
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `crm_export_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#FBF8F5]">
                 <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-brand-orange"></div>
@@ -198,7 +297,27 @@ const CustomerCRM: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#FBF8F5] font-display pb-20">
+        <div className="min-h-screen bg-[#FBF8F5] font-display pb-20 relative">
+            {/* Bulk Actions Floating Bar */}
+            {selectedIds.size > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white border border-gray-200 shadow-xl rounded-full px-6 py-3 flex items-center gap-4 animate-fade-in-up">
+                    <span className="font-bold text-sm text-gray-800">{selectedIds.size} Selected</span>
+                    <div className="h-4 w-px bg-gray-300"></div>
+                    <button 
+                        onClick={handleBulkDelete}
+                        className="text-red-600 hover:text-red-800 text-sm font-bold flex items-center gap-1"
+                    >
+                        <TrashIcon className="w-4 h-4" /> Delete
+                    </button>
+                    <button 
+                        onClick={() => setSelectedIds(new Set())}
+                        className="text-gray-500 hover:text-gray-700 text-sm font-bold ml-2"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            )}
+
             {/* Header */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -227,6 +346,7 @@ const CustomerCRM: React.FC = () => {
                             </div>
                             
                             <button 
+                                id="crm-import-btn"
                                 onClick={() => setIsImportModalOpen(true)}
                                 className="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 justify-center"
                             >
@@ -348,12 +468,20 @@ const CustomerCRM: React.FC = () => {
                                                 onChange={(e) => setSearchTerm(e.target.value)}
                                             />
                                         </div>
-                                        <button 
-                                            onClick={() => setShowFilters(!showFilters)}
-                                            className={`px-3 py-2 border rounded-lg text-xs font-bold flex items-center gap-2 transition-colors ${showFilters ? 'bg-orange-50 border-brand-orange text-brand-orange' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
-                                        >
-                                            <FilterIcon className="w-3 h-3" /> Filters
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button 
+                                                onClick={handleExportCSV}
+                                                className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                                            >
+                                                <DownloadIcon className="w-3 h-3" /> Export
+                                            </button>
+                                            <button 
+                                                onClick={() => setShowFilters(!showFilters)}
+                                                className={`px-3 py-2 border rounded-lg text-xs font-bold flex items-center gap-2 transition-colors ${showFilters ? 'bg-orange-50 border-brand-orange text-brand-orange' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+                                            >
+                                                <FilterIcon className="w-3 h-3" /> Filters
+                                            </button>
+                                        </div>
                                     </div>
                                     
                                     {showFilters && (
@@ -391,18 +519,34 @@ const CustomerCRM: React.FC = () => {
                                     <table className="w-full text-left border-collapse">
                                         <thead>
                                             <tr className="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                <th className="px-4 py-3 w-10">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        className="rounded border-gray-300 text-brand-orange focus:ring-brand-orange"
+                                                        checked={filteredCustomers.length > 0 && selectedIds.size === filteredCustomers.length}
+                                                        onChange={toggleSelectAll}
+                                                    />
+                                                </th>
                                                 <th className="px-6 py-3">Customer</th>
                                                 <th className="px-6 py-3">CEO (Leadership)</th>
                                                 <th className="px-6 py-3">Status</th>
                                                 <th className="px-6 py-3">Health</th>
-                                                <th className="px-6 py-3">Enriched</th>
+                                                <th id="crm-enriched-col" className="px-6 py-3">Enriched</th>
                                                 <th className="px-6 py-3">MRR</th>
                                                 <th className="px-6 py-3 text-right">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100">
                                             {filteredCustomers.length > 0 ? filteredCustomers.map(c => (
-                                                <tr key={c.id} onClick={() => setSelectedCustomer(c)} className="group hover:bg-blue-50/30 transition-colors cursor-pointer">
+                                                <tr key={c.id} onClick={() => setSelectedCustomer(c)} className={`group hover:bg-blue-50/30 transition-colors cursor-pointer ${selectedIds.has(c.id) ? 'bg-blue-50/50' : ''}`}>
+                                                    <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                                                        <input 
+                                                            type="checkbox" 
+                                                            className="rounded border-gray-300 text-brand-orange focus:ring-brand-orange"
+                                                            checked={selectedIds.has(c.id)}
+                                                            onChange={() => toggleSelect(c.id)}
+                                                        />
+                                                    </td>
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
                                                             <div className="w-8 h-8 rounded bg-gray-200 text-gray-600 font-bold flex items-center justify-center text-xs">
@@ -451,8 +595,18 @@ const CustomerCRM: React.FC = () => {
                                                 </tr>
                                             )) : (
                                                 <tr>
-                                                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                                                        No customers match filters.
+                                                    <td colSpan={8} className="px-0 py-0">
+                                                        <EmptyState 
+                                                            type="customers" 
+                                                            title="No customers found" 
+                                                            description="Try adjusting your filters or add a new customer to get started." 
+                                                            action={
+                                                                <button onClick={() => setIsFormOpen(true)} className="text-brand-orange font-bold text-sm hover:underline">
+                                                                    Add New Customer
+                                                                </button>
+                                                            }
+                                                            compact={true}
+                                                        />
                                                     </td>
                                                 </tr>
                                             )}
@@ -466,7 +620,7 @@ const CustomerCRM: React.FC = () => {
                         <aside className="space-y-6">
                             
                             {/* Gemini Insights Widget */}
-                            <div className="bg-white p-0 rounded-2xl border border-indigo-100 shadow-lg overflow-hidden flex flex-col h-auto">
+                            <div id="crm-insights-widget" className="bg-white p-0 rounded-2xl border border-indigo-100 shadow-lg overflow-hidden flex flex-col h-auto">
                                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 flex justify-between items-center">
                                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                                         <SparklesIcon className="text-yellow-300" />
@@ -483,7 +637,7 @@ const CustomerCRM: React.FC = () => {
                                 </div>
                                 
                                 <div className="p-5 bg-indigo-50/30 space-y-4">
-                                    {insights.map(insight => (
+                                    {insights.length > 0 ? insights.map(insight => (
                                         <div key={insight.id} className="bg-white p-4 rounded-xl border border-indigo-50 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col gap-3 relative overflow-hidden group">
                                             {/* Decorator */}
                                             <div className={`absolute top-0 left-0 w-1 h-full ${insight.type === 'risk' ? 'bg-red-500' : insight.type === 'opportunity' ? 'bg-green-500' : 'bg-blue-500'}`}></div>
@@ -511,11 +665,13 @@ const CustomerCRM: React.FC = () => {
                                                 </button>
                                             )}
                                         </div>
-                                    ))}
-                                    {insights.length === 0 && !isRefreshingInsights && (
-                                        <div className="text-center py-6 text-indigo-400 text-sm">
-                                            No critical insights found. You're on track!
-                                        </div>
+                                    )) : (
+                                        <EmptyState 
+                                            type="search" 
+                                            title="No insights yet" 
+                                            description="Add more customer data to get AI-powered recommendations."
+                                            compact={true}
+                                        />
                                     )}
                                 </div>
                             </div>
@@ -527,7 +683,7 @@ const CustomerCRM: React.FC = () => {
                                     <button className="text-xs font-bold text-brand-orange hover:underline">+ Add</button>
                                 </div>
                                 <div className="space-y-2">
-                                    {tasks.map(task => (
+                                    {tasks.length > 0 ? tasks.map(task => (
                                         <div key={task.id} className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
                                             <div className={`mt-0.5 w-4 h-4 border-2 rounded ${task.completed ? 'bg-green-500 border-green-500' : 'border-gray-300'} flex items-center justify-center`}>
                                                 {task.completed && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
@@ -540,8 +696,14 @@ const CustomerCRM: React.FC = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                    ))}
-                                    {tasks.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No open tasks.</p>}
+                                    )) : (
+                                        <EmptyState 
+                                            type="tasks" 
+                                            title="All caught up!" 
+                                            description="No pending tasks. Great job!"
+                                            compact={true}
+                                        />
+                                    )}
                                 </div>
                             </div>
 
@@ -579,6 +741,13 @@ const CustomerCRM: React.FC = () => {
                     customer={emailTarget}
                 />
             )}
+
+            <OnboardingTour 
+                steps={tourSteps}
+                isOpen={isTourOpen}
+                onComplete={handleTourComplete}
+                onSkip={handleTourComplete}
+            />
         </div>
     );
 };

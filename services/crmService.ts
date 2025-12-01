@@ -78,7 +78,7 @@ export interface Interaction {
 }
 
 // --- Mock Data ---
-const mockCustomers: Customer[] = [
+let mockCustomers: Customer[] = [
     { id: '1', name: 'Acme Corp', logo: 'A', segment: 'Enterprise', status: 'Active', mrr: 2500, healthScore: 92, lastInteraction: '2h ago', owner: 'Alex', renewalDate: '2024-12-01', tags: ['High Value', 'Reference'], lastEnrichedAt: '2024-08-20' },
     { id: '2', name: 'Globex Inc', logo: 'G', segment: 'Mid-Market', status: 'Active', mrr: 1200, healthScore: 78, lastInteraction: '1d ago', owner: 'Sarah', renewalDate: '2024-10-15', tags: ['Remote'] },
     { id: '3', name: 'Soylent Corp', logo: 'S', segment: 'SMB', status: 'Trial', mrr: 0, healthScore: 45, lastInteraction: '3d ago', owner: 'Mike', renewalDate: '2024-09-30', tags: ['Pilot'] },
@@ -236,6 +236,25 @@ export const updateCustomer = async (id: string, updates: Partial<Customer>): Pr
     const { error } = await supabase.from('crm_accounts').update(payload).eq('id', id);
     if (error) throw error;
 };
+
+export const deleteCustomer = async (id: string): Promise<void> => {
+    if (!(supabase as any).realtime) {
+        const idx = mockCustomers.findIndex(c => c.id === id);
+        if (idx >= 0) mockCustomers.splice(idx, 1);
+        return;
+    }
+    const { error } = await supabase.from('crm_accounts').delete().eq('id', id);
+    if (error) throw error;
+};
+
+export const bulkDeleteCustomers = async (ids: string[]): Promise<void> => {
+    if (!(supabase as any).realtime) {
+        mockCustomers = mockCustomers.filter(c => !ids.includes(c.id));
+        return;
+    }
+    const { error } = await supabase.from('crm_accounts').delete().in('id', ids);
+    if (error) throw error;
+}
 
 export const linkDeckToCustomer = async (customerId: string, deckId: string): Promise<void> => {
     if (!(supabase as any).realtime) {
