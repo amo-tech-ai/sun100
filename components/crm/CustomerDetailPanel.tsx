@@ -5,7 +5,7 @@ import { analyzeAccountHealth, analyzeDealScore, scoreLead, generateBattlecard }
 import { AccountHealth, LeadScoreResult, Battlecard } from '../../services/ai/types';
 import { getDecks } from '../../services/deckService';
 import { Deck } from '../../data/decks';
-import { Link } from 'react-router-dom';
+import { useToast } from '../../contexts/ToastContext';
 
 interface CustomerDetailPanelProps {
     customer: Customer | null;
@@ -19,8 +19,11 @@ const PlusIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.
 const BellIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>;
 const ShieldIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
 const ClockIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+const TrendingUpIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+const DollarSignIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
 
 export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ customer, isOpen, onClose }) => {
+    const { success, error: toastError } = useToast();
     const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'tasks' | 'sales'>('overview');
     const [interactions, setInteractions] = useState<Interaction[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -89,8 +92,10 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
         try {
             const result = await analyzeAccountHealth(customer);
             setHealthAnalysis(result);
+            success("Health analysis complete.");
         } catch (e) {
             console.error("Health analysis failed", e);
+            toastError("Failed to analyze health.");
         } finally {
             setIsAnalyzing(false);
         }
@@ -102,8 +107,10 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
         try {
             const result = await scoreLead(customer.id);
             setLeadScore(result);
+            success("Lead scored successfully.");
         } catch (e) {
             console.error("Lead scoring failed", e);
+            toastError("Failed to score lead.");
         } finally {
             setIsScoring(false);
         }
@@ -113,12 +120,13 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
         if (!customer) return;
         setIsGeneratingBattlecard(true);
         try {
-            // Use a mock URL if website isn't available or parse domain from name
             const website = customer.name.toLowerCase().replace(/ /g, '') + '.com'; 
             const result = await generateBattlecard(customer.name, website);
             setBattlecard(result);
+            success("Battlecard generated.");
         } catch (e) {
             console.error("Battlecard generation failed", e);
+            toastError("Failed to generate battlecard.");
         } finally {
             setIsGeneratingBattlecard(false);
         }
@@ -130,19 +138,10 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
         try {
             const result = await analyzeDealScore(deal, customer);
             setDeals(prev => prev.map(d => d.id === deal.id ? { ...d, aiScore: result.score, aiReasoning: result.reasoning } : d));
+            success("Deal scored.");
         } catch (e) {
             console.error("Deal scoring failed", e);
-        }
-    };
-
-    const handleLinkDeck = async () => {
-        if (!customer || !selectedDeckId) return;
-        try {
-            await linkDeckToCustomer(customer.id, selectedDeckId);
-            setIsLinkingDeck(false);
-            setSelectedDeckId('');
-        } catch (e) {
-            console.error("Failed to link deck", e);
+            toastError("Failed to score deal.");
         }
     };
 
@@ -158,15 +157,16 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
             setInteractionForm({ ...interactionForm, summary: '' });
             setIsLoggingInteraction(false);
             await loadDetails(customer.id);
+            success("Interaction logged.");
         } catch (e) {
             console.error("Failed to log interaction", e);
+            toastError("Failed to log interaction.");
         }
     };
 
     const handleAddTask = async () => {
         if (!customer || !newTaskTitle.trim()) return;
         try {
-            // Default to tomorrow if no date picked
             let due = new Date();
             if (newTaskDate) {
                 due = new Date(newTaskDate);
@@ -186,19 +186,20 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
             setNewTaskDate('');
             setSetReminder(false);
             await loadDetails(customer.id);
+            success("Task added.");
         } catch (e) {
             console.error(e);
+            toastError("Failed to add task.");
         }
     };
 
     const createTaskFromInteraction = (interactionSummary: string) => {
         setNewTaskTitle(`Follow up on: ${interactionSummary}`);
-        // Set default date to tomorrow
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         setNewTaskDate(tomorrow.toISOString().slice(0, 10));
-        
         setActiveTab('tasks');
+        success("Interaction copied to tasks.");
     }
 
     if (!isOpen || !customer) return null;
@@ -254,25 +255,47 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
                             </div>
                             
                             {/* Enriched Data Block */}
-                            {(customer.ceoName || customer.latestNews) && (
-                                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-2 text-sm">
-                                    <div className="flex items-center gap-2 text-blue-800 font-bold uppercase text-xs mb-1">
-                                        <BrainIcon className="w-3 h-3" /> Enriched Data
-                                    </div>
-                                    {customer.ceoName && (
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-500">CEO</span>
-                                            <span className="font-medium text-gray-900">{customer.ceoName}</span>
-                                        </div>
-                                    )}
-                                    {customer.latestNews && (
-                                        <div className="pt-2 border-t border-blue-100">
-                                             <span className="text-xs text-gray-500 block mb-1">Latest Signal</span>
-                                             <p className="italic text-gray-700">"{customer.latestNews}"</p>
-                                        </div>
-                                    )}
+                            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3 text-sm">
+                                <div className="flex items-center gap-2 text-blue-800 font-bold uppercase text-xs border-b border-blue-100 pb-2">
+                                    <BrainIcon className="w-3 h-3" /> Enriched Intelligence
                                 </div>
-                            )}
+                                {customer.ceoName ? (
+                                    <div className="grid grid-cols-2 gap-4">
+                                         <div>
+                                            <span className="text-xs text-gray-500 block">CEO</span>
+                                            <span className="font-medium text-gray-900 block">{customer.ceoName}</span>
+                                            {customer.ceoLinkedin && <a href={customer.ceoLinkedin} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline">LinkedIn</a>}
+                                         </div>
+                                         {customer.hiringTrends && (
+                                             <div>
+                                                <span className="text-xs text-gray-500 block">Hiring Trend</span>
+                                                <span className={`font-medium ${customer.hiringTrends.trend === 'up' ? 'text-green-600' : 'text-gray-700'} capitalize block`}>
+                                                    {customer.hiringTrends.trend === 'up' ? <TrendingUpIcon className="w-3 h-3 inline mr-1"/> : null} 
+                                                    {customer.hiringTrends.trend}
+                                                </span>
+                                             </div>
+                                         )}
+                                    </div>
+                                ) : <p className="text-gray-500 italic text-xs">Run enrichment to populate.</p>}
+
+                                {customer.fundingHistory && customer.fundingHistory.length > 0 && (
+                                     <div className="pt-2 border-t border-blue-100">
+                                        <span className="text-xs text-gray-500 block mb-1">Latest Funding</span>
+                                        <div className="flex items-center gap-2 text-gray-900 font-medium">
+                                            <DollarSignIcon className="w-3 h-3 text-green-600"/>
+                                            {customer.fundingHistory[0].amount} ({customer.fundingHistory[0].round})
+                                        </div>
+                                        <p className="text-xs text-gray-500">{customer.fundingHistory[0].date} • {customer.fundingHistory[0].investors}</p>
+                                     </div>
+                                )}
+                                
+                                {customer.latestNews && (
+                                    <div className="pt-2 border-t border-blue-100">
+                                            <span className="text-xs text-gray-500 block mb-1">Latest Signal</span>
+                                            <p className="italic text-gray-700">"{customer.latestNews}"</p>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* AI Health Analysis */}
                             <div className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 rounded-xl p-5 shadow-sm">

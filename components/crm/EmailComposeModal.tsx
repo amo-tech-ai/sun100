@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { generateColdEmail } from '../../services/ai/outreach';
 import { addInteraction, Customer, sendEmail } from '../../services/crmService';
+import { useToast } from '../../contexts/ToastContext';
 
 interface EmailComposeModalProps {
     isOpen: boolean;
@@ -15,8 +16,10 @@ interface EmailComposeModalProps {
 const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
 const SparklesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
 const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
+const ExternalLinkIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>;
 
 export const EmailComposeModal: React.FC<EmailComposeModalProps> = ({ isOpen, onClose, recipientName, companyName, accountId, customer }) => {
+    const { success, error: toastError } = useToast();
     const [step, setStep] = useState<'draft' | 'edit'>('draft');
     const [context, setContext] = useState('');
     const [tone, setTone] = useState<'Professional' | 'Friendly' | 'Direct'>('Professional');
@@ -61,7 +64,7 @@ export const EmailComposeModal: React.FC<EmailComposeModalProps> = ({ isOpen, on
             setStep('edit');
         } catch (e) {
             console.error(e);
-            alert("Failed to generate email.");
+            toastError("Failed to generate email.");
         } finally {
             setIsGenerating(false);
         }
@@ -71,7 +74,6 @@ export const EmailComposeModal: React.FC<EmailComposeModalProps> = ({ isOpen, on
         setIsSending(true);
         try {
             // 1. Call send email service
-            // Assuming we have an email address, for now using a placeholder or deriving from customer if available
             const toEmail = "prospect@example.com"; // In real app, use customer.email or input field
             await sendEmail(toEmail, subject, body);
             
@@ -84,14 +86,34 @@ export const EmailComposeModal: React.FC<EmailComposeModalProps> = ({ isOpen, on
                 });
             }
             
-            alert("Email sent!");
+            success("Email sent successfully!");
             onClose();
         } catch (e) {
             console.error(e);
-            alert("Failed to send email.");
+            toastError("Failed to send email.");
         } finally {
             setIsSending(false);
         }
+    };
+
+    const handleOpenGmail = async () => {
+        const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(mailtoLink, '_blank');
+        
+        // Optionally log this interaction as well since the user likely sent it
+        if (accountId) {
+             try {
+                await addInteraction(accountId, {
+                    type: 'email',
+                    summary: `Drafted in Gmail: ${subject}`,
+                    sentiment: 'Neutral'
+                });
+                success("Opened in Gmail & logged interaction.");
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        onClose();
     };
 
     if (!isOpen) return null;
@@ -162,15 +184,23 @@ export const EmailComposeModal: React.FC<EmailComposeModalProps> = ({ isOpen, on
                                     onChange={e => setBody(e.target.value)}
                                 />
                             </div>
-                            <div className="flex justify-end gap-2 pt-2">
+                            <div className="flex justify-between items-center pt-2">
                                 <button onClick={() => setStep('draft')} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Back</button>
-                                <button 
-                                    onClick={handleSend}
-                                    disabled={isSending}
-                                    className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50"
-                                >
-                                    {isSending ? 'Sending...' : <><SendIcon /> Send & Log</>}
-                                </button>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={handleOpenGmail}
+                                        className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                    >
+                                        <ExternalLinkIcon /> Gmail
+                                    </button>
+                                    <button 
+                                        onClick={handleSend}
+                                        disabled={isSending}
+                                        className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {isSending ? 'Sending...' : <><SendIcon /> Send & Log</>}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
