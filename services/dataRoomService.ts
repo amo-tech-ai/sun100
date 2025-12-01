@@ -2,22 +2,31 @@
 import { supabase } from '../lib/supabaseClient';
 import { DataRoomFile, DataRoomAudit } from './ai/types';
 
+// Helper type to map frontend categories to DB Enum
+const mapCategoryToEnum = (cat: string): 'Financial' | 'Legal' | 'Pitch Deck' | 'Product' | 'Market' | 'Other' => {
+    const valid = ['Financial', 'Legal', 'Pitch Deck', 'Product', 'Market', 'Other'];
+    return valid.includes(cat) ? (cat as any) : 'Other';
+};
+
 export const getDataRoomFiles = async (): Promise<DataRoomFile[]> => {
+    // Mock Mode Check
+    if (!(supabase as any).realtime) return [];
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
-    const { data: startup } = await supabase
-        .from('startups')
-        .select('id')
+    const { data: membership } = await supabase
+        .from('team_members')
+        .select('startup_id')
         .eq('user_id', user.id)
         .single();
         
-    if (!startup) return [];
+    if (!membership) return [];
 
     const { data, error } = await supabase
-        .from('data_room_files')
+        .from('documents')
         .select('*')
-        .eq('startup_id', startup.id)
+        .eq('startup_id', membership.startup_id)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -25,8 +34,8 @@ export const getDataRoomFiles = async (): Promise<DataRoomFile[]> => {
     return data.map((f: any) => ({
         id: f.id,
         name: f.name,
-        category: f.category,
-        size: f.size,
+        category: f.category, // Enum matches frontend type
+        size: f.size_bytes ? `${(f.size_bytes / 1024 / 1024).toFixed(2)} MB` : '0 MB',
         uploadDate: new Date(f.created_at).toLocaleDateString()
     }));
 };
@@ -35,30 +44,37 @@ export const uploadDataRoomFile = async (fileMeta: Omit<DataRoomFile, 'id' | 'up
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("User not authenticated");
 
-    const { data: startup } = await supabase.from('startups').select('id').eq('user_id', user.id).single();
-    if (!startup) throw new Error("Startup not found");
+    const { data: membership } = await supabase
+        .from('team_members')
+        .select('startup_id')
+        .eq('user_id', user.id)
+        .single();
+
+    if (!membership) throw new Error("Startup not found");
 
     let storagePath = '';
+    let sizeBytes = 0;
 
     // 1. Upload to Storage if blob exists
     if (fileBlob) {
-        const fileName = `${startup.id}/${Date.now()}-${fileMeta.name}`;
+        sizeBytes = fileBlob.size;
+        const fileName = `${membership.startup_id}/${Date.now()}-${fileMeta.name}`;
         const { data: storageData, error: storageError } = await supabase.storage
-            .from('data-room')
+            .from('data-room') // Ensure this bucket exists in Supabase
             .upload(fileName, fileBlob);
 
         if (storageError) throw storageError;
         storagePath = storageData.path;
     }
 
-    // 2. Insert Metadata
+    // 2. Insert Metadata into 'documents' table
     const { data, error } = await supabase
-        .from('data_room_files')
+        .from('documents')
         .insert({
-            startup_id: startup.id,
+            startup_id: membership.startup_id,
             name: fileMeta.name,
-            category: fileMeta.category,
-            size: fileMeta.size,
+            category: mapCategoryToEnum(fileMeta.category),
+            size_bytes: sizeBytes,
             storage_path: storagePath
         })
         .select()
@@ -70,20 +86,20 @@ export const uploadDataRoomFile = async (fileMeta: Omit<DataRoomFile, 'id' | 'up
         id: data.id,
         name: data.name,
         category: data.category,
-        size: data.size,
+        size: `${(data.size_bytes / 1024 / 1024).toFixed(2)} MB`,
         uploadDate: new Date(data.created_at).toLocaleDateString()
     };
 };
 
 export const deleteDataRoomFile = async (id: string): Promise<void> => {
     // First get the file path to delete from storage
-    const { data: fileRecord } = await supabase.from('data_room_files').select('storage_path').eq('id', id).single();
+    const { data: fileRecord } = await supabase.from('documents').select('storage_path').eq('id', id).single();
     
     if (fileRecord?.storage_path) {
         await supabase.storage.from('data-room').remove([fileRecord.storage_path]);
     }
 
-    const { error } = await supabase.from('data_room_files').delete().eq('id', id);
+    const { error } = await supabase.from('documents').delete().eq('id', id);
     if (error) throw error;
 };
 
@@ -91,47 +107,61 @@ export const saveDataRoomAudit = async (audit: DataRoomAudit): Promise<void> => 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: startup } = await supabase.from('startups').select('id').eq('user_id', user.id).single();
-    if (!startup) return;
+    const { data: membership } = await supabase
+        .from('team_members')
+        .select('startup_id')
+        .eq('user_id', user.id)
+        .single();
 
-    // We upsert based on startup_id if we only want one active audit per startup
+    if (!membership) return;
+
+    // Upsert into dataroom_status
     const { error } = await supabase
-        .from('data_room_audits')
+        .from('dataroom_status')
         .upsert({
-            startup_id: startup.id,
-            score: audit.score,
+            startup_id: membership.startup_id,
+            readiness_score: audit.score,
             status: audit.status,
             found_categories: audit.found_categories,
             missing_items: audit.missing_items,
             warnings: audit.warnings,
             recommendations: audit.recommendations,
-            updated_at: new Date().toISOString()
+            last_audited_at: new Date().toISOString()
         });
 
     if (error) throw error;
 };
 
 export const getDataRoomAudit = async (): Promise<DataRoomAudit | null> => {
+    // Mock Mode Check
+    if (!(supabase as any).realtime) return null;
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    const { data: startup } = await supabase.from('startups').select('id').eq('user_id', user.id).single();
-    if (!startup) return null;
+    const { data: membership } = await supabase
+        .from('team_members')
+        .select('startup_id')
+        .eq('user_id', user.id)
+        .single();
+
+    if (!membership) return null;
 
     const { data, error } = await supabase
-        .from('data_room_audits')
+        .from('dataroom_status')
         .select('*')
-        .eq('startup_id', startup.id)
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .eq('startup_id', membership.startup_id)
+        .single();
 
-    if (error) console.error(error);
+    if (error) {
+        if (error.code !== 'PGRST116') console.error(error);
+        return null;
+    }
     
     if (!data) return null;
 
     return {
-        score: data.score,
+        score: data.readiness_score,
         status: data.status,
         found_categories: data.found_categories || [],
         missing_items: data.missing_items || [],

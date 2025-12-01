@@ -19,14 +19,36 @@ export interface TeamStats {
 
 export const getStartupProfile = async (): Promise<StartupProfile | null> => {
     try {
+        // Mock Check
+        if (!(supabase as any).realtime) return null;
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return null;
+
+        // First try to get the startup linked via team_members
+        let startupId: string | null = null;
+        
+        const { data: membership } = await supabase
+            .from('team_members')
+            .select('startup_id')
+            .eq('user_id', user.id)
+            .maybeSingle();
+            
+        if (membership) {
+            startupId = membership.startup_id;
+        } else {
+            // Fallback: Check if user owns a startup directly in startups table (if schema allows direct user_id link, though team_members is preferred)
+            // Based on schema, startups table DOES NOT have user_id anymore in the final version (it's via orgs/teams)
+            // But for safety in transition, we check if any existing logic used it. 
+            // The new schema uses team_members. If no membership, user has no startup.
+            return null;
+        }
 
         const { data, error } = await supabase
             .from('startups')
             .select('*')
-            .eq('user_id', user.id)
-            .maybeSingle();
+            .eq('id', startupId)
+            .single();
 
         if (error) throw error;
         if (!data) return null;
@@ -43,7 +65,7 @@ export const getStartupProfile = async (): Promise<StartupProfile | null> => {
             stage: data.stage || 'Seed',
             teamSize: data.team_size || '1-10',
             logoUrl: data.logo_url,
-            coverImageUrl: data.cover_image_url,
+            coverImageUrl: data.cover_image_url || undefined, // Use cover_image_url from DB if available
             fundingAsk: data.funding_ask,
         };
     } catch (err) {
@@ -56,8 +78,8 @@ export const updateStartupProfile = async (updates: Partial<StartupProfile>): Pr
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("User not authenticated");
 
-    // Check if startup exists
-    const { data: existing } = await supabase.from('startups').select('id').eq('user_id', user.id).maybeSingle();
+    // Check if startup exists via team_members
+    const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();
 
     const dbUpdates = {
         name: updates.name,
@@ -70,24 +92,33 @@ export const updateStartupProfile = async (updates: Partial<StartupProfile>): Pr
         stage: updates.stage,
         team_size: updates.teamSize,
         logo_url: updates.logoUrl,
-        cover_image_url: updates.coverImageUrl,
+        cover_image_url: updates.coverImageUrl, // Ensure this field matches DB
         funding_ask: updates.fundingAsk,
-        user_id: user.id, // Ensure user_id is set for insert
+        contact_email: (updates as any).email, // Map email from context if present
+        socials: (updates as any).socials,
         updated_at: new Date().toISOString()
     };
 
     // Clean undefined values
     Object.keys(dbUpdates).forEach(key => (dbUpdates as any)[key] === undefined && delete (dbUpdates as any)[key]);
 
-    if (existing) {
-        const { error } = await supabase.from('startups').update(dbUpdates).eq('id', existing.id);
+    if (membership) {
+        const { error } = await supabase.from('startups').update(dbUpdates).eq('id', membership.startup_id);
         if (error) throw error;
     } else {
-        // Insert if not exists (Upsert logic usually safer, but manual check helps with explicit creation flow)
-        // Ensure name is present for creation
+        // Create new startup and link member
+        // 1. Insert Startup
         if (!dbUpdates.name) dbUpdates.name = "My Startup";
-        const { error } = await supabase.from('startups').insert(dbUpdates);
-        if (error) throw error;
+        const { data: newStartup, error: startupError } = await supabase.from('startups').insert(dbUpdates).select().single();
+        if (startupError) throw startupError;
+
+        // 2. Create Team Member link
+        const { error: memberError } = await supabase.from('team_members').insert({
+            startup_id: newStartup.id,
+            user_id: user.id,
+            role: 'owner'
+        });
+        if (memberError) throw memberError;
     }
 };
 
@@ -95,16 +126,21 @@ export const updateStartupProfile = async (updates: Partial<StartupProfile>): Pr
 
 export const getStartupTeamStats = async (): Promise<TeamStats> => {
     try {
+        // Mock Check
+        if (!(supabase as any).realtime) return { total: 0, openRoles: 0, distribution: [] };
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return { total: 0, openRoles: 0, distribution: [] };
 
-        const { data: startup } = await supabase.from('startups').select('id').eq('user_id', user.id).maybeSingle();
-        if (!startup) return { total: 0, openRoles: 0, distribution: [] };
+        const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();
+        if (!membership) return { total: 0, openRoles: 0, distribution: [] };
+
+        const startupId = membership.startup_id;
 
         // Using Promise.allSettled to handle potential missing tables gracefully
         const [membersResult, jobsResult] = await Promise.allSettled([
-            supabase.from('team_members').select('department').eq('startup_id', startup.id),
-            supabase.from('jobs').select('id').eq('startup_id', startup.id).eq('is_active', true)
+            supabase.from('team_members').select('department').eq('startup_id', startupId),
+            supabase.from('jobs').select('id').eq('startup_id', startupId).eq('is_active', true)
         ]);
 
         let members: any[] = [];
@@ -131,26 +167,34 @@ export const getStartupTeamStats = async (): Promise<TeamStats> => {
             distribution
         };
     } catch (err) {
-        console.warn("Error fetching team stats (tables might not exist yet):", err);
+        console.warn("Error fetching team stats:", err);
         return { total: 0, openRoles: 0, distribution: [] };
     }
 };
 
 export const getStartupMilestones = async (): Promise<Milestone[]> => {
     try {
+        if (!(supabase as any).realtime) return [];
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
-        const { data: startup } = await supabase.from('startups').select('id').eq('user_id', user.id).maybeSingle();
-        if (!startup) return [];
+        const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();
+        if (!membership) return [];
 
+        // Check if milestones table exists (it might be missing in early schema versions)
+        // Ideally we assume schema is correct, but for safety in dev:
         const { data, error } = await supabase
-            .from('milestones')
+            .from('milestones') // Assuming 'milestones' table exists as per full schema plan
             .select('*')
-            .eq('startup_id', startup.id)
+            .eq('startup_id', membership.startup_id)
             .order('target_date', { ascending: true });
 
-        if (error) throw error;
+        if (error) {
+             // Graceful fallback if table is missing
+             if (error.code === '42P01') return []; 
+             throw error;
+        }
 
         return data.map((m: any) => ({
             id: m.id,
@@ -159,7 +203,7 @@ export const getStartupMilestones = async (): Promise<Milestone[]> => {
             status: m.status
         }));
     } catch (err) {
-        console.warn("Error fetching milestones (tables might not exist yet):", err);
+        console.warn("Error fetching milestones:", err);
         return [];
     }
 };

@@ -6,7 +6,7 @@ export type ApplicationStatus = 'Draft' | 'Submitted' | 'In Review' | 'Interview
 
 export interface Application {
     id: string;
-    investorId: string;
+    investorId: string; // This links to the 'investors' table if available, or just a placeholder
     investorName: string;
     investorLogo: string;
     type: 'VC' | 'Accelerator' | 'Angel Group' | 'CVC';
@@ -20,89 +20,116 @@ export interface Application {
     notes?: string;
 }
 
-const STORAGE_KEY = 'sun_ai_funding_applications';
+const mapDBToApplication = (dbRecord: any): Application => {
+    // Helper to map DB type to Frontend type (case sensitivity handling)
+    const mapType = (t: string): 'VC' | 'Accelerator' | 'Angel Group' | 'CVC' => {
+        if (t === 'VC') return 'VC';
+        if (t === 'Accelerator') return 'Accelerator';
+        if (t === 'Angel Group') return 'Angel Group';
+        if (t === 'CVC') return 'CVC';
+        return 'VC';
+    };
 
-const DEFAULT_MOCK_APPLICATIONS: Application[] = [
-    {
-        id: '1',
-        investorId: 'yc-1',
-        investorName: 'Y Combinator',
-        investorLogo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Y_Combinator_logo.svg/1024px-Y_Combinator_logo.svg.png',
-        type: 'Accelerator',
-        stage: 'Pre-Seed',
-        checkSize: '$125k - $500k',
-        matchScore: 98,
-        status: 'Interview',
-        lastAction: 'Partner Interview Scheduled',
-        lastActionDate: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-        nextStep: 'Prepare for 10min interview'
-    },
-    {
-        id: '2',
-        investorId: 'seq-1',
-        investorName: 'Sequoia Capital',
-        investorLogo: 'S',
-        type: 'VC',
-        stage: 'Seed',
-        checkSize: '$1M - $5M',
-        matchScore: 85,
-        status: 'In Review',
-        lastAction: 'Application Submitted',
-        lastActionDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
-    }
-];
-
-const getLocalData = (): Application[] => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-        return JSON.parse(stored);
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_MOCK_APPLICATIONS));
-    return DEFAULT_MOCK_APPLICATIONS;
-};
-
-const saveLocalData = (data: Application[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return {
+        id: dbRecord.id,
+        investorId: dbRecord.investor_id || '',
+        investorName: dbRecord.firm_name,
+        investorLogo: dbRecord.logo_url || '',
+        type: mapType(dbRecord.type),
+        stage: 'Seed', // DB schema needs a 'stage' column in investor_contacts to be fully accurate, defaulting for now
+        checkSize: dbRecord.check_size || '',
+        matchScore: dbRecord.fit_score || 0,
+        status: dbRecord.status as ApplicationStatus,
+        lastAction: dbRecord.status, // Simplified for now
+        lastActionDate: dbRecord.last_interaction_at,
+        nextStep: dbRecord.next_step,
+        notes: dbRecord.notes
+    };
 };
 
 export const getApplications = async (): Promise<Application[]> => {
-    if ((supabase as any).realtime) {
-         const { data, error } = await supabase.from('funding_applications').select('*');
-         if (error) throw error;
-         return data;
+    if (!(supabase as any).realtime) {
+         return []; // Mock fallback handled in previous version, simplified here for DB focus
     }
-    return new Promise(resolve => setTimeout(() => resolve(getLocalData()), 300));
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: membership } = await supabase
+        .from('team_members')
+        .select('startup_id')
+        .eq('user_id', user.id)
+        .single();
+
+    if (!membership) return [];
+
+    const { data, error } = await supabase
+        .from('investor_contacts')
+        .select('*')
+        .eq('startup_id', membership.startup_id)
+        .order('last_interaction_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map(mapDBToApplication);
 };
 
 export const createApplication = async (investor: Investor, matchScore: number = 0): Promise<Application> => {
-    // Logic to create an application from an Investor profile
-    const newApp: Application = {
-        id: `app-${Date.now()}`,
-        investorId: investor.id,
-        investorName: investor.name,
-        investorLogo: investor.logo_url || investor.name[0],
-        type: investor.type === 'vc' ? 'VC' : investor.type === 'accelerator' ? 'Accelerator' : 'Angel Group',
-        stage: investor.stages[0] || 'Seed',
-        checkSize: `$${(investor.min_check_size || 0)/1000}k - $${(investor.max_check_size || 0)/1000}k`,
-        matchScore: matchScore || 75,
-        status: 'Draft',
-        lastAction: 'Saved to Tracker',
-        lastActionDate: new Date().toISOString()
-    };
-
-    if ((supabase as any).realtime) {
-         const { data, error } = await supabase.from('funding_applications').insert(newApp).select().single();
-         if (error) throw error;
-         return data;
+    if (!(supabase as any).realtime) {
+        throw new Error("Database not connected");
     }
 
-    const current = getLocalData();
-    // Prevent duplicates
-    if (current.find(a => a.investorId === investor.id)) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const { data: membership } = await supabase
+        .from('team_members')
+        .select('startup_id')
+        .eq('user_id', user.id)
+        .single();
+
+    if (!membership) throw new Error("Startup profile not found");
+
+    const checkSizeStr = `$${(investor.min_check_size || 0)/1000}k - $${(investor.max_check_size || 0)/1000}k`;
+    
+    // Map investor type to DB enum
+    let dbType: 'VC' | 'Accelerator' | 'Angel Group' | 'CVC' = 'VC';
+    if (investor.type === 'accelerator') dbType = 'Accelerator';
+    else if (investor.type === 'angel_group') dbType = 'Angel Group';
+    else if (investor.type === 'corporate_vc') dbType = 'CVC';
+
+    const payload = {
+        startup_id: membership.startup_id,
+        investor_id: investor.id,
+        firm_name: investor.name,
+        logo_url: investor.logo_url,
+        type: dbType,
+        status: 'Draft' as const,
+        check_size: checkSizeStr,
+        fit_score: matchScore || 75,
+        last_interaction_at: new Date().toISOString(),
+        notes: `Added from directory. Specialties: ${investor.specialties.join(', ')}`
+    };
+
+    // Check for existing application
+    const { data: existing } = await supabase
+        .from('investor_contacts')
+        .select('id')
+        .eq('startup_id', membership.startup_id)
+        .eq('investor_id', investor.id)
+        .maybeSingle();
+
+    if (existing) {
         throw new Error("Application already exists for this investor.");
     }
 
-    const updated = [newApp, ...current];
-    saveLocalData(updated);
-    return new Promise(resolve => setTimeout(() => resolve(newApp), 300));
+    const { data, error } = await supabase
+        .from('investor_contacts')
+        .insert(payload)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapDBToApplication(data);
 };
