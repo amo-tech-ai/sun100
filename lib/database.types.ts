@@ -242,7 +242,7 @@ export interface Database {
           last_interaction_at: string
           next_step: string | null
           notes: string | null
-          investor_id: string | null // Link to public directory if applicable
+          investor_id: string | null
           logo_url: string | null
           created_at: string
           updated_at: string
@@ -351,6 +351,159 @@ export interface Database {
           contact_email?: string | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      // --- CRM Tables ---
+      crm_accounts: {
+        Row: {
+          id: string
+          startup_id: string
+          name: string
+          logo_url: string | null
+          segment: 'Enterprise' | 'SMB' | 'Mid-Market'
+          status: 'Active' | 'Churned' | 'Trial'
+          mrr: number
+          health_score: number
+          last_interaction_at: string
+          renewal_date: string | null
+          owner_id: string | null // Reference to user_id (team member)
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          startup_id: string
+          name: string
+          logo_url?: string | null
+          segment?: 'Enterprise' | 'SMB' | 'Mid-Market'
+          status?: 'Active' | 'Churned' | 'Trial'
+          mrr?: number
+          health_score?: number
+          last_interaction_at?: string
+          renewal_date?: string | null
+          owner_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          startup_id?: string
+          name?: string
+          logo_url?: string | null
+          segment?: 'Enterprise' | 'SMB' | 'Mid-Market'
+          status?: 'Active' | 'Churned' | 'Trial'
+          mrr?: number
+          health_score?: number
+          last_interaction_at?: string
+          renewal_date?: string | null
+          owner_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      crm_interactions: {
+        Row: {
+          id: string
+          startup_id: string
+          account_id: string
+          user_id: string // Team member who logged it
+          type: 'email' | 'call' | 'meeting' | 'note'
+          summary: string
+          date: string
+          sentiment: 'Positive' | 'Neutral' | 'Negative' | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          startup_id: string
+          account_id: string
+          user_id: string
+          type: 'email' | 'call' | 'meeting' | 'note'
+          summary: string
+          date?: string
+          sentiment?: 'Positive' | 'Neutral' | 'Negative' | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          startup_id?: string
+          account_id?: string
+          user_id?: string
+          type?: 'email' | 'call' | 'meeting' | 'note'
+          summary?: string
+          date?: string
+          sentiment?: 'Positive' | 'Neutral' | 'Negative' | null
+          created_at?: string
+        }
+      }
+      crm_deals: {
+        Row: {
+          id: string
+          startup_id: string
+          account_id: string
+          name: string
+          value: number
+          stage: 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Closed Won' | 'Closed Lost'
+          probability: number
+          expected_close_date: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          startup_id: string
+          account_id: string
+          name: string
+          value?: number
+          stage?: 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Closed Won' | 'Closed Lost'
+          probability?: number
+          expected_close_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          startup_id?: string
+          account_id?: string
+          name?: string
+          value?: number
+          stage?: 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Closed Won' | 'Closed Lost'
+          probability?: number
+          expected_close_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      crm_tasks: {
+        Row: {
+          id: string
+          startup_id: string
+          account_id: string | null
+          assigned_to: string // user_id
+          title: string
+          due_date: string
+          completed: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          startup_id: string
+          account_id?: string | null
+          assigned_to: string
+          title: string
+          due_date: string
+          completed?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          startup_id?: string
+          account_id?: string | null
+          assigned_to?: string
+          title?: string
+          due_date?: string
+          completed?: boolean
+          created_at?: string
         }
       }
     }

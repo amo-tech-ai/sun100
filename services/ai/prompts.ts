@@ -778,3 +778,43 @@ export const enrichStartupProfileFunctionDeclaration: FunctionDeclaration = {
         required: ['tagline', 'description', 'industry', 'mission']
     }
 };
+
+// --- CRM Function Declarations ---
+
+export const analyzeAccountHealthFunctionDeclaration: FunctionDeclaration = {
+    name: 'analyzeAccountHealth',
+    description: 'Analyzes the health of a customer account based on interactions and data.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            score: { type: Type.NUMBER, description: '0-100 health score.' },
+            status: { type: Type.STRING, description: "'Healthy', 'Neutral', or 'At Risk'." },
+            factors: { type: Type.ARRAY, items: { type: Type.STRING }, description: 'Key factors influencing the score.' },
+            recommendation: { type: Type.STRING, description: 'Actionable advice to improve health.' }
+        },
+        required: ['score', 'status', 'factors', 'recommendation']
+    }
+};
+
+export const generateCRMInsightsFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateCRMInsights',
+    description: 'Generates strategic insights for a CRM dashboard.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            insights: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        type: { type: Type.STRING, enum: ['risk', 'opportunity', 'info'] },
+                        message: { type: Type.STRING },
+                        action: { type: Type.STRING }
+                    },
+                    required: ['type', 'message', 'action']
+                }
+            }
+        },
+        required: ['insights']
+    }
+};

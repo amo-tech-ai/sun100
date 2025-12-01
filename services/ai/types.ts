@@ -271,3 +271,19 @@ export interface StartupStrategicAnalysis {
     marketTrends: string[];
     keyCompetitors: string[];
 }
+
+// --- CRM Types ---
+
+export interface CRMInsight {
+    id: string;
+    type: 'risk' | 'opportunity' | 'info';
+    message: string;
+    action?: string;
+}
+
+export interface AccountHealth {
+    score: number;
+    status: 'Healthy' | 'Neutral' | 'At Risk';
+    factors: string[];
+    recommendation: string;
+}

@@ -1,6 +1,4 @@
 
-
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -45,6 +43,7 @@ const Sitemap: React.FC = () => {
   
   const appRoutes = [
     { path: '/dashboard', name: 'Dashboard', description: 'Main view for authenticated users.' },
+    { path: '/dashboard/crm', name: 'Customer CRM', description: 'Manage customers, pipelines, and insights.' },
     { path: '/dashboard/startup-wizard', name: 'Startup Wizard', description: 'Wizard for creating a startup profile.' },
     { path: '/pitch-decks', name: 'Pitch Decks Hub', description: 'Main hub for managing pitch decks.' },
     { path: '/pitch-decks/new', name: 'New Deck Wizard', description: 'Start the guided process to create a new presentation.' },
