@@ -20,6 +20,9 @@ interface WizardState {
   teamSize: string;
   tractionStage: string;
   
+  // New Field for Sales Deck support
+  deckType: 'Investor Pitch' | 'Sales Deck';
+  
   setStep: (step: number) => void;
   setDirection: (direction: 'forward' | 'back') => void;
   setBusinessContext: (context: string) => void;
@@ -29,12 +32,15 @@ interface WizardState {
   setUseThinking: (useThinking: boolean) => void;
   setSelectedTemplate: (selectedTemplate: keyof typeof templates) => void;
   
-  // New Setters
+  // New Setters Implementation
   setStartupType: (types: string[]) => void;
   setStage: (stage: string) => void;
   setPrimaryFocus: (focus: string[]) => void;
   setTeamSize: (size: string) => void;
   setTractionStage: (traction: string) => void;
+  
+  // New Setter for Deck Type
+  setDeckType: (type: 'Investor Pitch' | 'Sales Deck') => void;
   
   resetWizard: () => void;
 }
@@ -66,6 +72,8 @@ export const useWizardStore = create<WizardState>()(
       primaryFocus: [],
       teamSize: '2–5',
       tractionStage: 'Pre-launch',
+      
+      deckType: 'Investor Pitch',
 
       setStep: (step) => set({ step }),
       setDirection: (direction) => set({ direction }),
@@ -84,6 +92,8 @@ export const useWizardStore = create<WizardState>()(
       setPrimaryFocus: (focus) => set({ primaryFocus: focus }),
       setTeamSize: (size) => set({ teamSize: size }),
       setTractionStage: (traction) => set({ tractionStage: traction }),
+      
+      setDeckType: (type) => set({ deckType: type }),
 
       resetWizard: () => set({
         step: 1,
@@ -108,6 +118,7 @@ export const useWizardStore = create<WizardState>()(
         primaryFocus: [],
         teamSize: '2–5',
         tractionStage: 'Pre-launch',
+        deckType: 'Investor Pitch'
       })
     }),
     {

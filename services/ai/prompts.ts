@@ -29,6 +29,32 @@ export const generateDeckOutlineFunctionDeclaration: FunctionDeclaration = {
     }
 };
 
+export const generateSalesDeckFunctionDeclaration: FunctionDeclaration = {
+    name: 'generateSalesDeck',
+    description: 'Generates a persuasive sales presentation using the "Hook-Villain-Hero" narrative framework.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            title: { type: Type.STRING, description: 'The main title of the sales deck.' },
+            slides: {
+                type: Type.ARRAY,
+                description: 'An array of slides following the sales narrative.',
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        title: { type: Type.STRING, description: 'The punchy headline for the slide.' },
+                        content: { type: Type.STRING, description: 'Persuasive copy using sales psychology. Concise bullets.' },
+                        imageUrl: { type: Type.STRING, description: 'Visual prompt for the slide (e.g. "A customer struggling with old tech").' },
+                        type: { type: Type.STRING, enum: ['hook', 'villain', 'hero', 'proof', 'ask', 'generic'], description: 'The narrative role of this slide.' }
+                    },
+                    required: ['title', 'content', 'imageUrl', 'type']
+                }
+            }
+        },
+        required: ['title', 'slides']
+    }
+};
+
 export const rewriteSlideFunctionDeclaration: FunctionDeclaration = {
     name: 'rewriteSlide',
     description: 'Rewrites slide content to improve clarity, impact, and persuasion based on specific instructions.',

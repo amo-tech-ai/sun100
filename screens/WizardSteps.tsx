@@ -15,6 +15,7 @@ const GlobeIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www
 const PaletteIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>;
 const SlidersIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="1" x2="7" y1="14" y2="14"/><line x1="9" x2="15" y1="8" y2="8"/><line x1="17" x2="23" y1="16" y2="16"/></svg>;
 const BriefcaseIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
+const ShoppingBagIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>;
 
 // --- PROGRESS HEADER ---
 const stepsConfig = [
@@ -80,7 +81,10 @@ const WizardSteps: React.FC = () => {
         teamSize,
         setTeamSize,
         tractionStage,
-        setTractionStage
+        setTractionStage,
+        // Deck Type
+        deckType,
+        setDeckType
     } = useWizardStore();
 
     const [loading, setLoading] = useState(false);
@@ -118,7 +122,7 @@ const WizardSteps: React.FC = () => {
         const generationPayload = {
             businessContext,
             urls,
-            deckType: 'Investor Pitch',
+            deckType, // Use the selected deck type
             theme: selectedTemplate,
             financials,
             config: {
@@ -200,11 +204,29 @@ const WizardSteps: React.FC = () => {
                     <div className="animate-fade-in-up max-w-3xl mx-auto">
                         <div className="text-center mb-10">
                             <h1 className="text-4xl md:text-5xl font-extrabold text-brand-blue mb-4 tracking-tight">
-                                Tell me about your startup.
+                                Tell me about your business.
                             </h1>
                             <p className="text-lg text-gray-500">
                                 I'll use this to structure your narrative, financials, and market slides.
                             </p>
+                        </div>
+
+                        {/* Deck Type Selection */}
+                        <div className="mb-8 flex justify-center gap-4">
+                            <button
+                                onClick={() => setDeckType('Investor Pitch')}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all border ${deckType === 'Investor Pitch' ? 'bg-brand-blue text-white border-brand-blue shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
+                            >
+                                <BriefcaseIcon className={deckType === 'Investor Pitch' ? 'text-white' : 'text-gray-400'} />
+                                Investor Pitch
+                            </button>
+                            <button
+                                onClick={() => setDeckType('Sales Deck')}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all border ${deckType === 'Sales Deck' ? 'bg-brand-orange text-white border-brand-orange shadow-lg' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
+                            >
+                                <ShoppingBagIcon className={deckType === 'Sales Deck' ? 'text-white' : 'text-gray-400'} />
+                                Sales Deck
+                            </button>
                         </div>
 
                         {/* Chat Input Bubble */}
@@ -213,7 +235,7 @@ const WizardSteps: React.FC = () => {
                                 value={businessContext}
                                 onChange={(e) => setBusinessContext(e.target.value)}
                                 className="w-full min-h-[160px] p-6 text-lg text-gray-800 placeholder-gray-300 border-none resize-none focus:ring-0 rounded-xl bg-transparent"
-                                placeholder="e.g. We are building 'Airbnb for Campervans'. We take a 15% commission. We have 500 hosts on the waitlist..."
+                                placeholder={deckType === 'Sales Deck' ? "e.g. We sell CRM software to dentists. Our product saves them 20 hours a week..." : "e.g. We are building 'Airbnb for Campervans'. We take a 15% commission. We have 500 hosts on the waitlist..."}
                                 autoFocus
                             />
                             <div className="absolute bottom-4 right-4 text-xs text-gray-300 font-medium">
@@ -257,10 +279,10 @@ const WizardSteps: React.FC = () => {
                         <div className="text-center mb-8">
                             <span className="text-brand-orange font-bold text-xs uppercase tracking-widest mb-2 block">Step 3 of 4</span>
                             <h1 className="text-3xl md:text-4xl font-extrabold text-brand-blue mb-3">
-                                Tell Us About Your Startup
+                                Tell Us About Your Business
                             </h1>
                             <p className="text-gray-500">
-                                These details help the AI tailor your pitch deck narrative and financial projections.
+                                These details help the AI tailor your {deckType.toLowerCase()} narrative and financial projections.
                             </p>
                         </div>
 
@@ -268,7 +290,7 @@ const WizardSteps: React.FC = () => {
                             
                             {/* Row 1: Type */}
                             <div>
-                                <SectionLabel>What type of startup is this? <span className="text-gray-400 text-sm font-normal ml-2">(Select all that apply)</span></SectionLabel>
+                                <SectionLabel>What type of business is this? <span className="text-gray-400 text-sm font-normal ml-2">(Select all that apply)</span></SectionLabel>
                                 <div className="flex flex-wrap gap-3">
                                     {['AI SaaS', 'Marketplace', 'B2B SaaS', 'Consumer App', 'Fintech', 'Creator / Media', 'Hardware', 'Other'].map(type => (
                                         <PillButton 
@@ -286,7 +308,7 @@ const WizardSteps: React.FC = () => {
                             <div>
                                 <SectionLabel>What stage are you at?</SectionLabel>
                                 <div className="flex flex-wrap gap-3">
-                                    {['Idea', 'MVP', 'Pre-Seed', 'Seed', 'Series A+'].map(s => (
+                                    {['Idea', 'MVP', 'Pre-Seed', 'Seed', 'Series A+', 'Growth'].map(s => (
                                         <PillButton 
                                             key={s} 
                                             label={s} 
@@ -301,7 +323,7 @@ const WizardSteps: React.FC = () => {
                             <div>
                                 <SectionLabel>What is your main focus for this deck? <span className="text-gray-400 text-sm font-normal ml-2">(Max 3)</span></SectionLabel>
                                 <div className="flex flex-wrap gap-3">
-                                    {['Raising capital', 'Joining an accelerator', 'Closing customers', 'Updating existing investors', 'Internal strategy', 'Recruiting'].map(f => (
+                                    {['Raising capital', 'Selling to Customers', 'Joining an accelerator', 'Closing customers', 'Updating existing investors', 'Internal strategy', 'Recruiting'].map(f => (
                                         <PillButton 
                                             key={f} 
                                             label={f} 
@@ -343,28 +365,29 @@ const WizardSteps: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Row 5: Funding Slider */}
-                            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                                <div className="flex justify-between items-center mb-4">
-                                    <SectionLabel>Target Raise Amount</SectionLabel>
-                                    <span className="text-2xl font-bold text-brand-orange">{formatFundingGoal(parseInt(financials.fundingGoal || '500000'))}</span>
+                            {/* Row 5: Funding Slider (Only show for Investor Pitch) */}
+                            {deckType === 'Investor Pitch' && (
+                                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <SectionLabel>Target Raise Amount</SectionLabel>
+                                        <span className="text-2xl font-bold text-brand-orange">{formatFundingGoal(parseInt(financials.fundingGoal || '500000'))}</span>
+                                    </div>
+                                    <input 
+                                        type="range" 
+                                        min="100000" 
+                                        max="5000000" 
+                                        step="100000"
+                                        value={financials.fundingGoal || '500000'}
+                                        onChange={(e) => updateFinancials('fundingGoal', e.target.value)}
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                                    />
+                                    <div className="flex justify-between text-xs text-gray-500 mt-2 font-medium">
+                                        <span>$100k</span>
+                                        <span>$1M</span>
+                                        <span>$5M+</span>
+                                    </div>
                                 </div>
-                                <input 
-                                    type="range" 
-                                    min="100000" 
-                                    max="5000000" 
-                                    step="100000"
-                                    value={financials.fundingGoal || '500000'}
-                                    onChange={(e) => updateFinancials('fundingGoal', e.target.value)}
-                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-orange"
-                                />
-                                <div className="flex justify-between text-xs text-gray-500 mt-2 font-medium">
-                                    <span>$100k</span>
-                                    <span>$1M</span>
-                                    <span>$5M+</span>
-                                </div>
-                            </div>
-
+                            )}
                         </div>
                     </div>
                 )}
@@ -435,6 +458,11 @@ const WizardSteps: React.FC = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 sticky top-28">
                                 <h4 className="font-bold text-gray-400 text-xs uppercase tracking-widest mb-4">Review Summary</h4>
                                 
+                                <div className="mb-4">
+                                    <p className="text-sm text-gray-500 mb-1">Type</p>
+                                    <div className="font-bold text-brand-blue">{deckType}</div>
+                                </div>
+
                                 <div className="mb-4">
                                     <p className="text-sm text-gray-500 mb-1">Theme</p>
                                     <div className="font-bold text-brand-blue flex items-center gap-2">
