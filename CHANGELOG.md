@@ -1,9 +1,22 @@
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [2.3.0] - 2024-09-04
+
+### Added
+- **Funding Manager:** A dedicated dashboard (`FundingManager.tsx`) for tracking applications to VCs and Accelerators. Features a Kanban-like status view and "Fit Score" visualization.
+- **Investor Chat:** An AI-powered chat widget (`InvestorChat.tsx`) in the Investor Dashboard that allows founders to ask natural language questions about their metrics (e.g., "What is my runway?").
+- **VC Fit Check:** Added `MatchmakingModal` and `FitCheckModal` to help founders analyze compatibility with specific investors using Gemini 3 reasoning.
+
+### Improved
+- **Metrics Table:** Enhanced `MetricsTable.tsx` with mobile-responsive card views and conditional text coloring (green/red) for financial health indicators.
+- **GTM Strategy:** Added "Export PDF" functionality to the GTM Strategy generator.
+- **Documentation:** Updated `progress-tracker.md` to reflect the completion of the Investor Suite.
 
 ## [2.2.0] - 2024-09-03
 

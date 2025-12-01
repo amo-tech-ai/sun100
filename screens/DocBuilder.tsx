@@ -6,6 +6,8 @@ import { OnePagerContent, InvestorUpdateContent, InvestmentMemoContent, Investor
 import { getLatestMetrics } from '../services/metricsService';
 import { saveInvestorDoc } from '../services/investorDocService';
 import { DocPreview } from '../components/investor/DocPreview';
+import { useStartup } from '../hooks/useStartup';
+import { useToast } from '../contexts/ToastContext';
 
 const ArrowLeftIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
 const FileTextIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>;
@@ -18,6 +20,8 @@ const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" heigh
 
 const DocBuilder: React.FC = () => {
     const navigate = useNavigate();
+    const { profile } = useStartup();
+    const { success, error } = useToast();
     const [docType, setDocType] = useState<InvestorDocType | null>(null);
     const [step, setStep] = useState(1);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -36,13 +40,26 @@ const DocBuilder: React.FC = () => {
     
     // Form State for Memo
     const [memoProfile, setMemoProfile] = useState({
-        name: 'Sun AI',
-        industry: 'SaaS / AI',
-        description: 'An AI-powered platform for startups to generate pitch decks and investor documents.',
-        stage: 'Seed',
+        name: profile.name !== 'My Startup' ? profile.name : 'Sun AI',
+        industry: profile.industry !== 'Technology' ? profile.industry : 'SaaS / AI',
+        description: profile.description || 'An AI-powered platform for startups to generate pitch decks and investor documents.',
+        stage: profile.stage || 'Seed',
         traction: '$10k MRR, 500 active users',
         team: 'Ex-Google and Meta engineers.'
     });
+
+    // Update memo defaults if profile changes
+    useEffect(() => {
+        if (profile.name !== 'My Startup') {
+            setMemoProfile(prev => ({
+                ...prev,
+                name: profile.name,
+                industry: profile.industry,
+                description: profile.description || prev.description,
+                stage: profile.stage
+            }));
+        }
+    }, [profile]);
 
     // Results
     const [generatedContent, setGeneratedContent] = useState<OnePagerContent | InvestorUpdateContent | InvestmentMemoContent | null>(null);
@@ -115,9 +132,9 @@ const DocBuilder: React.FC = () => {
         try {
             let result;
             if (docType === 'one_pager') {
-                // In a real app, we'd pull this from the startup profile state
-                const mockProfile = { name: "Sun AI", description: "AI platform for startups" }; 
-                result = await generateOnePager(mockProfile);
+                // Use profile data if available, otherwise fall back to mock
+                const profileData = profile.name !== 'My Startup' ? profile : { name: "Sun AI", description: "AI platform for startups" }; 
+                result = await generateOnePager(profileData);
             } else if (docType === 'update') {
                 result = await generateInvestorUpdate(
                     { mrr: updateData.currentMRR, active_users: updateData.currentUsers }, 
@@ -130,9 +147,10 @@ const DocBuilder: React.FC = () => {
             
             setGeneratedContent(result as any);
             setStep(3);
+            success("Document generated successfully!");
         } catch (e) {
             console.error(e);
-            alert("Failed to generate document.");
+            error("Failed to generate document.");
         } finally {
             setIsGenerating(false);
         }
@@ -156,11 +174,11 @@ const DocBuilder: React.FC = () => {
             
             // Clear auto-save draft after successful save
             clearDraft();
-            
+            success("Document saved to dashboard.");
             navigate('/dashboard/investor-docs');
         } catch (e) {
             console.error(e);
-            alert("Failed to save document.");
+            error("Failed to save document.");
         } finally {
             setIsSaving(false);
         }
@@ -239,8 +257,14 @@ const DocBuilder: React.FC = () => {
             {docType === 'one_pager' && (
                 <div className="space-y-4">
                     <div className="p-4 bg-blue-50 text-blue-800 rounded-lg text-sm">
-                        <p><strong>Note:</strong> For this demo, we will use the default "Sun AI" startup profile data to generate your One-Pager.</p>
+                        <p><strong>Note:</strong> We will use the current "Company Basics" profile data to generate your One-Pager.</p>
                     </div>
+                    <div className="border p-4 rounded-md bg-gray-50">
+                        <p><strong>Company:</strong> {profile.name}</p>
+                        <p><strong>Tagline:</strong> {profile.tagline || '(No tagline set)'}</p>
+                        <p><strong>Industry:</strong> {profile.industry}</p>
+                    </div>
+                    <Link to="/dashboard/startup-wizard" className="text-sm text-brand-orange hover:underline block text-center">Edit Profile Data</Link>
                 </div>
             )}
 

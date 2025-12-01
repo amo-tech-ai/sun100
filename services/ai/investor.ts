@@ -228,3 +228,44 @@ export const generateInvestmentMemo = async (startupProfile: any): Promise<Inves
         handleAIError(error);
     }
 };
+
+export const askInvestorData = async (query: string, metricsContext: any[]): Promise<string> => {
+    // Limit context to recent history to save tokens/bandwidth
+    const context = metricsContext.slice(0, 12); 
+    
+    const prompt = `
+    You are a sophisticated Financial Analyst Assistant for a startup founder.
+    
+    **Financial Data Context (Last 12 Months):**
+    ${JSON.stringify(context)}
+    
+    **User Query:** "${query}"
+    
+    **Instructions:**
+    1. Analyze the provided metrics data to answer the user's question.
+    2. Perform calculations if necessary (e.g., average burn, runway, growth rate).
+    3. If the answer involves a trend, describe it (e.g., "increasing month-over-month").
+    4. Keep the answer concise, professional, and data-driven. Do not hallucinate numbers not present or derivable from the data.
+    
+    **Response:**
+    `;
+
+    try {
+        const response = await edgeClient.models.generateContent({
+            model: 'gemini-3-pro-preview',
+            contents: prompt,
+            config: {
+                thinkingConfig: { thinkingBudget: 2048 }
+            }
+        });
+
+        if (response.text) {
+            return response.text;
+        }
+        
+        throw new Error("AI did not return a response.");
+    } catch (error) {
+        handleAIError(error);
+        return "I'm sorry, I couldn't analyze your data at this moment.";
+    }
+};

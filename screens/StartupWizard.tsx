@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useStartup } from '../hooks/useStartup';
 
 // --- ICONS ---
 const SunIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-orange" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zM4.225 4.225a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM15.775 4.225a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zM17 10a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM8 10a2 2 0 114 0 2 2 0 01-4 0zM4.225 15.775a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0zM10 17a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM14.364 14.364a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>;
@@ -87,6 +89,13 @@ const UploadZone: React.FC<{ title: string, description: string }> = ({ title, d
 
 const StartupWizard: React.FC = () => {
     const [currentStep, setCurrentStep] = useState(1);
+    const navigate = useNavigate();
+    const { profile, updateProfile } = useStartup();
+
+    const handleSaveAndExit = () => {
+        // Data is already saved in context/localStorage via updateProfile
+        navigate('/dashboard');
+    };
     
     return (
         <div className="bg-gray-50 min-h-screen">
@@ -97,32 +106,90 @@ const StartupWizard: React.FC = () => {
                     <div className="lg:col-span-2 space-y-8">
                         <FormCard>
                              <h1 className="text-2xl font-bold text-brand-blue">Company Basics</h1>
-                             <p className="text-gray-500 mt-1">Let’s start with the essential information about your company.</p>
+                             <p className="text-gray-500 mt-1">Let’s start with the essential information about your company. This will be used to generate your pitch decks and documents.</p>
                         </FormCard>
 
                         <FormCard>
                            <div className="space-y-6">
                                 <div>
                                     <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">Company Name</label>
-                                    <input type="text" id="companyName" placeholder="e.g., Sun AI Startup" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" />
+                                    <input 
+                                        type="text" 
+                                        id="companyName" 
+                                        value={profile.name}
+                                        onChange={(e) => updateProfile({ name: e.target.value })}
+                                        placeholder="e.g., Sun AI Startup" 
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" 
+                                    />
                                 </div>
                                 <div>
                                     <label htmlFor="website" className="block text-sm font-medium text-gray-700">Website URL</label>
-                                    <input type="url" id="website" placeholder="https://www.sunaistartup.com" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" />
+                                    <input 
+                                        type="url" 
+                                        id="website" 
+                                        value={profile.website}
+                                        onChange={(e) => updateProfile({ website: e.target.value })}
+                                        placeholder="https://www.sunaistartup.com" 
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" 
+                                    />
                                 </div>
                                  <div>
                                     <label htmlFor="tagline" className="block text-sm font-medium text-gray-700">Company Tagline</label>
-                                    <textarea id="tagline" rows={2} placeholder="e.g., Your AI-Powered Startup Hub for Growth." className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange"></textarea>
+                                    <textarea 
+                                        id="tagline" 
+                                        rows={2} 
+                                        value={profile.tagline}
+                                        onChange={(e) => updateProfile({ tagline: e.target.value })}
+                                        placeholder="e.g., Your AI-Powered Startup Hub for Growth." 
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange"
+                                    ></textarea>
                                     <p className="mt-1 text-xs text-gray-500">A short, memorable phrase. (Max 120 characters)</p>
+                                </div>
+                                <div>
+                                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">Company Description</label>
+                                    <textarea 
+                                        id="description" 
+                                        rows={4} 
+                                        value={profile.description}
+                                        onChange={(e) => updateProfile({ description: e.target.value })}
+                                        placeholder="Describe what your company does, your target audience, and your value proposition." 
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange"
+                                    ></textarea>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    <div>
+                                        <label htmlFor="industry" className="block text-sm font-medium text-gray-700">Industry</label>
+                                        <input 
+                                            type="text" 
+                                            id="industry" 
+                                            value={profile.industry}
+                                            onChange={(e) => updateProfile({ industry: e.target.value })}
+                                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="founded" className="block text-sm font-medium text-gray-700">Founded Year</label>
+                                        <input 
+                                            type="number" 
+                                            id="founded" 
+                                            value={profile.foundedYear}
+                                            onChange={(e) => updateProfile({ foundedYear: e.target.value })}
+                                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" 
+                                        />
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <UploadZone title="Upload Logo" description="PNG, JPG, SVG up to 5MB. (400x400px recommended)" />
                                     <UploadZone title="Upload Cover Image" description="PNG, JPG up to 10MB. (1600x900px recommended)" />
                                 </div>
-                                <div>
-                                    <label htmlFor="founded" className="block text-sm font-medium text-gray-700">Founded Year</label>
-                                    <input type="number" id="founded" placeholder="2024" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" />
-                                </div>
+                           </div>
+                           <div className="mt-8 flex justify-end">
+                               <button 
+                                   onClick={handleSaveAndExit}
+                                   className="bg-brand-blue text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-colors"
+                               >
+                                   Save & Finish
+                               </button>
                            </div>
                         </FormCard>
                     </div>
@@ -149,7 +216,7 @@ const StartupWizard: React.FC = () => {
                         <FormCard>
                             <h3 className="font-bold text-lg text-brand-blue mb-4">Quick Actions</h3>
                             <div className="space-y-3">
-                                <button className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"><WandIcon /> Generate Pitch Deck</button>
+                                <button onClick={() => navigate('/pitch-decks/new')} className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"><WandIcon /> Generate Pitch Deck</button>
                                 <button className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"><LinkedinIcon /> Import from LinkedIn</button>
                                 <button className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"><EyeIcon /> Preview Public Profile</button>
                             </div>

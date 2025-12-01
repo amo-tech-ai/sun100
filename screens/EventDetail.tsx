@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../hooks/useAuth';
 import { Event, getEventById } from '../services/eventService';
+import { useToast } from '../contexts/ToastContext';
 
 const CheckCircleIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -13,6 +15,7 @@ const CheckCircleIcon = () => (
 const EventDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const { user } = useAuth();
+    const { success, error: toastError, info } = useToast();
     const [event, setEvent] = useState<Event | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -23,7 +26,7 @@ const EventDetail: React.FC = () => {
         if (!user || !id || !supabase) return;
         try {
             const { data, error } = await supabase
-                .from('event_registregistrations')
+                .from('event_registrations')
                 .select('id')
                 .eq('user_id', user.id)
                 .eq('event_id', id)
@@ -73,11 +76,11 @@ const EventDetail: React.FC = () => {
 
     const handleRsvp = async () => {
         if (!user) {
-            alert("You must be logged in to RSVP.");
+            info("You must be logged in to RSVP.");
             return;
         }
         if (!event || !supabase) {
-            alert("Could not RSVP. Supabase client not available.")
+            toastError("Could not RSVP. Supabase client not available.")
             return;
         };
         
@@ -90,8 +93,9 @@ const EventDetail: React.FC = () => {
             if (error) throw error;
 
             setIsRsvpd(true);
+            success("You're registered!");
         } catch (err) {
-             alert(`Error RSVPing: ${err instanceof Error ? err.message : 'An unknown error occurred.'}`);
+             toastError(`Error RSVPing: ${err instanceof Error ? err.message : 'An unknown error occurred.'}`);
         } finally {
             setIsSubmitting(false);
         }
