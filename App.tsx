@@ -65,6 +65,9 @@ const MarketSizeAnalysis = lazy(() => import('./screens/MarketSizeAnalysis'));
 // --- NEW FINANCIAL OVERVIEW SCREEN ---
 const FinancialOverview = lazy(() => import('./screens/FinancialOverview'));
 
+// --- NEW CUSTOMER CRM SCREEN ---
+const CustomerCRM = lazy(() => import('./screens/CustomerCRM'));
+
 // --- Renamed SunAIStartupDeck Screens ---
 const SunAIStartupDeckLayout = lazy(() => import('./screens/SponsorDeckLayout'));
 const SunAIStartupDeckOverview = lazy(() => import('./screens/SponsorDeckOverview'));
@@ -153,6 +156,7 @@ const App: React.FC = () => {
                   <Route path="/dashboard/gtm-strategy" element={<GTMStrategy />} />
                   <Route path="/dashboard/market-size" element={<MarketSizeAnalysis />} />
                   <Route path="/dashboard/financial-overview" element={<FinancialOverview />} />
+                  <Route path="/dashboard/crm" element={<CustomerCRM />} />
                   <Route path="/dashboard/data-room" element={<DataRoom />} />
                   <Route path="/dashboard/sitemap" element={<Sitemap />} />
                   <Route path="/dashboard/directory-admin" element={<DirectoryAdmin />} />

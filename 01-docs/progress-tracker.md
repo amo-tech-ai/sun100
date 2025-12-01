@@ -1,7 +1,7 @@
 
 # 📊 Sun AI: Master Progress Tracker
 
-**Document Status:** Published - 2024-09-04 (Live)
+**Document Status:** Published - 2024-09-07 (Live)
 **Goal:** This document serves as the high-level master tracker for the Sun AI platform. It provides a detailed, granular overview of all features, their implementation status, and technical stack, ordered by phase of implementation.
 
 ---
@@ -51,12 +51,9 @@
 | | **VC Directory & Matching** | 100% | ✅ | **FE:** `VCDirectory.tsx`, `VCDetail.tsx`, `MatchmakingModal.tsx`.<br/>**AI:** `matchInvestor` uses Gemini Reasoning to score startup fit against investor thesis. |
 | | **Funding Manager** | 100% | ✅ | **FE:** `FundingManager.tsx`. Tracking board for applications. <br/>**AI:** "Match Score" logic implemented in UI. |
 | | **Investor Chat** | 100% | ✅ | **FE:** `InvestorChat.tsx` widget. Chat interface for querying metrics.<br/>**AI:** `askInvestorData` service using Gemini 3. |
-| **9. QA, Performance & Validation** | **Layout Unification** | 100% | ✅ | **FE:** `PublicLayout.tsx` now controls all page layout. All child pages refactored to remove redundant styles, fixing inconsistent spacing.<br/>**BE:** N/A.<br/>**AI:** N/A. |
+| **9. CRM** | **Customer CRM** | 100% | ✅ | **FE:** `CustomerCRM.tsx`, `CustomerDetailPanel.tsx`, `CustomerFormModal.tsx`.<br/>**BE:** CRUD methods in `crmService.ts`. Tables in `crm_accounts`, `crm_interactions` etc.<br/>**AI:** `analyzeAccountHealth`, `generateCRMInsights`. |
+| **10. QA, Performance & Validation** | **Layout Unification** | 100% | ✅ | **FE:** `PublicLayout.tsx` now controls all page layout. All child pages refactored to remove redundant styles, fixing inconsistent spacing.<br/>**BE:** N/A.<br/>**AI:** N/A. |
 | | **Full-Cycle E2E Validation** | 100% | ✅ | **FE:** Verified user journey: `Wizard` -> `Generating` -> `Editor` -> `Present`.<br/>**BE:** N/A (client-side).<br/>**AI:** N/A. |
 | | **Performance Audit & Optimization** | 100% | ✅ | **FE:** Implemented and validated combined AI suggestions, image pre-loading, and component memoization.<br/>**BE:** N/A.<br/>**AI:** N/A. |
 | | **Responsiveness** | 100% | ✅ | **FE:** Verified mobile-first layout for all new Investor Suite screens (`InvestorDashboard`, `GTMStrategy`, etc.).<br/>**BE:** N/A.<br/>**AI:** N/A. |
-| **10. Full-Stack Migration** | **User Auth & DB Persistence** | 0% | 🔴 | **FE:** `supabaseClient.ts` uses a mock. `AuthProvider` provides a mock user.<br/>**BE:** No real backend exists. App uses mock services and `sessionStorage` for data.<br/>**AI:** All AI calls are currently client-side or mocked via `edgeFunctionService.ts`. |
-| **11. Polish & Optimization** | **PDF Export (GTM Strategy)** | 100% | ✅ | **FE:** Added Print/PDF support to `GTMStrategy.tsx`. |
-| | **Metrics Visuals** | 100% | ✅ | **FE:** Added conditional formatting to `MetricsTable.tsx` for better data scanning. |
-| | **Doc Builder Auto-Save** | 100% | ✅ | **FE:** Implemented `localStorage` persistence in `DocBuilder.tsx`. |
-| | **Streaming AI Responses** | 100% | ✅ | **FE:** Simulated via `useTypewriter` hook in `DocPreview.tsx` and `GTMStrategy.tsx`. |
+| **11. Full-Stack Migration** | **User Auth & DB Persistence** | 0% | 🔴 | **FE:** `supabaseClient.ts` uses a mock. `AuthProvider` provides a mock user.<br/>**BE:** No real backend exists. App uses mock services and `sessionStorage` for data.<br/>**AI:** All AI calls are currently client-side or mocked via `edgeFunctionService.ts`. |

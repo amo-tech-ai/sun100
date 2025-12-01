@@ -6,6 +6,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2024-09-07
+
+### Added
+- **Customer CRM Module:** A complete, feature-rich CRM system (`/dashboard/crm`) for managing startup relationships.
+  - **Dashboard:** KPI cards, Deal Pipeline visualization, and Data Tables.
+  - **Detail View:** A slide-over panel (`CustomerDetailPanel`) for deep dives into account history, timeline, and tasks.
+  - **Interaction Tracking:** Log emails, calls, and notes.
+  - **Task Management:** integrated task list for follow-ups.
+- **AI CRM Agents:**
+  - **Account Health Analyzer:** AI evaluates interaction history to score account health (0-100) and suggest actions.
+  - **Strategic Insights:** Dashboard-level AI suggestions for churn risks and opportunities.
+- **Database Schema:** Added comprehensive SQL definitions for `crm_accounts`, `crm_contacts`, `crm_deals`, `crm_interactions`, and `crm_tasks`.
+
+### Improved
+- **Service Layer:** Enhanced `crmService.ts` with full CRUD capabilities and robust mock data fallbacks.
+- **Navigation:** Updated Sidebar and Sitemap to include the new CRM capabilities.
+
 ## [2.3.0] - 2024-09-04
 
 ### Added
@@ -165,7 +182,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AI Service Integration:** Created `services/geminiService.ts` to connect to the Gemini API for intelligent deck generation.
 - **AI-Powered Generation:** Implemented `generateDeckContent` function with a structured prompt and a JSON response schema to reliably create pitch deck content.
 - **AI Copilot UI:** Added a placeholder UI component `AICopilot.tsx` for future conversational edits.
-- **Analysis Panel UI:** Added a placeholder UI component `AnalysisPanel.tsx` to display AI-driven slide feedback.
+- **Analysis Panel UI:** Added a placeholder UI component `AnalysisPanel.tsx` to display strategic feedback.
 - **Research Panel UI:** Added a placeholder UI component `ResearchResultPanel.tsx` for an AI research assistant.
 
 ### Changed
