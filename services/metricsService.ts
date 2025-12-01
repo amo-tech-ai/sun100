@@ -13,22 +13,25 @@ export interface MetricEntry {
 }
 
 export const getMetrics = async (): Promise<MetricEntry[]> => {
+    // Mock Mode Check
+    if (!(supabase as any).realtime) return [];
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("User not authenticated");
 
-    // Fetch the startup associated with the user
-    const { data: startup } = await supabase
-        .from('startups')
-        .select('id')
+    // Fetch the startup associated with the user via team_members
+    const { data: membership } = await supabase
+        .from('team_members')
+        .select('startup_id')
         .eq('user_id', user.id)
         .single();
 
-    if (!startup) return [];
+    if (!membership) return [];
 
     const { data, error } = await supabase
-        .from('startup_metrics')
+        .from('financial_metrics')
         .select('*')
-        .eq('startup_id', startup.id)
+        .eq('startup_id', membership.startup_id)
         .order('month', { ascending: false });
 
     if (error) throw error;
@@ -39,24 +42,30 @@ export const saveMetric = async (entry: Omit<MetricEntry, 'id'> & { id?: string 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("User not authenticated");
 
-    const { data: startup } = await supabase
-        .from('startups')
-        .select('id')
+    // Fetch startup via team_members
+    const { data: membership } = await supabase
+        .from('team_members')
+        .select('startup_id')
         .eq('user_id', user.id)
         .single();
 
-    if (!startup) throw new Error("No startup profile found for this user");
+    if (!membership) throw new Error("No startup profile found for this user");
 
-    // Prepare payload ensuring startup_id is set
+    // Prepare payload matching schema
     const payload = {
-        ...entry,
-        startup_id: startup.id,
-        // If id is 'temp-new', remove it so Postgres generates a UUID
-        id: entry.id === 'temp-new' ? undefined : entry.id
+        startup_id: membership.startup_id,
+        month: entry.month,
+        revenue: entry.revenue,
+        burn_rate: entry.burn_rate,
+        cash_balance: entry.cash_balance,
+        active_users: entry.active_users,
+        churn_rate: entry.churn_rate,
+        // If id is 'temp-new' or undefined, we let Postgres generate it
+        id: (entry.id && entry.id !== 'temp-new') ? entry.id : undefined
     };
 
     const { data, error } = await supabase
-        .from('startup_metrics')
+        .from('financial_metrics')
         .upsert(payload)
         .select()
         .single();
@@ -66,21 +75,24 @@ export const saveMetric = async (entry: Omit<MetricEntry, 'id'> & { id?: string 
 };
 
 export const getLatestMetrics = async (count: number = 2): Promise<MetricEntry[]> => {
+    // Mock Mode Check
+    if (!(supabase as any).realtime) return [];
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
-    const { data: startup } = await supabase
-        .from('startups')
-        .select('id')
+    const { data: membership } = await supabase
+        .from('team_members')
+        .select('startup_id')
         .eq('user_id', user.id)
         .single();
 
-    if (!startup) return [];
+    if (!membership) return [];
 
     const { data, error } = await supabase
-        .from('startup_metrics')
+        .from('financial_metrics')
         .select('*')
-        .eq('startup_id', startup.id)
+        .eq('startup_id', membership.startup_id)
         .order('month', { ascending: false })
         .limit(count);
 

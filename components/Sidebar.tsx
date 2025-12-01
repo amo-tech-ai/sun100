@@ -20,6 +20,7 @@ const MapIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height=
 const LockIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
 const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
+const BarChartIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>;
 
 
 const PanelLeftCloseIcon = () => (
@@ -60,6 +61,40 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                     <HomeIcon />
                     {!isCollapsed && <span className="ml-3 font-semibold">Dashboard</span>}
                 </NavLink>
+                
+                {/* Intelligence Section */}
+                {!isCollapsed && <p className="px-3 mt-4 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Intelligence</p>}
+                <NavLink
+                    to="/dashboard/financial-overview"
+                    className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
+                >
+                    <BarChartIcon />
+                    {!isCollapsed && <span className="ml-3 font-semibold">Financials</span>}
+                </NavLink>
+                <NavLink
+                    to="/dashboard/market-size"
+                    className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
+                >
+                    <GlobeIcon />
+                    {!isCollapsed && <span className="ml-3 font-semibold">Market Size</span>}
+                </NavLink>
+                <NavLink
+                    to="/dashboard/gtm-strategy"
+                    className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
+                >
+                    <MapIcon />
+                    {!isCollapsed && <span className="ml-3 font-semibold">GTM Strategy</span>}
+                </NavLink>
+                 <NavLink
+                    to="/dashboard/investor-docs"
+                    className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
+                >
+                    <BriefcaseIcon />
+                    {!isCollapsed && <span className="ml-3 font-semibold">Investor Docs</span>}
+                </NavLink>
+                
+                 {/* Fundraising Section */}
+                 {!isCollapsed && <p className="px-3 mt-4 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Fundraising</p>}
                  <NavLink
                     to="/pitch-decks"
                     className={({ isActive, isPending }) =>
@@ -75,13 +110,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                 >
                     <PlusIcon />
                     {!isCollapsed && <span className="ml-3 font-semibold">New Deck</span>}
-                </NavLink>
-                <NavLink
-                    to="/dashboard/investor-docs"
-                    className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
-                >
-                    <BriefcaseIcon />
-                    {!isCollapsed && <span className="ml-3 font-semibold">Investor Docs</span>}
                 </NavLink>
                  <NavLink
                     to="/directory"
@@ -104,13 +132,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                     <LockIcon />
                     {!isCollapsed && <span className="ml-3 font-semibold">Data Room</span>}
                 </NavLink>
-                <NavLink
-                    to="/dashboard/gtm-strategy"
-                    className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
-                >
-                    <MapIcon />
-                    {!isCollapsed && <span className="ml-3 font-semibold">GTM Strategy</span>}
-                </NavLink>
+
+                {/* Tools Section */}
+                 {!isCollapsed && <p className="px-3 mt-4 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Tools</p>}
                  <NavLink
                     to="/dashboard/my-events"
                     className={({ isActive }) => `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`}
