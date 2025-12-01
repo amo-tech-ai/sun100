@@ -2,61 +2,140 @@
 import { supabase } from '../lib/supabaseClient';
 import { DataRoomFile, DataRoomAudit } from './ai/types';
 
-const STORAGE_KEY_FILES = 'sun_ai_dataroom_files';
-const STORAGE_KEY_AUDIT = 'sun_ai_dataroom_audit';
-
-const DEFAULT_FILES: DataRoomFile[] = [
-    { id: '1', name: 'Pitch_Deck_v3.pdf', category: 'Uncategorized', size: '2.4 MB', uploadDate: '2024-08-20' },
-    { id: '2', name: 'Cap_Table_Draft.xlsx', category: 'Financials', size: '45 KB', uploadDate: '2024-08-22' },
-    { id: '3', name: 'Incorporation_Docs.pdf', category: 'Legal', size: '1.2 MB', uploadDate: '2024-08-15' }
-];
-
-const getLocalFiles = (): DataRoomFile[] => {
-    const stored = localStorage.getItem(STORAGE_KEY_FILES);
-    if (stored) return JSON.parse(stored);
-    localStorage.setItem(STORAGE_KEY_FILES, JSON.stringify(DEFAULT_FILES));
-    return DEFAULT_FILES;
-};
-
-const getLocalAudit = (): DataRoomAudit | null => {
-    const stored = localStorage.getItem(STORAGE_KEY_AUDIT);
-    return stored ? JSON.parse(stored) : null;
-};
-
 export const getDataRoomFiles = async (): Promise<DataRoomFile[]> => {
-    if ((supabase as any).realtime) {
-        // Real backend logic would go here
-        return [];
-    }
-    return new Promise(resolve => setTimeout(() => resolve(getLocalFiles()), 300));
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: startup } = await supabase
+        .from('startups')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+        
+    if (!startup) return [];
+
+    const { data, error } = await supabase
+        .from('data_room_files')
+        .select('*')
+        .eq('startup_id', startup.id)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map((f: any) => ({
+        id: f.id,
+        name: f.name,
+        category: f.category,
+        size: f.size,
+        uploadDate: new Date(f.created_at).toLocaleDateString()
+    }));
 };
 
-export const uploadDataRoomFile = async (file: Omit<DataRoomFile, 'id' | 'uploadDate'>): Promise<DataRoomFile> => {
-    const newFile: DataRoomFile = {
-        ...file,
-        id: `file-${Date.now()}`,
-        uploadDate: new Date().toISOString().split('T')[0]
-    };
+export const uploadDataRoomFile = async (fileMeta: Omit<DataRoomFile, 'id' | 'uploadDate'>, fileBlob?: File): Promise<DataRoomFile> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
 
-    const files = getLocalFiles();
-    const updated = [...files, newFile];
-    localStorage.setItem(STORAGE_KEY_FILES, JSON.stringify(updated));
-    
-    return new Promise(resolve => setTimeout(() => resolve(newFile), 500));
+    const { data: startup } = await supabase.from('startups').select('id').eq('user_id', user.id).single();
+    if (!startup) throw new Error("Startup not found");
+
+    let storagePath = '';
+
+    // 1. Upload to Storage if blob exists
+    if (fileBlob) {
+        const fileName = `${startup.id}/${Date.now()}-${fileMeta.name}`;
+        const { data: storageData, error: storageError } = await supabase.storage
+            .from('data-room')
+            .upload(fileName, fileBlob);
+
+        if (storageError) throw storageError;
+        storagePath = storageData.path;
+    }
+
+    // 2. Insert Metadata
+    const { data, error } = await supabase
+        .from('data_room_files')
+        .insert({
+            startup_id: startup.id,
+            name: fileMeta.name,
+            category: fileMeta.category,
+            size: fileMeta.size,
+            storage_path: storagePath
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return {
+        id: data.id,
+        name: data.name,
+        category: data.category,
+        size: data.size,
+        uploadDate: new Date(data.created_at).toLocaleDateString()
+    };
 };
 
 export const deleteDataRoomFile = async (id: string): Promise<void> => {
-    const files = getLocalFiles();
-    const updated = files.filter(f => f.id !== id);
-    localStorage.setItem(STORAGE_KEY_FILES, JSON.stringify(updated));
-    return new Promise(resolve => setTimeout(() => resolve(), 300));
+    // First get the file path to delete from storage
+    const { data: fileRecord } = await supabase.from('data_room_files').select('storage_path').eq('id', id).single();
+    
+    if (fileRecord?.storage_path) {
+        await supabase.storage.from('data-room').remove([fileRecord.storage_path]);
+    }
+
+    const { error } = await supabase.from('data_room_files').delete().eq('id', id);
+    if (error) throw error;
 };
 
 export const saveDataRoomAudit = async (audit: DataRoomAudit): Promise<void> => {
-    localStorage.setItem(STORAGE_KEY_AUDIT, JSON.stringify(audit));
-    return new Promise(resolve => setTimeout(() => resolve(), 300));
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: startup } = await supabase.from('startups').select('id').eq('user_id', user.id).single();
+    if (!startup) return;
+
+    // We upsert based on startup_id if we only want one active audit per startup
+    const { error } = await supabase
+        .from('data_room_audits')
+        .upsert({
+            startup_id: startup.id,
+            score: audit.score,
+            status: audit.status,
+            found_categories: audit.found_categories,
+            missing_items: audit.missing_items,
+            warnings: audit.warnings,
+            recommendations: audit.recommendations,
+            updated_at: new Date().toISOString()
+        });
+
+    if (error) throw error;
 };
 
 export const getDataRoomAudit = async (): Promise<DataRoomAudit | null> => {
-    return new Promise(resolve => setTimeout(() => resolve(getLocalAudit()), 300));
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: startup } = await supabase.from('startups').select('id').eq('user_id', user.id).single();
+    if (!startup) return null;
+
+    const { data, error } = await supabase
+        .from('data_room_audits')
+        .select('*')
+        .eq('startup_id', startup.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (error) console.error(error);
+    
+    if (!data) return null;
+
+    return {
+        score: data.score,
+        status: data.status,
+        found_categories: data.found_categories || [],
+        missing_items: data.missing_items || [],
+        warnings: data.warnings || [],
+        recommendations: data.recommendations || []
+    };
 };

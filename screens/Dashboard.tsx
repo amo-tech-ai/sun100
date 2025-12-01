@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import useOnScreen from '../hooks/useOnScreen';
 import { useStartup } from '../hooks/useStartup';
+import { getDecks } from '../services/deckService';
+import { getEvents } from '../services/eventService';
 
 // Components
 import { StatCard } from '../components/dashboard/StatCard';
@@ -31,6 +33,29 @@ const Dashboard: React.FC = () => {
     const [ref, isVisible] = useOnScreen<HTMLElement>({ threshold: 0.1 });
     const animationClass = isVisible ? 'animate-fade-in-up' : 'opacity-0';
     const { profile } = useStartup();
+    
+    // Live Data State
+    const [deckCount, setDeckCount] = useState(0);
+    const [eventCount, setEventCount] = useState(0);
+    const [isLoadingData, setIsLoadingData] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [decks, events] = await Promise.all([
+                    getDecks(),
+                    getEvents()
+                ]);
+                setDeckCount(decks.length);
+                setEventCount(events.length);
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+            } finally {
+                setIsLoadingData(false);
+            }
+        };
+        fetchData();
+    }, []);
     
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -96,10 +121,30 @@ const Dashboard: React.FC = () => {
                     <div className="lg:col-span-2 space-y-8">
                         {/* Metrics */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            <StatCard icon={<PresentationIcon />} label="Decks" value={12} trend="+2" trendUp={true} />
-                            <StatCard icon={<BriefcaseIcon />} label="Investors" value={8} trend="+1" trendUp={true} />
-                            <StatCard icon={<CheckCircleIcon />} label="Tasks" value={28} />
-                            <StatCard icon={<UsersIcon />} label="Events" value={3} />
+                            <StatCard 
+                                icon={<PresentationIcon />} 
+                                label="Decks" 
+                                value={isLoadingData ? 0 : deckCount} 
+                                trend={deckCount > 0 ? "+1" : undefined} 
+                                trendUp={true} 
+                            />
+                            <StatCard 
+                                icon={<UsersIcon />} 
+                                label="Events" 
+                                value={isLoadingData ? 0 : eventCount} 
+                            />
+                             <StatCard 
+                                icon={<BriefcaseIcon />} 
+                                label="Investors" 
+                                value={8} 
+                                trend="+2" 
+                                trendUp={true} 
+                            />
+                            <StatCard 
+                                icon={<CheckCircleIcon />} 
+                                label="Tasks" 
+                                value={12} 
+                            />
                         </div>
                         
                         {/* Analytics & Feed */}

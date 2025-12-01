@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,4 +25,43 @@
 }
 .group:hover .icon-wrapper .icon-bg {
     opacity: 1;
+}
+
+/* --- Print Styles --- */
+@media print {
+    /* Hide UI Chrome */
+    header, nav, aside, footer, .no-print, .print\:hidden {
+        display: none !important;
+    }
+
+    /* Reset layout */
+    body, #root, main {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+    }
+
+    /* Ensure backgrounds print */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Page Breaks */
+    .page-break-after-always {
+        page-break-after: always;
+        break-after: page;
+    }
+
+    /* Hide scrollbars */
+    ::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Force landscape styling if possible, though usually user-selected */
+    @page {
+        size: landscape;
+        margin: 0;
+    }
 }

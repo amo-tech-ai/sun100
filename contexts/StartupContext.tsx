@@ -1,5 +1,7 @@
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import { getStartupProfile, updateStartupProfile } from '../services/startupService';
+import { useAuth } from '../hooks/useAuth';
 
 export interface StartupProfile {
     name: string;
@@ -43,29 +45,55 @@ const STORAGE_KEY = 'sun_ai_startup_profile';
 export const StartupProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [profile, setProfile] = useState<StartupProfile>(DEFAULT_PROFILE);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
-    // Load from localStorage on mount
+    // Load from DB if authenticated, else localStorage
     useEffect(() => {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
+        const loadProfile = async () => {
+            if (user) {
+                try {
+                    const dbProfile = await getStartupProfile();
+                    if (dbProfile) {
+                        setProfile(dbProfile);
+                    } else {
+                         // If no DB profile, check local storage as fallback or keep default
+                         const stored = localStorage.getItem(STORAGE_KEY);
+                         if (stored) setProfile({ ...DEFAULT_PROFILE, ...JSON.parse(stored) });
+                    }
+                } catch (err) {
+                    console.error("Failed to load startup profile from DB", err);
+                }
+            } else {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    try {
+                        setProfile({ ...DEFAULT_PROFILE, ...JSON.parse(stored) });
+                    } catch (e) {
+                        console.error("Failed to parse startup profile from storage", e);
+                    }
+                }
+            }
+            setLoading(false);
+        };
+
+        loadProfile();
+    }, [user]);
+
+    // Persist updates
+    const updateProfile = async (updates: Partial<StartupProfile>) => {
+        setProfile(prev => ({ ...prev, ...updates }));
+        
+        // Save to LocalStorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...profile, ...updates }));
+
+        // Save to DB if authenticated
+        if (user) {
             try {
-                setProfile({ ...DEFAULT_PROFILE, ...JSON.parse(stored) });
-            } catch (e) {
-                console.error("Failed to parse startup profile from storage", e);
+                await updateStartupProfile(updates);
+            } catch (err) {
+                console.error("Failed to sync profile update to DB", err);
             }
         }
-        setLoading(false);
-    }, []);
-
-    // Persist to localStorage on change
-    useEffect(() => {
-        if (!loading) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-        }
-    }, [profile, loading]);
-
-    const updateProfile = (updates: Partial<StartupProfile>) => {
-        setProfile(prev => ({ ...prev, ...updates }));
     };
 
     const resetProfile = () => {
