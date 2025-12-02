@@ -10,7 +10,8 @@ import {
     Insight, 
     Task,
     getDealsForCustomer,
-    bulkDeleteCustomers
+    bulkDeleteCustomers,
+    toggleTask
 } from '../services/crmService';
 import { generateCRMInsights } from '../services/ai/crm';
 import { CustomerFormModal } from '../components/crm/CustomerFormModal';
@@ -18,6 +19,7 @@ import { CustomerDetailPanel } from '../components/crm/CustomerDetailPanel';
 import { EmailComposeModal } from '../components/crm/EmailComposeModal';
 import { CSVImportModal } from '../components/crm/CSVImportModal';
 import { DealBoard } from '../components/crm/DealBoard';
+import { TaskFormModal } from '../components/crm/TaskFormModal';
 import { EmptyState } from '../components/common/EmptyState';
 import { OnboardingTour, TourStep } from '../components/common/OnboardingTour';
 import { useToast } from '../contexts/ToastContext';
@@ -112,7 +114,8 @@ const CustomerCRM: React.FC = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-    
+    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
     // Email State
     const [emailTarget, setEmailTarget] = useState<Customer | null>(null);
 
@@ -220,6 +223,18 @@ const CustomerCRM: React.FC = () => {
             toastError("Failed to refresh insights.");
         } finally {
             setIsRefreshingInsights(false);
+        }
+    };
+
+    const handleTaskToggle = async (taskId: string, completed: boolean) => {
+        try {
+            await toggleTask(taskId, completed);
+            // Optimistic update for smoother UI
+            setTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed } : t));
+        } catch (e) {
+            console.error("Failed to toggle task", e);
+            toastError("Failed to update task.");
+            load(); // Revert on error
         }
     };
 
@@ -688,18 +703,28 @@ const CustomerCRM: React.FC = () => {
                             <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="text-sm font-bold text-gray-800">Tasks & Follow-ups</h3>
-                                    <button className="text-xs font-bold text-brand-orange hover:underline">+ Add</button>
+                                    <button 
+                                        onClick={() => setIsTaskModalOpen(true)}
+                                        className="text-xs font-bold text-brand-orange hover:underline"
+                                    >
+                                        + Add
+                                    </button>
                                 </div>
                                 <div className="space-y-2">
                                     {tasks.length > 0 ? tasks.map(task => (
                                         <div key={task.id} className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
-                                            <div className={`mt-0.5 w-4 h-4 border-2 rounded ${task.completed ? 'bg-green-500 border-green-500' : 'border-gray-300'} flex items-center justify-center`}>
+                                            <button 
+                                                onClick={() => handleTaskToggle(task.id, !task.completed)}
+                                                className={`mt-0.5 w-4 h-4 border-2 rounded flex items-center justify-center transition-colors ${task.completed ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-gray-400'}`}
+                                            >
                                                 {task.completed && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>}
-                                            </div>
+                                            </button>
                                             <div className="flex-1">
                                                 <p className={`text-sm font-medium ${task.completed ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{task.title}</p>
                                                 <div className="flex justify-between items-center mt-1">
-                                                    <span className="text-[10px] text-gray-500">{task.due}</span>
+                                                    <div className="flex items-center gap-1 text-[10px] text-gray-500">
+                                                        <span className="opacity-75">📅</span> {task.due}
+                                                    </div>
                                                     <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{task.assignee}</span>
                                                 </div>
                                             </div>
@@ -730,6 +755,12 @@ const CustomerCRM: React.FC = () => {
             <CSVImportModal
                 isOpen={isImportModalOpen}
                 onClose={() => setIsImportModalOpen(false)}
+                onComplete={load}
+            />
+            
+            <TaskFormModal
+                isOpen={isTaskModalOpen}
+                onClose={() => setIsTaskModalOpen(false)}
                 onComplete={load}
             />
             
