@@ -1,16 +1,10 @@
-
 import { GoogleGenAI } from "@google/genai";
 
 // Centralized client initialization.
 // This abstraction allows us to easily switch between direct client-side API calls
 // (prototype mode) and backend Edge Function calls (production mode) in the future.
 
-const getApiKey = () => {
-    // Use the environment variable provided by the build system.
-    return process.env.API_KEY || '';
-}
-
-const ai = new GoogleGenAI({ apiKey: getApiKey() });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const edgeClient = {
     models: {
