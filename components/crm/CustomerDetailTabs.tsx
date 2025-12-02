@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Customer, Contact, Deal, Interaction, Task } from '../../services/crmService';
 import { AccountHealth, LeadScoreResult, Battlecard } from '../../services/ai/types';
 import { CDPIcons } from './CRMIcons';
+import { TaskList } from './TaskList';
 
 // --- OVERVIEW TAB ---
 export const OverviewTab: React.FC<{
@@ -403,7 +404,7 @@ export const TimelineTab: React.FC<{
 // --- TASKS TAB ---
 export const TasksTab: React.FC<{
     tasks: Task[];
-    onAddTask: (title: string, date: string, reminder: boolean) => void;
+    onAddTask: (title: string, date: string, reminder: boolean, priority: string) => void;
     onToggle: (id: string, completed: boolean) => void;
     onDelete: (id: string) => void;
     onEdit: (task: Task) => void;
@@ -418,12 +419,13 @@ export const TasksTab: React.FC<{
     }, [initialTitle]);
 
     const handleAdd = () => {
-        onAddTask(title, date, reminder);
+        // Simple inline add defaults to medium priority
+        onAddTask(title, date, reminder, 'medium');
         setTitle('');
         setDate('');
         setReminder(false);
     };
-
+    
     return (
         <div className="space-y-4">
             <div className="space-y-2">
@@ -452,35 +454,22 @@ export const TasksTab: React.FC<{
                         onChange={e => setReminder(e.target.checked)}
                         className="w-4 h-4 text-brand-orange focus:ring-brand-orange border-gray-300 rounded"
                     />
-                    <label htmlFor="set-reminder" className="text-xs text-gray-600 flex items-center gap-1 cursor-pointer">
+                    <label htmlFor="set-reminder" className="text-xs text-gray-600 flex items-center gap-1 cursor-pointer select-none">
                         <CDPIcons.Bell className="w-3 h-3" /> Set Reminder
                     </label>
                 </div>
             </div>
-            <div className="space-y-2">
-                {tasks.length > 0 ? tasks.map(task => (
-                    <div key={task.id} className="flex items-start gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow group">
-                        <button
-                            onClick={() => onToggle(task.id, !task.completed)}
-                            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${task.completed ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 hover:border-gray-400'}`}
-                        >
-                            {task.completed && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                        </button>
-                        <div className="flex-1">
-                            <p className={`text-sm font-medium ${task.completed ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{task.title}</p>
-                            <div className="flex justify-between items-center mt-1">
-                                <div className="flex items-center gap-1 text-[10px] text-gray-500">
-                                    <CDPIcons.Clock className="w-3 h-3" /> {task.due}
-                                </div>
-                                <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{task.assignee}</span>
-                            </div>
-                        </div>
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                             <button onClick={() => onEdit(task)} className="p-1 text-gray-400 hover:text-blue-500"><CDPIcons.Edit className="w-3 h-3"/></button>
-                             <button onClick={() => onDelete(task.id)} className="p-1 text-gray-400 hover:text-red-500"><CDPIcons.Trash className="w-3 h-3"/></button>
-                        </div>
-                    </div>
-                )) : <p className="text-sm text-gray-400 text-center py-4">No open tasks.</p>}
+            
+            <div className="max-h-[400px] overflow-y-auto">
+                <TaskList 
+                    tasks={tasks}
+                    onAddTask={() => {}} // Add button hidden in list view since we have inline form
+                    onToggle={onToggle}
+                    onDelete={onDelete}
+                    onEdit={onEdit}
+                    compact={true}
+                    title="Open Tasks"
+                />
             </div>
         </div>
     );
