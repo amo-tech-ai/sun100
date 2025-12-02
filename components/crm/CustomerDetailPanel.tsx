@@ -7,9 +7,9 @@ import {
     createContact, updateContact, deleteContact 
 } from '../../services/crmService';
 import { 
-    analyzeAccountHealth, analyzeDealScore, scoreLead, generateBattlecard 
+    analyzeAccountHealth, analyzeDealScore, scoreLead, generateBattlecard, suggestTasks 
 } from '../../services/ai/crm';
-import { AccountHealth, LeadScoreResult, Battlecard } from '../../services/ai/types';
+import { AccountHealth, LeadScoreResult, Battlecard, TaskSuggestion } from '../../services/ai/types';
 import { useToast } from '../../contexts/ToastContext';
 import { ContactFormModal } from './ContactFormModal';
 import { EmailComposeModal } from './EmailComposeModal';
@@ -76,6 +76,8 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
     const [isScoring, setIsScoring] = useState(false);
     const [battlecard, setBattlecard] = useState<Battlecard | null>(null);
     const [isGeneratingBattlecard, setIsGeneratingBattlecard] = useState(false);
+    const [taskSuggestions, setTaskSuggestions] = useState<TaskSuggestion[]>([]);
+    const [isSuggestingTasks, setIsSuggestingTasks] = useState(false);
 
     // Modal states
     const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -92,6 +94,7 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
             setHealthAnalysis(null);
             setLeadScore(null);
             setBattlecard(null);
+            setTaskSuggestions([]);
             setIsLoggingInteraction(false);
             setTaskInitialTitle('');
             setActiveTab('overview');
@@ -210,7 +213,7 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
         }
     };
 
-    const handleAddTask = async (title: string, date: string, reminder: boolean) => {
+    const handleAddTask = async (title: string, date: string, reminder: boolean, priority: string) => {
         if (!customer || !title.trim()) return;
         try {
             let due = new Date();
@@ -225,7 +228,7 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
                 due: due.toISOString(),
                 completed: false,
                 assignee: 'Me',
-                priority: 'medium',
+                priority: priority as any,
                 accountId: customer.id,
                 notify: reminder
             });
@@ -233,6 +236,9 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
             refresh();
             success("Task added.");
             setTaskInitialTitle(''); // Reset
+            
+            // If adding from suggestion, remove suggestion
+            setTaskSuggestions(prev => prev.filter(s => s.title !== title));
         } catch (e) {
             console.error(e);
             toastError("Failed to add task.");
@@ -264,6 +270,20 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
         setTaskInitialTitle("Follow up: " + interactionSummary);
         setActiveTab('tasks');
         success("Switching to Tasks with pre-filled content.");
+    };
+
+    const handleSuggestTasks = async () => {
+        if (!customer) return;
+        setIsSuggestingTasks(true);
+        try {
+            const tasks = await suggestTasks(customer.id);
+            setTaskSuggestions(tasks);
+            success("Tasks suggested.");
+        } catch (e) {
+            toastError("Failed to suggest tasks.");
+        } finally {
+            setIsSuggestingTasks(false);
+        }
     };
 
     if (!isOpen || !customer) return null;
@@ -353,7 +373,10 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
                                     onToggle={handleTaskToggle} 
                                     onDelete={handleDeleteTask}
                                     onEdit={(task) => { console.log("Edit task", task); }} 
+                                    onSuggestTasks={handleSuggestTasks}
                                     initialTitle={taskInitialTitle}
+                                    isSuggestingTasks={isSuggestingTasks}
+                                    suggestions={taskSuggestions}
                                 />
                             )}
                         </>

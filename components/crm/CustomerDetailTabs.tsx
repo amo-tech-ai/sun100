@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Customer, Contact, Deal, Interaction, Task } from '../../services/crmService';
-import { AccountHealth, LeadScoreResult, Battlecard } from '../../services/ai/types';
+import { AccountHealth, LeadScoreResult, Battlecard, TaskSuggestion } from '../../services/ai/types';
 import { CDPIcons } from './CRMIcons';
 import { TaskList } from './TaskList';
 
@@ -291,8 +291,8 @@ export const SalesTab: React.FC<{
                                 )}
                             </div>
                             {deal.aiReasoning && (
-                                <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded mt-2 italic">
-                                    <span className="font-bold">AI:</span> {deal.aiReasoning}
+                                <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded border border-gray-100 italic line-clamp-2">
+                                    "{deal.aiReasoning}"
                                 </p>
                             )}
                         </div>
@@ -408,8 +408,11 @@ export const TasksTab: React.FC<{
     onToggle: (id: string, completed: boolean) => void;
     onDelete: (id: string) => void;
     onEdit: (task: Task) => void;
+    onSuggestTasks: () => void;
     initialTitle?: string;
-}> = ({ tasks, onAddTask, onToggle, onDelete, onEdit, initialTitle }) => {
+    isSuggestingTasks?: boolean;
+    suggestions?: TaskSuggestion[];
+}> = ({ tasks, onAddTask, onToggle, onDelete, onEdit, onSuggestTasks, initialTitle, isSuggestingTasks, suggestions }) => {
     const [title, setTitle] = useState('');
     const [date, setDate] = useState('');
     const [reminder, setReminder] = useState(false);
@@ -425,9 +428,54 @@ export const TasksTab: React.FC<{
         setDate('');
         setReminder(false);
     };
+
+    const handleAddSuggestion = (suggestion: TaskSuggestion) => {
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + suggestion.due_in_days);
+        
+        onAddTask(suggestion.title, dueDate.toISOString().slice(0,10), false, suggestion.priority);
+    };
     
     return (
         <div className="space-y-4">
+            {/* Suggestion Area */}
+            <div className="mb-4">
+                 <button
+                    onClick={onSuggestTasks}
+                    disabled={isSuggestingTasks}
+                    className="w-full py-2 border border-purple-200 bg-purple-50 rounded-lg text-purple-700 font-bold text-sm hover:bg-purple-100 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                    {isSuggestingTasks ? (
+                        <>
+                             <div className="w-3 h-3 border-2 border-purple-700 border-t-transparent rounded-full animate-spin"></div>
+                             Thinking...
+                        </>
+                    ) : (
+                        <> <CDPIcons.Sparkles className="w-3 h-3" /> AI Suggest Tasks</>
+                    )}
+                </button>
+                
+                {suggestions && suggestions.length > 0 && (
+                    <div className="mt-3 space-y-2 animate-fade-in">
+                        <p className="text-xs font-bold text-gray-500 uppercase">Suggested Actions</p>
+                        {suggestions.map((s, i) => (
+                            <div key={i} className="bg-white border border-purple-100 p-3 rounded-lg flex justify-between items-center shadow-sm">
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-800">{s.title}</p>
+                                    <p className="text-xs text-gray-500">{s.reason}</p>
+                                </div>
+                                <button 
+                                    onClick={() => handleAddSuggestion(s)}
+                                    className="text-xs bg-purple-600 text-white px-2 py-1 rounded font-bold hover:bg-purple-700 transition-colors"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
             <div className="space-y-2">
                 <input
                     value={title}

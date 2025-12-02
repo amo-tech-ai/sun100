@@ -47,18 +47,20 @@ serve(async (req: Request) => {
     const ai = new GoogleGenAI({ apiKey });
     
     const prompt = `
-      Analyze this B2B lead to determine fit, intent, and risk.
+      Act as a Sales Development Representative (SDR) Manager. Analyze this B2B lead to determine Fit, Intent, and Risk.
       
       Target Profile (ICP): B2B SaaS companies, Series A+, Growing Engineering/Sales teams.
       
-      Context:
+      Lead Context:
       ${JSON.stringify(context, null, 2)}
       
-      Reasoning Steps:
-      1. Evaluate Industry/Size fit.
-      2. Look for Growth Signals (Funding, Hiring).
-      3. Identify Risks (Layoffs, bad news).
-      4. Determine a confidence score (0-100).
+      Thinking Process:
+      1. **Fit Analysis:** Does the industry, size, and job title align with our ICP?
+      2. **Intent Signals:** Are they hiring? Did they just raise funding? Is there recent news indicating growth?
+      3. **Risk Assessment:** Are there layoffs? Is the market score low? Is the title irrelevant?
+      4. **Scoring:** Synthesize these factors into a confidence score (0-100) and a clear status band.
+      
+      Output a detailed scoring breakdown.
     `;
 
     const responseSchema = {
@@ -91,7 +93,7 @@ serve(async (req: Request) => {
       model: 'gemini-3-pro-preview',
       contents: prompt,
       config: {
-        thinkingConfig: { thinkingBudget: 1024 },
+        thinkingConfig: { thinkingBudget: 32768 },
         responseMimeType: "application/json",
         responseSchema: responseSchema
       }
