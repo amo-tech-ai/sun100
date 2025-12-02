@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { DataRoomAudit, DataRoomFile } from '../services/ai/types';
+import { DataRoomAudit, DataRoomFile, InvestorDoc } from '../services/ai/types';
 import { auditDataRoom } from '../services/ai/dataroom';
 import { getDataRoomFiles, uploadDataRoomFile, deleteDataRoomFile, getDataRoomAudit, saveDataRoomAudit } from '../services/dataRoomService';
+import { getInvestorDocs } from '../services/investorDocService';
 import { Link } from 'react-router-dom';
 
 // Icons
@@ -14,12 +15,60 @@ const AlertIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" heigh
 const LockIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
 const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
 
+const ImportDocModal: React.FC<{ isOpen: boolean; onClose: () => void; onImport: (doc: InvestorDoc) => void }> = ({ isOpen, onClose, onImport }) => {
+    const [docs, setDocs] = useState<InvestorDoc[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (isOpen) {
+            getInvestorDocs().then(d => {
+                setDocs(d);
+                setLoading(false);
+            });
+        }
+    }, [isOpen]);
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h2 className="text-lg font-bold text-gray-800">Import from Investor Docs</h2>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+                </div>
+                <div className="p-2 overflow-y-auto flex-1">
+                    {loading ? <div className="text-center p-4">Loading docs...</div> : (
+                        docs.length === 0 ? <div className="text-center p-4 text-gray-500">No documents found.</div> :
+                        <div className="space-y-1">
+                            {docs.map(doc => (
+                                <button 
+                                    key={doc.id} 
+                                    onClick={() => onImport(doc)}
+                                    className="w-full text-left p-3 hover:bg-gray-50 rounded-lg flex items-center gap-3 group"
+                                >
+                                    <div className="p-2 bg-blue-50 text-blue-600 rounded-md group-hover:bg-blue-100"><FileIcon /></div>
+                                    <div>
+                                        <p className="font-bold text-sm text-gray-800">{doc.title}</p>
+                                        <p className="text-xs text-gray-500 capitalize">{doc.type.replace('_', ' ')} • {doc.lastUpdated}</p>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const DataRoom: React.FC = () => {
     const [files, setFiles] = useState<DataRoomFile[]>([]);
     const [auditResult, setAuditResult] = useState<DataRoomAudit | null>(null);
     const [isAuditing, setIsAuditing] = useState(false);
     const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -55,6 +104,27 @@ const DataRoom: React.FC = () => {
             } catch (e) {
                 alert("Upload failed");
             }
+        }
+    };
+
+    const handleImportDoc = async (doc: InvestorDoc) => {
+        try {
+            // Determine category based on doc type
+            let category = 'Other';
+            if (doc.type === 'one_pager') category = 'Pitch Deck';
+            if (doc.type === 'memo') category = 'Legal';
+            if (doc.type === 'gtm_strategy') category = 'Product';
+
+            const newFile = await uploadDataRoomFile({
+                name: `${doc.title}.pdf`, // Simulating a PDF export
+                category: category,
+                size: '250 KB'
+            });
+            setFiles(prev => [...prev, newFile]);
+            setAuditResult(null);
+            setShowImportModal(false);
+        } catch (e) {
+            alert("Import failed");
         }
     };
 
@@ -122,6 +192,12 @@ const DataRoom: React.FC = () => {
                     <p className="text-gray-500 text-sm">Securely organize documents for due diligence.</p>
                 </div>
                 <div className="flex gap-3">
+                    <button 
+                        onClick={() => setShowImportModal(true)}
+                        className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                        <PlusIcon /> Import from Docs
+                    </button>
                     <label className="bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-2">
                         <UploadIcon />
                         Upload File
@@ -229,6 +305,8 @@ const DataRoom: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            <ImportDocModal isOpen={showImportModal} onClose={() => setShowImportModal(false)} onImport={handleImportDoc} />
         </div>
     );
 };

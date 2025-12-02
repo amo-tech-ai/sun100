@@ -4,6 +4,7 @@ import useOnScreen from '../hooks/useOnScreen';
 import { useStartup } from '../hooks/useStartup';
 import { getDecks } from '../services/deckService';
 import { getEvents } from '../services/eventService';
+import { getTasks, Task } from '../services/crmService';
 
 // Components
 import { StatCard } from '../components/dashboard/StatCard';
@@ -38,17 +39,20 @@ const Dashboard: React.FC = () => {
     // Live Data State
     const [deckCount, setDeckCount] = useState(0);
     const [eventCount, setEventCount] = useState(0);
+    const [tasks, setTasks] = useState<Task[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [decks, events] = await Promise.all([
+                const [decks, events, taskList] = await Promise.all([
                     getDecks(),
-                    getEvents()
+                    getEvents(),
+                    getTasks({ status: 'active' })
                 ]);
                 setDeckCount(decks.length);
                 setEventCount(events.length);
+                setTasks(taskList);
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
             } finally {
@@ -144,7 +148,7 @@ const Dashboard: React.FC = () => {
                             <StatCard 
                                 icon={<CheckCircleIcon />} 
                                 label="Tasks" 
-                                value={12} 
+                                value={tasks.length} 
                             />
                         </div>
                         
@@ -169,7 +173,7 @@ const Dashboard: React.FC = () => {
 
                         <div className="h-auto"><AiInsightsWidget /></div>
                         <div className="h-auto"><UpcomingEvent /></div>
-                        <div className="h-auto"><MiniCalendar /></div>
+                        <div className="h-auto"><MiniCalendar tasks={tasks} /></div>
                     </aside>
                 </div>
             </div>

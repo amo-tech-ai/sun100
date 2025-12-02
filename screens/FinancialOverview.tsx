@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { getMetrics, MetricEntry } from '../services/metricsService';
 
 // Icons
 const TrendingUpIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
@@ -27,7 +27,8 @@ const KPICard: React.FC<{
     trend?: string;
     trendUp?: boolean;
     neutral?: boolean;
-}> = ({ title, subtitle, value, icon, trend, trendUp, neutral }) => (
+    loading?: boolean;
+}> = ({ title, subtitle, value, icon, trend, trendUp, neutral, loading }) => (
     <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(6,81,237,0.12)] transition-all duration-300 flex flex-col justify-between h-full group">
         <div className="flex justify-between items-start mb-4">
             <div className="p-3 bg-slate-50 rounded-xl text-slate-500 group-hover:text-brand-blue group-hover:bg-blue-50 transition-colors">
@@ -41,34 +42,56 @@ const KPICard: React.FC<{
             )}
         </div>
         <div>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-1">{value}</h3>
+            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
+                {loading ? <span className="animate-pulse bg-slate-100 h-8 w-24 rounded block"></span> : value}
+            </h3>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{title}</p>
             <p className="text-xs text-slate-400 mt-1.5">{subtitle}</p>
         </div>
     </div>
 );
 
-const RevenueChart = () => {
-    // Mock data points for curved lines
-    const revenuePoints = "0,150 50,145 100,140 150,135 200,120 250,90 300,80 350,60 400,50 450,40 500,30";
-    const expensePoints = "0,160 50,158 100,155 150,152 200,148 250,140 300,135 350,125 400,120 450,115 500,110";
+const DynamicRevenueChart: React.FC<{ data: MetricEntry[] }> = ({ data }) => {
+    // Sort chronological
+    const sortedData = [...data].sort((a, b) => a.month.localeCompare(b.month)).slice(-6);
     
+    const height = 200;
+    const width = 500;
+    const padding = 20;
+    
+    if (sortedData.length === 0) return <div className="h-64 flex items-center justify-center text-gray-400">No data available</div>;
+
+    const maxRevenue = Math.max(...sortedData.map(d => d.revenue), 1);
+    const maxExpense = Math.max(...sortedData.map(d => d.burn_rate), 1); // Approximating expense as burn rate for now
+    const maxVal = Math.max(maxRevenue, maxExpense) * 1.2;
+
+    const getPoints = (type: 'revenue' | 'burn_rate') => {
+        return sortedData.map((d, i) => {
+            const x = (i / (sortedData.length - 1 || 1)) * width;
+            const y = height - ((d[type] / maxVal) * height);
+            return `${x},${y}`;
+        }).join(' ');
+    };
+
+    const revenuePoints = getPoints('revenue');
+    const expensePoints = getPoints('burn_rate');
+
     return (
         <div className="relative h-64 w-full mt-4">
-            <svg className="w-full h-full overflow-visible" viewBox="0 0 500 200" preserveAspectRatio="none">
-                {/* Grid Lines */}
-                <line x1="0" y1="50" x2="500" y2="50" stroke="#f3f4f6" strokeWidth="1" strokeDasharray="4 4" />
-                <line x1="0" y1="100" x2="500" y2="100" stroke="#f3f4f6" strokeWidth="1" strokeDasharray="4 4" />
-                <line x1="0" y1="150" x2="500" y2="150" stroke="#f3f4f6" strokeWidth="1" strokeDasharray="4 4" />
+             <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+                 {/* Grid Lines */}
+                <line x1="0" y1={height*0.25} x2={width} y2={height*0.25} stroke="#f3f4f6" strokeWidth="1" strokeDasharray="4 4" />
+                <line x1="0" y1={height*0.5} x2={width} y2={height*0.5} stroke="#f3f4f6" strokeWidth="1" strokeDasharray="4 4" />
+                <line x1="0" y1={height*0.75} x2={width} y2={height*0.75} stroke="#f3f4f6" strokeWidth="1" strokeDasharray="4 4" />
 
-                {/* Revenue Line (Blue) */}
-                <path d={`M${revenuePoints}`} fill="none" stroke="#6366f1" strokeWidth="3" strokeLinecap="round" />
-                {/* Gradient Fill for Revenue */}
-                <path d={`M${revenuePoints} L500,200 L0,200 Z`} fill="url(#revenueGradient)" opacity="0.1" />
+                 {/* Revenue Line (Blue) */}
+                <polyline points={revenuePoints} fill="none" stroke="#6366f1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                 {/* Gradient Fill for Revenue */}
+                <polygon points={`0,${height} ${revenuePoints} ${width},${height}`} fill="url(#revenueGradient)" opacity="0.1" />
 
                 {/* Expense Line (Red) */}
-                <path d={`M${expensePoints}`} fill="none" stroke="#f43f5e" strokeWidth="3" strokeLinecap="round" />
-                
+                <polyline points={expensePoints} fill="none" stroke="#f43f5e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+
                 <defs>
                     <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#6366f1" />
@@ -76,12 +99,14 @@ const RevenueChart = () => {
                     </linearGradient>
                 </defs>
             </svg>
-            
+
             {/* X Axis Labels */}
             <div className="flex justify-between text-xs text-gray-400 mt-2 font-medium">
-                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+                {sortedData.map(d => (
+                    <span key={d.id}>{new Date(d.month).toLocaleDateString(undefined, { month: 'short' })}</span>
+                ))}
             </div>
-
+            
             {/* Legend */}
             <div className="flex justify-center gap-6 mt-4">
                 <div className="flex items-center gap-2">
@@ -90,26 +115,31 @@ const RevenueChart = () => {
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full bg-rose-500"></span>
-                    <span className="text-sm font-medium text-gray-600">Expenses</span>
+                    <span className="text-sm font-medium text-gray-600">Burn Rate (Proxy)</span>
                 </div>
             </div>
         </div>
     );
-};
+}
 
-const BurnAnalysisChart = () => {
-    const data = [12000, 15000, 11000, 18000, 10500]; // Last 5 months
-    const max = Math.max(...data);
+const DynamicBurnChart: React.FC<{ data: MetricEntry[] }> = ({ data }) => {
+    const sortedData = [...data].sort((a, b) => a.month.localeCompare(b.month)).slice(-5);
+    const max = Math.max(...sortedData.map(d => d.burn_rate), 1);
+
+    if (sortedData.length === 0) return <div className="h-32 flex items-center justify-center text-xs text-gray-400">No data</div>;
 
     return (
         <div className="flex items-end justify-between h-32 gap-3 mt-4">
-            {data.map((val, i) => (
-                <div key={i} className="w-full flex flex-col items-center group">
-                    <div className="text-[10px] font-bold text-gray-500 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">${val/1000}k</div>
+            {sortedData.map((d, i) => (
+                <div key={d.id} className="w-full flex flex-col items-center group">
+                    <div className="text-[10px] font-bold text-gray-500 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        ${(d.burn_rate/1000).toFixed(1)}k
+                    </div>
                     <div 
-                        className={`w-full rounded-t-md transition-all duration-500 ${i === 4 ? 'bg-brand-orange' : 'bg-gray-200'}`} 
-                        style={{ height: `${(val / max) * 100}%` }}
+                        className={`w-full rounded-t-md transition-all duration-500 ${i === sortedData.length - 1 ? 'bg-brand-orange' : 'bg-gray-200'}`} 
+                        style={{ height: `${(d.burn_rate / max) * 100}%`, minHeight: '4px' }}
                     ></div>
+                    <div className="text-[9px] text-gray-400 mt-1">{new Date(d.month).toLocaleDateString(undefined, {month:'short'})}</div>
                 </div>
             ))}
         </div>
@@ -129,7 +159,7 @@ const ScenarioCard = ({ type, months, assumptions, color }: { type: string, mont
         <ul className="space-y-1.5">
             {assumptions.map((a, i) => (
                 <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
-                    <span className="mt-0.5 text-gray-400">•</span> {a}
+                    <span className="mt-0.5 text-gray-300">•</span> {a}
                 </li>
             ))}
         </ul>
@@ -138,6 +168,48 @@ const ScenarioCard = ({ type, months, assumptions, color }: { type: string, mont
 
 const FinancialOverview: React.FC = () => {
     const [timeRange, setTimeRange] = useState<'3M' | '6M' | '12M'>('6M');
+    const [metrics, setMetrics] = useState<MetricEntry[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const data = await getMetrics();
+                setMetrics(data);
+            } catch (e) {
+                console.error("Failed to load metrics", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const latest = metrics.length > 0 ? metrics[0] : null;
+    const previous = metrics.length > 1 ? metrics[1] : null;
+
+    const runwayMonths = latest && latest.burn_rate > 0 
+        ? (latest.cash_balance / latest.burn_rate).toFixed(1) 
+        : "Unknown";
+    
+    const revGrowth = latest && previous && previous.revenue > 0 
+        ? ((latest.revenue - previous.revenue) / previous.revenue * 100).toFixed(1) + "%"
+        : "0%";
+        
+    const burnDelta = latest && previous 
+        ? ((latest.burn_rate - previous.burn_rate) / previous.burn_rate * 100).toFixed(1) + "%"
+        : "0%";
+    
+    const isRevUp = parseFloat(revGrowth) >= 0;
+    const isBurnDown = parseFloat(burnDelta) <= 0;
+
+    // Simple Scenario Logic
+    const currentCash = latest?.cash_balance || 0;
+    const currentBurn = latest?.burn_rate || 10000;
+    const realisticRunway = currentBurn > 0 ? (currentCash / currentBurn).toFixed(1) : "∞";
+    const conservativeRunway = currentBurn > 0 ? (currentCash / (currentBurn * 1.1)).toFixed(1) : "∞";
+    const optimisticRunway = currentBurn > 0 ? (currentCash / (currentBurn * 0.9)).toFixed(1) : "∞";
 
     return (
         <div className="min-h-screen bg-[#FAFAF8] font-display pb-20">
@@ -172,42 +244,47 @@ const FinancialOverview: React.FC = () => {
                     <KPICard 
                         title="Monthly Revenue" 
                         subtitle="Subscriptions + transactional" 
-                        value="$72,000" 
+                        value={latest ? `$${latest.revenue.toLocaleString()}` : '$0'} 
                         icon={<TrendingUpIcon />}
-                        trend="18%"
-                        trendUp={true}
+                        trend={revGrowth}
+                        trendUp={isRevUp}
+                        loading={loading}
                     />
                     <KPICard 
                         title="Monthly Spend" 
                         subtitle="Total expenses this month" 
-                        value="$51,000" 
+                        value={latest ? `$${latest.burn_rate.toLocaleString()}` : '$0'} 
                         icon={<WalletIcon />}
-                        trend="4%"
-                        trendUp={false} // Spend up is usually bad, but red might be alarming. Let's use red to alert.
+                        trend={burnDelta}
+                        trendUp={isBurnDown} // Green if spend goes down
+                        loading={loading}
                     />
                      <KPICard 
                         title="Cash on Hand" 
                         subtitle="Available in bank" 
-                        value="$340,000" 
+                        value={latest ? `$${latest.cash_balance.toLocaleString()}` : '$0'} 
                         icon={<DollarSignIcon />}
                         trend="Stable"
                         neutral
+                        loading={loading}
                     />
                      <KPICard 
                         title="Burn Rate" 
                         subtitle="Net cash burn / month" 
-                        value="$10,500" 
+                        value={latest ? `$${latest.burn_rate.toLocaleString()}` : '$0'} 
                         icon={<FlameIcon />}
-                        trend="-12%"
-                        trendUp={true} // Burn going down is good (green)
+                        trend={burnDelta}
+                        trendUp={isBurnDown} 
+                        loading={loading}
                     />
                      <KPICard 
                         title="Runway" 
                         subtitle="Months left at current burn" 
-                        value="14.2 Mo" 
+                        value={`${runwayMonths} Mo`}
                         icon={<ClockIcon />}
-                        trend="+2 Mo"
-                        trendUp={true}
+                        trend="Estimated"
+                        neutral
+                        loading={loading}
                     />
                 </section>
 
@@ -221,7 +298,7 @@ const FinancialOverview: React.FC = () => {
                         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <h3 className="text-lg font-bold text-brand-blue">Revenue vs Expenses</h3>
+                                    <h3 className="text-lg font-bold text-brand-blue">Revenue vs Burn</h3>
                                     <p className="text-sm text-gray-500 mt-1">Comparing income streams against operational costs.</p>
                                 </div>
                                 <div className="flex bg-gray-100 rounded-lg p-1">
@@ -236,7 +313,7 @@ const FinancialOverview: React.FC = () => {
                                     ))}
                                 </div>
                             </div>
-                            <RevenueChart />
+                            <DynamicRevenueChart data={metrics} />
                         </div>
 
                         {/* Row: Burn & Spend */}
@@ -246,26 +323,25 @@ const FinancialOverview: React.FC = () => {
                                 <div className="mb-4">
                                     <h3 className="text-sm font-bold text-brand-blue mb-1">Net Burn Analysis</h3>
                                     <div className="flex items-baseline gap-2">
-                                        <span className="text-2xl font-extrabold text-slate-900">$10,500</span>
+                                        <span className="text-2xl font-extrabold text-slate-900">{latest ? `$${latest.burn_rate.toLocaleString()}` : '$0'}</span>
                                         <span className="text-xs text-gray-500">avg / month</span>
                                     </div>
                                 </div>
-                                <BurnAnalysisChart />
+                                <DynamicBurnChart data={metrics} />
                                 <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
                                     <span className="text-xs font-bold text-gray-400 uppercase">Burn Multiple</span>
                                     <span className="text-sm font-bold text-slate-900">1.2x</span>
                                 </div>
                             </div>
 
-                            {/* Spend Breakdown */}
+                            {/* Spend Breakdown - Static for now as we don't have expense categories in metric entry */}
                              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                                <h3 className="text-sm font-bold text-brand-blue mb-4">Spend Breakdown</h3>
+                                <h3 className="text-sm font-bold text-brand-blue mb-4">Spend Breakdown (Est)</h3>
                                 <div className="space-y-4">
                                     {[
-                                        { cat: 'Payroll', val: 28000, pct: 55, color: 'bg-indigo-600' },
-                                        { cat: 'Marketing', val: 12000, pct: 24, color: 'bg-indigo-400' },
-                                        { cat: 'Tools', val: 5000, pct: 10, color: 'bg-brand-orange' },
-                                        { cat: 'Ops', val: 6000, pct: 11, color: 'bg-blue-200' },
+                                        { cat: 'Payroll', val: (latest?.burn_rate || 0) * 0.6, pct: 60, color: 'bg-indigo-600' },
+                                        { cat: 'Marketing', val: (latest?.burn_rate || 0) * 0.2, pct: 20, color: 'bg-indigo-400' },
+                                        { cat: 'Tools/Ops', val: (latest?.burn_rate || 0) * 0.2, pct: 20, color: 'bg-brand-orange' },
                                     ].map((item, i) => (
                                         <div key={i}>
                                             <div className="flex justify-between text-xs font-medium mb-1">
@@ -296,19 +372,19 @@ const FinancialOverview: React.FC = () => {
                             <div className="flex flex-col md:flex-row gap-4 overflow-x-auto pb-2">
                                 <ScenarioCard 
                                     type="Conservative" 
-                                    months="10.5" 
+                                    months={conservativeRunway} 
                                     assumptions={["Rev flat", "Exp +10%"]}
                                     color="border-red-100"
                                 />
                                 <ScenarioCard 
                                     type="Realistic" 
-                                    months="14.2" 
+                                    months={realisticRunway} 
                                     assumptions={["Rev +5%", "Exp stable"]}
                                     color="border-blue-100"
                                 />
                                 <ScenarioCard 
                                     type="Optimistic" 
-                                    months="18.5" 
+                                    months={optimisticRunway} 
                                     assumptions={["Rev +15%", "Exp -5%"]}
                                     color="border-green-100"
                                 />
@@ -328,54 +404,34 @@ const FinancialOverview: React.FC = () => {
                                 AI Financial Insights
                             </h3>
                             <ul className="space-y-3 relative z-10">
-                                {[
-                                    "Your burn rate decreased 11% from last month due to lower software costs.",
-                                    "Upcoming payroll cycle will reduce runway to approx 13.8 months.",
-                                    "Marketing ROI is currently 3.2x, higher than industry avg of 2.8x."
-                                ].map((insight, i) => (
-                                    <li key={i} className="text-sm text-gray-600 flex items-start gap-2.5 bg-indigo-50/30 p-2.5 rounded-lg">
-                                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0"></span>
-                                        <span className="leading-relaxed">{insight}</span>
-                                    </li>
-                                ))}
+                                <li className="text-sm text-gray-600 flex items-start gap-2.5 bg-indigo-50/30 p-2.5 rounded-lg">
+                                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0"></span>
+                                    <span className="leading-relaxed">
+                                        {isBurnDown 
+                                        ? `Great job! Burn rate decreased by ${Math.abs(parseFloat(burnDelta))}% compared to last month.` 
+                                        : `Attention: Burn rate increased by ${burnDelta}. Review marketing spend.`}
+                                    </span>
+                                </li>
+                                <li className="text-sm text-gray-600 flex items-start gap-2.5 bg-indigo-50/30 p-2.5 rounded-lg">
+                                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0"></span>
+                                    <span className="leading-relaxed">
+                                        Runway is currently {realisticRunway} months. 
+                                        {parseFloat(realisticRunway) < 12 ? " Consider fundraising soon." : " You are in a healthy position."}
+                                    </span>
+                                </li>
                             </ul>
-                        </div>
-
-                        {/* Expense Shifts */}
-                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                            <h3 className="font-bold text-sm text-gray-900 mb-4 uppercase tracking-wide">Top Expense Shifts</h3>
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-white rounded text-red-500 shadow-sm"><TrendingUpIcon className="w-3 h-3" /></div>
-                                        <div>
-                                            <p className="text-sm font-bold text-gray-800">Marketing Ads</p>
-                                            <p className="text-[10px] text-gray-500">+$2,400 vs last mo</p>
-                                        </div>
-                                    </div>
-                                    <span className="text-xs font-bold text-red-600">+15%</span>
-                                </div>
-                                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-white rounded text-green-500 shadow-sm"><TrendingDownIcon className="w-3 h-3" /></div>
-                                        <div>
-                                            <p className="text-sm font-bold text-gray-800">Server Costs</p>
-                                            <p className="text-[10px] text-gray-500">-$850 vs last mo</p>
-                                        </div>
-                                    </div>
-                                    <span className="text-xs font-bold text-green-600">-8%</span>
-                                </div>
-                            </div>
                         </div>
 
                         {/* Alerts */}
                         <div>
                             <h3 className="font-bold text-xs text-gray-400 uppercase tracking-widest mb-3">Alerts</h3>
                             <div className="space-y-2">
-                                <div className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-100 rounded-lg text-sm text-orange-800">
-                                    <AlertCircleIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                    <span>Runway nearing 12 month threshold</span>
-                                </div>
+                                {parseFloat(realisticRunway) < 12 && (
+                                    <div className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-100 rounded-lg text-sm text-orange-800">
+                                        <AlertCircleIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                        <span>Runway nearing 12 month threshold</span>
+                                    </div>
+                                )}
                                 <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-800">
                                     <InfoIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                     <span>Q3 Tax payment due in 15 days</span>
@@ -389,7 +445,7 @@ const FinancialOverview: React.FC = () => {
                                 <CreditCardIcon className="w-3 h-3" /> Recommendation
                             </h4>
                             <p className="text-xs text-gray-600 leading-relaxed mb-2">
-                                Review unused SaaS licenses. Detected 4 seats in Linear that have been inactive for {'>'}30 days.
+                                Review unused SaaS licenses. Detected potential savings of $450/mo.
                             </p>
                             <button className="text-xs text-brand-orange font-bold hover:underline">Review Subscriptions →</button>
                         </div>

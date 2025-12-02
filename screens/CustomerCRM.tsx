@@ -24,9 +24,11 @@ import { CrmStatCard } from '../components/crm/CRMComponents';
 import { PipelineVisualizer } from '../components/crm/PipelineVisualizer';
 import { CRMInsightsWidget } from '../components/crm/CRMInsightsWidget';
 import { CustomerTable } from '../components/crm/CustomerTable';
+import { useLocation } from 'react-router-dom';
 
 const CustomerCRM: React.FC = () => {
     const { loading, stats, customers, pipeline, insights, tasks, setInsights, setTasks, load, success, toastError } = useCRM();
+    const location = useLocation();
     const [viewMode, setViewMode] = useState<'list' | 'board'>('list');
     const [isRefreshingInsights, setIsRefreshingInsights] = useState(false);
     
@@ -45,30 +47,34 @@ const CustomerCRM: React.FC = () => {
     const [emailTarget, setEmailTarget] = useState<Customer | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isTourOpen, setIsTourOpen] = useState(false);
+    
+    // Action Intent State
+    const [pendingAction, setPendingAction] = useState<string | null>(null);
 
     useEffect(() => {
         const hasSeenTour = localStorage.getItem('hasSeenCRMTour');
         if (!hasSeenTour) setTimeout(() => setIsTourOpen(true), 1000);
     }, []);
 
+    // Handle Navigation Intent
+    useEffect(() => {
+        if (location.state?.action) {
+            setPendingAction(location.state.action);
+            // Clear state to avoid loop
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
+
     // --- Computed Data ---
     const filteredCustomers = useMemo(() => {
         let result = customers;
         
-        // 1. Filter by Pipeline Stage (if clicked)
         if (pipelineFilter) {
-             // NOTE: This assumes we can link customers to deals efficiently.
-             // For now, we might filter by Status map if names match, or ignore for this specific implementation
-             // Real implementation would join deals data.
-             // Simplified: Filter by status if it matches deal stage name?
-             // Often deal stage != customer status. Let's assume this filters DEALS in a real app, 
-             // but here we filter customers by status for demo purposes if names align.
              const statusMap: Record<string, string> = { 'Lead': 'Lead', 'Closed Won': 'Active' };
              const targetStatus = statusMap[pipelineFilter];
              if (targetStatus) result = result.filter(c => c.status === targetStatus);
         }
 
-        // 2. Search & Health Filter
         return result.filter(c => {
             const searchLower = searchTerm.toLowerCase();
             const matchesSearch = c.name.toLowerCase().includes(searchLower) || 
@@ -158,6 +164,15 @@ const CustomerCRM: React.FC = () => {
         }
     };
 
+    // If an action is pending, intercept selection
+    const handleCustomerSelect = (customer: Customer) => {
+        setSelectedCustomer(customer);
+        // The logic to switch tab to 'sales' and trigger generation is inside DetailPanel based on props,
+        // or handled here if DetailPanel exposes that control. 
+        // For simplicity, we rely on the user seeing the panel open. 
+        // Refinement: We could pass an `initialTab` prop to CustomerDetailPanel.
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#FBF8F5]">
@@ -174,6 +189,19 @@ const CustomerCRM: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#FBF8F5] font-display pb-20 relative">
+            
+            {/* Action Intent Banner */}
+            {pendingAction === 'generate-battlecard' && (
+                <div className="bg-indigo-600 text-white px-6 py-3 flex justify-between items-center animate-fade-in-up sticky top-[64px] z-20 shadow-md">
+                    <div className="flex items-center gap-2">
+                        <CDPIcons.Sparkles className="w-5 h-5 text-yellow-300" />
+                        <span className="font-bold">Battlecard Generator Active:</span>
+                        <span className="text-indigo-100 text-sm">Select a customer below to generate a competitive analysis.</span>
+                    </div>
+                    <button onClick={() => setPendingAction(null)} className="text-white/80 hover:text-white"><CDPIcons.X className="w-5 h-5" /></button>
+                </div>
+            )}
+
             {/* Bulk Actions Floating Bar */}
             {selectedIds.size > 0 && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white border border-gray-200 shadow-xl rounded-full px-6 py-3 flex items-center gap-4 animate-fade-in-up">
@@ -245,7 +273,7 @@ const CustomerCRM: React.FC = () => {
                                 setShowFilters={setShowFilters}
                                 selectedIds={selectedIds}
                                 setSelectedIds={setSelectedIds}
-                                onCustomerClick={setSelectedCustomer}
+                                onCustomerClick={handleCustomerSelect}
                                 onEmailClick={setEmailTarget}
                             />
                         </div>
@@ -277,7 +305,13 @@ const CustomerCRM: React.FC = () => {
             <CustomerFormModal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} onSubmit={handleCreateCustomer} />
             <CSVImportModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} onComplete={load} />
             <TaskFormModal isOpen={isTaskModalOpen} onClose={() => { setIsTaskModalOpen(false); setEditingTask(undefined); }} onComplete={load} taskToEdit={editingTask} />
-            <CustomerDetailPanel isOpen={!!selectedCustomer} customer={selectedCustomer} onClose={() => setSelectedCustomer(null)} />
+            
+            <CustomerDetailPanel 
+                isOpen={!!selectedCustomer} 
+                customer={selectedCustomer} 
+                onClose={() => { setSelectedCustomer(null); setPendingAction(null); }} 
+                initialTab={pendingAction === 'generate-battlecard' ? 'sales' : 'overview'}
+            />
             
             {emailTarget && (
                 <EmailComposeModal 

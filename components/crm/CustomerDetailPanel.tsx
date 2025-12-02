@@ -63,13 +63,14 @@ interface CustomerDetailPanelProps {
     customer: Customer | null;
     isOpen: boolean;
     onClose: () => void;
+    initialTab?: 'overview' | 'contacts' | 'sales' | 'timeline' | 'tasks';
 }
 
-export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ customer, isOpen, onClose }) => {
+export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ customer, isOpen, onClose, initialTab = 'overview' }) => {
     const { success, error: toastError } = useToast();
     const { interactions, tasks, deals, contacts, loading, refresh, setDeals, setTasks } = useCustomerDetail(customer?.id);
     
-    const [activeTab, setActiveTab] = useState<'overview' | 'contacts' | 'sales' | 'timeline' | 'tasks'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'contacts' | 'sales' | 'timeline' | 'tasks'>(initialTab);
     const [healthAnalysis, setHealthAnalysis] = useState<AccountHealth | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [leadScore, setLeadScore] = useState<LeadScoreResult | null>(null);
@@ -97,9 +98,9 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
             setTaskSuggestions([]);
             setIsLoggingInteraction(false);
             setTaskInitialTitle('');
-            setActiveTab('overview');
+            setActiveTab(initialTab); // Use initialTab when opening
         }
-    }, [customer]);
+    }, [customer, initialTab]);
 
     const handleAnalyzeHealth = async () => {
         if (!customer) return;

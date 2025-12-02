@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { generateOnePager, generateInvestorUpdate, generateInvestmentMemo } from '../services/ai/investor';
 import { OnePagerContent, InvestorUpdateContent, InvestmentMemoContent, InvestorDocType } from '../services/ai/types';
 import { getLatestMetrics } from '../services/metricsService';
@@ -20,6 +20,7 @@ const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" heigh
 
 const DocBuilder: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { profile } = useStartup();
     const { success, error } = useToast();
     const [docType, setDocType] = useState<InvestorDocType | null>(null);
@@ -60,6 +61,16 @@ const DocBuilder: React.FC = () => {
             }));
         }
     }, [profile]);
+
+    // Check for auto-navigation state (e.g. from TaskAdvisor)
+    useEffect(() => {
+        if (location.state?.docType) {
+            setDocType(location.state.docType);
+            setStep(2);
+            // Clear state
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     // Results
     const [generatedContent, setGeneratedContent] = useState<OnePagerContent | InvestorUpdateContent | InvestmentMemoContent | null>(null);

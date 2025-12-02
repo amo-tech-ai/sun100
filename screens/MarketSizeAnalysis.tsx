@@ -1,5 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useStartup } from '../hooks/useStartup';
+import { generateMarketSizing } from '../services/ai/investor';
+import { MarketSizeAnalysis as MarketData } from '../services/ai/types';
 
 // Icons
 const RefreshIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>;
@@ -153,7 +156,7 @@ const InsightItem = ({ text }: { text: string }) => (
 
 const SourceItem = ({ title, date, url }: { title: string, date: string, url: string }) => (
     <div className="group">
-        <a href="#" className="block p-3 rounded-lg hover:bg-gray-50 transition-colors">
+        <a href={url} target="_blank" rel="noreferrer" className="block p-3 rounded-lg hover:bg-gray-50 transition-colors">
             <h4 className="text-sm font-medium text-brand-blue group-hover:text-brand-orange transition-colors truncate">{title}</h4>
             <div className="flex justify-between items-center mt-1">
                  <span className="text-xs text-gray-400">{date}</span>
@@ -165,6 +168,33 @@ const SourceItem = ({ title, date, url }: { title: string, date: string, url: st
 
 
 const MarketSizeAnalysis: React.FC = () => {
+    const { profile } = useStartup();
+    const [marketData, setMarketData] = useState<MarketData | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    // Mock data fallback if AI hasn't run
+    const displayData = marketData || {
+        tam: { value: "$42.5B", description: "Total market" },
+        sam: { value: "$12.1B", description: "Serviceable market" },
+        som: { value: "$850M", description: "Obtainable market" }
+    };
+
+    const handleRecalculate = async () => {
+        setLoading(true);
+        try {
+            const result = await generateMarketSizing(
+                profile.industry || "Technology", 
+                profile.location || "Global", 
+                profile.description || "SaaS Platform"
+            );
+            setMarketData(result);
+        } catch (error) {
+            console.error("Market sizing failed", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#FAFAF8] font-display">
             
@@ -174,7 +204,9 @@ const MarketSizeAnalysis: React.FC = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-brand-blue">Market Size Analysis</h1>
-                            <p className="text-gray-500 text-sm mt-1">Understand the size, opportunity, and growth of your market.</p>
+                            <p className="text-gray-500 text-sm mt-1">
+                                Analysis for <span className="font-semibold text-gray-900">{profile.name}</span> in {profile.industry}.
+                            </p>
                         </div>
                         <div className="flex items-center gap-2">
                             <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
@@ -183,8 +215,21 @@ const MarketSizeAnalysis: React.FC = () => {
                             <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
                                 <DownloadIcon /> Export Report
                             </button>
-                            <button className="px-4 py-2 bg-brand-blue text-white text-sm font-bold rounded-lg hover:bg-opacity-90 transition-colors flex items-center gap-2 shadow-sm">
-                                <RefreshIcon /> Recalculate
+                            <button 
+                                onClick={handleRecalculate}
+                                disabled={loading}
+                                className="px-4 py-2 bg-brand-blue text-white text-sm font-bold rounded-lg hover:bg-opacity-90 transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50"
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Thinking...
+                                    </>
+                                ) : (
+                                    <>
+                                        <RefreshIcon /> Recalculate with AI
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -197,19 +242,19 @@ const MarketSizeAnalysis: React.FC = () => {
                 <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <KpiCard 
                         label="TAM (Total Addressable Market)" 
-                        value="$42.5B" 
-                        subtext="Full potential market" 
+                        value={displayData.tam.value} 
+                        subtext={displayData.tam.description} 
                     />
                     <KpiCard 
                         label="SAM (Serviceable Available)" 
-                        value="$12.1B" 
-                        subtext="Direct reachable segment" 
+                        value={displayData.sam.value} 
+                        subtext={displayData.sam.description} 
                         
                     />
                     <KpiCard 
                         label="SOM (Obtainable Market)" 
-                        value="$850M" 
-                        subtext="Target market share (5-7%)" 
+                        value={displayData.som.value} 
+                        subtext={displayData.som.description} 
                         
                     />
                     <KpiCard 
@@ -238,21 +283,21 @@ const MarketSizeAnalysis: React.FC = () => {
                                     <div className="mt-1 w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold flex items-center justify-center">1</div>
                                     <div>
                                         <p className="text-sm font-bold text-gray-900">Bottom-Up</p>
-                                        <p className="text-xs text-gray-500 max-w-[200px]">Calculated based on current pricing ($49/user) × 15M potential active users.</p>
+                                        <p className="text-xs text-gray-500 max-w-[200px]">Calculated based on current pricing and potential active users.</p>
                                     </div>
                                 </div>
                                  <div className="flex items-start gap-3">
                                     <div className="mt-1 w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold flex items-center justify-center">2</div>
                                     <div>
                                         <p className="text-sm font-bold text-gray-900">Top-Down</p>
-                                        <p className="text-xs text-gray-500 max-w-[200px]">Derived from 4.5% of the global $940B productivity software market.</p>
+                                        <p className="text-xs text-gray-500 max-w-[200px]">Derived from global industry spend reports.</p>
                                     </div>
                                 </div>
                                  <div className="flex items-start gap-3">
                                     <div className="mt-1 w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold flex items-center justify-center">3</div>
                                     <div>
                                         <p className="text-sm font-bold text-gray-900">Value Theory</p>
-                                        <p className="text-xs text-gray-500 max-w-[200px]">Based on displacement of 3 legacy tools per customer account.</p>
+                                        <p className="text-xs text-gray-500 max-w-[200px]">Based on displacement of legacy tools.</p>
                                     </div>
                                 </div>
                             </div>
@@ -289,7 +334,7 @@ const MarketSizeAnalysis: React.FC = () => {
                                 <h3 className="text-lg font-bold text-brand-blue">Scenario Modeling</h3>
                                 <span className="text-xs font-medium px-2 py-1 bg-gray-100 rounded text-gray-600 border border-gray-200">AI Confidence: High</span>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="flex flex-col md:flex-row gap-4 overflow-x-auto pb-2">
                                 <ScenarioCard 
                                     title="Conservative" 
                                     value="$28.4B" 
