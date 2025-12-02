@@ -67,6 +67,7 @@ export interface Task {
     due: string;
     completed: boolean;
     assignee: string;
+    assigneeId?: string;
     accountId?: string;
 }
 
@@ -77,6 +78,13 @@ export interface Interaction {
     date: string;
     sentiment?: 'Positive' | 'Neutral' | 'Negative';
     user_id?: string;
+}
+
+export interface TeamMember {
+    userId: string;
+    name: string;
+    role: string;
+    avatar?: string;
 }
 
 // --- Mock Data ---
@@ -103,7 +111,8 @@ const mockInsights: Insight[] = [
     { id: '3', type: 'info', message: 'Ideally, follow up with "Globex Inc" regarding renewal.', action: 'Draft Email' },
 ];
 
-const mockTasks: Task[] = [
+// Changed to let for mutation
+let mockTasks: Task[] = [
     { id: '1', title: 'Prepare Q3 Review for Acme', due: 'Today', completed: false, assignee: 'Me' },
     { id: '2', title: 'Send contract to Stark Ind', due: 'Tomorrow', completed: false, assignee: 'Me' },
     { id: '3', title: 'Onboarding call with Soylent', due: 'Sep 20', completed: true, assignee: 'Sarah' },
@@ -117,6 +126,30 @@ const getStartupId = async () => {
     const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();
     return membership?.startup_id;
 }
+
+export const getTeamMembers = async (): Promise<TeamMember[]> => {
+    if (!(supabase as any).realtime) return [{ userId: '1', name: 'Me', role: 'Owner' }];
+    
+    const startupId = await getStartupId();
+    if (!startupId) return [];
+
+    const { data, error } = await supabase
+        .from('team_members')
+        .select('user_id, role, profiles(full_name, avatar_url)')
+        .eq('startup_id', startupId);
+
+    if (error) {
+        console.error("Error fetching team members:", error);
+        return [];
+    }
+
+    return data.map((m: any) => ({
+        userId: m.user_id,
+        name: m.profiles?.full_name || 'Unknown',
+        role: m.role,
+        avatar: m.profiles?.avatar_url
+    }));
+};
 
 export const getCustomers = async (): Promise<Customer[]> => {
     if (!(supabase as any).realtime) return mockCustomers;
@@ -436,15 +469,26 @@ export const getPipeline = async (): Promise<DealStage[]> => {
 };
 
 export const getTasks = async (accountId?: string): Promise<Task[]> => {
-    if (!(supabase as any).realtime) return mockTasks;
+    if (!(supabase as any).realtime) {
+        if (accountId) {
+             return mockTasks.filter(t => t.accountId === accountId);
+        }
+        return mockTasks;
+    }
+    
     const startupId = await getStartupId();
     if (!startupId) return [];
 
-    let query = supabase.from('crm_tasks').select('*').eq('startup_id', startupId).order('due_date', { ascending: true });
+    let query = supabase
+        .from('crm_tasks')
+        .select('*, profiles:assigned_to(full_name)')
+        .eq('startup_id', startupId)
+        .order('due_date', { ascending: true });
+        
     if (accountId) {
         query = query.eq('account_id', accountId);
     } else {
-        query = query.limit(5);
+        query = query.limit(10);
     }
     
     const { data, error } = await query;
@@ -455,13 +499,30 @@ export const getTasks = async (accountId?: string): Promise<Task[]> => {
         title: t.title,
         due: new Date(t.due_date).toLocaleDateString(),
         completed: t.completed,
-        assignee: 'Me' 
+        assignee: t.profiles?.full_name || 'Unknown',
+        assigneeId: t.assigned_to,
+        accountId: t.account_id
     }));
 };
 
-export const addTask = async (task: Omit<Task, 'id'> & { accountId?: string }): Promise<void> => {
+export const addTask = async (task: Omit<Task, 'id'> & { accountId?: string, notify?: boolean }): Promise<void> => {
     const startupId = await getStartupId();
-    if (!(supabase as any).realtime || !startupId) return;
+    if (!(supabase as any).realtime || !startupId) {
+        const newTask = { 
+            ...task, 
+            id: Math.random().toString(), 
+            completed: false, 
+            assignee: task.assignee, 
+            due: task.due 
+        };
+        mockTasks.push(newTask); // Now updating mutable mockTasks
+        if (task.notify) {
+            console.log(`[Mock] Sending email notification for task: ${task.title}`);
+        }
+        return;
+    }
+
+    const assigneeId = task.assigneeId || (await supabase.auth.getUser()).data.user?.id;
 
     const { error } = await supabase.from('crm_tasks').insert({
         startup_id: startupId,
@@ -469,14 +530,76 @@ export const addTask = async (task: Omit<Task, 'id'> & { accountId?: string }): 
         title: task.title,
         due_date: new Date(task.due).toISOString(),
         completed: task.completed,
-        assigned_to: (await supabase.auth.getUser()).data.user?.id 
+        assigned_to: assigneeId
     });
 
     if (error) throw error;
+
+    if (task.notify && assigneeId) {
+        try {
+             const { data: profile } = await supabase
+                .from('profiles')
+                .select('email, full_name')
+                .eq('id', assigneeId)
+                .single();
+            
+            if (profile?.email) {
+                await sendEmail(
+                    profile.email,
+                    `Task Assigned: ${task.title}`,
+                    `You have been assigned a new task in the CRM.\n\nTask: ${task.title}\nDue: ${task.due}`
+                );
+            }
+        } catch (e) {
+            console.error("Failed to send task notification email", e);
+            // Don't throw here, task creation was successful
+        }
+    }
 }
 
+export const updateTask = async (id: string, updates: Partial<Omit<Task, 'id'>>): Promise<void> => {
+    const startupId = await getStartupId();
+    if (!(supabase as any).realtime || !startupId) {
+        // Mock update
+        const idx = mockTasks.findIndex(t => t.id === id);
+        if (idx >= 0) {
+             mockTasks[idx] = { ...mockTasks[idx], ...updates };
+        }
+        return;
+    }
+
+    const payload: any = { ...updates };
+    if (updates.due) payload.due_date = new Date(updates.due).toISOString();
+    if (updates.assigneeId) payload.assigned_to = updates.assigneeId;
+    if (updates.accountId) payload.account_id = updates.accountId;
+
+    // Clean undefined and frontend-only props
+    delete payload.assignee; 
+    delete payload.assigneeId;
+    delete payload.accountId;
+    delete payload.due;
+
+    const { error } = await supabase.from('crm_tasks').update(payload).eq('id', id);
+    if (error) throw error;
+};
+
+export const deleteTask = async (id: string): Promise<void> => {
+     if (!(supabase as any).realtime) {
+        const idx = mockTasks.findIndex(t => t.id === id);
+        if (idx >= 0) mockTasks.splice(idx, 1);
+        return;
+    }
+    const { error } = await supabase.from('crm_tasks').delete().eq('id', id);
+    if (error) throw error;
+}
+
+
 export const toggleTask = async (id: string, completed: boolean): Promise<void> => {
-    if (!(supabase as any).realtime) return;
+    if (!(supabase as any).realtime) {
+        const idx = mockTasks.findIndex(t => t.id === id);
+        if (idx >= 0) mockTasks[idx].completed = completed;
+        return;
+    }
     await supabase.from('crm_tasks').update({ completed }).eq('id', id);
 }
 
@@ -500,11 +623,11 @@ export const getCRMData = async () => {
         return {
             customers: mockCustomers,
             stats: {
-                totalCustomers: 124,
-                activeAccounts: 89,
+                totalCustomers: mockCustomers.length,
+                activeAccounts: mockCustomers.filter(c => c.status === 'Active').length,
                 renewalRate: 94,
-                atRisk: 12,
-                totalRevenue: 450000
+                atRisk: mockCustomers.filter(c => c.healthScore < 50).length,
+                totalRevenue: mockCustomers.reduce((sum, c) => sum + c.mrr, 0)
             },
             pipeline: mockPipeline,
             insights: mockInsights,
