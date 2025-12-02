@@ -186,6 +186,13 @@ export interface CRMInsight {
     action: string;
 }
 
+export interface TaskSuggestion {
+    title: string;
+    reason: string;
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+    due_in_days: number;
+}
+
 export interface Prospect {
     name: string;
     website: string;
@@ -349,4 +356,26 @@ export interface FullGTMStrategy {
 export interface EmailDraft {
     subject: string;
     body: string;
+}
+
+// --- Strategic Task Advisor ---
+export interface StrategicTask {
+    title: string;
+    description: string;
+    link?: string;
+    priority: 'High' | 'Medium' | 'Low';
+}
+
+export interface AIRecommendation {
+    title: string;
+    action_id: 'auto-prospect' | 'generate-battlecard' | 'generate-update' | 'analyze-deck';
+    description: string;
+}
+
+export interface TaskAdvisorResponse {
+    analysis_summary: string;
+    core_tasks: StrategicTask[];
+    growth_tasks: StrategicTask[];
+    advanced_tasks: StrategicTask[];
+    ai_recommendations: AIRecommendation[];
 }

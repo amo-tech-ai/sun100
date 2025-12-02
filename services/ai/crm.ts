@@ -1,5 +1,5 @@
 
-import { AccountHealth, CRMInsight, LeadEnrichmentResult, LeadScoreResult, Battlecard } from './types';
+import { AccountHealth, CRMInsight, LeadEnrichmentResult, LeadScoreResult, Battlecard, TaskSuggestion } from './types';
 import { invokeEdgeFunction } from '../edgeFunctionService';
 import { Customer, Deal, Interaction } from '../crmService';
 import { supabase } from '../../lib/supabaseClient';
@@ -104,4 +104,17 @@ export const generateBattlecard = async (companyName: string, website: string): 
         };
     }
     return invokeEdgeFunction<Battlecard>('generate-battlecard', { companyName, website });
+};
+
+export const suggestTasks = async (accountId: string): Promise<TaskSuggestion[]> => {
+    if (!(supabase as any).realtime) {
+        await new Promise(r => setTimeout(r, 2000));
+        return [
+            { title: "Quarterly Review", reason: "No activity for 3 months", priority: "high", due_in_days: 5 },
+            { title: "Send Renewal Pricing", reason: "Renewal date approaching", priority: "medium", due_in_days: 14 },
+            { title: "Check-in on Feature Request", reason: "Last email mentioned feature X", priority: "low", due_in_days: 7 }
+        ];
+    }
+    const result = await invokeEdgeFunction<{ tasks: TaskSuggestion[] }>('suggest-tasks', { account_id: accountId });
+    return result.tasks;
 };
