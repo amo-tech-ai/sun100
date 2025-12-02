@@ -77,7 +77,8 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ steps, isOpen, o
     if (!isOpen || !targetRect || !step) return null;
 
     // Calculate tooltip position
-    const tooltipStyle: React.CSSProperties = {
+    // FIX: Using 'any' to avoid strict CSSProperties checks on dynamic assignments
+    const tooltipStyle: any = {
         position: 'fixed',
         zIndex: 9999,
         width: '320px',

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { addTask, Customer, getCustomers } from '../../services/crmService';
+import { addTask, updateTask, Customer, getCustomers, getTeamMembers, TeamMember, Task } from '../../services/crmService';
 import { useToast } from '../../contexts/ToastContext';
 
 interface TaskFormModalProps {
@@ -8,50 +8,91 @@ interface TaskFormModalProps {
     onClose: () => void;
     onComplete: () => void;
     initialAccountId?: string;
+    taskToEdit?: Task;
 }
 
 const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+const BellIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>;
 
-export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, onComplete, initialAccountId }) => {
+export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, onComplete, initialAccountId, taskToEdit }) => {
     const { success, error: toastError } = useToast();
     const [loading, setLoading] = useState(false);
     const [customers, setCustomers] = useState<Customer[]>([]);
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const [formData, setFormData] = useState({
         title: '',
         due: new Date().toISOString().slice(0, 10),
         accountId: initialAccountId || '',
-        assignee: 'Me' // Simplified for now, ideally map to user ID
+        assigneeId: '' 
     });
+    const [notify, setNotify] = useState(true);
 
     useEffect(() => {
-        if (isOpen && !initialAccountId) {
-            // Fetch customers for dropdown if not pre-selected
-            getCustomers().then(setCustomers).catch(console.error);
+        if (isOpen) {
+            // Fetch Dependencies
+            if (!initialAccountId) {
+                getCustomers().then(setCustomers).catch(console.error);
+            } else {
+                 setFormData(prev => ({ ...prev, accountId: initialAccountId }));
+            }
+            
+            getTeamMembers().then(members => {
+                setTeamMembers(members);
+                // If creating new, set default assignee
+                if(!taskToEdit && members.length > 0) {
+                    setFormData(prev => ({...prev, assigneeId: members[0].userId}));
+                }
+            }).catch(console.error);
+
+            // Populate if editing
+            if (taskToEdit) {
+                setFormData({
+                    title: taskToEdit.title,
+                    due: new Date(taskToEdit.due).toISOString().slice(0, 10), // Helper usually needed for locale but assuming simple YYYY-MM-DD
+                    accountId: taskToEdit.accountId || initialAccountId || '',
+                    assigneeId: taskToEdit.assigneeId || ''
+                });
+            } else {
+                 setFormData({
+                    title: '',
+                    due: new Date().toISOString().slice(0, 10),
+                    accountId: initialAccountId || '',
+                    assigneeId: '' 
+                 });
+            }
         }
-        if (isOpen && initialAccountId) {
-             setFormData(prev => ({ ...prev, accountId: initialAccountId }));
-        }
-    }, [isOpen, initialAccountId]);
+    }, [isOpen, initialAccountId, taskToEdit]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.title) return;
         setLoading(true);
         try {
-            await addTask({
-                title: formData.title,
-                due: formData.due,
-                completed: false,
-                assignee: formData.assignee,
-                accountId: formData.accountId || undefined
-            });
-            success("Task created successfully");
+            if (taskToEdit) {
+                await updateTask(taskToEdit.id, {
+                    title: formData.title,
+                    due: formData.due,
+                    assigneeId: formData.assigneeId,
+                    accountId: formData.accountId || undefined
+                });
+                success("Task updated successfully");
+            } else {
+                await addTask({
+                    title: formData.title,
+                    due: formData.due,
+                    completed: false,
+                    assignee: teamMembers.find(m => m.userId === formData.assigneeId)?.name || 'Unknown',
+                    assigneeId: formData.assigneeId,
+                    accountId: formData.accountId || undefined,
+                    notify: notify
+                });
+                success("Task created successfully");
+            }
             onComplete();
             onClose();
-            setFormData({ title: '', due: new Date().toISOString().slice(0, 10), accountId: '', assignee: 'Me' });
         } catch (err) {
             console.error(err);
-            toastError("Failed to create task");
+            toastError(taskToEdit ? "Failed to update task" : "Failed to create task");
         } finally {
             setLoading(false);
         }
@@ -63,7 +104,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h2 className="text-lg font-bold text-gray-800">New Task</h2>
+                    <h2 className="text-lg font-bold text-gray-800">{taskToEdit ? 'Edit Task' : 'New Task'}</h2>
                     <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-colors">
                         <XIcon />
                     </button>
@@ -97,11 +138,13 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Assignee</label>
                              <select
                                 className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-orange focus:border-transparent"
-                                value={formData.assignee}
-                                onChange={e => setFormData({...formData, assignee: e.target.value})}
+                                value={formData.assigneeId}
+                                onChange={e => setFormData({...formData, assigneeId: e.target.value})}
                              >
-                                 <option value="Me">Me</option>
-                                 {/* Future: Map team members */}
+                                 {teamMembers.map(member => (
+                                     <option key={member.userId} value={member.userId}>{member.name}</option>
+                                 ))}
+                                 {teamMembers.length === 0 && <option value="">Me (Default)</option>}
                              </select>
                         </div>
                     </div>
@@ -121,6 +164,21 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
                             </select>
                         </div>
                     )}
+                    
+                    {!taskToEdit && (
+                        <div className="flex items-center gap-2">
+                            <input 
+                                type="checkbox" 
+                                id="notify-assignee" 
+                                checked={notify} 
+                                onChange={e => setNotify(e.target.checked)}
+                                className="rounded border-gray-300 text-brand-orange focus:ring-brand-orange"
+                            />
+                            <label htmlFor="notify-assignee" className="text-xs text-gray-600 flex items-center gap-1 cursor-pointer select-none">
+                                <BellIcon /> Notify assignee via email
+                            </label>
+                        </div>
+                    )}
 
                     <div className="pt-4 flex justify-end gap-2">
                         <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
@@ -129,7 +187,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
                             disabled={loading}
                             className="px-6 py-2 bg-brand-orange text-white text-sm font-bold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50"
                         >
-                            {loading ? 'Creating...' : 'Create Task'}
+                            {loading ? 'Saving...' : (taskToEdit ? 'Update Task' : 'Create Task')}
                         </button>
                     </div>
                 </form>
