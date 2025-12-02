@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 2025-01-21
+
+### Refactored
+- **CustomerDetailPanel:** Decomposed the large `CustomerDetailPanel` component into modular sub-components (`OverviewTab`, `ContactsTab`, `SalesTab`, `TimelineTab`, `TasksTab`) and a centralized `CRMIcons` file. This improves readability, maintainability, and performance.
+- **useCustomerDetail Hook:** Extracted data fetching logic for CRM customer details into a reusable custom hook.
+
 ## [2.6.0] - 2024-09-09
 
 ### Added
