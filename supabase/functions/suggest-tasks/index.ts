@@ -66,7 +66,7 @@ serve(async (req: Request) => {
     const ai = new GoogleGenAI({ apiKey });
 
     const prompt = `
-      Act as a proactive Customer Success Manager. Analyze this account and interaction history to suggest exactly 3 high-impact tasks.
+      Act as an AI Sales Assistant. Analyze the account health and recent interactions to suggest exactly 3 relevant follow-up tasks for the sales rep.
       
       Account Context:
       - Name: ${account.name}
@@ -78,12 +78,14 @@ serve(async (req: Request) => {
       ${JSON.stringify(interactions)}
       
       Thinking Process:
-      1. **Risk Detection:** Is the health score low? Are there negative sentiments in recent interactions? If so, suggest immediate intervention.
-      2. **Opportunity Spotting:** Is there high engagement or positive sentiment? Suggest an upsell or referral request.
-      3. **Lifecycle Management:** Is the renewal date approaching (within 90 days)? Suggest renewal discussions.
-      4. **Stagnation:** Has it been too long since the last interaction? Suggest a check-in.
+      1. **Intent Detection:** Look for specific signals in the interaction history. 
+         - Example: If a customer expresses interest in a new feature, suggest a task to "Send feature details" or "Schedule demo".
+         - Example: If they mention pricing, suggest "Send updated pricing proposal".
+      2. **Risk Mitigation:** If health score is low (<50) or sentiment is negative, suggest immediate intervention (e.g., "Urgent Check-in").
+      3. **Opportunity:** If health is high and interactions are positive, suggest "Pitch Upsell" or "Ask for Referral".
+      4. **Lifecycle Management:** Is the renewal date approaching (within 90 days)? Suggest renewal discussions.
       
-      Generate 3 tasks that drive the relationship forward.
+      Generate 3 prioritized tasks that drive the relationship forward.
     `;
 
     const response = await ai.models.generateContent({

@@ -1,18 +1,22 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { findLeads, enrichLead } from '../services/ai/prospecting';
 import { Prospect } from '../services/ai/types';
 import { createCustomer } from '../services/crmService';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { EmailComposeModal } from '../components/crm/EmailComposeModal';
 import { ProspectSearchForm } from '../components/crm/ProspectSearchForm';
 import { ProspectResultCard } from '../components/crm/ProspectResultCard';
+import { useStartup } from '../hooks/useStartup';
 
 const Prospecting: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { profile } = useStartup();
+    
     const [query, setQuery] = useState('');
     const [industry, setIndustry] = useState('');
-    const [location, setLocation] = useState('');
+    const [locationInput, setLocationInput] = useState(''); // Rename to avoid conflict with useLocation
     const [leads, setLeads] = useState<Prospect[]>([]);
     const [loading, setLoading] = useState(false);
     const [addedLeads, setAddedLeads] = useState<Set<string>>(new Set());
@@ -21,6 +25,37 @@ const Prospecting: React.FC = () => {
     // Email State
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [selectedLead, setSelectedLead] = useState<Prospect | null>(null);
+
+    // Handle Auto-Run from Advisor
+    useEffect(() => {
+        if (location.state?.autoRun && profile) {
+            // Set intelligent defaults based on profile
+            const targetIndustry = profile.industry !== 'Technology' ? profile.industry : 'SaaS';
+            setIndustry(targetIndustry);
+            setLocationInput('Global'); // Default
+            
+            // Trigger search immediately
+            const autoSearch = async () => {
+                setLoading(true);
+                setLeads([]);
+                try {
+                    const results = await findLeads({
+                        industry: targetIndustry,
+                        location: 'Global',
+                        keywords: []
+                    });
+                    setLeads(results);
+                } catch (error) {
+                    console.error("Auto-Prospecting failed:", error);
+                } finally {
+                    setLoading(false);
+                    // Clear state to prevent re-run on refresh
+                    window.history.replaceState({}, document.title);
+                }
+            };
+            autoSearch();
+        }
+    }, [location.state, profile]);
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,7 +67,7 @@ const Prospecting: React.FC = () => {
             // Parse natural language query or use explicit fields
             const results = await findLeads({
                 industry: industry || query,
-                location: location || 'Global',
+                location: locationInput || 'Global',
                 keywords: query ? [query] : []
             });
             setLeads(results);
@@ -107,8 +142,8 @@ const Prospecting: React.FC = () => {
                     setQuery={setQuery}
                     industry={industry}
                     setIndustry={setIndustry}
-                    location={location}
-                    setLocation={setLocation}
+                    location={locationInput}
+                    setLocation={setLocationInput}
                     onSearch={handleSearch}
                     loading={loading}
                 />

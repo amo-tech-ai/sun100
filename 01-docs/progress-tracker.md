@@ -24,3 +24,5 @@
 | **10. Task Advisor** | **Task Advisor Engine** | 100% | ✅ | **BE:** `suggest-next-tasks` Edge Function using Gemini 3 Reasoning. |
 | | **Frontend Widget** | 100% | ✅ | **FE:** `TaskAdvisorWidget.tsx`, `advisor.ts` service. |
 | | **Dashboard Integration** | 100% | ✅ | **FE:** Added to `Dashboard.tsx` right sidebar. |
+| **11. Connected Workflow** | **Deep Linking Actions** | 100% | ✅ | **FE:** Passing `location.state` to auto-trigger tools (`Prospecting`, `DocBuilder`). |
+| | **CRM Action Detection** | 100% | ✅ | **FE:** `CustomerCRM` detects `action: 'generate-battlecard'` and prompts context selection. |

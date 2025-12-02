@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.0] - 2025-01-21
+
+### Added
+- **Strategic Task Advisor:** A new "AI Co-Founder" widget on the Dashboard.
+  - **Deep Context Analysis:** Uses Gemini 3 Pro to analyze the user's Profile, CRM, Decks, and Financials to find gaps.
+  - **Prioritized Roadmap:** Generates a structured to-do list categorized by Core (Foundational), Growth (Sales), and Advanced (Strategy).
+  - **One-Click AI Actions:** Recommendations like "Auto-Prospect" or "Generate Battlecard" now appear directly in the task list.
+- **Connected Workflows (Deep Linking):**
+  - **Context-Aware Navigation:** Clicking an AI action in the Advisor now navigates to the specific tool (e.g., CRM, Prospecting) and *automatically* triggers the relevant agent.
+  - **Auto-Execution:** Added logic to `Prospecting.tsx`, `DocBuilder.tsx`, and `CustomerCRM.tsx` to detect intent from navigation state and execute actions immediately.
+- **Dynamic Dashboard:**
+  - **Mini Calendar:** Now displays real CRM task due dates with visual indicators.
+  - **Financial Overview:** Connected to real `metricsService` for live charting.
+  - **Startup Health:** Score is now calculated dynamically based on profile completeness.
+
 ## [2.9.0] - 2025-01-21
 
 ### Refactored
@@ -170,8 +185,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Collapsible Sidebar:** The left slide outline panel can now be collapsed to a minimal view, maximizing editor space.
 -   **Full-Screen Editing:** The editor panel expands to fill the available area when the sidebar is collapsed, creating a more focused workspace.
-- **Slide Navigation Controls:** Added "Previous" and "Next" arrow buttons to the editor panel for easier navigation between slides.
-- **Keyboard Shortcuts:** Implemented keyboard shortcuts for navigating slides (Arrow Keys) and toggling the sidebar (Cmd/Ctrl + [).
+-   **Slide Navigation Controls:** Added "Previous" and "Next" arrow buttons to the editor panel for easier navigation between slides.
+-   **Keyboard Shortcuts:** Implemented keyboard shortcuts for navigating slides (Arrow Keys) and toggling the sidebar (Cmd/Ctrl + [).
 
 ### Changed
 - **Editor Layout:** The main `DeckEditor` now uses a dynamic layout to support the new collapsible sidebar and full-screen view.
