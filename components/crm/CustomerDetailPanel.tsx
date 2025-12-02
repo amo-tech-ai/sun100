@@ -33,7 +33,7 @@ const useCustomerDetail = (customerId: string | undefined) => {
         try {
             const [ints, ts, ds, cs] = await Promise.all([
                 getInteractions(customerId),
-                getTasks(customerId),
+                getTasks({ accountId: customerId }),
                 getDealsForCustomer(customerId),
                 getContacts(customerId)
             ]);
@@ -225,6 +225,7 @@ export const CustomerDetailPanel: React.FC<CustomerDetailPanelProps> = ({ custom
                 due: due.toISOString(),
                 completed: false,
                 assignee: 'Me',
+                priority: 'medium',
                 accountId: customer.id,
                 notify: reminder
             });

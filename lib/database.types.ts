@@ -222,8 +222,11 @@ export interface Database {
           account_id: string | null
           assigned_to: string | null
           title: string
+          description: string | null
           due_date: string | null
           completed: boolean
+          priority: 'low' | 'medium' | 'high' | 'urgent'
+          tags: string[] | null
           created_at: string
           updated_at: string
         }
@@ -233,8 +236,11 @@ export interface Database {
           account_id?: string | null
           assigned_to?: string | null
           title: string
+          description?: string | null
           due_date?: string | null
           completed?: boolean
+          priority?: 'low' | 'medium' | 'high' | 'urgent'
+          tags?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -244,8 +250,11 @@ export interface Database {
           account_id?: string | null
           assigned_to?: string | null
           title?: string
+          description?: string | null
           due_date?: string | null
           completed?: boolean
+          priority?: 'low' | 'medium' | 'high' | 'urgent'
+          tags?: string[] | null
           created_at?: string
           updated_at?: string
         }

@@ -22,6 +22,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
     const [formData, setFormData] = useState({
         title: '',
         due: new Date().toISOString().slice(0, 10),
+        priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
         accountId: initialAccountId || '',
         assigneeId: '' 
     });
@@ -48,7 +49,8 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
             if (taskToEdit) {
                 setFormData({
                     title: taskToEdit.title,
-                    due: new Date(taskToEdit.due).toISOString().slice(0, 10), // Helper usually needed for locale but assuming simple YYYY-MM-DD
+                    due: new Date(taskToEdit.due).toISOString().slice(0, 10),
+                    priority: taskToEdit.priority,
                     accountId: taskToEdit.accountId || initialAccountId || '',
                     assigneeId: taskToEdit.assigneeId || ''
                 });
@@ -56,6 +58,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
                  setFormData({
                     title: '',
                     due: new Date().toISOString().slice(0, 10),
+                    priority: 'medium',
                     accountId: initialAccountId || '',
                     assigneeId: '' 
                  });
@@ -72,6 +75,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
                 await updateTask(taskToEdit.id, {
                     title: formData.title,
                     due: formData.due,
+                    priority: formData.priority,
                     assigneeId: formData.assigneeId,
                     accountId: formData.accountId || undefined
                 });
@@ -80,6 +84,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
                 await addTask({
                     title: formData.title,
                     due: formData.due,
+                    priority: formData.priority,
                     completed: false,
                     assignee: teamMembers.find(m => m.userId === formData.assigneeId)?.name || 'Unknown',
                     assigneeId: formData.assigneeId,
@@ -134,19 +139,33 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
                                 onChange={e => setFormData({...formData, due: e.target.value})}
                             />
                         </div>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Assignee</label>
-                             <select
-                                className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-orange focus:border-transparent"
-                                value={formData.assigneeId}
-                                onChange={e => setFormData({...formData, assigneeId: e.target.value})}
-                             >
-                                 {teamMembers.map(member => (
-                                     <option key={member.userId} value={member.userId}>{member.name}</option>
-                                 ))}
-                                 {teamMembers.length === 0 && <option value="">Me (Default)</option>}
-                             </select>
+                         <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Priority</label>
+                            <select 
+                                className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-orange focus:border-transparent" 
+                                value={formData.priority}
+                                onChange={e => setFormData({...formData, priority: e.target.value as any})}
+                            >
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Assignee</label>
+                         <select
+                            className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                            value={formData.assigneeId}
+                            onChange={e => setFormData({...formData, assigneeId: e.target.value})}
+                         >
+                             {teamMembers.map(member => (
+                                 <option key={member.userId} value={member.userId}>{member.name}</option>
+                             ))}
+                             {teamMembers.length === 0 && <option value="">Me (Default)</option>}
+                         </select>
                     </div>
 
                     {!initialAccountId && (

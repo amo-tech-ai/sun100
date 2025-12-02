@@ -6,6 +6,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.0] - 2025-01-21
+
+### Refactored
+- **CustomerCRM:** Major refactor of the main CRM dashboard. Introduced `useCRM` hook for state management and split UI into `PipelineVisualizer`, `CustomerTable`, and `CRMInsightsWidget`.
+- **DealBoard:** Modularized the Kanban board into `DealColumn` and `DealCard` components to isolate drag-and-drop logic and improve render performance.
+- **Prospecting:** Extracted `ProspectSearchForm` and `ProspectResultCard` components for better maintainability.
+- **Task Management:** Enhanced `TaskList` with client-side filtering (Active/Completed) and sorting (Due Date/Priority).
+
+### Added
+- **Task Priority:** Added priority levels (Low, Medium, High, Urgent) to tasks, visual indicators in the UI, and support in the service layer.
+
+## [2.8.0] - 2025-01-21
+
+### Added
+- **CRM Task Management Integration:** Fully connected the CRM task system to the backend database schema.
+  - **Priority Field:** Added `priority` ('low', 'medium', 'high', 'urgent') to the database schema, TypeScript types, service layer, and UI components.
+  - **UI Enhancements:** Added priority indicators to the task list sidebar and task creation/edit modal.
+- **Service Refactor:** Modularized the monolithic `crmService.ts` into domain-specific files under `services/crm/` (customers, contacts, deals, tasks, interactions) to improve maintainability.
+
+### Refactored
+- **CustomerDetailPanel:** Decomposed the large `CustomerDetailPanel` component into modular sub-components (`OverviewTab`, `ContactsTab`, `SalesTab`, `TimelineTab`, `TasksTab`) and a centralized `CRMIcons` file. This improves readability, maintainability, and performance.
+- **useCustomerDetail Hook:** Extracted data fetching logic for CRM customer details into a reusable custom hook.
+
 ## [2.7.0] - 2025-01-21
 
 ### Refactored
