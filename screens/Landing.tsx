@@ -211,20 +211,7 @@ const Landing: React.FC = () => {
             </div>
         </section>
 
-        {/* Section 2: Social Proof */}
-        <section className="px-4 sm:px-6 lg:px-8 pb-16 lg:pb-20 pt-4">
-            <div className="max-w-7xl mx-auto">
-                <p className="text-center text-xs font-bold text-slate-400 tracking-widest uppercase mb-8">Trusted by founders from</p>
-                <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500 items-center">
-                    {/* Text representation of logos for robustness */}
-                    {['Y Combinator', 'Techstars', 'Google for Startups', 'Stripe', 'Notion'].map((brand) => (
-                        <span key={brand} className="text-lg md:text-xl font-bold text-slate-800 font-display">{brand}</span>
-                    ))}
-                </div>
-            </div>
-        </section>
-
-        {/* Section 3: Pain & Promise */}
+        {/* Section 3: Pain & Promise (Moved up to replace Social Proof gap) */}
         <section className="px-4 sm:px-6 lg:px-8 py-16 lg:py-24 bg-white">
             <div className="max-w-7xl mx-auto">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
