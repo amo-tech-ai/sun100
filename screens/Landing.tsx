@@ -19,7 +19,7 @@ const FeatureHighlightCard: React.FC<{ icon: React.ReactNode; title: string; des
 
 const TestimonialCard: React.FC<{ quote: string; name: string; title: string; avatar: string; }> = ({ quote, name, title, avatar }) => (
     <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-lg relative mt-8 sm:mt-0">
-        <img src={avatar} alt={name} className="w-16 h-16 rounded-full absolute -top-8 left-8 border-4 border-white shadow-sm" />
+        <img src={avatar} alt={name} className="w-16 h-16 rounded-full absolute -top-8 left-8 border-4 border-white shadow-sm object-cover" />
         <p className="mt-8 text-gray-700 italic text-lg leading-relaxed">"{quote}"</p>
         <div className="mt-6">
             <p className="font-bold text-brand-blue">{name}</p>
@@ -32,7 +32,7 @@ const Landing: React.FC = () => {
     const [painRef, isPainVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.2 });
 
     return (
-    <div className="space-y-16 lg:space-y-24 pb-16">
+    <div className="font-display bg-[#FBF8F5] overflow-x-hidden">
         <style>{`
             @keyframes fade-in-up {
                 from { opacity: 0; transform: translateY(20px); }
@@ -41,10 +41,16 @@ const Landing: React.FC = () => {
             .animate-fade-in-up { animation: fade-in-up 0.8s ease-out forwards; }
 
             @keyframes float {
-                0%, 100% { transform: translateY(0); }
+                0%, 100% { transform: translateY(0px); }
                 50% { transform: translateY(-10px); }
             }
-            .animate-float { animation: float 6s ease-in-out infinite; }
+            .animate-float { animation: float 6s ease-in-out infinite; will-change: transform; }
+
+            @keyframes float-delayed {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-12px); }
+            }
+            .animate-float-delayed { animation: float-delayed 7s ease-in-out infinite; animation-delay: 1s; will-change: transform; }
 
             @keyframes pulse-slow {
                 0%, 100% { opacity: 1; transform: scale(1); }
@@ -52,101 +58,116 @@ const Landing: React.FC = () => {
             }
             .animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
 
-            .bg-grid-light {
-                background-image: linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-                background-size: 2rem 2rem;
+            .bg-grid-slate {
+                background-size: 40px 40px;
+                background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                                  linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
             }
         `}</style>
         
         {/* Section 1: Hero - Redesigned */}
-        <section className="relative pt-12 pb-20 lg:pt-24 lg:pb-32 overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-[#FBF8F5] -z-20"></div>
-            <div className="absolute inset-0 bg-grid-light -z-10"></div>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-r from-brand-orange/10 via-brand-blue/5 to-transparent rounded-[100%] blur-3xl -z-10 opacity-60"></div>
+        <section className="relative pt-16 pb-20 lg:pt-32 lg:pb-40 overflow-hidden">
+            {/* Background Elements */}
+            <div className="absolute inset-0 bg-grid-slate -z-10"></div>
+            <div className="absolute top-[-10%] right-[-5%] w-[300px] lg:w-[600px] h-[300px] lg:h-[600px] bg-brand-orange/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+            <div className="absolute bottom-[-10%] left-[-10%] w-[300px] lg:w-[600px] h-[300px] lg:h-[600px] bg-blue-500/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-                <div className="grid lg:grid-cols-2 gap-16 items-center">
-                    {/* Left Content */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+                    
+                    {/* Left: Text Content */}
                     <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-200 shadow-sm mb-8 animate-fade-in-up">
-                            <span className="flex h-2 w-2 relative">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm mb-6 lg:mb-8 animate-fade-in-up">
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
                             </span>
-                            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Powered by Gemini 3</span>
+                            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sun AI 2.0 Live</span>
                         </div>
 
-                        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-brand-blue tracking-tight leading-[1.1] mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                            Your AI Command Center for <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-brand-mustard">Startups.</span>
+                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                            Your AI Command Center for <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-blue-600">Startups.</span>
                         </h1>
                         
-                        <p className="text-lg sm:text-xl text-gray-600 mb-10 leading-relaxed animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                        <p className="text-lg sm:text-xl text-slate-600 mb-8 lg:mb-10 leading-relaxed animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                             Build faster, validate smarter, and scale with AI that generates pitch decks, insights, research, tasks, and investor-ready materials — instantly.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                            <Link to="/dashboard" className="inline-flex justify-center items-center px-8 py-4 text-lg font-bold rounded-xl text-white bg-brand-blue hover:bg-gray-800 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                            <Link to="/dashboard" className="inline-flex justify-center items-center px-8 py-4 text-base font-bold rounded-xl text-white bg-slate-900 hover:bg-slate-800 shadow-lg hover:shadow-slate-900/20 transition-all hover:-translate-y-0.5">
                                 Get Started — Free
                             </Link>
-                            <Link to="/how-it-works" className="inline-flex justify-center items-center px-8 py-4 text-lg font-bold rounded-xl text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all">
+                            <Link to="/how-it-works" className="inline-flex justify-center items-center px-8 py-4 text-base font-bold rounded-xl text-slate-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
                                 See How It Works
                             </Link>
                         </div>
-                        
-                        <div className="mt-10 flex items-center justify-center lg:justify-start gap-6 text-sm text-gray-500 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-                            <div className="flex items-center gap-2">
-                                <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                <span>No credit card required</span>
-                            </div>
-                             <div className="flex items-center gap-2">
-                                <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                                <span>14-day free trial</span>
-                            </div>
-                        </div>
                     </div>
 
-                    {/* Right Visual - Floating Interface */}
-                    <div className="relative lg:h-[600px] flex items-center justify-center lg:justify-end animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                        {/* Main Dashboard Card */}
-                        <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-10 transform rotate-1 transition-transform duration-500 hover:rotate-0">
-                            {/* UI Header */}
-                            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
+                    {/* Right: Visual Content - Floating Interface */}
+                    <div className="relative lg:h-[600px] flex items-center justify-center animate-fade-in-up mt-8 lg:mt-0" style={{ animationDelay: '400ms' }}>
+                        {/* Main Container: The "OS" Window */}
+                        <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-200/60 overflow-hidden z-10 transform transition-all hover:scale-[1.01] duration-500">
+                            {/* Window Bar */}
+                            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/80 backdrop-blur flex items-center gap-2">
                                 <div className="flex gap-1.5">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
                                 </div>
-                                <div className="ml-4 h-2 w-32 bg-gray-200 rounded-full"></div>
+                                <div className="ml-4 px-3 py-1 bg-white rounded-md border border-gray-100 text-[10px] font-medium text-gray-400 flex-1 text-center">sun-ai-dashboard</div>
                             </div>
-                            {/* UI Content */}
-                            <div className="p-6 space-y-6 bg-white/80 backdrop-blur-sm">
-                                {/* Metric Row */}
-                                <div className="flex gap-4">
-                                     <div className="flex-1 p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                        <div className="h-2 w-12 bg-gray-200 rounded mb-2"></div>
-                                        <div className="h-6 w-20 bg-gray-300 rounded"></div>
-                                     </div>
-                                     <div className="flex-1 p-4 rounded-xl bg-gray-50 border border-gray-100">
-                                        <div className="h-2 w-12 bg-gray-200 rounded mb-2"></div>
-                                        <div className="h-6 w-20 bg-gray-300 rounded"></div>
-                                     </div>
+                            
+                            {/* Dashboard Content */}
+                            <div className="p-4 sm:p-6 grid gap-4 sm:gap-6 bg-white">
+                                {/* Top Row: Stats */}
+                                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                    <div className="p-3 sm:p-4 rounded-xl bg-gray-50 border border-gray-100">
+                                        <div className="text-xs text-gray-500 font-medium mb-1">Revenue Forecast</div>
+                                        <div className="h-1.5 w-24 bg-gray-200 rounded-full mb-3"></div>
+                                        <div className="flex gap-1 items-end">
+                                            <div className="w-3 h-8 bg-blue-500/20 rounded-sm"></div>
+                                            <div className="w-3 h-12 bg-blue-500/40 rounded-sm"></div>
+                                            <div className="w-3 h-10 bg-blue-500/60 rounded-sm"></div>
+                                            <div className="w-3 h-16 bg-brand-orange rounded-sm"></div>
+                                        </div>
+                                    </div>
+                                    <div className="p-3 sm:p-4 rounded-xl bg-gray-50 border border-gray-100">
+                                        <div className="text-xs text-gray-500 font-medium mb-2">AI Tasks</div>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 border border-gray-300 rounded-sm"></div>
+                                                <div className="h-1.5 w-16 bg-gray-200 rounded-full"></div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 bg-brand-orange rounded-sm flex items-center justify-center text-[8px] text-white">✓</div>
+                                                <div className="h-1.5 w-12 bg-gray-200 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                 {/* Chart Mock */}
-                                <div className="h-32 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 relative overflow-hidden">
-                                     <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-blue-200/50 to-transparent"></div>
-                                     <svg className="absolute bottom-0 left-0 right-0 w-full h-full" preserveAspectRatio="none">
-                                         <path d="M0 100 C 100 80, 200 100, 300 60 S 400 80, 500 20" stroke="#6366f1" strokeWidth="2" fill="none" />
-                                     </svg>
+
+                                {/* Middle Row: Main Action */}
+                                <div className="p-3 sm:p-4 rounded-xl border border-blue-100 bg-blue-50/30 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-lg bg-white border border-blue-100 flex items-center justify-center shadow-sm text-brand-blue">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-bold text-slate-800">Generate Pitch Deck</div>
+                                            <div className="text-xs text-slate-500">AI Reasoning Active</div>
+                                        </div>
+                                    </div>
+                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                                 </div>
-                                 {/* List Items */}
+                                
+                                {/* Bottom: Skeleton List */}
                                 <div className="space-y-3">
-                                    {[1, 2, 3].map(i => (
-                                        <div key={i} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 transition-colors">
-                                            <div className="w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0"></div>
-                                            <div className="flex-1 space-y-1.5">
-                                                <div className="h-2 w-full bg-gray-100 rounded"></div>
-                                                <div className="h-2 w-2/3 bg-gray-100 rounded"></div>
+                                    {[1, 2].map(i => (
+                                        <div key={i} className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-gray-100"></div>
+                                            <div className="flex-1">
+                                                <div className="h-2 w-3/4 bg-gray-100 rounded-full mb-1"></div>
+                                                <div className="h-2 w-1/2 bg-gray-50 rounded-full"></div>
                                             </div>
                                         </div>
                                     ))}
@@ -154,70 +175,62 @@ const Landing: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Floating Card 1: Strategy */}
-                        <div className="absolute -top-4 -right-4 lg:right-0 bg-white p-4 rounded-xl shadow-xl border border-gray-100 animate-float z-20 max-w-[200px]">
+                        {/* Floating Card 1: Strategy (Hidden on mobile) */}
+                        <div className="absolute top-10 -right-12 bg-white p-4 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 animate-float z-20 w-48 hidden lg:block">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="p-1.5 bg-green-100 text-green-600 rounded-lg">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 </div>
-                                <span className="text-xs font-bold text-gray-700">GTM Strategy</span>
+                                <div className="text-xs font-bold text-slate-800">Strategy Ready</div>
                             </div>
-                            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-green-500 w-full"></div>
+                            <div className="space-y-1.5">
+                                <div className="h-1.5 bg-gray-100 rounded-full w-full"></div>
+                                <div className="h-1.5 bg-gray-100 rounded-full w-2/3"></div>
                             </div>
-                            <p className="text-[10px] text-gray-400 mt-2">Generated in 2.4s</p>
                         </div>
 
-                         {/* Floating Card 2: Deck */}
-                        <div className="absolute top-1/2 -left-8 lg:-left-12 bg-white p-4 rounded-xl shadow-xl border border-gray-100 animate-float z-20" style={{ animationDelay: '1.5s' }}>
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-brand-orange/10 text-brand-orange rounded-lg">
-                                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                        {/* Floating Card 2: Pitch Deck (Hidden on mobile) */}
+                        <div className="absolute bottom-20 -left-12 bg-white p-4 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 animate-float-delayed z-20 w-52 hidden lg:block">
+                            <div className="flex gap-3">
+                                <div className="w-12 h-16 bg-slate-900 rounded-md shadow-md flex flex-col p-1.5 gap-1">
+                                    <div className="w-full h-1/3 bg-white/20 rounded-sm"></div>
+                                    <div className="w-2/3 h-px bg-white/20"></div>
+                                    <div className="w-full h-px bg-white/20"></div>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-bold text-gray-800">Pitch Deck</p>
-                                    <p className="text-[10px] text-gray-500">Series A Draft</p>
+                                    <div className="text-xs font-bold text-slate-800 mb-1">Series A Deck</div>
+                                    <div className="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full inline-block">Generated in 30s</div>
                                 </div>
                             </div>
                         </div>
 
-                         {/* Floating Card 3: AI Thinking */}
-                        <div className="absolute -bottom-6 right-12 bg-brand-blue text-white px-4 py-3 rounded-full shadow-2xl border border-gray-700 animate-pulse-slow z-30 flex items-center gap-2">
-                            <div className="w-2 h-2 bg-brand-orange rounded-full animate-ping"></div>
-                            <span className="text-xs font-bold tracking-wide">Gemini 3 Processing...</span>
-                        </div>
-                        
-                        {/* Glow behind */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-brand-orange/20 via-blue-500/10 to-transparent blur-3xl -z-10 rounded-full"></div>
+                         {/* Decorative Glows */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-blue-100/30 via-orange-100/20 to-transparent blur-3xl -z-10 rounded-full pointer-events-none"></div>
                     </div>
                 </div>
             </div>
         </section>
 
         {/* Section 2: Social Proof */}
-        <section className="px-4 sm:px-6 lg:px-8">
+        <section className="px-4 sm:px-6 lg:px-8 pb-16 lg:pb-20 pt-4">
             <div className="max-w-7xl mx-auto">
-                <p className="text-center text-sm font-bold text-gray-400 tracking-widest uppercase mb-8">Trusted by founders from</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 lg:gap-12 items-center opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-                    {['y-combinator', 'google', 'stripe', 'aws', 'hubspot', 'notion'].map((brand) => (
-                        <div key={brand} className="flex justify-center">
-                            <img 
-                                className="h-8 sm:h-10 object-contain" 
-                                src={`https://storage.googleapis.com/aistudio-hosting/brand-logos/${brand}.svg`} 
-                                alt={brand} 
-                            />
-                        </div>
+                <p className="text-center text-xs font-bold text-slate-400 tracking-widest uppercase mb-8">Trusted by founders from</p>
+                <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500 items-center">
+                    {/* Text representation of logos for robustness */}
+                    {['Y Combinator', 'Techstars', 'Google for Startups', 'Stripe', 'Notion'].map((brand) => (
+                        <span key={brand} className="text-lg md:text-xl font-bold text-slate-800 font-display">{brand}</span>
                     ))}
                 </div>
             </div>
         </section>
 
         {/* Section 3: Pain & Promise */}
-        <section className="px-4 sm:px-6 lg:px-8">
+        <section className="px-4 sm:px-6 lg:px-8 py-16 lg:py-24 bg-white">
             <div className="max-w-7xl mx-auto">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                    <div ref={painRef} className="space-y-8 order-2 lg:order-1">
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-blue leading-tight">
+                    {/* Order on mobile: Text First (1), Visual Second (2) */}
+                    <div ref={painRef} className="space-y-8 order-1 lg:order-1">
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">
                             Stop Wrestling With <br/>
                             <span className="text-brand-orange">PowerPoint.</span>
                         </h2>
@@ -229,17 +242,17 @@ const Landing: React.FC = () => {
                             ].map((item, index) => (
                                 <li 
                                     key={index}
-                                    className={`flex items-start gap-4 text-lg text-gray-600 transition-all duration-500 ${isPainVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} 
+                                    className={`flex items-start gap-4 text-lg text-slate-600 transition-all duration-500 ${isPainVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} 
                                     style={{transitionDelay: `${index * 150}ms`}}
                                 >
-                                    <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-red-100 text-red-500 flex items-center justify-center font-bold text-xs">✕</div>
+                                    <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-red-500 flex items-center justify-center font-bold text-xs">✕</div>
                                     <span>{item}</span>
                                 </li>
                             ))}
                         </ul>
                     </div>
-                     <div className={`relative order-1 lg:order-2 transition-all duration-1000 ease-out ${isPainVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-                        <div className="aspect-square bg-gray-100 rounded-3xl p-8 relative overflow-hidden">
+                     <div className={`relative order-2 lg:order-2 transition-all duration-1000 ease-out ${isPainVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
+                        <div className="aspect-square bg-gray-100 rounded-3xl p-8 relative overflow-hidden border border-gray-200">
                             {/* Abstract representation of chaos vs order */}
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
                                 <div className="bg-white rounded-xl shadow-xl p-6 space-y-4 transform -rotate-3 border border-gray-200">
@@ -262,9 +275,9 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 4: Core Features */}
-        <section className="bg-gray-50 py-16 sm:py-24 px-4 sm:px-6 lg:px-8 rounded-3xl mx-4 sm:mx-6 lg:mx-8">
+        <section className="bg-gray-50 py-16 lg:py-24 px-4 sm:px-6 lg:px-8 rounded-none mx-0">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center max-w-3xl mx-auto mb-16">
+                <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16">
                     <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-blue mb-6">Your Intelligent Co-Pilot</h2>
                     <p className="text-lg text-gray-600 leading-relaxed">Go from zero to a complete, professional pitch deck with a suite of powerful AI tools at your fingertips.</p>
                 </div>
@@ -292,7 +305,7 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 5: Data Storytelling */}
-        <section className="bg-brand-blue text-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8 rounded-3xl mx-4 sm:mx-6 lg:mx-8 shadow-2xl">
+        <section className="bg-brand-blue text-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8 mx-0 shadow-2xl">
             <div className="max-w-7xl mx-auto">
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-white/10">
                     <div className="pt-8 md:pt-0">
@@ -312,12 +325,12 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 6: Testimonials */}
-        <section className="px-4 sm:px-6 lg:px-8">
+        <section className="px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-16">
+                <div className="text-center mb-12 lg:mb-16">
                     <h2 className="text-3xl sm:text-4xl font-bold text-brand-blue">Built for Founders, by Founders</h2>
                 </div>
-                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
+                <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 max-w-5xl mx-auto">
                     <TestimonialCard
                         quote="Sun AI is my go-to. I found my co-founder at an event and used the AI Deck Wizard for our seed round. A game-changer."
                         name="Maria Rodriguez"
@@ -335,7 +348,7 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Section 7: Final CTA */}
-        <section className="px-4 sm:px-6 lg:px-8">
+        <section className="px-4 sm:px-6 lg:px-8 pb-20">
             <div className="bg-white rounded-3xl border border-gray-200 shadow-xl p-12 sm:p-16 lg:p-20 text-center max-w-5xl mx-auto relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-white opacity-50 z-0"></div>
                 <div className="relative z-10">
