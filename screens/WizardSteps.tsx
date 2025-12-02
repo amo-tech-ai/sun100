@@ -26,19 +26,22 @@ const stepsConfig = [
 ];
 
 // --- HELPER COMPONENTS FOR STEP 3 ---
-const PillButton = ({ 
+interface PillButtonProps {
+    label: string;
+    selected: boolean;
+    onClick: () => void;
+    multi?: boolean;
+}
+
+const PillButton: React.FC<PillButtonProps> = ({ 
     label, 
     selected, 
     onClick,
     multi = false 
-}: { 
-    label: string, 
-    selected: boolean, 
-    onClick: () => void,
-    multi?: boolean
 }) => (
     <button
         onClick={onClick}
+        type="button"
         className={`
             px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border shadow-sm
             ${selected 
@@ -52,7 +55,7 @@ const PillButton = ({
     </button>
 );
 
-const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <h3 className="text-lg font-bold text-brand-blue mb-4">{children}</h3>
 );
 

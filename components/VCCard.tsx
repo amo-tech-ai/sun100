@@ -3,7 +3,12 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Investor } from '../services/vcService';
 
-const Badge = ({ children, color = 'blue' }: { children: React.ReactNode, color?: string }) => {
+interface BadgeProps {
+    children: React.ReactNode;
+    color?: string;
+}
+
+const Badge: React.FC<BadgeProps> = ({ children, color = 'blue' }) => {
     const colors: {[key: string]: string} = {
         blue: 'bg-blue-50 text-blue-700 border-blue-200',
         green: 'bg-green-50 text-green-700 border-green-200',
