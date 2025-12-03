@@ -15,7 +15,29 @@ export const invokeEdgeFunction = async <T>(
 
   if (error) {
     console.error(`Error invoking Edge Function "${functionName}":`, error);
-    throw new Error(`An error occurred while processing your request via ${functionName}. Please try again.`);
+    
+    // Attempt to extract a more specific error message if available
+    let errorMessage = `An error occurred while processing your request via ${functionName}.`;
+    
+    if (error instanceof Error) {
+        errorMessage = error.message;
+    }
+    
+    // If the error object has a context or details (Supabase specific)
+    if (typeof error === 'object' && error !== null && 'context' in error) {
+        // Provide more info if available
+        try {
+            // Sometimes the response body is hidden in the error object
+            const body = await (error as any).context?.json?.();
+            if (body?.error) {
+                errorMessage = body.error;
+            }
+        } catch (e) {
+            // Ignore parsing errors
+        }
+    }
+
+    throw new Error(errorMessage);
   }
 
   return data as T;

@@ -7,7 +7,11 @@ import { invokeEdgeFunction } from '../edgeFunctionService';
  * Uses a secure Edge Function to analyze investor fit.
  */
 export const matchInvestor = async (startup: StartupProfile, investorProfile: Investor): Promise<VCMatchAnalysis> => {
-    return invokeEdgeFunction<VCMatchAnalysis>('match-investor', { startup, investorProfile });
+    return invokeEdgeFunction<VCMatchAnalysis>('investor-ai', { 
+        action: 'matchInvestor',
+        startup, 
+        investorProfile 
+    });
 };
 
 /**
@@ -25,5 +29,9 @@ export const findBestInvestors = async (startup: StartupProfile, allInvestors: I
         geographies: inv.geographies
     }));
 
-    return invokeEdgeFunction<InvestorRanking>('rank-investors', { startup, investors: optimizedInvestors });
+    return invokeEdgeFunction<InvestorRanking>('investor-ai', { 
+        action: 'rankInvestors',
+        startup, 
+        investors: optimizedInvestors 
+    });
 };

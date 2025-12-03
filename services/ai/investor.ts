@@ -3,30 +3,56 @@ import { OnePagerContent, MarketSizeAnalysis, InvestorUpdateContent, StartupStra
 import { invokeEdgeFunction } from '../edgeFunctionService';
 
 export const generateOnePager = async (startupProfile: any): Promise<OnePagerContent> => {
-    return invokeEdgeFunction<OnePagerContent>('generate-one-pager', { startupProfile });
+    return invokeEdgeFunction<OnePagerContent>('investor-ai', { 
+        action: 'generateOnePager',
+        startupProfile 
+    });
 };
 
 export const generateMarketSizing = async (industry: string, location: string, businessModel: string): Promise<MarketSizeAnalysis> => {
-    return invokeEdgeFunction<MarketSizeAnalysis>('generate-market-sizing', { industry, location, businessModel });
+    return invokeEdgeFunction<MarketSizeAnalysis>('investor-ai', { 
+        action: 'generateMarketSizing',
+        industry, 
+        location, 
+        businessModel 
+    });
 };
 
 export const generateInvestorUpdate = async (currentMetrics: any, previousMetrics: any, notes: string): Promise<InvestorUpdateContent> => {
-    return invokeEdgeFunction<InvestorUpdateContent>('generate-investor-update', { currentMetrics, previousMetrics, notes });
+    return invokeEdgeFunction<InvestorUpdateContent>('investor-ai', { 
+        action: 'generateInvestorUpdate',
+        currentMetrics, 
+        previousMetrics, 
+        notes 
+    });
 };
 
 export const analyzeStartupStrategy = async (profileContext: string): Promise<StartupStrategicAnalysis> => {
-    return invokeEdgeFunction<StartupStrategicAnalysis>('analyze-startup-strategy', { profileContext });
+    return invokeEdgeFunction<StartupStrategicAnalysis>('investor-ai', { 
+        action: 'analyzeStartupStrategy',
+        profileContext 
+    });
 };
 
 export const generateFinancialForecast = async (historicalMetrics: any[]): Promise<FinancialData> => {
-    return invokeEdgeFunction<FinancialData>('generate-financial-forecast', { historicalMetrics });
+    return invokeEdgeFunction<FinancialData>('investor-ai', { 
+        action: 'generateFinancialForecast',
+        historicalMetrics 
+    });
 };
 
 export const generateInvestmentMemo = async (startupProfile: any): Promise<InvestmentMemoContent> => {
-    return invokeEdgeFunction<InvestmentMemoContent>('generate-investment-memo', { startupProfile });
+    return invokeEdgeFunction<InvestmentMemoContent>('investor-ai', { 
+        action: 'generateInvestmentMemo',
+        startupProfile 
+    });
 };
 
 export const askInvestorData = async (query: string, metricsContext: any[]): Promise<string> => {
-    const result = await invokeEdgeFunction<{ response: string }>('ask-investor-data', { query, metricsContext });
+    const result = await invokeEdgeFunction<{ response: string }>('investor-ai', { 
+        action: 'askInvestorData',
+        query, 
+        metricsContext 
+    });
     return result.response;
 };
