@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Deck, Slide, ChartData, TableData } from '../data/decks';
@@ -289,8 +288,18 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (!deck) return;
         setIsGeneratingRoadmap(true);
         try {
-            const companyContext = deck.slides[0]?.content || deck.title;
-            const { slide: newSlide } = await generateRoadmapSlide(companyContext);
+            // Context Strategy:
+            // 1. Base context is the deck title and vision (slide 0).
+            // 2. If the user is currently on a slide that might contain strategy, add it.
+            
+            const visionContext = deck.slides[0]?.content || deck.title;
+            let context = `Company Vision: ${visionContext}`;
+            
+            if (selectedSlide && selectedSlide.content) {
+                 context += `\n\nStrategic Context from Current Slide: ${selectedSlide.content}`;
+            }
+            
+            const { slide: newSlide } = await generateRoadmapSlide(context);
             
             // TODO: This needs a backend function to add a slide to a deck properly in the DB
             // For now, update local state only which might be lost on refresh if not persisted
@@ -304,7 +313,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         } finally {
             setIsGeneratingRoadmap(false);
         }
-    }, [deck, handleSlideSelect]);
+    }, [deck, selectedSlide, handleSlideSelect]);
 
     const handleGenerateImage = useCallback(async () => {
         if (!selectedSlide) {
