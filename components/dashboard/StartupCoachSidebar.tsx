@@ -1,23 +1,29 @@
 
 import React, { useState, useEffect } from 'react';
-import { getCachedInsights, generateInsights, CoachResponse } from '../../services/coachService';
+import { getCachedInsights, generateInsights, trackRecommendationAction, getActionStatuses, CoachResponse, ActionStatus } from '../../services/coachService';
 import { CDPIcons } from '../crm/CRMIcons';
 
-const RobotIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>; // Placeholder
+const CheckCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>;
+const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
 
 export const StartupCoachSidebar: React.FC = () => {
     const [data, setData] = useState<CoachResponse | null>(null);
+    const [actionStatuses, setActionStatuses] = useState<ActionStatus[]>([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
+    const fetchData = async () => {
+        const [cached, statuses] = await Promise.all([
+            getCachedInsights(),
+            getActionStatuses()
+        ]);
+        if (cached) setData(cached);
+        setActionStatuses(statuses);
+    };
+
     useEffect(() => {
-        const load = async () => {
-            setLoading(true);
-            const cached = await getCachedInsights();
-            if (cached) setData(cached);
-            setLoading(false);
-        };
-        load();
+        setLoading(true);
+        fetchData().finally(() => setLoading(false));
     }, []);
 
     const handleRefresh = async () => {
@@ -32,10 +38,31 @@ export const StartupCoachSidebar: React.FC = () => {
         }
     };
 
-    if (loading) return <div className="p-6 animate-pulse"><div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div><div className="h-32 bg-gray-200 rounded mb-4"></div></div>;
+    const handleAction = async (actionId: string, status: 'completed' | 'dismissed') => {
+        // Optimistic update
+        setActionStatuses(prev => [...prev, { action_id: actionId, status }]);
+        try {
+            await trackRecommendationAction(actionId, status);
+        } catch (e) {
+            console.error("Failed to track action", e);
+            // Revert if needed
+        }
+    };
+
+    // Filter out dismissed or completed items from the view
+    const visibleRecommendations = data?.recommendations.filter(
+        rec => !actionStatuses.some(s => s.action_id === rec.action_id)
+    ) || [];
+
+    const visibleAlerts = data?.alerts.filter(
+        // Ideally alerts should have IDs too for dismissal. For now, we show all.
+        () => true
+    ) || [];
+
+    if (loading && !data) return <div className="p-6 animate-pulse"><div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div><div className="h-32 bg-gray-200 rounded mb-4"></div></div>;
 
     return (
-        <div className="bg-[#FBF8F5] h-full flex flex-col border-l border-gray-200 w-full md:w-80 flex-shrink-0">
+        <div className="bg-[#FBF8F5] h-full flex flex-col w-full border-l border-gray-200">
             {/* Header */}
             <div className="p-5 border-b border-gray-200 flex justify-between items-center bg-white">
                 <div>
@@ -65,18 +92,18 @@ export const StartupCoachSidebar: React.FC = () => {
                 {!data && !refreshing && (
                     <div className="text-center py-8">
                         <p className="text-sm text-gray-500 mb-4">No insights generated yet.</p>
-                        <button onClick={handleRefresh} className="bg-brand-orange text-white px-4 py-2 rounded-lg text-sm font-bold">
+                        <button onClick={handleRefresh} className="bg-brand-orange text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-opacity-90 transition-colors">
                             Start Analysis
                         </button>
                     </div>
                 )}
 
                 {/* Alerts Section */}
-                {data?.alerts && data.alerts.length > 0 && (
+                {visibleAlerts.length > 0 && (
                     <div className="space-y-3">
-                        {data.alerts.map((alert, i) => (
+                        {visibleAlerts.map((alert, i) => (
                             <div key={i} className={`p-3 rounded-xl border flex gap-3 ${alert.severity === 'high' ? 'bg-red-50 border-red-100' : 'bg-orange-50 border-orange-100'}`}>
-                                <div className={`mt-0.5 ${alert.severity === 'high' ? 'text-red-500' : 'text-orange-500'}`}>
+                                <div className={`mt-0.5 flex-shrink-0 ${alert.severity === 'high' ? 'text-red-500' : 'text-orange-500'}`}>
                                     <CDPIcons.Alert className="w-4 h-4" />
                                 </div>
                                 <div>
@@ -116,21 +143,46 @@ export const StartupCoachSidebar: React.FC = () => {
                 )}
 
                 {/* Recommendations / Playbook */}
-                {data?.recommendations && data.recommendations.length > 0 && (
+                {visibleRecommendations.length > 0 && (
                     <div>
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Coach's Playbook</h4>
                         <div className="space-y-2">
-                            {data.recommendations.map((rec, i) => (
-                                <button key={i} className="w-full text-left bg-white p-3 rounded-lg border border-gray-200 hover:border-brand-orange hover:shadow-md transition-all group">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="text-sm font-bold text-brand-blue group-hover:text-brand-orange transition-colors">{rec.label}</span>
-                                        <CDPIcons.Target className="w-4 h-4 text-gray-300 group-hover:text-brand-orange" />
+                            {visibleRecommendations.map((rec, i) => (
+                                <div key={i} className="bg-white p-3 rounded-lg border border-gray-200 hover:border-brand-orange hover:shadow-md transition-all group">
+                                    <div className="flex justify-between items-start mb-1">
+                                        <div className="flex items-center gap-2">
+                                            <CDPIcons.Target className="w-4 h-4 text-gray-300 group-hover:text-brand-orange" />
+                                            <span className="text-sm font-bold text-brand-blue group-hover:text-brand-orange transition-colors">{rec.label}</span>
+                                        </div>
                                     </div>
-                                    <p className="text-xs text-gray-500 italic">"{rec.reason}"</p>
-                                </button>
+                                    <p className="text-xs text-gray-500 italic mb-3 pl-6">"{rec.reason}"</p>
+                                    
+                                    <div className="flex justify-end gap-2 pl-6">
+                                        <button 
+                                            onClick={() => handleAction(rec.action_id, 'dismissed')}
+                                            className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100"
+                                            title="Dismiss"
+                                        >
+                                            <XIcon />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleAction(rec.action_id, 'completed')}
+                                            className="text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-2 py-1 rounded text-xs font-bold flex items-center gap-1"
+                                            title="Mark as Done"
+                                        >
+                                            <CheckCircleIcon /> Done
+                                        </button>
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </div>
+                )}
+                
+                {visibleRecommendations.length === 0 && data?.recommendations && data.recommendations.length > 0 && (
+                     <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <p className="text-xs text-gray-500">All recommendations completed!</p>
+                     </div>
                 )}
 
                 {/* Match Score */}

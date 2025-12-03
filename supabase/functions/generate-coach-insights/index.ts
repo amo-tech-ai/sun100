@@ -10,39 +10,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
 
   try {
-    // 1. Setup Context
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const apiKey = Deno.env.get('GEMINI_API_KEY');
+
     if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
-    // 2. Auth check
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // 1. Authenticate User
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) throw new Error("Missing Authorization header");
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(authHeader.replace('Bearer ', ''));
+    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
     if (authError || !user) throw new Error("Invalid User");
 
-    // 3. Get Startup ID
-    const { data: membership } = await supabaseClient
+    // 2. Get Startup ID
+    const { data: membership } = await supabase
       .from('team_members')
       .select('startup_id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
       
     if (!membership) throw new Error("User is not part of a startup");
     const startupId = membership.startup_id;
 
-    // 4. Fetch Context from DB via RPC
-    const { data: context, error: ctxError } = await supabaseClient.rpc('get_startup_context', { target_startup_id: startupId });
+    // 3. Fetch Context from DB via RPC
+    const { data: context, error: ctxError } = await supabase.rpc('get_startup_context', { target_startup_id: startupId });
     if (ctxError) throw new Error(`Context fetch failed: ${ctxError.message}`);
 
-    // 5. Setup Gemini 3
+    // 4. Setup Gemini 3
     const ai = new GoogleGenAI({ apiKey });
     
     const systemPrompt = `
@@ -52,14 +54,14 @@ serve(async (req: Request) => {
       **Context Data:**
       ${JSON.stringify(context)}
 
-      **Reasoning Rules:**
+      **Reasoning Rules (Use Thinking):**
       1. **Connect the Dots:** Don't just report numbers. Explain *why* (e.g. 'Revenue up, but churn up -> Fix bucket').
       2. **Be Direct:** Executive-level language.
       3. **Prioritize:** Only report significant deviations.
       4. **External Context:** Use Google Search to check market trends against these metrics.
     `;
 
-    // 6. Define Schema for Structured Output
+    // 5. Define Schema for Structured Output
     const responseSchema = {
       type: Type.OBJECT,
       properties: {
@@ -106,7 +108,7 @@ serve(async (req: Request) => {
       required: ["insights", "alerts", "recommendations", "match_score"]
     };
 
-    // 7. Call Gemini
+    // 6. Call Gemini
     const result = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: systemPrompt,
@@ -120,14 +122,14 @@ serve(async (req: Request) => {
 
     const payload = JSON.parse(result.text!);
 
-    // 8. Save Result to DB
-    const { error: upsertError } = await supabaseClient
+    // 7. Save Result to DB
+    const { error: upsertError } = await supabase
       .from('ai_coach_insights')
       .upsert({
         startup_id: startupId,
         payload: payload,
         updated_at: new Date().toISOString()
-      });
+      }, { onConflict: 'startup_id' });
 
     if (upsertError) throw upsertError;
 
@@ -136,6 +138,7 @@ serve(async (req: Request) => {
     });
 
   } catch (error: any) {
+    console.error("Edge Function Error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,

@@ -30,6 +30,11 @@ export interface CoachResponse {
     last_updated?: string;
 }
 
+export interface ActionStatus {
+    action_id: string;
+    status: 'pending' | 'completed' | 'dismissed';
+}
+
 // Fetch cached insights from DB (Fast)
 export const getCachedInsights = async (): Promise<CoachResponse | null> => {
     if (IS_MOCK_MODE) return getMockCoachData();
@@ -37,14 +42,14 @@ export const getCachedInsights = async (): Promise<CoachResponse | null> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).single();
+    const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();
     if (!membership) return null;
 
     const { data } = await supabase
         .from('ai_coach_insights')
         .select('payload, updated_at')
         .eq('startup_id', membership.startup_id)
-        .single();
+        .maybeSingle();
 
     if (data && data.payload) {
         return { ...data.payload, last_updated: data.updated_at };
@@ -61,6 +66,51 @@ export const generateInsights = async (): Promise<CoachResponse> => {
     
     const result = await invokeEdgeFunction<CoachResponse>('generate-coach-insights');
     return { ...result, last_updated: new Date().toISOString() };
+};
+
+// Track user interaction with a recommendation
+export const trackRecommendationAction = async (actionId: string, status: 'completed' | 'dismissed'): Promise<void> => {
+    if (IS_MOCK_MODE) {
+        console.log(`[Mock] Tracked action ${actionId} as ${status}`);
+        return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).single();
+    if (!membership) return;
+
+    const { error } = await supabase.from('ai_recommendation_actions').upsert({
+        startup_id: membership.startup_id,
+        action_id: actionId,
+        status: status,
+        interacted_at: new Date().toISOString()
+    }, { onConflict: 'startup_id, action_id' });
+
+    if (error) throw error;
+};
+
+// Fetch actions status to filter the UI
+export const getActionStatuses = async (): Promise<ActionStatus[]> => {
+    if (IS_MOCK_MODE) return [];
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).single();
+    if (!membership) return [];
+
+    const { data, error } = await supabase
+        .from('ai_recommendation_actions')
+        .select('action_id, status')
+        .eq('startup_id', membership.startup_id);
+    
+    if (error) {
+        console.error("Failed to fetch action statuses", error);
+        return [];
+    }
+    return data as ActionStatus[];
 };
 
 // Mock Data Fallback
