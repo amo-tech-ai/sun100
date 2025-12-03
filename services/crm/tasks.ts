@@ -62,6 +62,7 @@ export const getTasks = async (options: TaskOptions = {}): Promise<Task[]> => {
     return data.map((t: any) => ({
         id: t.id,
         title: t.title,
+        description: t.description,
         due: new Date(t.due_date).toLocaleDateString(),
         completed: t.completed,
         priority: t.priority || 'medium',
@@ -96,6 +97,7 @@ export const addTask = async (task: Omit<Task, 'id'> & { accountId?: string, not
         startup_id: startupId,
         account_id: task.accountId,
         title: task.title,
+        description: task.description,
         due_date: new Date(task.due).toISOString(),
         completed: task.completed,
         priority: task.priority || 'medium',
@@ -130,6 +132,7 @@ export const updateTask = async (id: string, updates: Partial<Omit<Task, 'id'>>)
         priority: updates.priority,
         tags: updates.tags,
         title: updates.title,
+        description: updates.description,
         completed: updates.completed
     });
 

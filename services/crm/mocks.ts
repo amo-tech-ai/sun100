@@ -17,9 +17,9 @@ export let mockContacts: Contact[] = [
 ];
 
 export let mockTasks: Task[] = [
-    { id: '1', title: 'Prepare Q3 Review for Acme', due: 'Today', completed: false, priority: 'high', assignee: 'Me', accountId: '1', tags: ['review'] },
-    { id: '2', title: 'Send contract to Stark Ind', due: 'Tomorrow', completed: false, priority: 'urgent', assignee: 'Me', accountId: '6', tags: ['sales'] },
-    { id: '3', title: 'Onboarding call with Soylent', due: 'Sep 20', completed: true, priority: 'medium', assignee: 'Sarah', accountId: '3', tags: ['onboarding'] },
+    { id: '1', title: 'Prepare Q3 Review for Acme', description: 'Focus on usage stats and upcoming renewal discussion.', due: 'Today', completed: false, priority: 'high', assignee: 'Me', accountId: '1', tags: ['review'] },
+    { id: '2', title: 'Send contract to Stark Ind', description: 'Ensure the enterprise rider is included.', due: 'Tomorrow', completed: false, priority: 'urgent', assignee: 'Me', accountId: '6', tags: ['sales'] },
+    { id: '3', title: 'Onboarding call with Soylent', description: 'Walk through the new dashboard features.', due: 'Sep 20', completed: true, priority: 'medium', assignee: 'Sarah', accountId: '3', tags: ['onboarding'] },
 ];
 
 export let mockDeals: Deal[] = [

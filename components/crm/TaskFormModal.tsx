@@ -21,8 +21,10 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
     const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
     const [formData, setFormData] = useState({
         title: '',
+        description: '',
         due: new Date().toISOString().slice(0, 10),
         priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
+        tags: '',
         accountId: initialAccountId || '',
         assigneeId: '' 
     });
@@ -49,16 +51,20 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
             if (taskToEdit) {
                 setFormData({
                     title: taskToEdit.title,
+                    description: taskToEdit.description || '',
                     due: new Date(taskToEdit.due).toISOString().slice(0, 10),
                     priority: taskToEdit.priority,
+                    tags: taskToEdit.tags?.join(', ') || '',
                     accountId: taskToEdit.accountId || initialAccountId || '',
                     assigneeId: taskToEdit.assigneeId || ''
                 });
             } else {
                  setFormData({
                     title: '',
+                    description: '',
                     due: new Date().toISOString().slice(0, 10),
                     priority: 'medium',
+                    tags: '',
                     accountId: initialAccountId || '',
                     assigneeId: '' 
                  });
@@ -70,12 +76,17 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
         e.preventDefault();
         if (!formData.title) return;
         setLoading(true);
+        
+        const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
+
         try {
             if (taskToEdit) {
                 await updateTask(taskToEdit.id, {
                     title: formData.title,
+                    description: formData.description,
                     due: formData.due,
                     priority: formData.priority,
+                    tags: tagsArray,
                     assigneeId: formData.assigneeId,
                     accountId: formData.accountId || undefined
                 });
@@ -83,8 +94,10 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
             } else {
                 await addTask({
                     title: formData.title,
+                    description: formData.description,
                     due: formData.due,
                     priority: formData.priority,
+                    tags: tagsArray,
                     completed: false,
                     assignee: teamMembers.find(m => m.userId === formData.assigneeId)?.name || 'Unknown',
                     assigneeId: formData.assigneeId,
@@ -117,7 +130,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
                 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Task Description</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Task Title</label>
                         <input 
                             required
                             placeholder="e.g. Follow up on contract"
@@ -125,6 +138,17 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
                             value={formData.title}
                             onChange={e => setFormData({...formData, title: e.target.value})}
                             autoFocus
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Description / Notes</label>
+                        <textarea 
+                            placeholder="Add details..."
+                            className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-orange focus:border-transparent" 
+                            rows={3}
+                            value={formData.description}
+                            onChange={e => setFormData({...formData, description: e.target.value})}
                         />
                     </div>
                     
@@ -183,9 +207,19 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({ isOpen, onClose, o
                             </select>
                         </div>
                     )}
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Tags (comma separated)</label>
+                        <input 
+                            placeholder="sales, urgent, follow-up"
+                            className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-orange focus:border-transparent" 
+                            value={formData.tags}
+                            onChange={e => setFormData({...formData, tags: e.target.value})}
+                        />
+                    </div>
                     
                     {!taskToEdit && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 pt-2">
                             <input 
                                 type="checkbox" 
                                 id="notify-assignee" 

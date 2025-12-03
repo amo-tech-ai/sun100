@@ -72,6 +72,7 @@ export interface Insight {
 export interface Task {
     id: string;
     title: string;
+    description?: string;
     due: string;
     completed: boolean;
     priority: 'low' | 'medium' | 'high' | 'urgent';

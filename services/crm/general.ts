@@ -57,7 +57,7 @@ export const sendTaskNotification = async (assigneeId: string, task: any) => {
             await sendEmail(
                 profile.email,
                 `Task Assigned: ${task.title}`,
-                `You have been assigned a new task in the CRM.\n\nTask: ${task.title}\nDue: ${task.due}`
+                `You have been assigned a new task in the CRM.\n\nTask: ${task.title}\nDue: ${task.due}\n\nDetails: ${task.description || 'None'}`
             );
         }
     } catch (e) {
