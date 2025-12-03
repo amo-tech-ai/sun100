@@ -39,25 +39,25 @@ const CopyButton: React.FC<{ textToCopy: string }> = ({ textToCopy }) => {
 const mockProfile = {
     username: 'alex-chen',
     name: 'Alex Chen',
-    title: 'Founder & CEO, Sun AI Startup',
+    title: 'Founder & CEO, StartupAI',
     avatarUrl: 'https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person3.jpg',
     bio: "Obsessed with democratizing access to AI for the next generation of founders. Building tools that make professional design and storytelling effortless. Previously at Google AI, scaling infrastructure for machine learning models to millions of users. Passionate about the intersection of design, code, and business strategy.",
     socials: {
         linkedin: '#',
         twitter: '#',
-        website: 'https://sunaistartup.com'
+        website: 'https://startupai.com'
     },
     startup: {
-        name: 'Sun AI Startup',
+        name: 'StartupAI',
         logoUrl: 'https://www.gstatic.com/mobilesdk/160503_mobilesdk/logo/2x/firebase_28dp.png', // Placeholder
         tagline: 'Your AI-Powered Startup Hub for Growth.',
-        website: 'https://sunaistartup.com',
+        website: 'https://startupai.com',
         fundingGoal: '$1.5M Seed',
         industry: 'Generative AI / SaaS'
     },
     lookingFor: ['Seed Funding', 'Technical Co-founder', 'Beta Testers'],
     publicDecks: [
-        { id: 'deck-1', title: 'Sun AI Seed Round Pitch', imageUrl: 'https://storage.googleapis.com/aistudio-hosting/docs/service-web.png' },
+        { id: 'deck-1', title: 'StartupAI Seed Round Pitch', imageUrl: 'https://storage.googleapis.com/aistudio-hosting/docs/service-web.png' },
         { id: 'deck-2', title: 'Q3 Product Update', imageUrl: 'https://storage.googleapis.com/aistudio-hosting/docs/service-mvp.png' },
     ]
 };

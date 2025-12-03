@@ -40,7 +40,8 @@ const DEFAULT_PROFILE: StartupProfile = {
     fundingAsk: '$1M',
 };
 
-const STORAGE_KEY = 'sun_ai_startup_profile';
+// Updated key for new branding
+const STORAGE_KEY = 'startup_ai_profile';
 
 export const StartupProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [profile, setProfile] = useState<StartupProfile>(DEFAULT_PROFILE);

@@ -120,7 +120,7 @@ const SponsorCard: React.FC<{ sponsor: Sponsor }> = ({ sponsor }) => (
     </div>
 );
 
-const SunAIStartupDeckShowcase: React.FC = () => {
+const StartupDeckShowcase: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState('All');
 
     const filteredSponsors = selectedCategory === 'All' 
@@ -172,7 +172,7 @@ const SunAIStartupDeckShowcase: React.FC = () => {
                 <div className="relative z-10">
                     <h2 className="text-3xl font-bold mb-4">Become a Partner</h2>
                     <p className="text-gray-400 mb-8 max-w-xl mx-auto">Join our ecosystem and get your product in front of thousands of high-growth startups.</p>
-                    <Link to="/sunaistartup-deck/apply" className="inline-block bg-white text-gray-900 font-bold py-3 px-8 rounded-xl hover:bg-gray-100 transition-colors">
+                    <Link to="/startup-deck/apply" className="inline-block bg-white text-gray-900 font-bold py-3 px-8 rounded-xl hover:bg-gray-100 transition-colors">
                         Apply to Sponsor
                     </Link>
                 </div>
@@ -181,4 +181,4 @@ const SunAIStartupDeckShowcase: React.FC = () => {
     );
 };
 
-export default SunAIStartupDeckShowcase;
+export default StartupDeckShowcase;

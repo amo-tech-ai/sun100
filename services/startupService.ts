@@ -15,15 +15,49 @@ export interface TeamStats {
     distribution: { department: string; count: number }[];
 }
 
+// Mock Data
+const MOCK_PROFILE: StartupProfile = {
+    name: 'My Startup',
+    website: 'https://example.com',
+    tagline: 'Revolutionizing the future of AI.',
+    description: 'We are building the next generation of intelligent tools to empower creators and businesses worldwide.',
+    industry: 'Artificial Intelligence',
+    foundedYear: '2024',
+    location: 'San Francisco, CA',
+    stage: 'Seed',
+    teamSize: '1-10',
+    fundingAsk: '$2M',
+    logoUrl: '',
+    coverImageUrl: ''
+};
+
+const MOCK_MILESTONES: Milestone[] = [
+    { id: '1', title: 'Incorporation', date: 'Jan 15', status: 'done' },
+    { id: '2', title: 'MVP Launch', date: 'Mar 01', status: 'done' },
+    { id: '3', title: 'First 100 Users', date: 'Apr 10', status: 'active' },
+    { id: '4', title: 'Seed Round Close', date: 'Jun 30', status: 'pending' }
+];
+
+const MOCK_TEAM_STATS: TeamStats = {
+    total: 8,
+    openRoles: 3,
+    distribution: [
+        { department: 'Engineering', count: 4 },
+        { department: 'Product', count: 2 },
+        { department: 'Sales', count: 1 },
+        { department: 'Marketing', count: 1 }
+    ]
+};
+
 // --- Profile Management ---
 
 export const getStartupProfile = async (): Promise<StartupProfile | null> => {
     try {
         // Mock Check
-        if (!(supabase as any).realtime) return null;
+        if (!(supabase as any).realtime) return MOCK_PROFILE;
 
         const { data: { user } } = await (supabase.auth as any).getUser();
-        if (!user) return null;
+        if (!user) return MOCK_PROFILE;
 
         // First try to get the startup linked via team_members
         let startupId: string | null = null;
@@ -37,11 +71,7 @@ export const getStartupProfile = async (): Promise<StartupProfile | null> => {
         if (membership) {
             startupId = membership.startup_id;
         } else {
-            // Fallback: Check if user owns a startup directly in startups table (if schema allows direct user_id link, though team_members is preferred)
-            // Based on schema, startups table DOES NOT have user_id anymore in the final version (it's via orgs/teams)
-            // But for safety in transition, we check if any existing logic used it. 
-            // The new schema uses team_members. If no membership, user has no startup.
-            return null;
+            return MOCK_PROFILE;
         }
 
         const { data, error } = await supabase
@@ -51,7 +81,7 @@ export const getStartupProfile = async (): Promise<StartupProfile | null> => {
             .single();
 
         if (error) throw error;
-        if (!data) return null;
+        if (!data) return MOCK_PROFILE;
 
         // Map DB fields to Frontend fields
         return {
@@ -69,12 +99,15 @@ export const getStartupProfile = async (): Promise<StartupProfile | null> => {
             fundingAsk: data.funding_ask,
         };
     } catch (err) {
-        console.warn("Failed to fetch startup profile:", err);
-        return null;
+        console.warn("Failed to fetch startup profile, using mock:", err);
+        return MOCK_PROFILE;
     }
 };
 
 export const updateStartupProfile = async (updates: Partial<StartupProfile>): Promise<void> => {
+    // Mock check
+    if (!(supabase as any).realtime) return;
+
     const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) throw new Error("User not authenticated");
 
@@ -127,13 +160,13 @@ export const updateStartupProfile = async (updates: Partial<StartupProfile>): Pr
 export const getStartupTeamStats = async (): Promise<TeamStats> => {
     try {
         // Mock Check
-        if (!(supabase as any).realtime) return { total: 0, openRoles: 0, distribution: [] };
+        if (!(supabase as any).realtime) return MOCK_TEAM_STATS;
 
         const { data: { user } } = await (supabase.auth as any).getUser();
-        if (!user) return { total: 0, openRoles: 0, distribution: [] };
+        if (!user) return MOCK_TEAM_STATS;
 
         const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();
-        if (!membership) return { total: 0, openRoles: 0, distribution: [] };
+        if (!membership) return MOCK_TEAM_STATS;
 
         const startupId = membership.startup_id;
 
@@ -168,31 +201,29 @@ export const getStartupTeamStats = async (): Promise<TeamStats> => {
         };
     } catch (err) {
         console.warn("Error fetching team stats:", err);
-        return { total: 0, openRoles: 0, distribution: [] };
+        return MOCK_TEAM_STATS;
     }
 };
 
 export const getStartupMilestones = async (): Promise<Milestone[]> => {
     try {
-        if (!(supabase as any).realtime) return [];
+        if (!(supabase as any).realtime) return MOCK_MILESTONES;
 
         const { data: { user } } = await (supabase.auth as any).getUser();
-        if (!user) return [];
+        if (!user) return MOCK_MILESTONES;
 
         const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();
-        if (!membership) return [];
+        if (!membership) return MOCK_MILESTONES;
 
-        // Check if milestones table exists (it might be missing in early schema versions)
-        // Ideally we assume schema is correct, but for safety in dev:
         const { data, error } = await supabase
-            .from('milestones') // Assuming 'milestones' table exists as per full schema plan
+            .from('milestones')
             .select('*')
             .eq('startup_id', membership.startup_id)
             .order('target_date', { ascending: true });
 
         if (error) {
              // Graceful fallback if table is missing
-             if (error.code === '42P01') return []; 
+             if (error.code === '42P01') return MOCK_MILESTONES; 
              throw error;
         }
 
@@ -204,6 +235,6 @@ export const getStartupMilestones = async (): Promise<Milestone[]> => {
         }));
     } catch (err) {
         console.warn("Error fetching milestones:", err);
-        return [];
+        return MOCK_MILESTONES;
     }
 };

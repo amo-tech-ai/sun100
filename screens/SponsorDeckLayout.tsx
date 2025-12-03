@@ -1,13 +1,14 @@
+
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 
-const SunAIStartupDeckLayout: React.FC = () => {
+const StartupDeckLayout: React.FC = () => {
     const navLinks = [
-        { name: 'Overview', path: '/sunaistartup-deck' },
-        { name: 'Showcase', path: '/sunaistartup-deck/showcase' },
-        { name: 'Categories', path: '/sunaistartup-deck/categories' },
-        { name: 'Stories', path: '/sunaistartup-deck/stories' },
-        { name: 'Apply', path: '/sunaistartup-deck/apply' },
+        { name: 'Overview', path: '/startup-deck' },
+        { name: 'Showcase', path: '/startup-deck/showcase' },
+        { name: 'Categories', path: '/startup-deck/categories' },
+        { name: 'Stories', path: '/startup-deck/stories' },
+        { name: 'Apply', path: '/startup-deck/apply' },
     ];
 
     return (
@@ -19,7 +20,7 @@ const SunAIStartupDeckLayout: React.FC = () => {
                             <li key={link.name}>
                                 <NavLink
                                     to={link.path}
-                                    end={link.path === '/sunaistartup-deck'}
+                                    end={link.path === '/startup-deck'}
                                     className={({ isActive }) => 
                                         `whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                                             isActive 
@@ -40,4 +41,4 @@ const SunAIStartupDeckLayout: React.FC = () => {
     );
 };
 
-export default SunAIStartupDeckLayout;
+export default StartupDeckLayout;

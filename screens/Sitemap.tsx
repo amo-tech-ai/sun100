@@ -34,11 +34,11 @@ const Sitemap: React.FC = () => {
     { path: '/community/profile/:username', name: 'Founder Profile', description: 'Public profile page for a founder and their startup.' },
     { path: '/login', name: 'Login', description: 'User login page.' },
     { path: '/signup', name: 'Sign Up', description: 'User registration page.' },
-    { path: '/sunaistartup-deck', name: 'Startup Deck Overview', description: 'Overview of the sponsorship program.' },
-    { path: '/sunaistartup-deck/showcase', name: 'Startup Deck Showcase', description: 'A grid of sponsor logos.' },
-    { path: '/sunaistartup-deck/categories', name: 'Startup Deck Categories', description: 'Page to filter sponsors by category.' },
-    { path: '/sunaistartup-deck/apply', name: 'Apply to Sponsor', description: 'Application form for potential sponsors.' },
-    { path: '/sunaistartup-deck/stories', name: 'Sponsor Stories', description: 'Success stories from sponsors.' },
+    { path: '/startup-deck', name: 'Startup Deck Overview', description: 'Overview of the sponsorship program.' },
+    { path: '/startup-deck/showcase', name: 'Startup Deck Showcase', description: 'A grid of sponsor logos.' },
+    { path: '/startup-deck/categories', name: 'Startup Deck Categories', description: 'Page to filter sponsors by category.' },
+    { path: '/startup-deck/apply', name: 'Apply to Sponsor', description: 'Application form for potential sponsors.' },
+    { path: '/startup-deck/stories', name: 'Sponsor Stories', description: 'Success stories from sponsors.' },
   ];
   
   const appRoutes = [

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { getCachedInsights, generateInsights, trackRecommendationAction, getActionStatuses, CoachResponse, ActionStatus } from '../../services/coachService';
 import { CDPIcons } from '../crm/CRMIcons';
@@ -12,61 +11,71 @@ export const StartupCoachSidebar: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
-    const fetchData = async () => {
-        const [cached, statuses] = await Promise.all([
-            getCachedInsights(),
-            getActionStatuses()
-        ]);
-        if (cached) setData(cached);
-        setActionStatuses(statuses);
-    };
-
+    // Initial Load
     useEffect(() => {
-        setLoading(true);
-        fetchData().finally(() => setLoading(false));
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [cached, statuses] = await Promise.all([
+                    getCachedInsights(),
+                    getActionStatuses()
+                ]);
+                if (cached) setData(cached);
+                setActionStatuses(statuses);
+            } catch (e) {
+                console.error("Failed to load coach data", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     }, []);
 
+    // Refresh Action
     const handleRefresh = async () => {
         setRefreshing(true);
         try {
             const fresh = await generateInsights();
             setData(fresh);
         } catch (e) {
-            console.error(e);
+            console.error("Failed to refresh insights", e);
         } finally {
             setRefreshing(false);
         }
     };
 
+    // Recommendation Actions
     const handleAction = async (actionId: string, status: 'completed' | 'dismissed') => {
-        // Optimistic update
+        // Optimistic UI update
         setActionStatuses(prev => [...prev, { action_id: actionId, status }]);
         try {
             await trackRecommendationAction(actionId, status);
         } catch (e) {
             console.error("Failed to track action", e);
-            // Revert if needed
         }
     };
 
-    // Filter out dismissed or completed items from the view
+    // Filter visible items
     const visibleRecommendations = data?.recommendations.filter(
         rec => !actionStatuses.some(s => s.action_id === rec.action_id)
     ) || [];
 
-    const visibleAlerts = data?.alerts.filter(
-        // Ideally alerts should have IDs too for dismissal. For now, we show all.
-        () => true
-    ) || [];
+    const visibleAlerts = data?.alerts || [];
 
-    if (loading && !data) return <div className="p-6 animate-pulse"><div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div><div className="h-32 bg-gray-200 rounded mb-4"></div></div>;
+    if (loading && !data) return (
+        <div className="p-6 animate-pulse h-full bg-[#FBF8F5] border-l border-gray-200">
+            <div className="h-6 bg-gray-200 rounded w-1/2 mb-6"></div>
+            <div className="h-24 bg-gray-200 rounded-xl mb-4"></div>
+            <div className="h-24 bg-gray-200 rounded-xl mb-4"></div>
+        </div>
+    );
 
     return (
-        <div className="bg-[#FBF8F5] h-full flex flex-col w-full border-l border-gray-200">
+        <div className="bg-[#FBF8F5] h-full flex flex-col w-full border-l border-gray-200 overflow-hidden">
             {/* Header */}
-            <div className="p-5 border-b border-gray-200 flex justify-between items-center bg-white">
+            <div className="p-5 border-b border-gray-200 flex justify-between items-center bg-white flex-shrink-0">
                 <div>
-                    <h3 className="font-bold text-brand-blue flex items-center gap-2">
+                    <h3 className="font-bold text-brand-blue flex items-center gap-2 text-lg">
                         <CDPIcons.Sparkles className="text-brand-orange w-5 h-5" />
                         AI Coach
                     </h3>
@@ -79,10 +88,10 @@ export const StartupCoachSidebar: React.FC = () => {
                 <button 
                     onClick={handleRefresh} 
                     disabled={refreshing}
-                    className="p-2 text-gray-400 hover:text-brand-blue hover:bg-gray-100 rounded-full transition-all disabled:opacity-50"
-                    title="Refresh Intelligence"
+                    className={`p-2 text-gray-400 hover:text-brand-blue hover:bg-gray-100 rounded-full transition-all disabled:opacity-50 ${refreshing ? 'animate-spin text-brand-orange' : ''}`}
+                    title="Generate New Insights"
                 >
-                    <CDPIcons.Refresh className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                    <CDPIcons.Refresh className="w-4 h-4" />
                 </button>
             </div>
 
@@ -90,9 +99,13 @@ export const StartupCoachSidebar: React.FC = () => {
                 
                 {/* Empty State */}
                 {!data && !refreshing && (
-                    <div className="text-center py-8">
-                        <p className="text-sm text-gray-500 mb-4">No insights generated yet.</p>
-                        <button onClick={handleRefresh} className="bg-brand-orange text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-opacity-90 transition-colors">
+                    <div className="text-center py-12 px-4">
+                        <div className="w-16 h-16 bg-brand-orange/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-orange">
+                            <CDPIcons.Brain className="w-8 h-8" />
+                        </div>
+                        <h4 className="text-gray-900 font-bold mb-2">No Intelligence Yet</h4>
+                        <p className="text-sm text-gray-500 mb-6">Gemini 3 needs to analyze your startup data to provide coaching.</p>
+                        <button onClick={handleRefresh} className="bg-brand-orange text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-colors shadow-lg shadow-brand-orange/20">
                             Start Analysis
                         </button>
                     </div>
@@ -101,14 +114,15 @@ export const StartupCoachSidebar: React.FC = () => {
                 {/* Alerts Section */}
                 {visibleAlerts.length > 0 && (
                     <div className="space-y-3">
+                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Critical Attention</h4>
                         {visibleAlerts.map((alert, i) => (
-                            <div key={i} className={`p-3 rounded-xl border flex gap-3 ${alert.severity === 'high' ? 'bg-red-50 border-red-100' : 'bg-orange-50 border-orange-100'}`}>
+                            <div key={i} className={`p-4 rounded-xl border flex gap-3 shadow-sm bg-white ${alert.severity === 'high' ? 'border-red-100 border-l-4 border-l-red-500' : 'border-orange-100 border-l-4 border-l-orange-500'}`}>
                                 <div className={`mt-0.5 flex-shrink-0 ${alert.severity === 'high' ? 'text-red-500' : 'text-orange-500'}`}>
-                                    <CDPIcons.Alert className="w-4 h-4" />
+                                    <CDPIcons.Alert className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className={`text-sm font-bold ${alert.severity === 'high' ? 'text-red-800' : 'text-orange-800'}`}>{alert.message}</p>
-                                    {alert.subtext && <p className="text-xs text-gray-600 mt-0.5">{alert.subtext}</p>}
+                                    <p className={`text-sm font-bold ${alert.severity === 'high' ? 'text-red-900' : 'text-orange-900'}`}>{alert.message}</p>
+                                    {alert.subtext && <p className="text-xs text-gray-500 mt-1">{alert.subtext}</p>}
                                 </div>
                             </div>
                         ))}
@@ -121,20 +135,20 @@ export const StartupCoachSidebar: React.FC = () => {
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Strategic Pulse</h4>
                         <div className="space-y-3">
                             {data.insights.map((insight, i) => (
-                                <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                <div key={i} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                                     <div className="flex justify-between items-start mb-2">
                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                                            insight.type === 'positive' ? 'bg-green-100 text-green-700' : 
-                                            insight.type === 'negative' ? 'bg-red-100 text-red-700' : 
-                                            'bg-gray-100 text-gray-600'
+                                            insight.type === 'positive' ? 'bg-green-50 text-green-700 border border-green-100' : 
+                                            insight.type === 'negative' ? 'bg-red-50 text-red-700 border border-red-100' : 
+                                            'bg-gray-50 text-gray-600 border border-gray-100'
                                         }`}>
                                             {insight.category}
                                         </span>
                                         {insight.metric_highlight && (
-                                            <span className="text-xs font-bold text-brand-blue">{insight.metric_highlight}</span>
+                                            <span className={`text-xs font-bold ${insight.type === 'positive' ? 'text-green-600' : 'text-brand-blue'}`}>{insight.metric_highlight}</span>
                                         )}
                                     </div>
-                                    <h5 className="font-bold text-gray-800 text-sm mb-1">{insight.title}</h5>
+                                    <h5 className="font-bold text-gray-900 text-sm mb-1">{insight.title}</h5>
                                     <p className="text-xs text-gray-500 leading-relaxed">{insight.description}</p>
                                 </div>
                             ))}
@@ -148,10 +162,11 @@ export const StartupCoachSidebar: React.FC = () => {
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Coach's Playbook</h4>
                         <div className="space-y-2">
                             {visibleRecommendations.map((rec, i) => (
-                                <div key={i} className="bg-white p-3 rounded-lg border border-gray-200 hover:border-brand-orange hover:shadow-md transition-all group">
+                                <div key={i} className="bg-white p-4 rounded-xl border border-gray-200 hover:border-brand-orange/50 hover:shadow-md transition-all group relative overflow-hidden">
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-orange opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                     <div className="flex justify-between items-start mb-1">
                                         <div className="flex items-center gap-2">
-                                            <CDPIcons.Target className="w-4 h-4 text-gray-300 group-hover:text-brand-orange" />
+                                            <CDPIcons.Target className="w-4 h-4 text-gray-400 group-hover:text-brand-orange transition-colors" />
                                             <span className="text-sm font-bold text-brand-blue group-hover:text-brand-orange transition-colors">{rec.label}</span>
                                         </div>
                                     </div>
@@ -160,14 +175,14 @@ export const StartupCoachSidebar: React.FC = () => {
                                     <div className="flex justify-end gap-2 pl-6">
                                         <button 
                                             onClick={() => handleAction(rec.action_id, 'dismissed')}
-                                            className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100"
+                                            className="text-gray-400 hover:text-gray-600 p-1.5 rounded hover:bg-gray-100"
                                             title="Dismiss"
                                         >
                                             <XIcon />
                                         </button>
                                         <button 
                                             onClick={() => handleAction(rec.action_id, 'completed')}
-                                            className="text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-2 py-1 rounded text-xs font-bold flex items-center gap-1"
+                                            className="text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors"
                                             title="Mark as Done"
                                         >
                                             <CheckCircleIcon /> Done
@@ -179,20 +194,23 @@ export const StartupCoachSidebar: React.FC = () => {
                     </div>
                 )}
                 
-                {visibleRecommendations.length === 0 && data?.recommendations && data.recommendations.length > 0 && (
-                     <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                        <p className="text-xs text-gray-500">All recommendations completed!</p>
+                {/* Empty Recommendations State */}
+                {data && visibleRecommendations.length === 0 && data.recommendations.length > 0 && (
+                     <div className="text-center py-6 bg-green-50/50 rounded-xl border border-dashed border-green-200">
+                        <div className="inline-block p-2 bg-green-100 rounded-full text-green-600 mb-2"><CheckCircleIcon /></div>
+                        <p className="text-xs font-bold text-green-800">All Caught Up!</p>
+                        <p className="text-[10px] text-green-600">You've completed all recommendations.</p>
                      </div>
                 )}
 
                 {/* Match Score */}
                 {data?.match_score && (
-                    <div className="bg-gradient-to-r from-brand-blue to-slate-800 p-4 rounded-xl text-white flex items-center justify-between">
+                    <div className="bg-gradient-to-br from-brand-blue to-slate-900 p-5 rounded-xl text-white flex items-center justify-between shadow-lg">
                         <div>
-                            <p className="text-xs text-blue-200 font-bold uppercase">Venture Readiness</p>
-                            <p className="text-sm text-gray-300">Based on current data</p>
+                            <p className="text-xs text-blue-200 font-bold uppercase tracking-wide">Investor Readiness</p>
+                            <p className="text-[10px] text-gray-400 mt-1">Based on current traction & assets</p>
                         </div>
-                        <div className="text-2xl font-extrabold text-brand-mustard">{data.match_score}</div>
+                        <div className="text-3xl font-extrabold text-brand-mustard">{data.match_score}</div>
                     </div>
                 )}
             </div>

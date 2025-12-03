@@ -69,13 +69,13 @@ const FinancialOverview = lazy(() => import('./screens/FinancialOverview'));
 const CustomerCRM = lazy(() => import('./screens/CustomerCRM'));
 const Prospecting = lazy(() => import('./screens/Prospecting'));
 
-// --- Renamed SunAIStartupDeck Screens ---
-const SunAIStartupDeckLayout = lazy(() => import('./screens/SponsorDeckLayout'));
-const SunAIStartupDeckOverview = lazy(() => import('./screens/SponsorDeckOverview'));
-const SunAIStartupDeckShowcase = lazy(() => import('./screens/SponsorDeckShowcase'));
-const SunAIStartupDeckCategories = lazy(() => import('./screens/SponsorDeckCategories'));
-const SunAIStartupDeckApply = lazy(() => import('./screens/SponsorDeckApply'));
-const SunAIStartupDeckStories = lazy(() => import('./screens/SponsorDeckStories'));
+// --- Renamed StartupDeck Screens ---
+const StartupDeckLayout = lazy(() => import('./screens/SponsorDeckLayout'));
+const StartupDeckOverview = lazy(() => import('./screens/SponsorDeckOverview'));
+const StartupDeckShowcase = lazy(() => import('./screens/SponsorDeckShowcase'));
+const StartupDeckCategories = lazy(() => import('./screens/SponsorDeckCategories'));
+const StartupDeckApply = lazy(() => import('./screens/SponsorDeckApply'));
+const StartupDeckStories = lazy(() => import('./screens/SponsorDeckStories'));
 
 
 // --- Restored App Screens ---
@@ -134,13 +134,13 @@ const App: React.FC = () => {
                   <Route path="/directory" element={<VCDirectory />} />
                   <Route path="/directory/:id" element={<VCDetail />} />
                   
-                  {/* SunAIStartupDeck routes */}
-                  <Route path="/sunaistartup-deck" element={<SunAIStartupDeckLayout />}>
-                    <Route index element={<SunAIStartupDeckOverview />} />
-                    <Route path="showcase" element={<SunAIStartupDeckShowcase />} />
-                    <Route path="categories" element={<SunAIStartupDeckCategories />} />
-                    <Route path="apply" element={<SunAIStartupDeckApply />} />
-                    <Route path="stories" element={<SunAIStartupDeckStories />} />
+                  {/* Startup Deck routes */}
+                  <Route path="/startup-deck" element={<StartupDeckLayout />}>
+                    <Route index element={<StartupDeckOverview />} />
+                    <Route path="showcase" element={<StartupDeckShowcase />} />
+                    <Route path="categories" element={<StartupDeckCategories />} />
+                    <Route path="apply" element={<StartupDeckApply />} />
+                    <Route path="stories" element={<StartupDeckStories />} />
                   </Route>
                 </Route>
 

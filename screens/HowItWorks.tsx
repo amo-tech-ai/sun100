@@ -212,14 +212,14 @@ const HowItWorks: React.FC = () => {
             <section className="relative pt-32 pb-20 px-4 overflow-hidden">
                 <div ref={heroRef} className="max-w-7xl mx-auto text-center relative z-10">
                     <span className={`inline-block py-1.5 px-4 rounded-full bg-white border border-brand-orange/20 text-brand-orange text-xs font-bold uppercase tracking-widest mb-6 transition-all duration-700 ${isHeroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                        How Sun AI Works
+                        How StartupAI Works
                     </span>
                     <h1 className={`text-5xl md:text-7xl font-extrabold text-slate-900 mb-6 tracking-tight leading-tight transition-all duration-700 delay-100 ${isHeroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                         Build. Validate. Fund. <br/>
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-brand-mustard">Scale.</span>
                     </h1>
                     <p className={`text-xl text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed mb-10 transition-all duration-700 delay-200 ${isHeroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                        Sun AI transforms your idea into investor-ready documents, insights, and funding opportunities with the power of Gemini 3.
+                        StartupAI transforms your idea into investor-ready documents, insights, and funding opportunities with the power of Gemini 3.
                     </p>
                     <div className={`flex flex-col sm:flex-row justify-center gap-4 transition-all duration-700 delay-300 ${isHeroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                         <Link to="/dashboard" className="px-8 py-4 text-lg font-bold text-white bg-brand-blue rounded-xl hover:bg-opacity-90 shadow-lg hover:shadow-brand-blue/20 transition-all transform hover:-translate-y-1">
@@ -251,7 +251,7 @@ const HowItWorks: React.FC = () => {
                             step="Step 1"
                             icon={<LightbulbIcon />}
                             title="Input Your Startup"
-                            desc="Sun AI reads everything — your website, notes, docs — and builds intelligence about your startup using Gemini 3 reasoning."
+                            desc="StartupAI reads everything — your website, notes, docs — and builds intelligence about your startup using Gemini 3 reasoning."
                             list={["Business Description", "Website Import", "File Uploads"]}
                             delay={0}
                         />
@@ -344,7 +344,7 @@ const HowItWorks: React.FC = () => {
             {/* SECTION 5: BRAIN FLOW */}
             <section ref={brainRef} className="py-24 px-4 relative">
                 <div className="max-w-4xl mx-auto text-center">
-                    <h2 className="text-4xl font-extrabold text-brand-blue mb-16">Inside the Sun AI Brain</h2>
+                    <h2 className="text-4xl font-extrabold text-brand-blue mb-16">Inside the StartupAI Brain</h2>
                     <div className="relative">
                         {/* Vertical connection line */}
                         <div className={`absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-slate-200 via-brand-orange to-slate-200 -translate-x-1/2 transition-all duration-1000 ${isBrainVisible ? 'h-full' : 'h-0'}`}></div>
@@ -389,7 +389,7 @@ const HowItWorks: React.FC = () => {
             {/* SECTION 7: TESTIMONIALS */}
             <section className="py-24 overflow-hidden bg-white">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-brand-blue">Founders Love Sun AI</h2>
+                    <h2 className="text-3xl font-bold text-brand-blue">Founders Love StartupAI</h2>
                 </div>
                 <div className="relative w-full">
                     <div className="flex w-[200%] animate-scroll">

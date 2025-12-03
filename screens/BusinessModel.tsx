@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import useOnScreen from '../hooks/useOnScreen';
@@ -33,7 +34,7 @@ const BusinessModel: React.FC = () => {
 
     return (
         <>
-            <title>Business Model - sun ai startup</title>
+            <title>Business Model - StartupAI</title>
             <meta name="description" content="A scalable SaaS model combining subscriptions, partnerships, and marketplace commissions to create a sustainable financial engine." />
             <style>{`
                 @keyframes orbit {
@@ -121,7 +122,7 @@ const BusinessModel: React.FC = () => {
                         />
                          <RevenueStreamCard 
                             title="Accelerator & VC Partnerships"
-                            description="Enterprise licenses for accelerators to provide Sun AI to their cohorts, creating B2B revenue and user acquisition channels."
+                            description="Enterprise licenses for accelerators to provide StartupAI to their cohorts, creating B2B revenue and user acquisition channels."
                             visual={
                                 <div className="flex justify-around items-end h-full">
                                     {[20, 35, 25, 40].map((h, i) => (

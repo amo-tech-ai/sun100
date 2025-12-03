@@ -1,3 +1,4 @@
+
 import React, { forwardRef, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import useOnScreen from '../hooks/useOnScreen';
@@ -45,7 +46,7 @@ const SponsorLogoPlaceholder: React.FC<{delay: number}> = ({delay}) => {
 };
 
 
-const SunAIStartupDeckOverview: React.FC = () => {
+const StartupDeckOverview: React.FC = () => {
     const [ecosystemRef, isEcosystemVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.3 });
 
     return (
@@ -96,10 +97,10 @@ const SunAIStartupDeckOverview: React.FC = () => {
                             Join a curated network of industry leaders, innovators, and the brightest founders to shape the future of artificial intelligence in our ecosystem.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                            <Link to="/sunaistartup-deck/apply" className="inline-block bg-brand-blue text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-all duration-200 shadow-md">
+                            <Link to="/startup-deck/apply" className="inline-block bg-brand-blue text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-all duration-200 shadow-md">
                                 Become a Sponsor
                             </Link>
-                            <Link to="/sunaistartup-deck/showcase" className="inline-block bg-white text-brand-orange border-2 border-brand-orange font-bold py-3 px-8 rounded-lg text-lg hover:bg-brand-orange/5 transition-all duration-200">
+                            <Link to="/startup-deck/showcase" className="inline-block bg-white text-brand-orange border-2 border-brand-orange font-bold py-3 px-8 rounded-lg text-lg hover:bg-brand-orange/5 transition-all duration-200">
                                 Explore Our Partners
                             </Link>
                         </div>
@@ -111,7 +112,7 @@ const SunAIStartupDeckOverview: React.FC = () => {
                             <div className="orbit-item absolute bottom-0 left-0 w-20 h-20 bg-brand-mustard/5 rounded-full flex items-center justify-center p-2 shadow-sm animate-pulse-slow" style={{animationDelay: '1.5s'}}><span className="text-xs font-bold text-brand-mustard">Investors</span></div>
                             <div className="orbit-item absolute bottom-0 right-0 w-20 h-20 bg-brand-orange/5 rounded-full flex items-center justify-center p-2 shadow-sm animate-pulse-slow" style={{animationDelay: '3s'}}><span className="text-xs font-bold text-brand-orange">Sponsors</span></div>
                         </div>
-                        <div className="w-40 h-40 rounded-full bg-white shadow-inner flex items-center justify-center font-bold text-brand-blue text-center text-xl">sun ai<br/>startup</div>
+                        <div className="w-40 h-40 rounded-full bg-white shadow-inner flex items-center justify-center font-bold text-brand-blue text-center text-xl">Startup<br/>AI</div>
                     </div>
                 </div>
             </Section>
@@ -119,7 +120,7 @@ const SunAIStartupDeckOverview: React.FC = () => {
             {/* Section 2: Why Partner */}
             <Section>
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold text-brand-blue">Why Partner With sun ai startup</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-brand-blue">Why Partner With StartupAI</h2>
                     <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Gain unparalleled access to a pipeline of high-potential AI startups, co-create solutions to industry challenges, and position your brand at the forefront of innovation.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -182,7 +183,7 @@ const SunAIStartupDeckOverview: React.FC = () => {
                     {[...Array(8)].map((_, i) => <SponsorLogoPlaceholder key={i} delay={i * 100} />)}
                 </div>
                 <div className="text-center mt-12">
-                     <Link to="/sunaistartup-deck/showcase" className="font-bold text-brand-orange text-lg hover:underline">
+                     <Link to="/startup-deck/showcase" className="font-bold text-brand-orange text-lg hover:underline">
                         View All Sponsors &rarr;
                     </Link>
                 </div>
@@ -191,11 +192,11 @@ const SunAIStartupDeckOverview: React.FC = () => {
             {/* Section 6: Final CTA */}
             <Section className="bg-brand-blue text-white">
                 <div className="text-center max-w-3xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-bold">Join the sun ai startup Partner Network.</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold">Join the StartupAI Partner Network.</h2>
                     <p className="text-lg text-blue-200 mt-4 mb-8">
                        Position your company at the center of the AI revolution. Let's build the future, together.
                     </p>
-                    <Link to="/sunaistartup-deck/apply" className="inline-block bg-brand-orange text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-all duration-200 shadow-xl">
+                    <Link to="/startup-deck/apply" className="inline-block bg-brand-orange text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition-all duration-200 shadow-xl">
                         Become a Sponsor
                     </Link>
                 </div>
@@ -204,4 +205,4 @@ const SunAIStartupDeckOverview: React.FC = () => {
     );
 };
 
-export default SunAIStartupDeckOverview;
+export default StartupDeckOverview;

@@ -8,9 +8,16 @@ const mapCategoryToEnum = (cat: string): 'Financial' | 'Legal' | 'Pitch Deck' | 
     return valid.includes(cat) ? (cat as any) : 'Other';
 };
 
+const MOCK_FILES: DataRoomFile[] = [
+    { id: '1', name: 'Pitch Deck v3.pdf', category: 'Pitch Deck', size: '2.4 MB', uploadDate: 'Oct 24, 2024' },
+    { id: '2', name: 'Financial Model.xlsx', category: 'Financial', size: '1.1 MB', uploadDate: 'Oct 22, 2024' },
+    { id: '3', name: 'Certificate of Incorporation.pdf', category: 'Legal', size: '0.5 MB', uploadDate: 'Sep 15, 2024' },
+    { id: '4', name: 'Cap Table.csv', category: 'Financial', size: '0.2 MB', uploadDate: 'Oct 20, 2024' },
+];
+
 export const getDataRoomFiles = async (): Promise<DataRoomFile[]> => {
     // Mock Mode Check
-    if (!(supabase as any).realtime) return [];
+    if (!(supabase as any).realtime) return MOCK_FILES;
 
     const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return [];
@@ -41,6 +48,18 @@ export const getDataRoomFiles = async (): Promise<DataRoomFile[]> => {
 };
 
 export const uploadDataRoomFile = async (fileMeta: Omit<DataRoomFile, 'id' | 'uploadDate'>, fileBlob?: File): Promise<DataRoomFile> => {
+    // Mock upload
+    if (!(supabase as any).realtime) {
+        await new Promise(r => setTimeout(r, 800)); // Simulate network
+        return {
+            id: `file-${Date.now()}`,
+            name: fileMeta.name,
+            category: fileMeta.category,
+            size: fileMeta.size,
+            uploadDate: new Date().toLocaleDateString()
+        };
+    }
+
     const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) throw new Error("User not authenticated");
 
@@ -92,6 +111,8 @@ export const uploadDataRoomFile = async (fileMeta: Omit<DataRoomFile, 'id' | 'up
 };
 
 export const deleteDataRoomFile = async (id: string): Promise<void> => {
+    if (!(supabase as any).realtime) return;
+    
     // First get the file path to delete from storage
     const { data: fileRecord } = await supabase.from('documents').select('storage_path').eq('id', id).single();
     

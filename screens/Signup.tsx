@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -33,8 +34,8 @@ const Signup: React.FC = () => {
 
     return (
         <div>
-            <title>Sign Up - sun ai startup</title>
-            <meta name="description" content="Create a new sun ai startup account." />
+            <title>Sign Up - StartupAI</title>
+            <meta name="description" content="Create a new StartupAI account." />
             <div className="bg-white p-6 md:p-10 rounded-lg shadow-md max-w-md mx-auto">
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-6 text-center">Create an Account</h1>
                 {error && <p className="bg-red-100 text-red-700 p-3 rounded-md mb-4">{error}</p>}

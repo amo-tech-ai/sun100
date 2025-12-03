@@ -37,7 +37,7 @@ const ProgressHeader: React.FC<{ currentStep: number }> = ({ currentStep }) => {
                 <div className="flex items-center justify-between h-20">
                     <Link to="/dashboard" className="flex items-center gap-2">
                         <SunIcon />
-                        <span className="font-bold text-lg hidden sm:inline">sun ai startup</span>
+                        <span className="font-bold text-lg hidden sm:inline">StartupAI</span>
                     </Link>
                     <div className="flex items-center gap-4">
                         <span className="text-sm font-medium text-gray-500 animate-pulse">Auto-saving...</span>
@@ -118,7 +118,7 @@ const StartupWizard: React.FC = () => {
                                         id="companyName" 
                                         value={profile.name}
                                         onChange={(e) => updateProfile({ name: e.target.value })}
-                                        placeholder="e.g., Sun AI Startup" 
+                                        placeholder="e.g., StartupAI" 
                                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" 
                                     />
                                 </div>
@@ -129,7 +129,7 @@ const StartupWizard: React.FC = () => {
                                         id="website" 
                                         value={profile.website}
                                         onChange={(e) => updateProfile({ website: e.target.value })}
-                                        placeholder="https://www.sunaistartup.com" 
+                                        placeholder="https://www.startupai.com" 
                                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" 
                                     />
                                 </div>

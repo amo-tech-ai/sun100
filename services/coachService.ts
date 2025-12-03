@@ -1,4 +1,3 @@
-
 import { supabase, IS_MOCK_MODE } from '../lib/supabaseClient';
 import { invokeEdgeFunction } from './edgeFunctionService';
 
@@ -35,13 +34,17 @@ export interface ActionStatus {
     status: 'pending' | 'completed' | 'dismissed';
 }
 
-// Fetch cached insights from DB (Fast)
+/**
+ * Fetches the latest insights from the database cache.
+ * This is fast and cheap.
+ */
 export const getCachedInsights = async (): Promise<CoachResponse | null> => {
     if (IS_MOCK_MODE) return getMockCoachData();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
+    // Get startup ID
     const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();
     if (!membership) return null;
 
@@ -57,10 +60,13 @@ export const getCachedInsights = async (): Promise<CoachResponse | null> => {
     return null;
 };
 
-// Trigger fresh analysis via Edge Function (Slow/Expensive)
+/**
+ * Triggers a fresh analysis via the Edge Function.
+ * This uses Gemini tokens and takes time.
+ */
 export const generateInsights = async (): Promise<CoachResponse> => {
     if (IS_MOCK_MODE) {
-        await new Promise(r => setTimeout(r, 3000));
+        await new Promise(r => setTimeout(r, 2500));
         return getMockCoachData();
     }
     
@@ -68,10 +74,12 @@ export const generateInsights = async (): Promise<CoachResponse> => {
     return { ...result, last_updated: new Date().toISOString() };
 };
 
-// Track user interaction with a recommendation
+/**
+ * Tracks user interaction with recommendations (complete/dismiss).
+ */
 export const trackRecommendationAction = async (actionId: string, status: 'completed' | 'dismissed'): Promise<void> => {
     if (IS_MOCK_MODE) {
-        console.log(`[Mock] Tracked action ${actionId} as ${status}`);
+        console.log(`[Mock] Action ${actionId} -> ${status}`);
         return;
     }
 
@@ -91,7 +99,9 @@ export const trackRecommendationAction = async (actionId: string, status: 'compl
     if (error) throw error;
 };
 
-// Fetch actions status to filter the UI
+/**
+ * Fetches status of actions to hide completed/dismissed items.
+ */
 export const getActionStatuses = async (): Promise<ActionStatus[]> => {
     if (IS_MOCK_MODE) return [];
 
@@ -113,19 +123,20 @@ export const getActionStatuses = async (): Promise<ActionStatus[]> => {
     return data as ActionStatus[];
 };
 
-// Mock Data Fallback
+// Mock Data for Development
 const getMockCoachData = (): CoachResponse => ({
     insights: [
-        { type: 'positive', category: 'growth', title: 'Momentum Building', description: 'Pipeline velocity increased by 15% this week.', metric_highlight: '+15%' },
-        { type: 'neutral', category: 'finance', title: 'Burn Rate Stable', description: 'Expenses are tracking with projections.' }
+        { type: 'positive', category: 'growth', title: 'Pipeline Velocity Up', description: 'You moved 3 deals to negotiation this week, 15% faster than average.', metric_highlight: '+15%' },
+        { type: 'negative', category: 'finance', title: 'Burn Rate Alert', description: 'Expenses increased by 20% due to new software subscriptions.', metric_highlight: '+20%' }
     ],
     alerts: [
-        { severity: 'high', message: 'Update Traction Slide', subtext: 'It has been 14 days since last update.' }
+        { severity: 'high', message: 'Update Traction Slide', subtext: 'Data is 30 days old.' },
+        { severity: 'medium', message: 'Connect Bank Account', subtext: 'For accurate runway calculation.' }
     ],
     recommendations: [
-        { action_id: 'draft_email', label: 'Draft Investor Update', reason: 'Good news on growth metrics.' },
-        { action_id: 'enrich_crm', label: 'Enrich Top 5 Leads', reason: 'Missing CEO data for key accounts.' }
+        { action_id: 'email_investor_1', label: 'Email Sequoia', reason: '5 days since last contact.' },
+        { action_id: 'update_competitors', label: 'Update Competitor Matrix', reason: 'New entrant "Bolt" detected.' }
     ],
-    match_score: 82,
+    match_score: 78,
     last_updated: new Date().toISOString()
 });

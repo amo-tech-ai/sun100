@@ -24,11 +24,112 @@ export interface Investor {
     terms_summary?: string; // Context on equity (e.g. "SAFE + MFN")
 }
 
+const mockInvestors: Investor[] = [
+    {
+        id: 'inv-1',
+        name: 'Sequoia Capital',
+        type: 'vc',
+        slug: 'sequoia',
+        description: 'Helps daring founders build legendary companies from idea to IPO and beyond.',
+        stages: ['Seed', 'Series A', 'Growth'],
+        min_check_size: 500000,
+        max_check_size: 10000000,
+        specialties: ['SaaS', 'AI', 'Consumer', 'Crypto'],
+        geographies: ['Global', 'US'],
+        benefits: ['Top-tier network', 'Recruiting support', 'Brand prestige'],
+        notable_investments: ['Airbnb', 'Stripe', 'Google'],
+        website_url: 'https://sequoiacap.com'
+    },
+    {
+        id: 'inv-2',
+        name: 'Y Combinator',
+        type: 'accelerator',
+        slug: 'yc',
+        description: 'The world\'s premier startup accelerator. We help founders make something people want.',
+        stages: ['Pre-Seed', 'Seed'],
+        min_check_size: 125000,
+        max_check_size: 500000,
+        equity_percent_min: 7,
+        equity_percent_max: 7,
+        terms_summary: '$125k for 7% + $375k MFN',
+        specialties: ['SaaS', 'B2B', 'Consumer', 'Hardware', 'Bio'],
+        geographies: ['Global'],
+        benefits: ['Alumni network', 'Demo Day', 'Weekly dinners'],
+        notable_investments: ['Coinbase', 'Dropbox', 'Reddit'],
+        website_url: 'https://ycombinator.com'
+    },
+    {
+        id: 'inv-3',
+        name: 'a16z (Andreessen Horowitz)',
+        type: 'vc',
+        slug: 'a16z',
+        description: 'Backs bold entrepreneurs building the future through technology.',
+        stages: ['Seed', 'Series A', 'Series B', 'Growth'],
+        min_check_size: 1000000,
+        max_check_size: 50000000,
+        specialties: ['Crypto', 'Bio', 'Games', 'Fintech', 'Enterprise'],
+        geographies: ['US', 'Global'],
+        benefits: ['Operational teams', 'Marketing support', 'Policy advocacy'],
+        notable_investments: ['Facebook', 'Slack', 'Instacart'],
+        website_url: 'https://a16z.com'
+    },
+    {
+        id: 'inv-4',
+        name: 'Techstars',
+        type: 'accelerator',
+        slug: 'techstars',
+        description: 'Investment and innovation platform that connects entrepreneurs, investors, and corporations.',
+        stages: ['Pre-Seed'],
+        min_check_size: 20000,
+        max_check_size: 120000,
+        equity_percent_min: 6,
+        equity_percent_max: 10,
+        specialties: ['Generalist', 'City-specific programs'],
+        geographies: ['Global'],
+        benefits: ['Mentorship', 'Corporate partners', 'Global network'],
+        notable_investments: ['SendGrid', 'DigitalOcean', 'ClassPass'],
+        website_url: 'https://techstars.com'
+    },
+    {
+        id: 'inv-5',
+        name: 'First Round Capital',
+        type: 'vc',
+        slug: 'first-round',
+        description: 'Seed-stage venture firm focused on building a vibrant community of technology entrepreneurs.',
+        stages: ['Seed', 'Series A'],
+        min_check_size: 750000,
+        max_check_size: 4000000,
+        specialties: ['SaaS', 'Consumer', 'Fintech', 'Healthcare'],
+        geographies: ['US'],
+        benefits: ['Knowledge sharing', 'Community events', 'Talent database'],
+        notable_investments: ['Uber', 'Square', 'Notion'],
+        website_url: 'https://firstround.com'
+    },
+    {
+        id: 'inv-6',
+        name: '500 Global',
+        type: 'vc',
+        slug: '500-global',
+        description: 'Venture capital firm with more than $2.4 billion in assets under management that invests early in founders building fast-growing technology companies.',
+        stages: ['Pre-Seed', 'Seed'],
+        min_check_size: 150000,
+        max_check_size: 500000,
+        specialties: ['Global Markets', 'SaaS', 'Consumer'],
+        geographies: ['Global', 'APAC', 'LATAM', 'MENA'],
+        benefits: ['Global reach', 'Growth marketing support', 'Accelerator programs'],
+        notable_investments: ['Canva', 'Grab', 'Twilio'],
+        website_url: 'https://500.co'
+    }
+];
+
 export const getInvestors = async (): Promise<Investor[]> => {
     // If Supabase is configured, use it
     if (!IS_MOCK_MODE) {
         const { data, error } = await supabase.from('investors').select('*');
-        if (error) throw error;
+        if (error) {
+            console.warn("Failed to fetch investors from DB, using mock data", error);
+            return mockInvestors;
+        }
         
         // Map DB response to Investor interface if necessary (snake_case to camelCase usually handled, but types might need explicit cast)
         return data.map((inv: any) => ({
@@ -42,14 +143,16 @@ export const getInvestors = async (): Promise<Investor[]> => {
         }));
     }
     
-    // Fallback to empty or mock if DB not ready
-    return [];
+    // Fallback to mock data
+    return mockInvestors;
 };
 
 export const getInvestorById = async (id: string): Promise<Investor | undefined> => {
     if (!IS_MOCK_MODE) {
         const { data, error } = await supabase.from('investors').select('*').eq('id', id).single();
-        if (error) return undefined;
+        if (error) {
+             return mockInvestors.find(i => i.id === id);
+        }
         
         return {
             ...data,
@@ -61,7 +164,7 @@ export const getInvestorById = async (id: string): Promise<Investor | undefined>
         } as Investor;
     }
 
-    return undefined;
+    return mockInvestors.find(i => i.id === id);
 };
 
 export const createInvestor = async (investor: Omit<Investor, 'id'>): Promise<Investor> => {
@@ -70,7 +173,9 @@ export const createInvestor = async (investor: Omit<Investor, 'id'>): Promise<In
         if (error) throw error;
         return data as Investor;
     }
-    throw new Error("Database not available");
+    const newInvestor = { ...investor, id: `inv-${Date.now()}` };
+    mockInvestors.push(newInvestor);
+    return newInvestor;
 };
 
 export const updateInvestor = async (id: string, updates: Partial<Investor>): Promise<Investor> => {
@@ -79,7 +184,12 @@ export const updateInvestor = async (id: string, updates: Partial<Investor>): Pr
         if (error) throw error;
         return data as Investor;
     }
-     throw new Error("Database not available");
+    const index = mockInvestors.findIndex(i => i.id === id);
+    if (index !== -1) {
+        mockInvestors[index] = { ...mockInvestors[index], ...updates };
+        return mockInvestors[index];
+    }
+    throw new Error("Investor not found");
 };
 
 export const deleteInvestor = async (id: string): Promise<void> => {
@@ -88,5 +198,8 @@ export const deleteInvestor = async (id: string): Promise<void> => {
         if (error) throw error;
         return;
     }
-     throw new Error("Database not available");
+    const index = mockInvestors.findIndex(i => i.id === id);
+    if (index !== -1) {
+        mockInvestors.splice(index, 1);
+    }
 };

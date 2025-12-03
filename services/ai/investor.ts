@@ -14,12 +14,12 @@ export const generateOnePager = async (startupProfile: any): Promise<OnePagerCon
         return {
             headline: "The Operating System for AI Startups",
             problem_summary: "Founders waste 30% of their time on non-core tasks like fundraising decks and CRM management.",
-            solution_summary: "Sun AI provides an all-in-one platform with automated pitch decks, investor matching, and growth tools.",
+            solution_summary: "StartupAI provides an all-in-one platform with automated pitch decks, investor matching, and growth tools.",
             market_opportunity: "Targeting the $50B productivity software market with a focus on the 50M+ early-stage founders.",
             traction_highlights: ["$10k MRR", "20% MoM Growth", "500+ Active Users"],
             business_model: "Freemium SaaS with $49/mo Pro tier and Enterprise plans.",
             ask: "$1.5M Seed Round to scale engineering and sales.",
-            contact_info: { email: "founder@example.com", website: "sunaistartup.com" }
+            contact_info: { email: "founder@example.com", website: "startupai.com" }
         };
     }
 };
@@ -124,7 +124,7 @@ export const generateInvestmentMemo = async (startupProfile: any): Promise<Inves
         console.warn("Edge Function failed. Returning mock Investment Memo.");
         await new Promise(r => setTimeout(r, 2000));
         return {
-            investment_thesis: "Sun AI is positioned to capture the long-tail of the founder market by automating the most painful parts of starting a company.",
+            investment_thesis: "StartupAI is positioned to capture the long-tail of the founder market by automating the most painful parts of starting a company.",
             key_risks: ["Platform dependency on LLM providers", "Customer acquisition cost scaling"],
             market_dynamics: "The market is shifting from point solutions to integrated operating systems.",
             competitor_analysis: "Incumbents are slow to integrate generative AI deeply into workflows.",

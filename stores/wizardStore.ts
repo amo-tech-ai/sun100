@@ -50,7 +50,7 @@ export const useWizardStore = create<WizardState>()(
     (set) => ({
       step: 1,
       direction: 'forward',
-      businessContext: 'Sun AI is a startup that uses generative AI to create pitch decks for early-stage companies. We leverage large language models to analyze business context and generate compelling narratives, financial projections, and slide designs automatically.',
+      businessContext: 'StartupAI is a startup that uses generative AI to create pitch decks for early-stage companies. We leverage large language models to analyze business context and generate compelling narratives, financial projections, and slide designs automatically.',
       urls: [],
       financials: {
         industry: 'FinTech',

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>;
 
-const SunAIStartupDeckApply: React.FC = () => {
+const StartupDeckApply: React.FC = () => {
     const [formData, setFormData] = useState({
         companyName: '',
         website: '',
@@ -31,7 +31,7 @@ const SunAIStartupDeckApply: React.FC = () => {
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Application Received!</h2>
                 <p className="text-gray-600 mb-8 text-lg">
-                    Thank you for your interest in partnering with Sun AI. Our team will review your application and reach out within 2-3 business days.
+                    Thank you for your interest in partnering with StartupAI. Our team will review your application and reach out within 2-3 business days.
                 </p>
                 <button 
                     onClick={() => setSubmitted(false)} 
@@ -163,4 +163,4 @@ const SunAIStartupDeckApply: React.FC = () => {
     );
 };
 
-export default SunAIStartupDeckApply;
+export default StartupDeckApply;

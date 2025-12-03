@@ -10,7 +10,7 @@ const PublicLayout: React.FC = () => {
         { name: 'Services', path: '/services'},
         { name: 'Blog', path: '/blogs'},
         { name: 'Events', path: '/events'},
-        { name: 'Startup Deck', path: '/sunaistartup-deck'},
+        { name: 'Startup Deck', path: '/startup-deck'},
     ];
 
     return (
@@ -19,7 +19,7 @@ const PublicLayout: React.FC = () => {
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <Link className="flex items-center space-x-2" to="/">
                         <span className="material-symbols-outlined text-brand-orange text-3xl">flare</span>
-                        <span className="font-bold text-xl text-brand-blue">sun AI startup</span>
+                        <span className="font-bold text-xl text-brand-blue">StartupAI</span>
                     </Link>
                     <nav className="hidden md:flex items-center space-x-8 text-sm text-gray-700">
                          {navLinks.map(link => (
@@ -46,7 +46,7 @@ const PublicLayout: React.FC = () => {
                         <div className="col-span-2 md:col-span-1">
                             <Link className="flex items-center space-x-2" to="/">
                                 <span className="material-symbols-outlined text-brand-orange text-3xl">flare</span>
-                                <span className="font-bold text-xl text-brand-blue">sun AI startup</span>
+                                <span className="font-bold text-xl text-brand-blue">StartupAI</span>
                             </Link>
                         </div>
                         <div>
@@ -85,7 +85,7 @@ const PublicLayout: React.FC = () => {
                         </div>
                     </div>
                     <div className="mt-12 pt-8 border-t border-border-light dark:border-border-dark text-center text-sm text-subtext-light dark:text-subtext-dark">
-                        <p>© {new Date().getFullYear()} Sun AI Startup. Empowering founders through intelligent design.</p>
+                        <p>© {new Date().getFullYear()} StartupAI. Empowering founders through intelligent design.</p>
                     </div>
                 </div>
             </footer>

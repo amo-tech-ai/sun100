@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -32,7 +33,7 @@ const Blogs: React.FC = () => {
         <div>
             <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold text-gray-800">From the Blog</h1>
-                <p className="text-xl text-gray-600 mt-4">Insights on startups, AI, and presentation design from the sun ai startup team.</p>
+                <p className="text-xl text-gray-600 mt-4">Insights on startups, AI, and presentation design from the StartupAI team.</p>
             </div>
 
             <div className="flex justify-center flex-wrap gap-2 mb-8">

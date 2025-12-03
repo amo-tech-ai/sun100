@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const Placeholder = ({ name }: { name: string }) => (
@@ -6,7 +7,7 @@ const Placeholder = ({ name }: { name: string }) => (
     </div>
 );
 
-const SunAIStartupDeckStories: React.FC = () => {
+const StartupDeckStories: React.FC = () => {
     return (
         <div className="max-w-5xl mx-auto space-y-12">
             <div className="text-center">
@@ -21,4 +22,4 @@ const SunAIStartupDeckStories: React.FC = () => {
     );
 };
 
-export default SunAIStartupDeckStories;
+export default StartupDeckStories;

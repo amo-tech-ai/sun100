@@ -82,7 +82,7 @@ const Landing: React.FC = () => {
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
                               <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
                             </span>
-                            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Sun AI 2.0 Live</span>
+                            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">StartupAI 2.0 Live</span>
                         </div>
 
                         <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
@@ -114,7 +114,7 @@ const Landing: React.FC = () => {
                                     <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
                                     <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
                                 </div>
-                                <div className="ml-4 px-3 py-1 bg-white rounded-md border border-gray-100 text-[10px] font-medium text-gray-400 flex-1 text-center">sun-ai-dashboard</div>
+                                <div className="ml-4 px-3 py-1 bg-white rounded-md border border-gray-100 text-[10px] font-medium text-gray-400 flex-1 text-center">startupai-dashboard</div>
                             </div>
                             
                             {/* Dashboard Content */}
@@ -319,7 +319,7 @@ const Landing: React.FC = () => {
                 </div>
                 <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 max-w-5xl mx-auto">
                     <TestimonialCard
-                        quote="Sun AI is my go-to. I found my co-founder at an event and used the AI Deck Wizard for our seed round. A game-changer."
+                        quote="StartupAI is my go-to. I found my co-founder at an event and used the AI Deck Wizard for our seed round. A game-changer."
                         name="Maria Rodriguez"
                         title="Founder, InnovateHub"
                         avatar="https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person1.jpg"
@@ -340,7 +340,7 @@ const Landing: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-white opacity-50 z-0"></div>
                 <div className="relative z-10">
                     <h2 className="text-3xl md:text-5xl font-extrabold text-brand-blue mb-6 tracking-tight">Ready to Build Your Masterpiece?</h2>
-                    <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">Join hundreds of founders accelerating their fundraising journey with Sun AI.</p>
+                    <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">Join hundreds of founders accelerating their fundraising journey with StartupAI.</p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Link to="/dashboard" className="bg-brand-orange text-white font-bold py-4 px-10 rounded-xl text-lg hover:bg-opacity-90 transition-all duration-200 shadow-lg hover:-translate-y-1">Start Your Free Trial</Link>
                         <Link to="/pitch-decks/new" className="bg-white text-gray-700 border border-gray-300 font-bold py-4 px-10 rounded-xl text-lg hover:bg-gray-50 transition-all duration-200">Create a Deck</Link>

@@ -41,7 +41,7 @@ const DocBuilder: React.FC = () => {
     
     // Form State for Memo
     const [memoProfile, setMemoProfile] = useState({
-        name: profile.name !== 'My Startup' ? profile.name : 'Sun AI',
+        name: profile.name !== 'My Startup' ? profile.name : 'StartupAI',
         industry: profile.industry !== 'Technology' ? profile.industry : 'SaaS / AI',
         description: profile.description || 'An AI-powered platform for startups to generate pitch decks and investor documents.',
         stage: profile.stage || 'Seed',
@@ -144,7 +144,7 @@ const DocBuilder: React.FC = () => {
             let result;
             if (docType === 'one_pager') {
                 // Use profile data if available, otherwise fall back to mock
-                const profileData = profile.name !== 'My Startup' ? profile : { name: "Sun AI", description: "AI platform for startups" }; 
+                const profileData = profile.name !== 'My Startup' ? profile : { name: "StartupAI", description: "AI platform for startups" }; 
                 result = await generateOnePager(profileData);
             } else if (docType === 'update') {
                 result = await generateInvestorUpdate(

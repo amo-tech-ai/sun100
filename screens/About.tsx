@@ -29,6 +29,15 @@ const About: React.FC = () => {
                     <TeamMember name="David Kim" title="Head of Product & Design" imageUrl="https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person5.jpg" />
                 </div>
             </div>
+
+            <div className="border-t border-gray-200 my-12"></div>
+
+             <div className="text-center">
+                <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Community</h2>
+                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                   The StartupAI community is diverse, global, and driven by a shared passion for innovation.
+                </p>
+            </div>
         </div>
     );
 };
