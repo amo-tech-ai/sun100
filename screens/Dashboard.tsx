@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useStartup } from '../hooks/useStartup';
@@ -11,12 +12,9 @@ import {
     GrowthWidget, 
     ProductUsageWidget, 
     FundraisingWidget, 
-    DocumentsWidget,
-    MarketSizingWidget,
-    RevenueForecastWidget,
-    RiskRadarWidget,
-    DataRoomWidget
+    DocumentsWidget
 } from '../components/dashboard/EnterpriseWidgets';
+import { StartupCoachSidebar } from '../components/dashboard/StartupCoachSidebar';
 
 // Icons
 const SearchIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
@@ -155,35 +153,8 @@ const Dashboard: React.FC = () => {
                 </main>
 
                 {/* 3. Right Sidebar (Intelligence) */}
-                <aside className="w-full lg:w-[320px] flex-shrink-0 flex flex-col gap-6">
-                    
-                    <div className="flex items-center justify-between mb-[-10px]">
-                         <h3 className="text-sm font-bold text-slate-900">AI Insights</h3>
-                         <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">Auto-Updated</span>
-                    </div>
-
-                    <div className="bg-white p-5 rounded-xl border border-indigo-100 shadow-subtle">
-                        <div className="flex items-center gap-2 mb-3 text-indigo-600 font-bold text-xs uppercase tracking-wide">
-                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
-                            Growth Insights
-                        </div>
-                        <ul className="space-y-3">
-                            <li className="text-xs text-slate-600 leading-relaxed pl-3 border-l-2 border-indigo-200">
-                                Activation increased 12% this month due to the new onboarding flow.
-                            </li>
-                            <li className="text-xs text-slate-600 leading-relaxed pl-3 border-l-2 border-indigo-200">
-                                Retention in APAC region is trending down (3% decrease).
-                            </li>
-                            <li className="text-xs text-slate-600 leading-relaxed pl-3 border-l-2 border-indigo-200">
-                                High churn risk detected for 5 enterprise accounts.
-                            </li>
-                        </ul>
-                    </div>
-
-                    <MarketSizingWidget />
-                    <RevenueForecastWidget />
-                    <RiskRadarWidget />
-                    <DataRoomWidget />
+                <aside className="w-full lg:w-[320px] flex-shrink-0 flex flex-col gap-6 h-[calc(100vh-100px)] sticky top-24 overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+                    <StartupCoachSidebar />
                 </aside>
             </div>
         </div>
