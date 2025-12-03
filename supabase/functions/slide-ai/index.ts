@@ -277,6 +277,60 @@ const analyzeFundingGoalFunctionDeclaration = {
     }
 };
 
+const generateMarketDataFunctionDeclaration = {
+    name: 'generateMarketData',
+    description: 'Generates structured market size data (TAM, SAM, SOM) and sources.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            tam: { type: Type.STRING, description: "Total Addressable Market value (e.g. $50B)" },
+            sam: { type: Type.STRING, description: "Serviceable Available Market value" },
+            som: { type: Type.STRING, description: "Serviceable Obtainable Market value" },
+            sources: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of source URLs or citations" },
+            summary: { type: Type.STRING, description: "Brief narrative summary of the market opportunity" }
+        },
+        required: ['tam', 'sam', 'som', 'sources', 'summary']
+    }
+};
+
+const generateTrendsFunctionDeclaration = {
+    name: 'generateTrends',
+    description: 'Generates a list of current industry trends.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            trends: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of 3-5 specific industry trends" },
+            narrative: { type: Type.STRING, description: "A short paragraph explaining 'Why Now' based on these trends" }
+        },
+        required: ['trends', 'narrative']
+    }
+};
+
+const generateCompetitorMatrixFunctionDeclaration = {
+    name: 'generateCompetitorMatrix',
+    description: 'Generates a comparison matrix of competitors including pricing and features.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            headers: { 
+                type: Type.ARRAY, 
+                items: { type: Type.STRING },
+                description: 'Column headers for the matrix (e.g., ["Competitor", "Pricing", "Key Feature 1", "Key Feature 2"])'
+            },
+            rows: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                    description: 'Row data corresponding to the headers'
+                }
+            }
+        },
+        required: ['headers', 'rows']
+    }
+};
+
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -340,8 +394,10 @@ serve(async (req) => {
             toolConfig = { tools: [{ functionDeclarations: [generateFinancialsFunctionDeclaration] }] };
             break;
         case 'generateSWOT':
-            prompt = `Generate SWOT from: "${params.slideContent}". Call 'generateSWOTAnalysis'.`;
-            toolConfig = { tools: [{ functionDeclarations: [generateSWOTAnalysisFunctionDeclaration] }] };
+            prompt = `Research competitors for context: "${params.slideContent}". 
+            Use Google Search to find real strengths/weaknesses if specific competitors are named, otherwise generate strategic SWOT. 
+            Call 'generateSWOTAnalysis'.`;
+            toolConfig = { tools: [{ googleSearch: {} }, { functionDeclarations: [generateSWOTAnalysisFunctionDeclaration] }] };
             break;
         case 'generateGTM':
             prompt = `Generate GTM summary for: "${params.context}". Call 'generateGTMStrategy'.`;
@@ -360,6 +416,25 @@ serve(async (req) => {
              prompt = `Analyze funding goal ${params.amount} for ${params.industry}. Call 'analyzeFundingGoal'.`;
              toolConfig = { tools: [{ functionDeclarations: [analyzeFundingGoalFunctionDeclaration] }] };
              break;
+        case 'generateMarketData':
+            prompt = `Research the **latest (2024-2025)** market size data (TAM, SAM, SOM) for: ${params.industry} in ${params.location}. 
+            Use Google Search to find recent, credible data points from industry reports.
+            Call 'generateMarketData'.`;
+            toolConfig = { tools: [{ googleSearch: {} }, { functionDeclarations: [generateMarketDataFunctionDeclaration] }] };
+            break;
+        case 'generateTrends':
+            prompt = `Research current **2024-2025** industry trends for: ${params.industry}. 
+            Identify 3-5 key emerging trends that justify "Why Now".
+            Call 'generateTrends'.`;
+            toolConfig = { tools: [{ googleSearch: {} }, { functionDeclarations: [generateTrendsFunctionDeclaration] }] };
+            break;
+        case 'generateCompetitorMatrix':
+            prompt = `Research the top 3 direct competitors for: "${params.context}".
+            Use Google Search to find their **current** pricing models, key features, and weaknesses.
+            Create a comparison matrix table.
+            Call 'generateCompetitorMatrix'.`;
+            toolConfig = { tools: [{ googleSearch: {} }, { functionDeclarations: [generateCompetitorMatrixFunctionDeclaration] }] };
+            break;
         default:
             throw new Error(`Unknown action: ${action}`);
     }

@@ -19,7 +19,10 @@ import {
     suggestPieChart,
     generateFinancialProjections,
     generateCompetitorSWOT,
-    generateGTMStrategy
+    generateGTMStrategy,
+    generateMarketData,
+    generateTrends,
+    generateCompetitorMatrix
 } from '../services/ai/slide';
 import {
     ExtractedMetric,
@@ -71,6 +74,10 @@ interface DeckEditorContextType {
     swotError: string | null;
     isGeneratingGTM: boolean;
     copilotError: string | null;
+    isGeneratingMarketData: boolean;
+    marketDataError: string | null;
+    isGeneratingTrends: boolean;
+    trendsError: string | null;
     handleSlideSelect: (slide: Slide) => void;
     handleTitleSave: (newTitle: string) => void;
     handleGenerateRoadmapSlide: () => void;
@@ -99,6 +106,9 @@ interface DeckEditorContextType {
     handleApplyUpdate: (suggestion: DeckUpdateSuggestion) => void;
     handleGenerateSWOT: () => void;
     handleGenerateGTM: () => void;
+    handleFetchMarketData: () => void;
+    handleFetchTrends: () => void;
+    handleGenerateCompetitorMatrix: () => void;
 }
 
 const DeckEditorContext = createContext<DeckEditorContextType>(null!);
@@ -158,6 +168,10 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [swotError, setSwotError] = useState<string | null>(null);
     const [isGeneratingGTM, setIsGeneratingGTM] = useState(false);
     const [copilotError, setCopilotError] = useState<string | null>(null);
+    const [isGeneratingMarketData, setIsGeneratingMarketData] = useState(false);
+    const [marketDataError, setMarketDataError] = useState<string | null>(null);
+    const [isGeneratingTrends, setIsGeneratingTrends] = useState(false);
+    const [trendsError, setTrendsError] = useState<string | null>(null);
 
 
     useEffect(() => {
@@ -240,6 +254,8 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setFinancialError(null);
         setSwotError(null);
         setCopilotError(null);
+        setMarketDataError(null);
+        setTrendsError(null);
     }, []);
 
     const updateSlideStateAndPersist = useCallback(async (slideId: string, updates: Partial<Slide>) => {
@@ -706,6 +722,75 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
     }, [deck, handleSlideSelect]);
 
+    const handleFetchMarketData = useCallback(async () => {
+        if (!selectedSlide) return;
+        setIsGeneratingMarketData(true);
+        setMarketDataError(null);
+        try {
+            // Use deck context to infer industry if needed, but for now rely on slide content or default
+            const industry = selectedSlide.content.split('\n')[0] || 'Tech'; 
+            const location = 'Global';
+            
+            const data = await generateMarketData(industry, location);
+            
+            // Format as text content with source links
+            const newContent = `**Total Addressable Market (TAM):** ${data.tam}\n` +
+                               `**Serviceable Available Market (SAM):** ${data.sam}\n` +
+                               `**Serviceable Obtainable Market (SOM):** ${data.som}\n\n` +
+                               `**Summary:** ${data.summary}\n\n` +
+                               `**Sources:**\n${data.sources.map(s => `- ${s}`).join('\n')}`;
+
+            await updateSlideStateAndPersist(selectedSlide.id, { content: newContent });
+        } catch (err) {
+            setMarketDataError(err instanceof Error ? err.message : "Failed to fetch market data.");
+        } finally {
+            setIsGeneratingMarketData(false);
+        }
+    }, [selectedSlide, updateSlideStateAndPersist]);
+
+    const handleFetchTrends = useCallback(async () => {
+        if (!selectedSlide) return;
+        setIsGeneratingTrends(true);
+        setTrendsError(null);
+        try {
+            const industry = selectedSlide.content.split('\n')[0] || 'Tech';
+            const data = await generateTrends(industry);
+            
+            const newContent = `**Why Now?**\n${data.narrative}\n\n` +
+                               `**Key Industry Trends:**\n${data.trends.map(t => `- ${t}`).join('\n')}`;
+            
+            await updateSlideStateAndPersist(selectedSlide.id, { content: newContent });
+        } catch (err) {
+            setTrendsError(err instanceof Error ? err.message : "Failed to fetch trends.");
+        } finally {
+            setIsGeneratingTrends(false);
+        }
+    }, [selectedSlide, updateSlideStateAndPersist]);
+
+    const handleGenerateCompetitorMatrix = useCallback(async () => {
+        if (!selectedSlide) return;
+        setIsGeneratingTable(true); // Reuse table loading state
+        setTableError(null);
+        try {
+            const context = selectedSlide.content || "Unknown startup";
+            const matrix = await generateCompetitorMatrix(context);
+            
+            // Map CompetitorMatrix to TableData (comparison type)
+            const tableData: TableData = {
+                type: 'comparison',
+                headers: matrix.headers,
+                rows: matrix.rows
+            };
+            
+            const updates = { content: '', tableData, chartData: undefined };
+            await updateSlideStateAndPersist(selectedSlide.id, updates);
+        } catch (err) {
+             setTableError(err instanceof Error ? err.message : "Failed to generate competitor matrix.");
+        } finally {
+            setIsGeneratingTable(false);
+        }
+    }, [selectedSlide, updateSlideStateAndPersist]);
+
 
     const handlePublishDeck = useCallback(async () => {
         if (!deck) return;
@@ -770,6 +855,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         isSyncing, syncSuggestions, syncError,
         isGeneratingSWOT, swotError, isGeneratingGTM,
         copilotError,
+        isGeneratingMarketData, marketDataError, isGeneratingTrends, trendsError,
         handleSlideSelect, handleTitleSave, 
         handleGenerateRoadmapSlide, handleGenerateImage, handleEditImage, handleCopilotGenerate, 
         handleAnalyzeSlide, handleResearch, handleApplyResearch, handleSuggestLayout, handleSuggestChart, handleGenerateHeadlines, 
@@ -777,7 +863,9 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         handleSummarizeBio, handleSuggestPieChart, handleSocialProofSearch, handleGenerateFinancials, handlePublishDeck, 
         handlePrevSlide, handleNextSlide, handleTemplateChange,
         handleCheckForUpdates, handleApplyUpdate,
-        handleGenerateSWOT, handleGenerateGTM
+        handleGenerateSWOT, handleGenerateGTM,
+        handleFetchMarketData, handleFetchTrends,
+        handleGenerateCompetitorMatrix
     };
 
     return (

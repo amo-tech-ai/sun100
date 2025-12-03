@@ -47,6 +47,11 @@ export interface FundingAnalysis {
     nextSteps: string[];
 }
 
+export interface CompetitorMatrix {
+    headers: string[];
+    rows: string[][];
+}
+
 // --- Research ---
 export interface ResearchResult {
     summary: string;

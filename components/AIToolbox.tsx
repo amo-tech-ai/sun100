@@ -70,13 +70,95 @@ const SyncPanel: React.FC = () => {
     );
 };
 
+const AdvancedResearchButtons: React.FC = () => {
+    const { 
+        handleFetchMarketData, 
+        isGeneratingMarketData, 
+        marketDataError,
+        handleFetchTrends,
+        isGeneratingTrends,
+        trendsError,
+        selectedSlide,
+        handleGenerateCompetitorMatrix,
+        isGeneratingTable,
+        tableError
+    } = useDeckEditor();
+
+    if (!selectedSlide) return null;
+
+    const showMarket = selectedSlide.type === 'market';
+    const showTrends = selectedSlide.type === 'vision' || selectedSlide.title.toLowerCase().includes('trends');
+    const showCompetition = selectedSlide.type === 'competition';
+
+    if (!showMarket && !showTrends && !showCompetition) return null;
+
+    return (
+        <div className="mt-4 pt-4 border-t border-gray-200">
+            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Smart Auto-Fill</h4>
+            <div className="space-y-2">
+                {showMarket && (
+                    <button 
+                        onClick={handleFetchMarketData} 
+                        disabled={isGeneratingMarketData}
+                        className="w-full text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+                    >
+                        {isGeneratingMarketData ? (
+                            <>
+                                <span className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full"></span>
+                                Searching...
+                            </>
+                        ) : 'Generate TAM/SAM/SOM (Real-Time)'}
+                    </button>
+                )}
+                {showTrends && (
+                    <button 
+                        onClick={handleFetchTrends} 
+                        disabled={isGeneratingTrends}
+                        className="w-full text-left px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+                    >
+                         {isGeneratingTrends ? (
+                            <>
+                                <span className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full"></span>
+                                Searching...
+                            </>
+                        ) : 'Generate Industry Trends'}
+                    </button>
+                )}
+                {showCompetition && (
+                    <button 
+                        onClick={handleGenerateCompetitorMatrix} 
+                        disabled={isGeneratingTable}
+                        className="w-full text-left px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-md text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+                    >
+                        {isGeneratingTable ? (
+                            <>
+                                <span className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full"></span>
+                                Comparing...
+                            </>
+                        ) : 'Generate Competitor Matrix'}
+                    </button>
+                )}
+            </div>
+            {marketDataError && <p className="text-red-500 text-xs mt-1">{marketDataError}</p>}
+            {trendsError && <p className="text-red-500 text-xs mt-1">{trendsError}</p>}
+            {tableError && <p className="text-red-500 text-xs mt-1">{tableError}</p>}
+        </div>
+    );
+};
+
+
 const AIToolbox: React.FC<AIToolboxProps> = ({ activeTab }) => {
     const { selectedSlide } = useDeckEditor();
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'copilot':
-                return <AICopilot />;
+                return (
+                    <>
+                        <AICopilot />
+                        <AdvancedResearchButtons />
+                    </>
+                );
             case 'image':
                 return <ImageEditorPanel />;
             case 'analysis':

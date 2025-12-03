@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.12.0] - 2025-01-22
+
+### Added
+- **Real-Time Market Grounding:** Integrated `googleSearch` tool for Market, Trends, and Competition slides.
+  - **Competitor Matrix:** New agent generates a feature/pricing comparison matrix based on real-time search data.
+  - **Market Data:** Updated agent to explicitly fetch 2024-2025 TAM/SAM/SOM data.
+  - **Trend Spotter:** Updated agent to find the latest industry trends for "Why Now" slides.
+- **AIToolbox Enhancements:** Added dynamic "Smart Auto-Fill" buttons that appear based on the selected slide type.
+
 ## [2.11.0] - 2025-01-22
 
 ### Completed
