@@ -67,6 +67,8 @@ serve(async (req) => {
         2. **Visual Logic:** Generate highly detailed image prompts that visualize the concept, avoiding generic stock photo descriptions.
         3. **Traction Focus:** For the 'Traction' slide, explicitly extract and highlight key metrics (Revenue, Users, Growth, CAC, LTV) from the context. If exact numbers aren't provided, suggest realistic placeholder metrics based on the ${companyDetails?.stage || 'Seed'} stage.
         4. **Narrative Flow:** Ensure the deck follows a logical arc: Hook -> Problem -> Solution -> Evidence (Traction) -> Market -> Ask.
+        5. **Problem Slide Specificity:** Analyze the context for specific pain points. Do not use generic statements like "Inefficiency is high". Instead, derive the specific friction point (e.g., "Manual data entry costs dentists 15 hours/week" based on the provided context).
+        6. **Solution Slide Specificity:** Map specific features from the context directly to the pain points. Avoid vague terms like "AI-powered platform" without explanation. Describe *how* it solves the problem (e.g., "Automated voice-to-text charting" if the context supports it).
         
         **Theme:** ${theme}
         

@@ -1,6 +1,7 @@
+
 import { templates } from '../../styles/templates';
 import { Slide, ChartData, TableData } from '../../data/decks';
-import { SlideAnalysis, ExtractedMetric, BioSummary, FinancialData, GTMStrategy } from './types';
+import { SlideAnalysis, ExtractedMetric, BioSummary, FinancialData, GTMStrategy, CompetitorMatrix } from './types';
 import { invokeEdgeFunction } from '../edgeFunctionService';
 
 export const modifySlideContent = async (slideTitle: string, slideContent: string, instruction: string): Promise<{ newTitle: string; newContent: string }> => {
@@ -96,6 +97,28 @@ export const generateCompetitorSWOT = async (slideContent: string): Promise<{ ta
 export const generateGTMStrategy = async (context: string): Promise<GTMStrategy> => {
     return invokeEdgeFunction('slide-ai', {
         action: 'generateGTM',
+        context
+    });
+};
+
+export const generateMarketData = async (industry: string, location: string): Promise<{ tam: string; sam: string; som: string; sources: string[]; summary: string }> => {
+    return invokeEdgeFunction('slide-ai', {
+        action: 'generateMarketData',
+        industry,
+        location
+    });
+};
+
+export const generateTrends = async (industry: string): Promise<{ trends: string[]; narrative: string }> => {
+    return invokeEdgeFunction('slide-ai', {
+        action: 'generateTrends',
+        industry
+    });
+};
+
+export const generateCompetitorMatrix = async (context: string): Promise<CompetitorMatrix> => {
+    return invokeEdgeFunction('slide-ai', {
+        action: 'generateCompetitorMatrix',
         context
     });
 };
