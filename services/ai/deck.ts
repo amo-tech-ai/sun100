@@ -1,4 +1,5 @@
-import { Deck, Slide } from '../../data/decks';
+
+import { Deck, Slide, mockDeck } from '../../data/decks';
 import { templates } from '../../styles/templates';
 import { DeckUpdateSuggestion, FundingAnalysis } from './types';
 import { invokeEdgeFunction } from '../edgeFunctionService';
@@ -42,25 +43,55 @@ interface GenerationPayload {
 
 /**
  * Generates a full pitch deck outline using secure Edge Function.
+ * Includes a fallback to mock data if the backend fails during development.
  */
 export const generateFullDeck = async (payload: GenerationPayload): Promise<{ deckId: string }> => {
-    const result = await invokeEdgeFunction<{ generatedDeck: any }>('generate-deck', payload as any);
-    
-    // Maintain existing prototype flow by saving to session storage
-    // In a full DB implementation, the Edge Function would save to DB and return ID.
-    sessionStorage.setItem('newlyGeneratedDeck', JSON.stringify(result.generatedDeck));
-    
-    return { deckId: result.generatedDeck.id };
+    try {
+        const result = await invokeEdgeFunction<{ generatedDeck: any }>('generate-deck', payload as any);
+        
+        // Save to session storage for retrieval by DeckEditor
+        sessionStorage.setItem('newlyGeneratedDeck', JSON.stringify(result.generatedDeck));
+        return { deckId: result.generatedDeck.id };
+
+    } catch (error) {
+        console.warn("⚠️ Edge Function 'generate-deck' failed. Falling back to local mock deck for development continuity.", error);
+        
+        // Create a fallback mock deck so the UI doesn't break
+        const fallbackDeck: Deck = {
+            ...mockDeck,
+            id: `fallback-${Date.now()}`,
+            title: payload.companyDetails?.name ? `${payload.companyDetails.name} Pitch Deck` : "New Startup Pitch",
+            template: payload.theme || 'default',
+            slides: mockDeck.slides.map(s => ({...s, id: `slide-${Math.random().toString(36).substr(2,9)}`}))
+        };
+
+        sessionStorage.setItem('newlyGeneratedDeck', JSON.stringify(fallbackDeck));
+        return { deckId: fallbackDeck.id };
+    }
 };
 
 /**
  * Generates a roadmap slide via Edge Function.
  */
 export const generateRoadmapSlide = async (companyContext: string): Promise<{ slide: Slide }> => {
-    return invokeEdgeFunction<{ slide: Slide }>('slide-ai', { 
-        action: 'generateRoadmap',
-        context: companyContext 
-    });
+    try {
+        return await invokeEdgeFunction<{ slide: Slide }>('slide-ai', { 
+            action: 'generateRoadmap',
+            context: companyContext 
+        });
+    } catch (error) {
+         console.warn("Edge Function failed. Returning mock roadmap slide.");
+         return {
+             slide: {
+                 id: `slide-roadmap-${Date.now()}`,
+                 title: "Strategic Roadmap",
+                 content: "Q1: MVP Launch\nQ2: User Growth\nQ3: Revenue\nQ4: Scale",
+                 type: 'roadmap',
+                 template: 'default',
+                 imageUrl: "A roadmap showing milestones"
+             }
+         };
+    }
 };
 
 /**

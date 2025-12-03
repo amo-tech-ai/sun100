@@ -20,6 +20,17 @@
 
 ---
 
+## 🛠️ Troubleshooting & Fallbacks (2025-01-22)
+
+**Issue:** Users encountered `500 Internal Server Error` when generating decks in local/mock development mode.
+- **Root Cause:** The frontend mock auth state bypasses Supabase login, but attempts to call a live Edge Function. The Edge Function likely fails due to missing secrets (`GEMINI_API_KEY`) or auth context in the cloud environment.
+- **Resolution:** Implemented a robust `try/catch` fallback in `services/ai/deck.ts`.
+    - If the Edge Function fails (500 error), the service now **automatically generates a Mock Deck** locally.
+    - This ensures the user flow (Wizard -> Generation -> Editor) continues uninterrupted during development/testing.
+    - Error details are logged to the console for debugging the backend connection.
+
+---
+
 ## 🧠 Strategic AI Enhancements (Slide-Level Agents)
 
 These advanced features go beyond simple text generation, using specific AI tools for specific slide types.
@@ -52,33 +63,6 @@ These advanced features go beyond simple text generation, using specific AI tool
 - **Security:** ⚠️ *Partial.* Logic uses `process.env.API_KEY` via `edgeClient`. For **Production Deployment**, this *must* be moved to Supabase Edge Functions to hide the key from the browser. The logic flow remains the same, only the transport changes.
 - **Stability:** ✅ **High.** Usage of Function Calling eliminates hallucinated JSON structures.
 - **Performance:** ✅ **High.** Parallel fetching is used where possible. `Imagen` calls are on-demand.
-
-## 🔮 Future Enhancements & AI Optimizations
-
-These recommendations outline the next phase of AI integration to further elevate the platform's capabilities.
-
-### 1. Real-Time Market Grounding (Google Search)
-✅ **Implemented:** The `googleSearch` tool is now integrated for specific slide types (Market, Competition, Trends) to ensure data is current and sourced.
-
-### 2. Financial Precision (Code Execution)
-Leverage Gemini's `codeExecution` capability to perform accurate calculations instead of relying on LLM math predictions.
-- **Financials Slide:** Input raw assumptions (CAC, Churn, Price) and have Python code calculate 3-year projections, ensuring mathematical consistency.
-- **Ask Slide:** Calculate exact cash runway based on the funding ask and projected burn rate (e.g., `Runway = Funds / Monthly Burn`).
-- **Traction:** Compute growth rates (MoM, YoY) accurately from raw data points provided by the user.
-
-### 3. Strategic Reasoning (Thinking Config)
-Utilize `thinking_level: "high"` during the initial deck generation wizard.
-- **Narrative Flow:** Allow the model to "think" through the logical arc of the story before generating slides. (e.g., "Does the Solution directly address the specific pain points listed in the Problem slide?").
-- **Strategic Advice:** Provide a "VC Feedback" report where the model reasons through potential investor objections based on the generated content.
-- **Gap Analysis:** Analyze the input context to identify missing critical information (e.g., "The user didn't mention a revenue model, I need to suggest a standard SaaS model or ask for clarification").
-
-### 4. Dynamic Visual Refinement
-Enhance image generation prompts by dynamically combining slide content with the visual theme.
-- **Mood Matching:** If the theme is 'vibrant' and the slide is 'Problem', inject keywords like "chaotic, high contrast, urgent, neon accents" into the prompt. If 'Solution', use "harmonious, organized, clean lines".
-- **Content-Aware Composition:**
-  - **Team:** "Professional headshot style, cohesive background matching the brand color palette."
-  - **Traction:** "Upward trending abstract chart, simplified, vector style."
-  - **Vision:** "Conceptual imagery, 'blue ocean', wide angle, inspiring lighting."
 
 ## ⏭️ Next Steps
 

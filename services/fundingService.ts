@@ -52,7 +52,7 @@ export const getApplications = async (): Promise<Application[]> => {
          return []; // Mock fallback handled in previous version, simplified here for DB focus
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return [];
 
     const { data: membership } = await supabase
@@ -79,7 +79,7 @@ export const createApplication = async (investor: Investor, matchScore: number =
         throw new Error("Database not connected");
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) throw new Error("User not authenticated");
 
     const { data: membership } = await supabase

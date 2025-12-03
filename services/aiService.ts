@@ -1,3 +1,4 @@
+
 // This file acts as a "facade," re-exporting from the modular services.
 // This ensures that any component importing from the old path still works.
 
@@ -17,3 +18,4 @@ export * from './ai/crm';
 export * from './ai/gtm';
 export * from './ai/vcMatcher';
 export * from './ai/edgeClient';
+export * from './ai/advisor';

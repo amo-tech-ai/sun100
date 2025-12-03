@@ -90,7 +90,7 @@ export const addTask = async (task: Omit<Task, 'id'> & { accountId?: string, not
         return;
     }
 
-    const assigneeId = task.assigneeId || (await supabase.auth.getUser()).data.user?.id;
+    const assigneeId = task.assigneeId || (await (supabase.auth as any).getUser()).data.user?.id;
 
     const { error } = await supabase.from('crm_tasks').insert({
         startup_id: startupId,

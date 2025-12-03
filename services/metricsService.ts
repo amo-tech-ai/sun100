@@ -16,7 +16,7 @@ export const getMetrics = async (): Promise<MetricEntry[]> => {
     // Mock Mode Check
     if (!(supabase as any).realtime) return [];
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) throw new Error("User not authenticated");
 
     // Fetch the startup associated with the user via team_members
@@ -39,7 +39,7 @@ export const getMetrics = async (): Promise<MetricEntry[]> => {
 };
 
 export const saveMetric = async (entry: Omit<MetricEntry, 'id'> & { id?: string }): Promise<MetricEntry> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) throw new Error("User not authenticated");
 
     // Fetch startup via team_members
@@ -78,7 +78,7 @@ export const getLatestMetrics = async (count: number = 2): Promise<MetricEntry[]
     // Mock Mode Check
     if (!(supabase as any).realtime) return [];
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return [];
 
     const { data: membership } = await supabase

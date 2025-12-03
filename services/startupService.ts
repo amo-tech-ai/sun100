@@ -22,7 +22,7 @@ export const getStartupProfile = async (): Promise<StartupProfile | null> => {
         // Mock Check
         if (!(supabase as any).realtime) return null;
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await (supabase.auth as any).getUser();
         if (!user) return null;
 
         // First try to get the startup linked via team_members
@@ -75,7 +75,7 @@ export const getStartupProfile = async (): Promise<StartupProfile | null> => {
 };
 
 export const updateStartupProfile = async (updates: Partial<StartupProfile>): Promise<void> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) throw new Error("User not authenticated");
 
     // Check if startup exists via team_members
@@ -129,7 +129,7 @@ export const getStartupTeamStats = async (): Promise<TeamStats> => {
         // Mock Check
         if (!(supabase as any).realtime) return { total: 0, openRoles: 0, distribution: [] };
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await (supabase.auth as any).getUser();
         if (!user) return { total: 0, openRoles: 0, distribution: [] };
 
         const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();
@@ -176,7 +176,7 @@ export const getStartupMilestones = async (): Promise<Milestone[]> => {
     try {
         if (!(supabase as any).realtime) return [];
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await (supabase.auth as any).getUser();
         if (!user) return [];
 
         const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();

@@ -1,38 +1,38 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Session, User, AuthError, SignUpWithPasswordCredentials, SignInWithPasswordCredentials } from '@supabase/supabase-js';
 
 interface AuthContextType {
-    user: User | null;
-    session: Session | null;
+    user: any | null;
+    session: any | null;
     loading: boolean;
-    login: (credentials: SignInWithPasswordCredentials) => Promise<{ data: { user: User; session: Session; } | { user: null; session: null; }, error: AuthError | null }>;
-    signup: (credentials: SignUpWithPasswordCredentials) => Promise<{ data: { user: User; session: Session; } | { user: null; session: null; }, error: AuthError | null }>;
-    logout: () => Promise<{ error: AuthError | null }>;
+    login: (credentials: any) => Promise<{ data: { user: any; session: any; } | { user: null; session: null; }, error: any | null }>;
+    signup: (credentials: any) => Promise<{ data: { user: any; session: any; } | { user: null; session: null; }, error: any | null }>;
+    logout: () => Promise<{ error: any | null }>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [session, setSession] = useState<Session | null>(null);
+    const [user, setUser] = useState<any | null>(null);
+    const [session, setSession] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // DEVELOPMENT OVERRIDE: Disable auth check and force mock user
         console.log("🔓 Auth disabled for development. Using mock user.");
-        setUser({ id: 'mock-user-id', email: 'dev@sunaistartup.com', aud: 'authenticated' } as User);
+        setUser({ id: 'mock-user-id', email: 'dev@sunaistartup.com', aud: 'authenticated' });
         setLoading(false);
 
         // Original auth logic preserved below for future reference:
         /*
         const getSession = async () => {
             try {
-                const { data: { session }, error } = await supabase.auth.getSession();
+                // Cast to any to bypass potential type mismatch with v1/v2 definitions
+                const { data: { session }, error } = await (supabase.auth as any).getSession();
                 
                 if (error || !session) {
                     console.warn("Supabase not configured or no session found. Providing mock user for layout review.");
-                    setUser({ id: 'mock-user-id', email: 'review@example.com', aud: 'authenticated' } as User);
+                    setUser({ id: 'mock-user-id', email: 'review@example.com', aud: 'authenticated' });
                     setSession(null);
                 } else {
                     setSession(session);
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 }
             } catch (e) {
                 console.error("Error getting Supabase session:", e);
-                setUser({ id: 'mock-user-id', email: 'review@example.com', aud: 'authenticated' } as User);
+                setUser({ id: 'mock-user-id', email: 'review@example.com', aud: 'authenticated' });
             } finally {
                 setLoading(false);
             }
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         getSession();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = (supabase.auth as any).onAuthStateChange((_event: any, session: any) => {
             setSession(session);
             setUser(session?.user ?? null);
         });
@@ -63,9 +63,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         user,
         session,
         loading,
-        login: (credentials: SignInWithPasswordCredentials) => supabase.auth.signInWithPassword(credentials),
-        signup: (credentials: SignUpWithPasswordCredentials) => supabase.auth.signUp(credentials),
-        logout: () => supabase.auth.signOut(),
+        login: (credentials: any) => (supabase.auth as any).signInWithPassword(credentials),
+        signup: (credentials: any) => (supabase.auth as any).signUp(credentials),
+        logout: () => (supabase.auth as any).signOut(),
     };
 
     return (

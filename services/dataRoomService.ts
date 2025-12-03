@@ -12,7 +12,7 @@ export const getDataRoomFiles = async (): Promise<DataRoomFile[]> => {
     // Mock Mode Check
     if (!(supabase as any).realtime) return [];
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return [];
 
     const { data: membership } = await supabase
@@ -41,7 +41,7 @@ export const getDataRoomFiles = async (): Promise<DataRoomFile[]> => {
 };
 
 export const uploadDataRoomFile = async (fileMeta: Omit<DataRoomFile, 'id' | 'uploadDate'>, fileBlob?: File): Promise<DataRoomFile> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) throw new Error("User not authenticated");
 
     const { data: membership } = await supabase
@@ -104,7 +104,7 @@ export const deleteDataRoomFile = async (id: string): Promise<void> => {
 };
 
 export const saveDataRoomAudit = async (audit: DataRoomAudit): Promise<void> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return;
 
     const { data: membership } = await supabase
@@ -136,7 +136,7 @@ export const getDataRoomAudit = async (): Promise<DataRoomAudit | null> => {
     // Mock Mode Check
     if (!(supabase as any).realtime) return null;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return null;
 
     const { data: membership } = await supabase

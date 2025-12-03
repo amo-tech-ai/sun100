@@ -1,14 +1,14 @@
 
 import { invokeEdgeFunction } from '../edgeFunctionService';
 import { TaskAdvisorResponse } from './types';
-import { supabase } from '../../lib/supabaseClient';
+import { IS_MOCK_MODE } from '../../lib/supabaseClient';
 
 /**
  * Invokes the Gemini 3 Task Advisor to analyze startup state and suggest next steps.
  */
 export const suggestNextTasks = async (): Promise<TaskAdvisorResponse> => {
     // Mock Fallback for local dev / review
-    if (!(supabase as any).realtime) {
+    if (IS_MOCK_MODE) {
         await new Promise(r => setTimeout(r, 2500)); // Simulate thinking
         return {
             analysis_summary: "Your startup foundation is solid, but customer acquisition is lagging behind your burn rate.",

@@ -6,7 +6,7 @@ export const getInvestorDocs = async (): Promise<InvestorDoc[]> => {
     // Mock Mode Check
     if (!(supabase as any).realtime) return [];
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return [];
 
     // Get startup_id via team_members
@@ -60,7 +60,7 @@ export const getInvestorDocById = async (id: string): Promise<InvestorDoc | null
 };
 
 export const saveInvestorDoc = async (doc: Omit<InvestorDoc, 'id' | 'lastUpdated'> & { id?: string }): Promise<InvestorDoc> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) throw new Error("User not authenticated");
 
     const { data: membership } = await supabase

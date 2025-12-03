@@ -1,16 +1,15 @@
 
 import { Deck, Slide, mockDeck } from '../data/decks';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, IS_MOCK_MODE } from '../lib/supabaseClient';
 
 
 export const getDecks = async (): Promise<Deck[]> => {
-    // Check if we are in mock mode by checking for a mock-specific property
-    if (!(supabase as any).realtime) {
+    if (IS_MOCK_MODE) {
         console.warn("Supabase not configured. Returning mock decks.");
         return [mockDeck];
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) {
         console.log("No user session. Returning empty array for decks.");
         return [];
@@ -27,13 +26,11 @@ export const getDecks = async (): Promise<Deck[]> => {
         throw error;
     }
 
-    // In Supabase, slides are a nested relation, so we don't need to fetch them here.
-    // The 'slides' property might not exist on the top-level deck object from this query.
     return (data as any[]) || [];
 };
 
 export const getDeckById = async (id: string): Promise<Deck | null> => {
-     if (!(supabase as any).realtime) {
+     if (IS_MOCK_MODE) {
         console.warn("Supabase not configured. Returning mock deck.");
         return id === mockDeck.id ? mockDeck : null;
     }
@@ -46,13 +43,12 @@ export const getDeckById = async (id: string): Promise<Deck | null> => {
         
     if (error) {
         console.error(`Error fetching deck ${id}:`, error);
-        if (error.code !== 'PGRST116') { // Ignore "No rows found" for .single()
+        if (error.code !== 'PGRST116') { 
              throw error;
         }
     }
     
     if (data && Array.isArray(data.slides)) {
-        // Sort slides by position client-side
         data.slides.sort((a: any, b: any) => a.position - b.position);
     }
 
@@ -60,14 +56,11 @@ export const getDeckById = async (id: string): Promise<Deck | null> => {
 };
 
 export const createDeck = async (deckData: Omit<Deck, 'id'>, userId: string): Promise<Deck> => {
-    // MOCK MODE CHECK: If Supabase is not configured (mock client), simulate success
-    if (!(supabase as any).realtime) {
+    if (IS_MOCK_MODE) {
         console.warn("Supabase not configured. Creating mock deck in memory.");
         
-        // Generate a fake ID
         const mockId = `mock-deck-${Date.now()}`;
         
-        // Construct the deck object as if it came from the DB
         const newMockDeck: Deck = {
             id: mockId,
             title: deckData.title,
@@ -80,11 +73,9 @@ export const createDeck = async (deckData: Omit<Deck, 'id'>, userId: string): Pr
             }))
         };
         
-        // Return immediately
         return newMockDeck;
     }
 
-    // Insert deck metadata
     const { data: newDeck, error: deckError } = await supabase
         .from('decks')
         .insert({
@@ -97,7 +88,6 @@ export const createDeck = async (deckData: Omit<Deck, 'id'>, userId: string): Pr
         
     if (deckError) throw deckError;
 
-    // Prepare and insert slides
     const slidesToInsert = deckData.slides.map((slide, index) => ({
         deck_id: newDeck.id,
         position: index,
@@ -120,7 +110,7 @@ export const createDeck = async (deckData: Omit<Deck, 'id'>, userId: string): Pr
 };
 
 export const updateDeck = async (deckId: string, updates: Partial<Omit<Deck, 'id' | 'slides'>>) => {
-    if (!(supabase as any).realtime) return; // Mock mode no-op
+    if (IS_MOCK_MODE) return; 
     const { error } = await supabase
         .from('decks')
         .update(updates)
@@ -129,7 +119,7 @@ export const updateDeck = async (deckId: string, updates: Partial<Omit<Deck, 'id
 };
 
 export const updateSlide = async (slideId: string, updates: Partial<Omit<Slide, 'id'>>) => {
-    if (!(supabase as any).realtime) return; // Mock mode no-op
+    if (IS_MOCK_MODE) return; 
     const { error } = await supabase
         .from('slides')
         .update(updates)

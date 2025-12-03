@@ -1,16 +1,14 @@
 
-import { supabase } from '../../lib/supabaseClient';
+import { supabase, IS_MOCK_MODE } from '../../lib/supabaseClient';
 
 /**
  * Checks if Supabase is connected and returns the startup_id for the current user.
  * Returns isRealtime: false if in mock mode or not authenticated.
  */
 export const getContext = async (): Promise<{ isRealtime: boolean; startupId: string | null }> => {
-    const isRealtime = !!(supabase as any).realtime;
-    
-    if (!isRealtime) return { isRealtime: false, startupId: null };
+    if (IS_MOCK_MODE) return { isRealtime: false, startupId: null };
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return { isRealtime: true, startupId: null };
 
     const { data: membership } = await supabase

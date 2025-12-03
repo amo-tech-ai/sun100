@@ -1,5 +1,5 @@
 
-import { supabase } from '../lib/supabaseClient';
+import { supabase, IS_MOCK_MODE } from '../lib/supabaseClient';
 
 export interface Investor {
     id: string;
@@ -26,7 +26,7 @@ export interface Investor {
 
 export const getInvestors = async (): Promise<Investor[]> => {
     // If Supabase is configured, use it
-    if ((supabase as any).realtime) {
+    if (!IS_MOCK_MODE) {
         const { data, error } = await supabase.from('investors').select('*');
         if (error) throw error;
         
@@ -47,7 +47,7 @@ export const getInvestors = async (): Promise<Investor[]> => {
 };
 
 export const getInvestorById = async (id: string): Promise<Investor | undefined> => {
-    if ((supabase as any).realtime) {
+    if (!IS_MOCK_MODE) {
         const { data, error } = await supabase.from('investors').select('*').eq('id', id).single();
         if (error) return undefined;
         
@@ -65,7 +65,7 @@ export const getInvestorById = async (id: string): Promise<Investor | undefined>
 };
 
 export const createInvestor = async (investor: Omit<Investor, 'id'>): Promise<Investor> => {
-    if ((supabase as any).realtime) {
+    if (!IS_MOCK_MODE) {
         const { data, error } = await supabase.from('investors').insert(investor).select().single();
         if (error) throw error;
         return data as Investor;
@@ -74,7 +74,7 @@ export const createInvestor = async (investor: Omit<Investor, 'id'>): Promise<In
 };
 
 export const updateInvestor = async (id: string, updates: Partial<Investor>): Promise<Investor> => {
-    if ((supabase as any).realtime) {
+    if (!IS_MOCK_MODE) {
         const { data, error } = await supabase.from('investors').update(updates).eq('id', id).select().single();
         if (error) throw error;
         return data as Investor;
@@ -83,7 +83,7 @@ export const updateInvestor = async (id: string, updates: Partial<Investor>): Pr
 };
 
 export const deleteInvestor = async (id: string): Promise<void> => {
-    if ((supabase as any).realtime) {
+    if (!IS_MOCK_MODE) {
         const { error } = await supabase.from('investors').delete().eq('id', id);
         if (error) throw error;
         return;
