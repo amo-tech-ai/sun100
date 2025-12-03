@@ -19,6 +19,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // DEVELOPMENT OVERRIDE: Disable auth check and force mock user
+        console.log("🔓 Auth disabled for development. Using mock user.");
+        setUser({ id: 'mock-user-id', email: 'dev@sunaistartup.com', aud: 'authenticated' } as User);
+        setLoading(false);
+
+        // Original auth logic preserved below for future reference:
+        /*
         const getSession = async () => {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
@@ -49,6 +56,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return () => {
             subscription.unsubscribe();
         };
+        */
     }, []);
 
     const value = {
