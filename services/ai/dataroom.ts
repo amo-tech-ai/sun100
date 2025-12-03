@@ -9,5 +9,9 @@ export const auditDataRoom = async (files: DataRoomFile[], stage: string = "Seri
     // Prepare the file list context
     const fileList = files.map(f => ({ name: f.name, category: f.category }));
 
-    return invokeEdgeFunction<DataRoomAudit>('audit-data-room', { files: fileList, stage });
+    return invokeEdgeFunction<DataRoomAudit>('investor-ai', { 
+        action: 'auditDataRoom',
+        files: fileList, 
+        stage 
+    });
 };
