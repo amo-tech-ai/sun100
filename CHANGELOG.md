@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.0] - 2025-01-22
+
+### Completed
+- **Pitch Deck Engine (Production Ready):**
+  - **Gemini 3 Pro Integration:** All deck generation now uses `gemini-3-pro-preview` with reasoning capabilities (`thinkingConfig`).
+  - **Imagen 4.0:** Upgraded visual generation to `imagen-4.0-generate-001` for photorealistic slide backgrounds.
+  - **100% Feature Coverage:** Completed implementation of all slide-specific AI agents (Market Sizing, Bio Summarizer, Chart Generators).
+  - **Editor Stability:** Validated `DeckEditorContext` for robust state management across the application.
+
 ## [2.10.0] - 2025-01-21
 
 ### Added
