@@ -31,14 +31,23 @@ export default {
         'brand-orange': '#E87C4D',
         'brand-mustard': '#F3B93C',
         'brand-off-white': '#FBF8F5', // Soft beige background
+        // Enterprise Dashboard Palette
+        'slate-app-bg': '#F8FAFC',
+        'slate-border': '#E2E8F0',
+        'slate-header': '#1E293B',
+        'slate-accent': '#3B82F6',
       },
       fontFamily: {
         display: ["Inter", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
       },
       borderRadius: {
         DEFAULT: "1rem",
         lg: "1.25rem",
       },
+      boxShadow: {
+        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+      }
     },
   },
   plugins: [

@@ -1,26 +1,55 @@
-
 import React from 'react';
-import AnimatedCounter from '../AnimatedCounter';
 
-const ArrowUpRightIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>;
-
-export const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: number; suffix?: string; trend?: string; trendUp?: boolean }> = ({ icon, label, value, suffix, trend, trendUp }) => (
-    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between gap-4 transition-all duration-300 hover:shadow-md h-full min-w-0">
-        <div className="flex items-start justify-between">
-            <div className="w-10 h-10 rounded-xl bg-brand-orange/5 text-brand-orange flex items-center justify-center flex-shrink-0">
-                {icon}
-            </div>
-            {trend && (
-                 <div className={`text-xs font-bold px-2.5 py-1 rounded-full ${trendUp ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'} flex items-center gap-1`}>
-                    {trend} {trendUp ? <ArrowUpRightIcon className="w-3 h-3" /> : <ArrowUpRightIcon className="w-3 h-3 rotate-90" />}
-                 </div>
-            )}
-        </div>
-        <div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-brand-blue tracking-tight truncate">
-                <AnimatedCounter value={value} />{suffix}
-            </p>
-             <p className="text-sm font-medium text-gray-500 mt-1 truncate">{label}</p>
-        </div>
-    </div>
+const TrendIcon = ({ up }: { up: boolean }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={`w-3 h-3 ${up ? 'text-emerald-600' : 'text-rose-600'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        {up ? <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /> : <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />}
+        {up ? <polyline points="17 6 23 6 23 12" /> : <polyline points="17 18 23 18 23 12" />}
+    </svg>
 );
+
+const Sparkline = ({ data, color }: { data: number[], color: string }) => {
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min || 1;
+    const points = data.map((val, i) => {
+        const x = (i / (data.length - 1)) * 100;
+        const y = 100 - ((val - min) / range) * 100;
+        return `${x},${y}`;
+    }).join(' ');
+
+    return (
+        <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <polyline points={points} fill="none" stroke={color} strokeWidth="3" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+};
+
+export const StatCard: React.FC<{ 
+    label: string; 
+    value: string; 
+    trend: string; 
+    trendUp?: boolean; 
+    sparklineData?: number[];
+}> = ({ label, value, trend, trendUp = true, sparklineData = [40, 35, 50, 45, 60, 55, 70] }) => {
+    const trendColor = trendUp ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50';
+    const lineColor = trendUp ? '#10B981' : '#F43F5E';
+
+    return (
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-subtle flex flex-col justify-between h-full min-h-[140px]">
+            <div className="flex justify-between items-start mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</span>
+                <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${trendColor}`}>
+                    {trendUp ? '+' : ''}{trend}
+                </span>
+            </div>
+            
+            <div className="mb-4">
+                <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{value}</h3>
+            </div>
+
+            <div className="h-8 w-full mt-auto opacity-80">
+                <Sparkline data={sparklineData} color={lineColor} />
+            </div>
+        </div>
+    );
+};

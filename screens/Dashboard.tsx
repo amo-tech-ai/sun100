@@ -1,46 +1,35 @@
-
 import React, { useEffect, useState } from 'react';
-import useOnScreen from '../hooks/useOnScreen';
+import { Link } from 'react-router-dom';
 import { useStartup } from '../hooks/useStartup';
 import { getDecks } from '../services/deckService';
 import { getEvents } from '../services/eventService';
-import { getTasks, Task } from '../services/crmService';
+import { getTasks } from '../services/crmService';
 
-// Components
+// New Enterprise Components
 import { StatCard } from '../components/dashboard/StatCard';
-import { QuickActionCard } from '../components/dashboard/QuickActionCard';
-import { StartupHealthDonut } from '../components/dashboard/StartupHealthDonut';
-import { DeckPerformanceChart } from '../components/dashboard/DeckPerformanceChart';
-import { PersonalizedFeed } from '../components/dashboard/PersonalizedFeed';
-import { AiInsightsWidget } from '../components/dashboard/AiInsightsWidget';
-import { UpcomingEvent } from '../components/dashboard/UpcomingEvent';
-import { MiniCalendar } from '../components/dashboard/MiniCalendar';
-import { MobileCtaBar } from '../components/dashboard/MobileCtaBar';
-import { TaskAdvisorWidget } from '../components/dashboard/TaskAdvisorWidget';
+import { 
+    GrowthWidget, 
+    ProductUsageWidget, 
+    FundraisingWidget, 
+    DocumentsWidget,
+    MarketSizingWidget,
+    RevenueForecastWidget,
+    RiskRadarWidget,
+    DataRoomWidget
+} from '../components/dashboard/EnterpriseWidgets';
 
 // Icons
-const Wand2Icon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
-const PresentationIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></svg>;
-const VideoIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect y="4" x="2" width="20" height="16" rx="2"/><path d="m22 8-6 4 6 4V8Z"/></svg>;
-const BriefcaseIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
-const CheckCircleIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>;
-const SearchIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
-const BellIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>;
-const SettingsIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1 0 2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0 2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
-const UsersIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-const FolderLockIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M10 20H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2v2"/><path d="M20 13v-1a2 2 0 1 0-4 0v1"/><rect width="8" height="7" x="14" y="13" rx="1"/></svg>;
-
+const SearchIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+const PlusIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
+const UserIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
 
 const Dashboard: React.FC = () => {
-    const [ref, isVisible] = useOnScreen<HTMLElement>({ threshold: 0.1 });
-    const animationClass = isVisible ? 'animate-fade-in-up' : 'opacity-0';
     const { profile } = useStartup();
     
-    // Live Data State
+    // We keep data fetching for validity, though the widgets use specific "Screen B" data for the redesign.
     const [deckCount, setDeckCount] = useState(0);
     const [eventCount, setEventCount] = useState(0);
-    const [tasks, setTasks] = useState<Task[]>([]);
-    const [isLoadingData, setIsLoadingData] = useState(true);
+    const [taskCount, setTaskCount] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -52,133 +41,151 @@ const Dashboard: React.FC = () => {
                 ]);
                 setDeckCount(decks.length);
                 setEventCount(events.length);
-                setTasks(taskList);
+                setTaskCount(taskList.length);
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
-            } finally {
-                setIsLoadingData(false);
             }
         };
         fetchData();
     }, []);
-    
-    const getGreeting = () => {
-        const hour = new Date().getHours();
-        if (hour < 12) return "Good morning";
-        if (hour < 18) return "Good afternoon";
-        return "Good evening";
-    };
-
-    const todayDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
     return (
-        <div className="w-full bg-[#FBF8F5] min-h-screen pb-24 lg:pb-12 font-display">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-                 <style>{`
-                    @keyframes fade-in-up {
-                        from { opacity: 0; transform: translateY(1rem); }
-                        to { opacity: 1; transform: translateY(0); }
-                    }
-                    .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
-                `}</style>
-
-                {/* Header */}
-                <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b border-gray-200/50">
-                    <div>
-                        <p className="text-xs font-bold text-brand-orange uppercase tracking-widest mb-1">{todayDate}</p>
-                        <h1 className="text-3xl lg:text-4xl font-extrabold text-brand-blue tracking-tight">
-                            {getGreeting()}, {profile.name === 'My Startup' ? 'Founder' : profile.name}
-                        </h1>
-                        <p className="text-gray-500 font-medium mt-1 text-sm lg:text-base">Your command center for growth and fundraising.</p>
-                    </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        <div className="relative flex-grow md:w-64 group">
-                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-brand-orange transition-colors"/>
-                            <input 
-                                type="search" 
-                                placeholder="Search your startup..." 
-                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange outline-none transition-all text-sm font-medium placeholder-gray-400" 
-                            />
-                        </div>
-                        <button className="p-2.5 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-brand-blue hover:bg-gray-50 transition-colors shadow-sm hidden sm:block relative" aria-label="Notifications">
-                            <BellIcon className="w-5 h-5"/>
-                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                        </button>
-                        <button className="p-2.5 bg-white border border-gray-200 rounded-xl text-gray-500 hover:text-brand-blue hover:bg-gray-50 transition-colors shadow-sm hidden sm:block" aria-label="Settings">
-                            <SettingsIcon className="w-5 h-5"/>
-                        </button>
-                    </div>
-                </header>
-
-                {/* Quick Actions (Command Bar) */}
-                <section ref={ref} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <div className={`${animationClass}`} style={{animationDelay: '0ms'}}><QuickActionCard title="New Deck" link="/pitch-decks/new" icon={<Wand2Icon />} /></div>
-                    <div className={`${animationClass}`} style={{animationDelay: '50ms'}}><QuickActionCard title="Investor Docs" link="/dashboard/investor-docs" icon={<BriefcaseIcon />} color="blue-600" /></div>
-                    <div className={`${animationClass}`} style={{animationDelay: '100ms'}}><QuickActionCard title="Find Capital" link="/directory" icon={<UsersIcon />} color="green-600" /></div>
-                    <div className={`${animationClass}`} style={{animationDelay: '150ms'}}><QuickActionCard title="Create Video" link="/dashboard/video-generator" icon={<VideoIcon />} color="purple-600" /></div>
-                    <div className={`${animationClass}`} style={{animationDelay: '200ms'}}><QuickActionCard title="Data Room" link="/dashboard/data-room" icon={<FolderLockIcon />} color="amber-600" /></div>
-                </section>
-                
-                {/* Main Grid Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
-                    {/* Left Column (Operational) */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Metrics */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            <StatCard 
-                                icon={<PresentationIcon />} 
-                                label="Decks" 
-                                value={isLoadingData ? 0 : deckCount} 
-                                trend={deckCount > 0 ? "+1" : undefined} 
-                                trendUp={true} 
-                            />
-                            <StatCard 
-                                icon={<UsersIcon />} 
-                                label="Events" 
-                                value={isLoadingData ? 0 : eventCount} 
-                            />
-                             <StatCard 
-                                icon={<BriefcaseIcon />} 
-                                label="Investors" 
-                                value={8} 
-                                trend="+2" 
-                                trendUp={true} 
-                            />
-                            <StatCard 
-                                icon={<CheckCircleIcon />} 
-                                label="Tasks" 
-                                value={tasks.length} 
-                            />
-                        </div>
-                        
-                        {/* Analytics & Feed */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="h-auto"><StartupHealthDonut /></div>
-                            <div className="h-auto"><DeckPerformanceChart /></div>
-                        </div>
-                        
-                        {/* Personalized Feed */}
-                        <div>
-                            <PersonalizedFeed />
-                        </div>
-                    </div>
-
-                    {/* Right Column (Strategic) */}
-                    <aside className="lg:col-span-1 space-y-6">
-                         {/* Strategic Task Advisor Widget */}
-                        <div className="h-[420px]">
-                            <TaskAdvisorWidget />
-                        </div>
-
-                        <div className="h-auto"><AiInsightsWidget /></div>
-                        <div className="h-auto"><UpcomingEvent /></div>
-                        <div className="h-auto"><MiniCalendar tasks={tasks} /></div>
-                    </aside>
+        <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans">
+            {/* 1. Global Top Bar */}
+            <header className="h-16 bg-white border-b border-slate-200 px-4 lg:px-8 flex items-center justify-between sticky top-0 z-20 shadow-subtle">
+                <div className="flex items-center gap-4">
+                    <h1 className="text-xl font-bold text-slate-900 tracking-tight">Startup Command Center</h1>
+                    <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-700 border border-green-100 uppercase tracking-wide">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>
+                        Fundraising Active
+                    </span>
                 </div>
-            </div>
+                
+                <div className="flex items-center gap-3">
+                    {/* Search */}
+                    <div className="relative hidden md:block">
+                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input 
+                            type="text" 
+                            placeholder="Search..." 
+                            className="pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64 transition-all"
+                        />
+                    </div>
+                    
+                    {/* Actions */}
+                    <Link to="/pitch-decks/new" className="hidden sm:flex items-center gap-1 bg-white border border-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                        <PlusIcon className="w-3 h-3" /> New Doc
+                    </Link>
+                    <button className="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
+                        Share
+                    </button>
+                    
+                    <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-500">
+                        <UserIcon className="w-4 h-4" />
+                    </div>
+                </div>
+            </header>
 
-            <MobileCtaBar />
+            <div className="flex flex-col lg:flex-row p-4 lg:p-6 gap-6 max-w-[1800px] mx-auto">
+                {/* 2. Main Content Column */}
+                <main className="flex-1 flex flex-col gap-6 min-w-0">
+                    
+                    {/* Top KPI Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard 
+                            label="Monthly Revenue" 
+                            value="$42,500" 
+                            trend="12%" 
+                            trendUp={true} 
+                            sparklineData={[30, 35, 32, 38, 40, 42, 45]} 
+                        />
+                        <StatCard 
+                            label="Monthly Spend" 
+                            value="$18,200" 
+                            trend="5%" 
+                            trendUp={false} 
+                            sparklineData={[15, 18, 16, 19, 18, 20, 18]} 
+                        />
+                        <StatCard 
+                            label="Cash Available" 
+                            value="$340,000" 
+                            trend="Stable" 
+                            trendUp={true} 
+                            sparklineData={[350, 348, 345, 342, 340, 340, 340]} 
+                        />
+                        <StatCard 
+                            label="Runway" 
+                            value="14 Months" 
+                            trend="-1 Mo" 
+                            trendUp={false} 
+                            sparklineData={[18, 17, 16, 15, 14, 14, 14]} 
+                        />
+                    </div>
+
+                    {/* Growth & Usage Row */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div className="flex flex-col h-full">
+                            <div className="flex items-center gap-2 mb-3">
+                                <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                <h3 className="text-sm font-bold text-slate-900">Growth & Usage</h3>
+                            </div>
+                            <GrowthWidget />
+                        </div>
+                        <div className="flex flex-col h-full">
+                            <div className="h-8 mb-2"></div> {/* Spacer to align headers visually */}
+                            <ProductUsageWidget />
+                        </div>
+                    </div>
+
+                    {/* Fundraising Row */}
+                    <div className="w-full">
+                         <div className="flex items-center gap-2 mb-3">
+                            <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                            <h3 className="text-sm font-bold text-slate-900">Fundraising</h3>
+                            <Link to="/dashboard/funding-manager" className="ml-auto text-xs font-bold text-slate-500 hover:text-blue-600">View Pipeline</Link>
+                        </div>
+                        <FundraisingWidget />
+                    </div>
+
+                    {/* Documents Row */}
+                    <div className="w-full">
+                        <DocumentsWidget />
+                    </div>
+
+                </main>
+
+                {/* 3. Right Sidebar (Intelligence) */}
+                <aside className="w-full lg:w-[320px] flex-shrink-0 flex flex-col gap-6">
+                    
+                    <div className="flex items-center justify-between mb-[-10px]">
+                         <h3 className="text-sm font-bold text-slate-900">AI Insights</h3>
+                         <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">Auto-Updated</span>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-xl border border-indigo-100 shadow-subtle">
+                        <div className="flex items-center gap-2 mb-3 text-indigo-600 font-bold text-xs uppercase tracking-wide">
+                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                            Growth Insights
+                        </div>
+                        <ul className="space-y-3">
+                            <li className="text-xs text-slate-600 leading-relaxed pl-3 border-l-2 border-indigo-200">
+                                Activation increased 12% this month due to the new onboarding flow.
+                            </li>
+                            <li className="text-xs text-slate-600 leading-relaxed pl-3 border-l-2 border-indigo-200">
+                                Retention in APAC region is trending down (3% decrease).
+                            </li>
+                            <li className="text-xs text-slate-600 leading-relaxed pl-3 border-l-2 border-indigo-200">
+                                High churn risk detected for 5 enterprise accounts.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <MarketSizingWidget />
+                    <RevenueForecastWidget />
+                    <RiskRadarWidget />
+                    <DataRoomWidget />
+                </aside>
+            </div>
         </div>
     );
 };
