@@ -1,15 +1,21 @@
+
 import React, { useState, useEffect } from 'react';
-import { getCachedInsights, generateInsights, trackRecommendationAction, getActionStatuses, CoachResponse, ActionStatus } from '../../services/coachService';
+import { useNavigate } from 'react-router-dom';
+import { getCachedInsights, generateInsights, trackRecommendationAction, trackInsightFeedback, getActionStatuses, CoachResponse, ActionStatus } from '../../services/coachService';
 import { CDPIcons } from '../crm/CRMIcons';
 
 const CheckCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>;
 const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+const ThumbsUpIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg>;
+const ThumbsDownIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/></svg>;
 
 export const StartupCoachSidebar: React.FC = () => {
+    const navigate = useNavigate();
     const [data, setData] = useState<CoachResponse | null>(null);
     const [actionStatuses, setActionStatuses] = useState<ActionStatus[]>([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [feedbackGiven, setFeedbackGiven] = useState<Set<string>>(new Set());
 
     // Initial Load
     useEffect(() => {
@@ -37,6 +43,7 @@ export const StartupCoachSidebar: React.FC = () => {
         try {
             const fresh = await generateInsights();
             setData(fresh);
+            setFeedbackGiven(new Set()); // Reset feedback state on refresh
         } catch (e) {
             console.error("Failed to refresh insights", e);
         } finally {
@@ -46,13 +53,28 @@ export const StartupCoachSidebar: React.FC = () => {
 
     // Recommendation Actions
     const handleAction = async (actionId: string, status: 'completed' | 'dismissed') => {
-        // Optimistic UI update
         setActionStatuses(prev => [...prev, { action_id: actionId, status }]);
         try {
             await trackRecommendationAction(actionId, status);
         } catch (e) {
             console.error("Failed to track action", e);
         }
+    };
+
+    // Feedback Action
+    const handleFeedback = async (title: string, useful: boolean) => {
+        if (feedbackGiven.has(title)) return;
+        setFeedbackGiven(prev => new Set(prev).add(title));
+        try {
+            await trackInsightFeedback(title, useful);
+        } catch (e) {
+            console.error("Failed to track feedback", e);
+        }
+    };
+
+    // Navigation Helper
+    const handleNavigate = (path?: string) => {
+        if (path) navigate(path);
     };
 
     // Filter visible items
@@ -116,7 +138,11 @@ export const StartupCoachSidebar: React.FC = () => {
                     <div className="space-y-3">
                          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Critical Attention</h4>
                         {visibleAlerts.map((alert, i) => (
-                            <div key={i} className={`p-4 rounded-xl border flex gap-3 shadow-sm bg-white ${alert.severity === 'high' ? 'border-red-100 border-l-4 border-l-red-500' : 'border-orange-100 border-l-4 border-l-orange-500'}`}>
+                            <div 
+                                key={i} 
+                                onClick={() => handleNavigate(alert.link)}
+                                className={`p-4 rounded-xl border flex gap-3 shadow-sm bg-white cursor-pointer hover:shadow-md transition-all ${alert.severity === 'high' ? 'border-red-100 border-l-4 border-l-red-500' : 'border-orange-100 border-l-4 border-l-orange-500'}`}
+                            >
                                 <div className={`mt-0.5 flex-shrink-0 ${alert.severity === 'high' ? 'text-red-500' : 'text-orange-500'}`}>
                                     <CDPIcons.Alert className="w-5 h-5" />
                                 </div>
@@ -135,21 +161,46 @@ export const StartupCoachSidebar: React.FC = () => {
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Strategic Pulse</h4>
                         <div className="space-y-3">
                             {data.insights.map((insight, i) => (
-                                <div key={i} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                                            insight.type === 'positive' ? 'bg-green-50 text-green-700 border border-green-100' : 
-                                            insight.type === 'negative' ? 'bg-red-50 text-red-700 border border-red-100' : 
-                                            'bg-gray-50 text-gray-600 border border-gray-100'
-                                        }`}>
-                                            {insight.category}
-                                        </span>
-                                        {insight.metric_highlight && (
-                                            <span className={`text-xs font-bold ${insight.type === 'positive' ? 'text-green-600' : 'text-brand-blue'}`}>{insight.metric_highlight}</span>
-                                        )}
+                                <div 
+                                    key={i} 
+                                    className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group relative"
+                                >
+                                    <div onClick={() => handleNavigate(insight.link)} className="cursor-pointer">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                                                insight.type === 'positive' ? 'bg-green-50 text-green-700 border border-green-100' : 
+                                                insight.type === 'negative' ? 'bg-red-50 text-red-700 border border-red-100' : 
+                                                'bg-gray-50 text-gray-600 border border-gray-100'
+                                            }`}>
+                                                {insight.category}
+                                            </span>
+                                            {insight.metric_highlight && (
+                                                <span className={`text-xs font-bold ${insight.type === 'positive' ? 'text-green-600' : 'text-brand-blue'}`}>{insight.metric_highlight}</span>
+                                            )}
+                                        </div>
+                                        <h5 className="font-bold text-gray-900 text-sm mb-1 group-hover:text-brand-orange transition-colors">{insight.title}</h5>
+                                        <p className="text-xs text-gray-500 leading-relaxed">{insight.description}</p>
                                     </div>
-                                    <h5 className="font-bold text-gray-900 text-sm mb-1">{insight.title}</h5>
-                                    <p className="text-xs text-gray-500 leading-relaxed">{insight.description}</p>
+                                    
+                                    {/* Feedback Buttons */}
+                                    <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); handleFeedback(insight.title, true); }}
+                                            disabled={feedbackGiven.has(insight.title)}
+                                            className={`p-1 rounded hover:bg-green-50 ${feedbackGiven.has(insight.title) ? 'text-green-500' : 'text-gray-400 hover:text-green-500'}`}
+                                            title="Helpful"
+                                        >
+                                            <ThumbsUpIcon />
+                                        </button>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); handleFeedback(insight.title, false); }}
+                                            disabled={feedbackGiven.has(insight.title)}
+                                            className={`p-1 rounded hover:bg-red-50 ${feedbackGiven.has(insight.title) ? 'text-gray-300' : 'text-gray-400 hover:text-red-500'}`}
+                                            title="Not Helpful"
+                                        >
+                                            <ThumbsDownIcon />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

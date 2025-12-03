@@ -384,3 +384,40 @@ export interface TaskAdvisorResponse {
     advanced_tasks: StrategicTask[];
     ai_recommendations: AIRecommendation[];
 }
+
+// --- AI Coach ---
+export interface CoachInsight {
+    id?: string; // Added for feedback tracking
+    type: 'positive' | 'negative' | 'neutral';
+    category: 'growth' | 'finance' | 'fundraising' | 'product';
+    title: string;
+    description: string;
+    metric_highlight?: string;
+    link?: string; // Added for Deep Linking
+}
+
+export interface CoachAlert {
+    severity: 'high' | 'medium';
+    message: string;
+    subtext?: string;
+    link?: string; // Added for Deep Linking
+}
+
+export interface CoachRecommendation {
+    action_id: string;
+    label: string;
+    reason: string;
+}
+
+export interface CoachResponse {
+    insights: CoachInsight[];
+    alerts: CoachAlert[];
+    recommendations: CoachRecommendation[];
+    match_score?: number;
+    last_updated?: string;
+}
+
+export interface ActionStatus {
+    action_id: string;
+    status: 'pending' | 'completed' | 'dismissed';
+}

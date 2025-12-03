@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { GoogleGenAI, Type } from "npm:@google/genai";
@@ -37,12 +38,7 @@ serve(async (req) => {
     if (!membership) throw new Error("User is not part of a startup");
     const startupId = membership.startup_id;
 
-    // 3. Fetch Context from DB via RPC (Securely aggregates data)
-    // Use a secondary client authenticated as the user to respect RLS/RPC permissions, 
-    // OR call RPC with service role but passing user_id context if logic requires it.
-    // The RPC `get_startup_context` uses `auth.uid()` so we must call it as the user.
-    // However, in Edge Functions `auth.getUser` validates the token but doesn't set the postgres session user automatically for subsequent calls 
-    // unless we use the token in the client creation.
+    // 3. Fetch Context from DB via RPC
     const userSupabase = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
       global: { headers: { Authorization: authHeader } },
     });
@@ -65,15 +61,24 @@ serve(async (req) => {
       ${JSON.stringify(context, null, 2)}
 
       **Objectives:**
-      1. **Insights:** Identify positive momentum or concerning trends (e.g., "Pipeline grew 20%", "Runway dropped below 4 months").
-      2. **Alerts:** Flag urgent issues (e.g., "Missing 3 key docs in Data Room", "No CRM activity in 7 days").
-      3. **Recommendations:** Suggest concrete actions (e.g., "Update Traction Slide", "Follow up with Investor X").
-      4. **Match Score:** Estimate a 0-100 "Investor Readiness" score based on data completeness and health.
+      1. **Insights:** Identify positive momentum or concerning trends.
+      2. **Alerts:** Flag urgent issues.
+      3. **Recommendations:** Suggest concrete actions.
+      4. **Match Score:** Estimate a 0-100 "Investor Readiness" score.
 
+      **Deep Linking Rules:**
+      For every insight or alert, you MUST provide a 'link' to the relevant internal tool based on the topic:
+      - Financials, Burn Rate, Revenue -> '/dashboard/financial-overview'
+      - Customers, Leads, Pipeline, Sales -> '/dashboard/crm'
+      - Fundraising, Investors, Applications -> '/dashboard/funding-manager'
+      - Pitch Deck, Slides -> '/pitch-decks'
+      - Data Room, Documents -> '/dashboard/data-room'
+      - Market Strategy -> '/dashboard/gtm-strategy'
+      
       **Reasoning Rules:**
       - **Connect the Dots:** Explain *why* a metric matters.
       - **Be Direct:** Use executive-level language.
-      - **External Validation:** Use Google Search to check current market conditions relevant to the startup's industry (found in profile) to ground your advice.
+      - **External Validation:** Use Google Search to check current market conditions.
     `;
 
     // 5. Define Schema for Structured Output
@@ -89,9 +94,10 @@ serve(async (req) => {
               category: { type: Type.STRING, enum: ["growth", "finance", "fundraising", "product"] },
               title: { type: Type.STRING },
               description: { type: Type.STRING },
-              metric_highlight: { type: Type.STRING }
+              metric_highlight: { type: Type.STRING },
+              link: { type: Type.STRING }
             },
-            required: ["type", "category", "title", "description"]
+            required: ["type", "category", "title", "description", "link"]
           }
         },
         alerts: {
@@ -101,9 +107,10 @@ serve(async (req) => {
             properties: {
               severity: { type: Type.STRING, enum: ["high", "medium"] },
               message: { type: Type.STRING },
-              subtext: { type: Type.STRING }
+              subtext: { type: Type.STRING },
+              link: { type: Type.STRING }
             },
-            required: ["severity", "message"]
+            required: ["severity", "message", "link"]
           }
         },
         recommendations: {
@@ -128,8 +135,8 @@ serve(async (req) => {
       model: 'gemini-3-pro-preview',
       contents: systemPrompt,
       config: {
-        thinkingConfig: { thinkingBudget: 2048 }, // Enable Thinking for strategic depth
-        tools: [{ googleSearch: {} }],           // Enable Search for market grounding
+        thinkingConfig: { thinkingBudget: 2048 },
+        tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
         responseSchema: responseSchema
       }
@@ -138,7 +145,6 @@ serve(async (req) => {
     const payload = JSON.parse(result.text!);
 
     // 7. Save Result to DB (Upsert)
-    // We use the service role client here to ensure write access regardless of strict RLS on the insights table (though RLS usually allows own-insert)
     const { error: upsertError } = await supabase
       .from('ai_coach_insights')
       .upsert({

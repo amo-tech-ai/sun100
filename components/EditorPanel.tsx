@@ -25,23 +25,19 @@ const ToolbarButton: React.FC<{
     loading?: boolean;
     error?: string | null;
 }> = ({ onClick, disabled, icon, label, loading, error }) => (
-    <div className="relative group">
+    <div className="relative group flex-shrink-0">
         <button
             onClick={onClick}
             disabled={disabled}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+            title={label}
         >
             {loading ? <span className="animate-spin h-4 w-4 border-2 border-gray-400 border-t-transparent rounded-full" /> : icon}
             <span className="hidden xl:inline">{label}</span>
         </button>
         {error && (
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-red-50 text-red-600 text-xs rounded shadow-lg border border-red-100 z-50">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 p-2 bg-red-50 text-red-600 text-xs rounded shadow-lg border border-red-100 z-50 whitespace-normal">
                 {error}
-            </div>
-        )}
-        {!disabled && !loading && (
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                {label}
             </div>
         )}
     </div>
@@ -167,20 +163,21 @@ const EditorPanel: React.FC = () => {
     return (
         <main className="flex-1 flex flex-col h-full relative bg-[#F3F4F6]">
             
-            {/* Top Toolbar - Hidden in Print */}
-            <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 flex-shrink-0 z-20 shadow-sm print:hidden">
+            {/* Top Toolbar */}
+            <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 flex-shrink-0 z-20 shadow-sm print:hidden gap-4">
+                
                 {/* Left: Navigation */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                      <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
                         <button onClick={handlePrevSlide} disabled={selectedSlideIndex === 0} className="p-1.5 rounded-md hover:bg-white hover:shadow-sm text-gray-600 disabled:opacity-30 transition-all" title="Previous Slide"><ChevronLeftIcon /></button>
-                        <span className="text-xs font-semibold text-gray-500 w-16 text-center tabular-nums">{selectedSlideIndex + 1} / {totalSlides}</span>
+                        <span className="text-xs font-semibold text-gray-500 w-12 sm:w-16 text-center tabular-nums">{selectedSlideIndex + 1} / {totalSlides}</span>
                         <button onClick={handleNextSlide} disabled={selectedSlideIndex === totalSlides - 1} className="p-1.5 rounded-md hover:bg-white hover:shadow-sm text-gray-600 disabled:opacity-30 transition-all" title="Next Slide"><ChevronRightIcon /></button>
                      </div>
                 </div>
 
-                {/* Center: Tools */}
-                <div className="flex items-center gap-1 sm:gap-2">
-                    <div className="h-6 w-px bg-gray-200 mx-2"></div>
+                {/* Center: Tools (Scrollable) */}
+                <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide mask-linear-fade">
+                    <div className="h-6 w-px bg-gray-200 mx-2 flex-shrink-0"></div>
                     
                     <ToolbarButton 
                         onClick={handleSuggestLayout} 
@@ -191,7 +188,7 @@ const EditorPanel: React.FC = () => {
                         error={layoutError}
                     />
                     
-                    <div className="h-6 w-px bg-gray-200 mx-2"></div>
+                    <div className="h-6 w-px bg-gray-200 mx-2 flex-shrink-0"></div>
 
                     <ToolbarButton 
                         onClick={handleSuggestChart} 
@@ -231,20 +228,20 @@ const EditorPanel: React.FC = () => {
                 </div>
                 
                 {/* Right: Actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                      <button 
                         onClick={handlePrint}
                         className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-brand-blue bg-blue-50 hover:bg-blue-100 transition-colors"
                         title="Export as PDF (via Print)"
                     >
                         <PrinterIcon />
-                        <span className="hidden sm:inline">Print / PDF</span>
+                        <span className="hidden sm:inline">Print</span>
                     </button>
                 </div>
             </div>
             
             {/* Canvas Area */}
-            <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center min-h-0 bg-[#F3F4F6] print:bg-white print:p-0 print:overflow-visible">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex flex-col items-center justify-center min-h-0 bg-[#F3F4F6] print:bg-white print:p-0 print:overflow-visible">
                 {/* Standard Editor View */}
                 <div className="w-full max-w-5xl aspect-video bg-white shadow-2xl rounded-sm transition-transform duration-200 ease-out transform origin-center hover:scale-[1.005] print:hidden">
                     <SlideRenderer 

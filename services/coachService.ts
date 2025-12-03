@@ -1,18 +1,22 @@
+
 import { supabase, IS_MOCK_MODE } from '../lib/supabaseClient';
 import { invokeEdgeFunction } from './edgeFunctionService';
 
 export interface CoachInsight {
+    id?: string;
     type: 'positive' | 'negative' | 'neutral';
     category: 'growth' | 'finance' | 'fundraising' | 'product';
     title: string;
     description: string;
     metric_highlight?: string;
+    link?: string;
 }
 
 export interface CoachAlert {
     severity: 'high' | 'medium';
     message: string;
     subtext?: string;
+    link?: string;
 }
 
 export interface CoachRecommendation {
@@ -36,7 +40,6 @@ export interface ActionStatus {
 
 /**
  * Fetches the latest insights from the database cache.
- * This is fast and cheap.
  */
 export const getCachedInsights = async (): Promise<CoachResponse | null> => {
     if (IS_MOCK_MODE) return getMockCoachData();
@@ -62,7 +65,6 @@ export const getCachedInsights = async (): Promise<CoachResponse | null> => {
 
 /**
  * Triggers a fresh analysis via the Edge Function.
- * This uses Gemini tokens and takes time.
  */
 export const generateInsights = async (): Promise<CoachResponse> => {
     if (IS_MOCK_MODE) {
@@ -100,6 +102,20 @@ export const trackRecommendationAction = async (actionId: string, status: 'compl
 };
 
 /**
+ * Tracks feedback (thumbs up/down) on insights.
+ */
+export const trackInsightFeedback = async (insightTitle: string, useful: boolean): Promise<void> => {
+    if (IS_MOCK_MODE) {
+        console.log(`[Mock] Feedback for "${insightTitle}": ${useful ? 'Useful' : 'Not Useful'}`);
+        return;
+    }
+    // In a real impl, we might store this in a 'ai_feedback' table.
+    // For now, we'll just log it or use a simple RPC if it exists, otherwise just console log in prod 
+    // to avoid errors if the table doesn't exist yet.
+    console.log(`Feedback logged for "${insightTitle}": ${useful}`);
+};
+
+/**
  * Fetches status of actions to hide completed/dismissed items.
  */
 export const getActionStatuses = async (): Promise<ActionStatus[]> => {
@@ -126,12 +142,12 @@ export const getActionStatuses = async (): Promise<ActionStatus[]> => {
 // Mock Data for Development
 const getMockCoachData = (): CoachResponse => ({
     insights: [
-        { type: 'positive', category: 'growth', title: 'Pipeline Velocity Up', description: 'You moved 3 deals to negotiation this week, 15% faster than average.', metric_highlight: '+15%' },
-        { type: 'negative', category: 'finance', title: 'Burn Rate Alert', description: 'Expenses increased by 20% due to new software subscriptions.', metric_highlight: '+20%' }
+        { type: 'positive', category: 'growth', title: 'Pipeline Velocity Up', description: 'You moved 3 deals to negotiation this week, 15% faster than average.', metric_highlight: '+15%', link: '/dashboard/crm' },
+        { type: 'negative', category: 'finance', title: 'Burn Rate Alert', description: 'Expenses increased by 20% due to new software subscriptions.', metric_highlight: '+20%', link: '/dashboard/financial-overview' }
     ],
     alerts: [
-        { severity: 'high', message: 'Update Traction Slide', subtext: 'Data is 30 days old.' },
-        { severity: 'medium', message: 'Connect Bank Account', subtext: 'For accurate runway calculation.' }
+        { severity: 'high', message: 'Update Traction Slide', subtext: 'Data is 30 days old.', link: '/pitch-decks' },
+        { severity: 'medium', message: 'Connect Bank Account', subtext: 'For accurate runway calculation.', link: '/dashboard/financial-overview' }
     ],
     recommendations: [
         { action_id: 'email_investor_1', label: 'Email Sequoia', reason: '5 days since last contact.' },
