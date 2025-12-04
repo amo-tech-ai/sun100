@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { getEvents, Event } from '../services/eventService';
+
+const { Link } = ReactRouterDOM;
 
 const EventCard: React.FC<Event> = ({ id, title, start_date, location, description }) => {
     const eventDate = new Date(start_date);

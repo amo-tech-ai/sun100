@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../hooks/useAuth';
 import { Event, getEventById } from '../services/eventService';
 import { useToast } from '../contexts/ToastContext';
+
+const { useParams, Link } = ReactRouterDOM;
 
 const CheckCircleIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">

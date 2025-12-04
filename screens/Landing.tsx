@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import AnimatedCounter from '../components/AnimatedCounter';
 import useOnScreen from '../hooks/useOnScreen';
+
+const { Link } = ReactRouterDOM;
 
 const FeatureHighlightCard: React.FC<{ icon: React.ReactNode; title: string; description: string; delay: number }> = ({ icon, title, description, delay }) => {
     const [ref, isVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.1 });

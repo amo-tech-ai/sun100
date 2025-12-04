@@ -1,6 +1,8 @@
 
 import React from 'react';
-import { Outlet, Link, NavLink } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
+
+const { Outlet, Link, NavLink } = ReactRouterDOM;
 
 const PublicLayout: React.FC = () => {
     const navLinks = [

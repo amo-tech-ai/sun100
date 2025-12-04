@@ -1,6 +1,8 @@
 
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
+
+const { NavLink, Link } = ReactRouterDOM;
 
 const SunIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#E87C4D]" viewBox="0 0 20 20" fill="currentColor">
@@ -113,7 +115,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
                  {!isCollapsed && <p className="px-3 mt-4 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Fundraising</p>}
                  <NavLink
                     to="/pitch-decks"
-                    className={({ isActive, isPending }) =>
+                    className={({ isActive }) =>
                         `flex items-center p-3 rounded-lg ${isActive ? activeLinkClass : inactiveLinkClass} ${isCollapsed ? 'justify-center' : ''}`
                     }
                 >

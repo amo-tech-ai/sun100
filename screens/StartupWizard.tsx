@@ -1,231 +1,811 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStartup } from '../hooks/useStartup';
+import { 
+  ChevronRight, ChevronLeft, Check, Sparkles, 
+  UploadCloud, TrendingUp, Users, DollarSign, 
+  Target, Shield, Globe, Briefcase, Layout, 
+  Plus, Trash2, Lightbulb, MapPin, Award
+} from 'lucide-react';
 
-// --- ICONS ---
-const SunIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-orange" viewBox="0 0 20 20" fill="currentColor" {...props}><path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zM4.225 4.225a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM15.775 4.225a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zM17 10a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM8 10a2 2 0 114 0 2 2 0 01-4 0zM4.225 15.775a1 1 0 010-1.414l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414 0zM10 17a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM14.364 14.364a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>;
-const CheckCircle = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>;
-const UploadCloudIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>;
-const LightbulbIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M15 14c.2-1 .7-1.7 1.5-2.5C17.7 10.2 18 9 18 7c0-2.2-1.8-4-4-4S10 4.8 10 7c0 2 .3 3.2 1.5 4.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>;
-const WandIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/></svg>;
-const LinkedinIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>;
-const EyeIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
+// --- TYPES ---
 
-// --- FORM & UI COMPONENTS ---
+interface Founder {
+  name: string;
+  role: string;
+  bio: string;
+}
 
-const steps = [
-  { id: 1, name: 'Company Basics' },
-  { id: 2, name: 'Problem & Solution' },
-  { id: 3, name: 'Market & Competition' },
-  { id: 4, name: 'Team' },
-  { id: 5, name: 'Review' },
-];
+interface WizardState {
+  // Basics
+  name: string;
+  website: string;
+  pitch: string;
+  logo: string | null;
+  // Problem/Solution
+  problem: string;
+  solution: string;
+  targetCustomers: string[];
+  // Traction
+  stage: string;
+  tractionStatus: string;
+  mau: string;
+  revenue: string;
+  growth: string;
+  // Business Model
+  businessModel: string[];
+  pricing: string;
+  competitors: string[];
+  uvp: string;
+  // Team
+  teamSize: string;
+  founders: Founder[];
+  // Funding
+  raising: boolean;
+  raiseAmount: number;
+  useOfFunds: string[];
+  goals: { short: string; mid: string; major: string };
+}
 
-const ProgressHeader: React.FC<{ currentStep: number }> = ({ currentStep }) => {
-    const progressPercentage = ((currentStep - 1) / (steps.length - 1)) * 100;
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
+// --- UI COMPONENTS ---
 
-    useEffect(() => {
-        const activeStepEl = scrollContainerRef.current?.querySelector(`[data-step-id="${currentStep}"]`);
-        activeStepEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }, [currentStep]);
+const WizardCard: React.FC<{ children: React.ReactNode; className?: string; title?: string; subtitle?: string }> = ({ children, className = "", title, subtitle }) => (
+  <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 transition-all duration-300 hover:shadow-md ${className}`}>
+    {(title || subtitle) && (
+      <div className="mb-6">
+        {title && <h3 className="text-lg font-bold text-brand-blue">{title}</h3>}
+        {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
+      </div>
+    )}
+    {children}
+  </div>
+);
 
-    return (
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-sm border-b border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-20">
-                    <Link to="/dashboard" className="flex items-center gap-2">
-                        <SunIcon />
-                        <span className="font-bold text-lg hidden sm:inline">StartupAI</span>
-                    </Link>
-                    <div className="flex items-center gap-4">
-                        <span className="text-sm font-medium text-gray-500 animate-pulse">Auto-saving...</span>
-                        <button className="bg-brand-orange text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors">Preview</button>
-                    </div>
-                </div>
+const Label: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = "" }) => (
+  <label className={`block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ${className}`}>
+    {children}
+  </label>
+);
+
+const WizardInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { icon?: React.ElementType }> = ({ icon: Icon, className = "", ...props }) => (
+  <div className="relative group">
+    <input
+      className={`w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-brand-orange focus:border-transparent block p-3.5 transition-all outline-none placeholder:text-slate-400 ${Icon ? 'pl-10' : ''} ${className}`}
+      {...props}
+    />
+    {Icon && (
+      <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-brand-orange transition-colors" />
+    )}
+  </div>
+);
+
+const WizardTextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
+  <textarea
+    className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-brand-orange focus:border-transparent block p-3.5 transition-all outline-none resize-none"
+    {...props}
+  />
+);
+
+const SelectChip: React.FC<{ label: string; selected: boolean; onClick: () => void; multi?: boolean }> = ({ label, selected, onClick, multi }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 border flex items-center gap-2 ${
+      selected
+        ? 'bg-orange-50 border-brand-orange text-brand-orange shadow-sm ring-1 ring-brand-orange/20'
+        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+    }`}
+  >
+    {selected && multi && <Check className="w-3.5 h-3.5" />}
+    {label}
+  </button>
+);
+
+const NavButton: React.FC<{ onClick: () => void; variant?: 'primary' | 'secondary'; disabled?: boolean; children: React.ReactNode }> = ({ onClick, variant = 'primary', disabled, children }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+      variant === 'primary'
+        ? 'bg-brand-orange text-white hover:bg-opacity-90 shadow-lg hover:shadow-brand-orange/20 hover:-translate-y-0.5'
+        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+    }`}
+  >
+    {children}
+  </button>
+);
+
+// --- SCREENS ---
+
+const ScreenBasics = ({ data, update }: { data: WizardState; update: (k: keyof WizardState, v: any) => void }) => (
+  <div className="animate-fade-in-up space-y-6">
+    <div className="text-center lg:text-left mb-8">
+      <h2 className="text-3xl font-extrabold text-brand-blue">Startup Basics</h2>
+      <p className="text-slate-500 mt-2 text-lg">Tell us the core details about your company to get started.</p>
+    </div>
+
+    <WizardCard>
+      <div className="space-y-6">
+        <div>
+          <Label>Startup Name</Label>
+          <WizardInput 
+            placeholder="e.g. Nexus AI" 
+            value={data.name}
+            onChange={(e) => update('name', e.target.value)}
+            icon={Briefcase}
+            autoFocus
+          />
+        </div>
+        <div>
+          <Label>Website URL</Label>
+          <WizardInput 
+            placeholder="https://..." 
+            value={data.website}
+            onChange={(e) => update('website', e.target.value)}
+            icon={Globe}
+          />
+        </div>
+        <div>
+          <Label>One-line Pitch</Label>
+          <WizardInput 
+            placeholder="e.g. The operating system for remote work..." 
+            value={data.pitch}
+            onChange={(e) => update('pitch', e.target.value)}
+            icon={Sparkles}
+          />
+        </div>
+        <div>
+          <Label>Logo</Label>
+          <div className="flex items-center gap-4 p-4 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group">
+            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center border border-slate-200 text-slate-400 group-hover:text-brand-orange group-hover:border-orange-200 transition-all">
+              <UploadCloud className="w-6 h-6" />
             </div>
-            {/* Progress Bar */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Desktop Progress Bar */}
-                <div className="hidden lg:block relative pb-2">
-                    <div className="absolute top-1/2 left-0 h-0.5 w-full bg-gray-200"></div>
-                    <div className="absolute top-1/2 left-0 h-0.5 bg-brand-orange" style={{ width: `${progressPercentage}%` }}></div>
-                    <div className="relative flex justify-between">
-                        {steps.map(step => (
-                            <div key={step.id} className="text-center">
-                                <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto transition-colors ${step.id <= currentStep ? 'bg-brand-orange text-white' : 'bg-white border-2 border-gray-300 text-gray-400'}`}>
-                                    {step.id < currentStep ? <CheckCircle className="w-4 h-4" /> : step.id}
-                                </div>
-                                <p className={`mt-2 text-xs font-semibold ${step.id <= currentStep ? 'text-brand-orange' : 'text-gray-500'}`}>{step.name}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                 {/* Mobile Progress Chips */}
-                 <div ref={scrollContainerRef} className="lg:hidden pb-4 flex space-x-4 overflow-x-auto scrollbar-hide">
-                    {steps.map(step => (
-                        <div key={step.id} data-step-id={step.id} className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${step.id === currentStep ? 'bg-brand-orange text-white' : 'bg-gray-100 text-gray-600'}`}>
-                           Step {step.id}: {step.name}
-                        </div>
-                    ))}
-                </div>
+            <div>
+              <p className="text-sm font-bold text-slate-700">Click to upload logo</p>
+              <p className="text-xs text-slate-400">SVG, PNG, JPG (max 2MB)</p>
             </div>
-        </header>
-    );
+          </div>
+        </div>
+      </div>
+    </WizardCard>
+  </div>
+);
+
+const ScreenProblem = ({ data, update }: { data: WizardState; update: (k: keyof WizardState, v: any) => void }) => (
+  <div className="animate-fade-in-up space-y-6">
+    <div className="text-center lg:text-left mb-8">
+      <h2 className="text-3xl font-extrabold text-brand-blue">Problem & Solution</h2>
+      <p className="text-slate-500 mt-2 text-lg">What are you solving and who is it for?</p>
+    </div>
+
+    <WizardCard>
+      <div className="space-y-6">
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <Label className="mb-0">Problem Statement</Label>
+            <button className="text-xs text-brand-orange font-bold flex items-center gap-1 hover:bg-orange-50 px-2 py-1 rounded-md transition-colors">
+              <Sparkles size={12} /> Improve with Gemini
+            </button>
+          </div>
+          <WizardTextArea 
+            rows={3}
+            placeholder="Describe the pain point your customers face..."
+            value={data.problem}
+            onChange={(e) => update('problem', e.target.value)}
+          />
+        </div>
+        <div>
+          <Label>Solution Summary</Label>
+          <WizardTextArea 
+            rows={3}
+            placeholder="How does your product solve this problem?"
+            value={data.solution}
+            onChange={(e) => update('solution', e.target.value)}
+          />
+        </div>
+      </div>
+    </WizardCard>
+
+    <WizardCard title="Target Customer">
+      <div className="flex flex-wrap gap-3">
+        {['Consumers', 'SMBs', 'Enterprises', 'Creators', 'Developers', 'Niche'].map((type) => (
+          <SelectChip 
+            key={type} 
+            label={type} 
+            selected={data.targetCustomers.includes(type)}
+            onClick={() => {
+              const current = data.targetCustomers;
+              update('targetCustomers', current.includes(type) ? current.filter(c => c !== type) : [...current, type]);
+            }}
+            multi
+          />
+        ))}
+      </div>
+    </WizardCard>
+  </div>
+);
+
+const ScreenTraction = ({ data, update }: { data: WizardState; update: (k: keyof WizardState, v: any) => void }) => (
+  <div className="animate-fade-in-up space-y-6">
+    <div className="text-center lg:text-left mb-8">
+      <h2 className="text-3xl font-extrabold text-brand-blue">Stage & Traction</h2>
+      <p className="text-slate-500 mt-2 text-lg">Show investors your momentum.</p>
+    </div>
+
+    <div className="space-y-6">
+      <WizardCard title="Startup Stage">
+        <div className="flex flex-wrap gap-3">
+          {['Idea', 'MVP', 'Pre-Seed', 'Seed', 'Series A+', 'Growth'].map((s) => (
+            <SelectChip 
+              key={s} 
+              label={s} 
+              selected={data.stage === s}
+              onClick={() => update('stage', s)}
+            />
+          ))}
+        </div>
+      </WizardCard>
+
+      <WizardCard title="Traction Status">
+        <div className="flex flex-wrap gap-3">
+          {['Pre-launch', 'Early users', 'Paying customers', 'Growing revenue'].map((s) => (
+            <SelectChip 
+              key={s} 
+              label={s} 
+              selected={data.tractionStatus === s}
+              onClick={() => update('tractionStatus', s)}
+            />
+          ))}
+        </div>
+      </WizardCard>
+
+      <WizardCard title="Key Metrics">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+             <Label className="mb-1">Monthly Active Users</Label>
+             <input 
+               type="text" 
+               className="w-full bg-transparent text-2xl font-bold text-slate-900 outline-none"
+               placeholder="0"
+               value={data.mau}
+               onChange={(e) => update('mau', e.target.value)}
+             />
+          </div>
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+             <Label className="mb-1">Monthly Revenue ($)</Label>
+             <input 
+               type="text" 
+               className="w-full bg-transparent text-2xl font-bold text-slate-900 outline-none"
+               placeholder="0"
+               value={data.revenue}
+               onChange={(e) => update('revenue', e.target.value)}
+             />
+          </div>
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+             <Label className="mb-1">Growth Rate (%)</Label>
+             <div className="flex items-center">
+               <TrendingUp className="w-4 h-4 text-green-500 mr-2" />
+               <input 
+                 type="text" 
+                 className="w-full bg-transparent text-2xl font-bold text-slate-900 outline-none"
+                 placeholder="0"
+                 value={data.growth}
+                 onChange={(e) => update('growth', e.target.value)}
+               />
+             </div>
+          </div>
+        </div>
+      </WizardCard>
+    </div>
+  </div>
+);
+
+const ScreenBusiness = ({ data, update }: { data: WizardState; update: (k: keyof WizardState, v: any) => void }) => (
+  <div className="animate-fade-in-up space-y-6">
+    <div className="text-center lg:text-left mb-8">
+      <h2 className="text-3xl font-extrabold text-brand-blue">Business Model</h2>
+      <p className="text-slate-500 mt-2 text-lg">How do you make money and win the market?</p>
+    </div>
+
+    <WizardCard>
+      <div className="space-y-6">
+        <div>
+          <Label>Model Type</Label>
+          <div className="flex flex-wrap gap-3 mt-2">
+            {['SaaS', 'Marketplace', 'Subscription', 'Usage-based', 'Ads', 'E-commerce'].map((model) => (
+              <SelectChip 
+                key={model} 
+                label={model} 
+                selected={data.businessModel.includes(model)}
+                onClick={() => {
+                  const current = data.businessModel;
+                  update('businessModel', current.includes(model) ? current.filter(c => c !== model) : [...current, model]);
+                }}
+                multi
+              />
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label>Pricing Model</Label>
+          <WizardInput 
+            placeholder="e.g. Freemium with $29/mo Pro tier"
+            value={data.pricing}
+            onChange={(e) => update('pricing', e.target.value)}
+            icon={DollarSign}
+          />
+        </div>
+      </div>
+    </WizardCard>
+
+    <WizardCard title="Competition">
+       <div className="space-y-4">
+          <div>
+            <Label>Top 3 Competitors</Label>
+            <div className="space-y-3">
+              {[0, 1, 2].map(i => (
+                <WizardInput 
+                  key={i}
+                  placeholder={`Competitor ${i + 1}`}
+                  value={data.competitors[i] || ''}
+                  onChange={(e) => {
+                    const newComps = [...data.competitors];
+                    newComps[i] = e.target.value;
+                    update('competitors', newComps);
+                  }}
+                  icon={Shield}
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <Label>Unique Value Proposition</Label>
+            <WizardTextArea 
+              rows={2}
+              placeholder="Why do customers choose you over them?"
+              value={data.uvp}
+              onChange={(e) => update('uvp', e.target.value)}
+            />
+          </div>
+       </div>
+    </WizardCard>
+  </div>
+);
+
+const ScreenTeam = ({ data, update }: { data: WizardState; update: (k: keyof WizardState, v: any) => void }) => (
+  <div className="animate-fade-in-up space-y-6">
+     <div className="text-center lg:text-left mb-8">
+      <h2 className="text-3xl font-extrabold text-brand-blue">Founding Team</h2>
+      <p className="text-slate-500 mt-2 text-lg">Who is building this vision?</p>
+    </div>
+
+    <WizardCard className="flex flex-col gap-4">
+      <div className="flex justify-between items-center">
+        <Label className="mb-0">Team Size</Label>
+      </div>
+      <div className="flex flex-wrap gap-3">
+        {['Solo', '2–5', '6–15', '16+'].map((s) => (
+            <SelectChip 
+              key={s} 
+              label={s} 
+              selected={data.teamSize === s}
+              onClick={() => update('teamSize', s)}
+            />
+        ))}
+      </div>
+    </WizardCard>
+
+    {data.founders.map((founder, index) => (
+      <WizardCard key={index} className="relative group">
+        {index > 0 && (
+          <button 
+            onClick={() => update('founders', data.founders.filter((_, i) => i !== index))}
+            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Name</Label>
+              <WizardInput 
+                placeholder="Full Name"
+                value={founder.name}
+                onChange={(e) => {
+                  const newFounders = [...data.founders];
+                  newFounders[index].name = e.target.value;
+                  update('founders', newFounders);
+                }}
+                icon={Users}
+              />
+            </div>
+            <div>
+              <Label>Role</Label>
+               <div className="relative">
+                  <select 
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-brand-orange focus:border-transparent block p-3.5 appearance-none outline-none"
+                    value={founder.role}
+                    onChange={(e) => {
+                      const newFounders = [...data.founders];
+                      newFounders[index].role = e.target.value;
+                      update('founders', newFounders);
+                    }}
+                  >
+                    <option value="">Select Role</option>
+                    <option value="CEO">CEO</option>
+                    <option value="CTO">CTO</option>
+                    <option value="COO">COO</option>
+                    <option value="CMO">CMO</option>
+                    <option value="Founder">Founder</option>
+                  </select>
+                  <ChevronRight className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rotate-90 pointer-events-none" />
+               </div>
+            </div>
+          </div>
+          <div>
+            <Label>Short Bio</Label>
+            <WizardTextArea 
+              rows={2}
+              placeholder="Key experience, past exits, domain expertise..."
+              value={founder.bio}
+              onChange={(e) => {
+                const newFounders = [...data.founders];
+                newFounders[index].bio = e.target.value;
+                update('founders', newFounders);
+              }}
+            />
+          </div>
+        </div>
+      </WizardCard>
+    ))}
+
+    <button
+      onClick={() => update('founders', [...data.founders, { name: '', role: '', bio: '' }])}
+      className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-500 font-bold hover:border-brand-orange/50 hover:text-brand-orange hover:bg-orange-50/50 transition-all flex items-center justify-center gap-2"
+    >
+      <Plus className="w-5 h-5" /> Add Another Founder
+    </button>
+  </div>
+);
+
+const ScreenFunding = ({ data, update }: { data: WizardState; update: (k: keyof WizardState, v: any) => void }) => (
+  <div className="animate-fade-in-up space-y-6">
+    <div className="text-center lg:text-left mb-8">
+      <h2 className="text-3xl font-extrabold text-brand-blue">Funding & Goals</h2>
+      <p className="text-slate-500 mt-2 text-lg">What are your financial needs?</p>
+    </div>
+
+    <WizardCard>
+      <div className="space-y-8">
+        <div>
+          <Label>Are you raising?</Label>
+          <div className="flex gap-3 mt-2">
+            <SelectChip label="Yes, Actively" selected={data.raising === true} onClick={() => update('raising', true)} />
+            <SelectChip label="No / Not Now" selected={data.raising === false} onClick={() => update('raising', false)} />
+          </div>
+        </div>
+
+        {data.raising && (
+          <div className="animate-fade-in-up">
+             <div className="flex justify-between items-center mb-4">
+                <Label className="mb-0">Target Raise Amount</Label>
+                <span className="text-2xl font-bold text-brand-orange">${(data.raiseAmount / 1000)}k</span>
+             </div>
+             <input 
+               type="range" 
+               min="50000" 
+               max="5000000" 
+               step="50000"
+               value={data.raiseAmount}
+               onChange={(e) => update('raiseAmount', parseInt(e.target.value))}
+               className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+             />
+             <div className="flex justify-between text-xs text-slate-400 mt-2 font-bold">
+               <span>$50k</span>
+               <span>$5M+</span>
+             </div>
+          </div>
+        )}
+
+        <div>
+          <Label>Use of Funds</Label>
+          <div className="flex flex-wrap gap-3 mt-2">
+            {['Product', 'Engineering', 'Marketing', 'Sales', 'Operations', 'Legal'].map((use) => (
+              <SelectChip 
+                key={use} 
+                label={use} 
+                selected={data.useOfFunds.includes(use)}
+                onClick={() => {
+                  const current = data.useOfFunds;
+                  update('useOfFunds', current.includes(use) ? current.filter(c => c !== use) : [...current, use]);
+                }}
+                multi
+              />
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label>Top 3 Goals</Label>
+          <div className="space-y-3 mt-2">
+            <WizardInput 
+              placeholder="Short-term goal (30 days)" 
+              value={data.goals.short}
+              onChange={(e) => update('goals', { ...data.goals, short: e.target.value })}
+              icon={Target}
+            />
+             <WizardInput 
+              placeholder="Mid-term goal (12 months)" 
+              value={data.goals.mid}
+              onChange={(e) => update('goals', { ...data.goals, mid: e.target.value })}
+              icon={Target}
+            />
+             <WizardInput 
+              placeholder="Major Milestone (Vision)" 
+              value={data.goals.major}
+              onChange={(e) => update('goals', { ...data.goals, major: e.target.value })}
+              icon={Award}
+            />
+          </div>
+        </div>
+      </div>
+    </WizardCard>
+  </div>
+);
+
+const ScreenReview = ({ data, setStep }: { data: WizardState; setStep: (s: number) => void }) => {
+  const sections = [
+    { title: 'Basics', step: 1, content: [data.name, data.website] },
+    { title: 'Problem & Solution', step: 2, content: [data.problem, data.solution] },
+    { title: 'Stage & Traction', step: 3, content: [data.stage, data.tractionStatus] },
+    { title: 'Business Model', step: 4, content: [data.businessModel.join(', '), data.pricing] },
+    { title: 'Team', step: 5, content: [`${data.teamSize} Members`, data.founders[0]?.name] },
+    { title: 'Funding', step: 6, content: [data.raising ? `Raising $${data.raiseAmount}` : 'Not raising'] },
+  ];
+
+  return (
+    <div className="animate-fade-in-up space-y-6">
+      <div className="text-center lg:text-left mb-8">
+        <h2 className="text-3xl font-extrabold text-brand-blue">Review Profile</h2>
+        <p className="text-slate-500 mt-2 text-lg">Confirm your details before finalizing.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {sections.map((section, i) => (
+          <WizardCard key={i} className="relative group hover:border-brand-orange/50">
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="font-bold text-slate-800">{section.title}</h3>
+              <button onClick={() => setStep(section.step)} className="text-xs font-bold text-brand-orange bg-orange-50 px-2 py-1 rounded hover:bg-orange-100 transition-colors">
+                Edit
+              </button>
+            </div>
+            <div className="space-y-1">
+              {section.content.map((line, j) => (
+                 <p key={j} className="text-sm text-slate-600 truncate">{line || <span className="text-slate-300 italic">Empty</span>}</p>
+              ))}
+            </div>
+          </WizardCard>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-const FormCard: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div className="bg-white p-6 sm:p-8 rounded-lg shadow-sm border border-gray-200">{children}</div>
-);
+const ScreenSuccess = ({ data }: { data: WizardState }) => {
+  const navigate = useNavigate();
+  
+  return (
+    <div className="flex flex-col items-center justify-center text-center py-12 animate-scale-in">
+       <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-8 relative">
+          <div className="absolute inset-0 rounded-full bg-green-400 opacity-20 animate-ping"></div>
+          <Check size={48} className="text-green-600 relative z-10" />
+       </div>
+       
+       <h2 className="text-4xl font-extrabold text-brand-blue mb-4">Profile Ready!</h2>
+       <p className="text-slate-500 max-w-md mb-10 text-lg">
+         We've compiled your profile for <strong>{data.name}</strong>. You're all set to start building decks and attracting investors.
+       </p>
 
-const UploadZone: React.FC<{ title: string, description: string }> = ({ title, description }) => (
-    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-brand-orange hover:bg-orange-50/50 transition-colors">
-        <UploadCloudIcon className="mx-auto h-10 w-10 text-gray-400" />
-        <h4 className="mt-2 text-sm font-semibold text-brand-blue">{title}</h4>
-        <p className="mt-1 text-xs text-gray-500">{description}</p>
+       <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 w-full max-w-md mb-10 text-left flex items-start gap-4">
+          <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center font-bold text-slate-400 text-xl">
+             {data.name.charAt(0) || 'S'}
+          </div>
+          <div>
+             <h3 className="font-bold text-slate-900 text-lg">{data.name}</h3>
+             <p className="text-sm text-slate-500 line-clamp-1">{data.pitch}</p>
+          </div>
+       </div>
+
+       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+          <button onClick={() => navigate('/dashboard')} className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-4 rounded-xl hover:bg-slate-50 transition-colors">
+            Go to Dashboard
+          </button>
+          <button onClick={() => navigate('/pitch-decks/new')} className="flex-1 bg-brand-orange text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-brand-orange/20 hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+            <Layout size={20} />
+            Generate Pitch Deck
+          </button>
+       </div>
     </div>
-);
+  );
+}
+
+// --- MAIN WIZARD COMPONENT ---
 
 const StartupWizard: React.FC = () => {
-    const [currentStep, setCurrentStep] = useState(1);
-    const navigate = useNavigate();
-    const { profile, updateProfile } = useStartup();
+  const [step, setStep] = useState(1);
+  const navigate = useNavigate();
+  const { profile, updateProfile } = useStartup();
+  
+  // Initial State
+  const [wizardData, setWizardData] = useState<WizardState>({
+    name: profile.name || '',
+    website: profile.website || '',
+    pitch: profile.tagline || '',
+    logo: profile.logoUrl || null,
+    problem: '',
+    solution: '',
+    targetCustomers: [],
+    stage: profile.stage || 'Idea',
+    tractionStatus: 'Pre-launch',
+    mau: '',
+    revenue: '',
+    growth: '',
+    businessModel: [],
+    pricing: '',
+    competitors: ['', '', ''],
+    uvp: '',
+    teamSize: profile.teamSize || 'Solo',
+    founders: [{ name: '', role: '', bio: '' }],
+    raising: false,
+    raiseAmount: 500000,
+    useOfFunds: [],
+    goals: { short: '', mid: '', major: '' }
+  });
 
-    const handleSaveAndExit = () => {
-        // Data is already saved in context/localStorage via updateProfile
-        navigate('/dashboard');
-    };
-    
-    return (
-        <div className="bg-gray-50 min-h-screen">
-            <ProgressHeader currentStep={currentStep} />
-            <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Main Content Column */}
-                    <div className="lg:col-span-2 space-y-8">
-                        <FormCard>
-                             <h1 className="text-2xl font-bold text-brand-blue">Company Basics</h1>
-                             <p className="text-gray-500 mt-1">Let’s start with the essential information about your company. This will be used to generate your pitch decks and documents.</p>
-                        </FormCard>
+  const totalSteps = 8;
 
-                        <FormCard>
-                           <div className="space-y-6">
-                                <div>
-                                    <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">Company Name</label>
-                                    <input 
-                                        type="text" 
-                                        id="companyName" 
-                                        value={profile.name}
-                                        onChange={(e) => updateProfile({ name: e.target.value })}
-                                        placeholder="e.g., StartupAI" 
-                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" 
-                                    />
+  const updateData = (key: keyof WizardState, value: any) => {
+    setWizardData(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleNext = () => {
+    if (step === 7) {
+        // Save to global context/DB on completion
+        updateProfile({
+            name: wizardData.name,
+            website: wizardData.website,
+            tagline: wizardData.pitch,
+            stage: wizardData.stage,
+            teamSize: wizardData.teamSize,
+            // Map other fields if StartupProfile interface is extended
+        });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setStep(s => Math.min(s + 1, 8));
+  };
+
+  const handleBack = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setStep(s => Math.max(s - 1, 1));
+  };
+
+  const renderScreen = () => {
+    switch (step) {
+      case 1: return <ScreenBasics data={wizardData} update={updateData} />;
+      case 2: return <ScreenProblem data={wizardData} update={updateData} />;
+      case 3: return <ScreenTraction data={wizardData} update={updateData} />;
+      case 4: return <ScreenBusiness data={wizardData} update={updateData} />;
+      case 5: return <ScreenTeam data={wizardData} update={updateData} />;
+      case 6: return <ScreenFunding data={wizardData} update={updateData} />;
+      case 7: return <ScreenReview data={wizardData} setStep={setStep} />;
+      case 8: return <ScreenSuccess data={wizardData} />;
+      default: return <ScreenBasics data={wizardData} update={updateData} />;
+    }
+  };
+
+  const getAIPreviewText = () => {
+    switch(step) {
+       case 1: return ["Market positioning statement", "Competitor analysis", "Investor intro blurb"];
+       case 2: return ["Refined Problem Statement", "Solution Benefit Analysis", "Customer Persona Profile"];
+       case 3: return ["Growth Trajectory Chart", "Key Metric Highlights", "Stage-Gate Analysis"];
+       case 4: return ["Revenue Model Diagram", "Pricing Tier Strategy", "Competitive Matrix"];
+       case 5: return ["Team Strength Assessment", "Founder Bio Highlights", "Skill Gap Analysis"];
+       case 6: return ["Funding Ask Slide", "Use of Funds Chart", "Milestone Roadmap"];
+       default: return ["Complete Startup Profile", "Investor Pitch Deck", "One-Pager Summary"];
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F9FAFB] font-display text-slate-900 flex flex-col">
+      
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 h-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/dashboard')}>
+              <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center text-white font-bold shadow-sm">S</div>
+              <span className="font-bold text-lg tracking-tight text-brand-blue hidden sm:inline">StartupAI</span>
+           </div>
+           {step < 8 && (
+             <div className="flex items-center gap-4">
+               <span className="text-sm font-medium text-slate-500 hidden sm:inline">Step {step} of {totalSteps - 1}</span>
+               <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-brand-orange transition-all duration-500 ease-out" style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}></div>
+               </div>
+             </div>
+           )}
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            
+            {/* Left / Center Content */}
+            <div className={`lg:col-span-${step === 8 ? '12' : '8'} w-full max-w-3xl mx-auto lg:mx-0`}>
+               {renderScreen()}
+            </div>
+
+            {/* Right Sidebar (Desktop) */}
+            {step < 8 && (
+              <div className="hidden lg:block lg:col-span-4">
+                 <div className="sticky top-24 space-y-6">
+                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg ring-1 ring-slate-900/5">
+                       <div className="flex items-center gap-2 mb-6 border-b border-slate-700/50 pb-4">
+                          <Sparkles className="text-brand-orange" size={20} />
+                          <span className="font-bold tracking-wide">AI Preview</span>
+                       </div>
+                       <p className="text-sm text-slate-300 mb-4 font-medium">Based on your inputs, our AI will generate:</p>
+                       <ul className="space-y-4">
+                          {getAIPreviewText().map((item, i) => (
+                             <li key={i} className="flex items-start gap-3 text-sm">
+                                <div className="mt-0.5 bg-green-500/20 p-1 rounded-full">
+                                   <Check size={12} className="text-green-400" />
                                 </div>
-                                <div>
-                                    <label htmlFor="website" className="block text-sm font-medium text-gray-700">Website URL</label>
-                                    <input 
-                                        type="url" 
-                                        id="website" 
-                                        value={profile.website}
-                                        onChange={(e) => updateProfile({ website: e.target.value })}
-                                        placeholder="https://www.startupai.com" 
-                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" 
-                                    />
-                                </div>
-                                 <div>
-                                    <label htmlFor="tagline" className="block text-sm font-medium text-gray-700">Company Tagline</label>
-                                    <textarea 
-                                        id="tagline" 
-                                        rows={2} 
-                                        value={profile.tagline}
-                                        onChange={(e) => updateProfile({ tagline: e.target.value })}
-                                        placeholder="e.g., Your AI-Powered Startup Hub for Growth." 
-                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange"
-                                    ></textarea>
-                                    <p className="mt-1 text-xs text-gray-500">A short, memorable phrase. (Max 120 characters)</p>
-                                </div>
-                                <div>
-                                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">Company Description</label>
-                                    <textarea 
-                                        id="description" 
-                                        rows={4} 
-                                        value={profile.description}
-                                        onChange={(e) => updateProfile({ description: e.target.value })}
-                                        placeholder="Describe what your company does, your target audience, and your value proposition." 
-                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange"
-                                    ></textarea>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div>
-                                        <label htmlFor="industry" className="block text-sm font-medium text-gray-700">Industry</label>
-                                        <input 
-                                            type="text" 
-                                            id="industry" 
-                                            value={profile.industry}
-                                            onChange={(e) => updateProfile({ industry: e.target.value })}
-                                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" 
-                                        />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="founded" className="block text-sm font-medium text-gray-700">Founded Year</label>
-                                        <input 
-                                            type="number" 
-                                            id="founded" 
-                                            value={profile.foundedYear}
-                                            onChange={(e) => updateProfile({ foundedYear: e.target.value })}
-                                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-orange focus:border-brand-orange" 
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <UploadZone title="Upload Logo" description="PNG, JPG, SVG up to 5MB. (400x400px recommended)" />
-                                    <UploadZone title="Upload Cover Image" description="PNG, JPG up to 10MB. (1600x900px recommended)" />
-                                </div>
-                           </div>
-                           <div className="mt-8 flex justify-end">
-                               <button 
-                                   onClick={handleSaveAndExit}
-                                   className="bg-brand-blue text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition-colors"
-                               >
-                                   Save & Finish
-                               </button>
-                           </div>
-                        </FormCard>
+                                <span className="text-slate-100">{item}</span>
+                             </li>
+                          ))}
+                       </ul>
+                       <div className="mt-6 pt-4 border-t border-slate-700/50">
+                          <div className="flex items-center justify-between text-xs text-slate-400">
+                             <span>Gemini 3 Pro</span>
+                             <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Active</span>
+                          </div>
+                       </div>
                     </div>
 
-                    {/* Right Sidebar Column */}
-                    <aside className="space-y-8 lg:sticky top-28 self-start">
-                        <FormCard>
-                            <h3 className="font-bold text-lg text-brand-blue mb-4">Profile Strength</h3>
-                            <div className="flex items-center gap-6">
-                                <div className="relative w-24 h-24">
-                                    <svg className="w-full h-full" viewBox="0 0 36 36"><path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e6e6e6" strokeWidth="3" /><path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E87C4D" strokeWidth="3" strokeDasharray="30, 100" transform="rotate(-90 18 18)" /></svg>
-                                    <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-brand-orange">30%</div>
-                                </div>
-                                <p className="text-sm text-gray-600">Keep going! Add more details to strengthen your profile.</p>
-                            </div>
-                        </FormCard>
-                        <FormCard>
-                            <h3 className="font-bold text-lg text-brand-blue mb-4">Pro Tips</h3>
-                            <ul className="space-y-3 text-sm">
-                                <li className="flex items-start gap-3"><LightbulbIcon className="flex-shrink-0 mt-1 text-brand-mustard" /><span>Your tagline is your first impression. Use our AI tools to generate a few options.</span></li>
-                                <li className="flex items-start gap-3"><LightbulbIcon className="flex-shrink-0 mt-1 text-brand-mustard" /><span>High-quality logos and cover images make your profile stand out to investors and talent.</span></li>
-                            </ul>
-                        </FormCard>
-                        <FormCard>
-                            <h3 className="font-bold text-lg text-brand-blue mb-4">Quick Actions</h3>
-                            <div className="space-y-3">
-                                <button onClick={() => navigate('/pitch-decks/new')} className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"><WandIcon /> Generate Pitch Deck</button>
-                                <button className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"><LinkedinIcon /> Import from LinkedIn</button>
-                                <button className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"><EyeIcon /> Preview Public Profile</button>
-                            </div>
-                        </FormCard>
-                    </aside>
-                </div>
-            </main>
+                    {/* Helper Tip Card */}
+                    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
+                       <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                          <Lightbulb size={16} className="text-blue-600" /> Pro Tip
+                       </h4>
+                       <p className="text-sm text-blue-800 leading-relaxed">
+                          Investors skim profiles. Keep your "One-line Pitch" under 140 characters and focus on the specific problem you solve.
+                       </p>
+                    </div>
+                 </div>
+              </div>
+            )}
         </div>
-    );
+      </div>
+
+      {/* Footer Navigation (Sticky) */}
+      {step < 8 && (
+        <div className="sticky bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200 p-4 z-40">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <NavButton onClick={handleBack} variant="secondary" disabled={step === 1}>
+               <ChevronLeft size={18} /> Back
+            </NavButton>
+            <NavButton onClick={handleNext} variant="primary">
+               {step === 7 ? 'Complete Profile' : 'Continue'} <ChevronRight size={18} />
+            </NavButton>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
 };
 
 export default StartupWizard;

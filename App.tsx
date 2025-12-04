@@ -1,6 +1,5 @@
-
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { StartupProvider } from './contexts/StartupContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -90,6 +89,7 @@ const DocBuilder = lazy(() => import('./screens/DocBuilder'));
 // New Metrics Component import
 const Metrics = lazy(() => import('./screens/Metrics'));
 
+const { BrowserRouter, Routes, Route, Navigate } = ReactRouterDOM;
 
 // Loading fallback component
 const LoadingSpinner: React.FC = () => (

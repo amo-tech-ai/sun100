@@ -1,6 +1,8 @@
 
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
+
+const { useParams, Link } = ReactRouterDOM;
 
 const PerkDetail: React.FC = () => {
     const { id } = useParams();

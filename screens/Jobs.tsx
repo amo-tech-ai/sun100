@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
+
+const { Link } = ReactRouterDOM;
 
 const mockJobs = [
     { id: 1, title: "AI Prompt Engineer", location: "Remote", type: "Full-time", postedDate: "2024-08-20T10:00:00Z" },

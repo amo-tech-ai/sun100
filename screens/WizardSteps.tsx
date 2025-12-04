@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import { useWizardStore } from '../stores/wizardStore';
 import UrlInput from '../components/UrlInput';
 import TemplateSelector from '../components/TemplateSelector';
 import { FinancialSettings } from '../services/ai/deck';
 import { templates } from '../styles/templates';
+
+const { useNavigate } = ReactRouterDOM;
 
 // --- ICONS ---
 const SparklesIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
@@ -200,7 +202,7 @@ const WizardSteps: React.FC = () => {
             </header>
 
             {/* 2. Main Content Area */}
-            <main className="max-w-5xl mx-auto px-4 sm:px-6 mt-8 sm:mt-12">
+            <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-12">
                 
                 {/* STEP 1: CONTEXT (Chat Interface) */}
                 {step === 1 && (

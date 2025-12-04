@@ -1,6 +1,8 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
+
+const { Link } = ReactRouterDOM;
 
 const mockPerks = [
     { id: 1, partner: "Amazon Web Services", offer: "$10,000 in AWS Credits", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg" },

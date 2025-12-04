@@ -1,5 +1,7 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
+
+const { useParams, Link } = ReactRouterDOM;
 
 const JobDetail: React.FC = () => {
     const { id } = useParams();

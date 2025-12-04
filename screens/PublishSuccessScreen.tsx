@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams, useLocation } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
+
+const { Link, useParams, useLocation } = ReactRouterDOM;
 
 const CheckCircleIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-green-500 mx-auto" viewBox="0 0 20 20" fill="currentColor">

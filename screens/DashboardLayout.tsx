@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+
+const { Outlet, useLocation } = ReactRouterDOM;
 
 const DashboardLayout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

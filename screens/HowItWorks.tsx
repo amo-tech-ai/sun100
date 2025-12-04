@@ -1,8 +1,10 @@
 
 import React, { useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import * as ReactRouterDOM from 'react-router-dom';
 import useOnScreen from '../hooks/useOnScreen';
 import AnimatedCounter from '../components/AnimatedCounter';
+
+const { Link } = ReactRouterDOM;
 
 // --- ICONS ---
 const LightbulbIcon = ({ className }: { className?: string }) => (
@@ -333,112 +335,4 @@ const HowItWorks: React.FC = () => {
                             {/* Animated Bar Chart */}
                             <div className="h-48 flex items-end gap-2 justify-between px-2">
                                 {[30, 45, 35, 50, 65, 55, 70, 85, 95].map((h, i) => (
-                                    <div key={i} className="w-full bg-brand-orange rounded-t-md animate-float" style={{ height: `${h}%`, animationDelay: `${i * 100}ms`, animationDuration: '3s' }}></div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* SECTION 5: BRAIN FLOW */}
-            <section ref={brainRef} className="py-24 px-4 relative">
-                <div className="max-w-4xl mx-auto text-center">
-                    <h2 className="text-4xl font-extrabold text-brand-blue mb-16">Inside the StartupAI Brain</h2>
-                    <div className="relative">
-                        {/* Vertical connection line */}
-                        <div className={`absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-slate-200 via-brand-orange to-slate-200 -translate-x-1/2 transition-all duration-1000 ${isBrainVisible ? 'h-full' : 'h-0'}`}></div>
-                        
-                        <div className="space-y-12 relative z-10">
-                            {[
-                                { title: "Inputs", desc: "Text, URLs, PDFs", icon: <LightbulbIcon /> },
-                                { title: "Gemini 3 Reasoning", desc: "Deep analysis & logic", icon: <BrainIcon /> },
-                                { title: "Enrichment", desc: "Industry benchmarks & data", icon: <ChartIcon /> },
-                                { title: "Generation", desc: "Documents & Strategies", icon: <RocketIcon /> },
-                            ].map((node, i) => (
-                                <div key={i} className={`bg-white p-6 rounded-2xl shadow-lg border border-gray-100 w-64 mx-auto flex flex-col items-center relative transition-all duration-500 ${isBrainVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`} style={{ transitionDelay: `${i * 300}ms` }}>
-                                    <div className="w-12 h-12 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center mb-2">{node.icon}</div>
-                                    <h3 className="font-bold text-slate-800">{node.title}</h3>
-                                    <p className="text-xs text-slate-500">{node.desc}</p>
-                                    {/* Glow effect */}
-                                    {i === 1 && <div className="absolute inset-0 rounded-2xl ring-4 ring-brand-orange/20 animate-pulse"></div>}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* SECTION 6: FEATURES */}
-            <section className="py-24 px-4 bg-slate-50">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl font-extrabold text-brand-blue">Everything You Get</h2>
-                    </div>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <FeatureCard icon={<RocketIcon />} title="AI Pitch Deck" desc="10-slide investor ready deck generated in minutes." delay={0} />
-                        <FeatureCard icon={<BanknoteIcon />} title="Financial Model" desc="5-year projections, cash flow, and burn rate analysis." delay={100} />
-                        <FeatureCard icon={<GlobeIcon />} title="Market Research" desc="Deep dive into TAM/SAM/SOM with cited sources." delay={200} />
-                        <FeatureCard icon={<TrophyIcon />} title="Competitor Analysis" desc="SWOT analysis and feature comparison matrix." delay={300} />
-                        <FeatureCard icon={<ChartIcon />} title="Traction Insights" desc="Key metrics dashboard and growth forecasting." delay={400} />
-                        <FeatureCard icon={<SendIcon />} title="Investor Matching" desc="Smart list of VCs aligned with your industry." delay={500} />
-                    </div>
-                </div>
-            </section>
-
-            {/* SECTION 7: TESTIMONIALS */}
-            <section className="py-24 overflow-hidden bg-white">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold text-brand-blue">Founders Love StartupAI</h2>
-                </div>
-                <div className="relative w-full">
-                    <div className="flex w-[200%] animate-scroll">
-                        {[...Array(2)].map((_, setIndex) => (
-                            <div key={setIndex} className="flex w-1/2 justify-around px-4 gap-8">
-                                {[
-                                    { name: "Sarah J.", role: "CEO, FinTech Co", quote: "Raised our seed round in 3 weeks thanks to this deck." },
-                                    { name: "Mike R.", role: "Founder, HealthAI", quote: "The financial model generator saved me 40 hours." },
-                                    { name: "Elena K.", role: "CTO, DevTool", quote: "Finally, a tool that understands technical founders." },
-                                    { name: "David L.", role: "Founder, EdTech", quote: "The market research agent is insanely accurate." }
-                                ].map((t, i) => (
-                                    <div key={i} className="w-80 flex-shrink-0 bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                                        <p className="text-slate-600 italic mb-4">"{t.quote}"</p>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-slate-300 rounded-full"></div>
-                                            <div>
-                                                <p className="font-bold text-slate-800 text-sm">{t.name}</p>
-                                                <p className="text-xs text-slate-500">{t.role}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* SECTION 8: CTA */}
-            <section className="py-32 px-4 bg-slate-900 relative overflow-hidden text-center">
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-blue to-transparent opacity-80"></div>
-                
-                <div className="relative z-10 max-w-3xl mx-auto">
-                    <h2 className="text-4xl md:text-6xl font-extrabold text-white mb-8 tracking-tight">
-                        Ready to turn your idea into an investor-ready startup?
-                    </h2>
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <Link to="/dashboard" className="px-10 py-5 text-xl font-bold text-white bg-brand-orange rounded-full hover:bg-opacity-90 shadow-xl hover:shadow-brand-orange/30 transition-all transform hover:-translate-y-1">
-                            Start Free
-                        </Link>
-                        <button className="px-10 py-5 text-xl font-bold text-white border-2 border-white/20 rounded-full hover:bg-white/10 transition-all">
-                            See Templates
-                        </button>
-                    </div>
-                </div>
-            </section>
-        </div>
-    );
-};
-
-export default HowItWorks;
+                                    <div key={i} className="w-full bg-brand-orange rounded-t-md animate-float" style={{ height:
