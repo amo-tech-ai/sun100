@@ -30,15 +30,15 @@ const SlideOutlineItem: React.FC<{
     return (
         <div
             onClick={() => onSelect(slide)}
-            className={`group flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all duration-200 ${isSelected ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50 border-transparent'} border`}
+            className={`group flex items-center gap-3 p-2 sm:p-2 rounded-xl sm:rounded-lg cursor-pointer transition-all duration-200 active:scale-[0.98] ${isSelected ? 'bg-blue-50 border-blue-200 shadow-sm' : 'hover:bg-gray-50 border-transparent'} border`}
         >
-            <span className={`text-xs font-bold text-gray-400 w-4 text-center ${isSelected ? 'text-blue-500' : ''}`}>{index + 1}</span>
+            <span className={`text-sm sm:text-xs font-bold text-gray-400 w-5 sm:w-4 text-center flex-shrink-0 ${isSelected ? 'text-blue-500' : ''}`}>{index + 1}</span>
             
             {!isCollapsed && (
                 <div className="flex-1 min-w-0">
-                     <div className={`w-full aspect-video rounded overflow-hidden border ${isSelected ? 'border-blue-300 shadow-sm' : 'border-gray-200'} bg-white relative`}>
-                        <div className={`w-full h-full text-[4px] p-1 select-none ${templates[template]?.slide || templates.default.slide}`}>
-                            <div className="font-bold truncate text-gray-900">{slide.title}</div>
+                     <div className={`w-full aspect-video rounded-lg sm:rounded overflow-hidden border-2 sm:border ${isSelected ? 'border-blue-300 shadow-md' : 'border-gray-200'} bg-white relative`}>
+                        <div className={`w-full h-full text-[5px] sm:text-[4px] p-1.5 sm:p-1 select-none ${templates[template]?.slide || templates.default.slide}`}>
+                            <div className="font-bold truncate text-gray-900 leading-tight">{slide.title}</div>
                             <div className="h-px w-full bg-gray-100 my-0.5"></div>
                             <div className="space-y-0.5">
                                 <div className="h-0.5 w-3/4 bg-gray-200 rounded-full"></div>
@@ -46,7 +46,7 @@ const SlideOutlineItem: React.FC<{
                             </div>
                         </div>
                      </div>
-                     <p className={`text-xs font-medium mt-1.5 truncate ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
+                     <p className={`text-sm sm:text-xs font-medium mt-2 sm:mt-1.5 truncate ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
                         {slide.title || 'Untitled Slide'}
                      </p>
                 </div>
@@ -89,8 +89,8 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
 
     return (
         <div className="flex flex-col h-full bg-white">
-            {/* Header */}
-            <div className={`h-14 border-b border-gray-200 flex items-center px-4 flex-shrink-0 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+            {/* Header - Mobile Optimized */}
+            <div className={`h-12 sm:h-14 border-b border-gray-200 flex items-center px-3 sm:px-4 flex-shrink-0 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
                 {!isCollapsed ? (
                      isEditingTitle ? (
                         <input
@@ -99,18 +99,18 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
                             onChange={(e) => setEditedTitle(e.target.value)}
                             onBlur={handleTitleSaveInternal}
                             onKeyDown={(e) => e.key === 'Enter' && handleTitleSaveInternal()}
-                            className="w-full text-sm font-bold text-gray-900 bg-gray-50 px-2 py-1 rounded border border-brand-orange focus:outline-none"
+                            className="w-full text-base sm:text-sm font-bold text-gray-900 bg-gray-50 px-3 sm:px-2 py-2 sm:py-1 rounded-lg sm:rounded border border-brand-orange focus:outline-none"
                             autoFocus
                         />
                     ) : (
                         <div className="flex items-center gap-2 group w-full">
                             <h2 
-                                className="text-sm font-bold text-gray-900 truncate cursor-pointer hover:text-brand-blue"
+                                className="text-base sm:text-sm font-bold text-gray-900 truncate cursor-pointer hover:text-brand-blue active:scale-[0.98] transition-transform"
                                 onClick={() => setIsEditingTitle(true)}
                             >
                                 {deck.title}
                             </h2>
-                            <button onClick={() => setIsEditingTitle(true)} className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-gray-600">
+                            <button onClick={() => setIsEditingTitle(true)} className="text-gray-400 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:text-gray-600 p-1">
                                 <EditIcon />
                             </button>
                         </div>
@@ -122,8 +122,8 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
                 )}
             </div>
 
-            {/* Slide List */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+            {/* Slide List - Mobile Optimized */}
+            <div className="flex-1 overflow-y-auto scroll-smooth overscroll-contain p-3 sm:p-3 space-y-2.5 sm:space-y-2 custom-scrollbar">
                 {deck.slides.map((slide, index) => (
                     <SlideOutlineItem
                         key={slide.id}
@@ -137,8 +137,8 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
                 ))}
             </div>
 
-            {/* Bottom Actions */}
-            <div className={`border-t border-gray-200 bg-gray-50 p-4 flex-shrink-0 space-y-4 transition-opacity duration-200 ${isCollapsed ? 'opacity-0 pointer-events-none hidden' : 'opacity-100'}`}>
+            {/* Bottom Actions - Mobile Optimized */}
+            <div className={`border-t border-gray-200 bg-gray-50 p-3 sm:p-4 flex-shrink-0 space-y-3 sm:space-y-4 transition-opacity duration-200 ${isCollapsed ? 'opacity-0 pointer-events-none hidden' : 'opacity-100'}`}>
                 
                 {/* Themes */}
                 <div>
@@ -153,7 +153,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
                     <button
                         onClick={handleGenerateRoadmapSlide}
                         disabled={isGeneratingRoadmap}
-                        className="flex flex-col items-center justify-center p-2 bg-white border border-gray-200 rounded-lg hover:border-brand-orange/50 hover:shadow-sm transition-all text-xs font-medium text-gray-600 hover:text-brand-blue disabled:opacity-50"
+                        className="flex flex-col items-center justify-center p-2.5 sm:p-2 bg-white border border-gray-200 rounded-xl sm:rounded-lg hover:border-brand-orange/50 hover:shadow-sm active:scale-[0.98] transition-all text-xs font-medium text-gray-600 hover:text-brand-blue disabled:opacity-50"
                     >
                         {isGeneratingRoadmap ? <span className="animate-pulse">...</span> : <SparklesIcon />}
                         <span className="mt-1">Roadmap</span>
@@ -161,7 +161,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
                     <button
                         onClick={handleGenerateGTM}
                         disabled={isGeneratingGTM}
-                        className="flex flex-col items-center justify-center p-2 bg-white border border-gray-200 rounded-lg hover:border-brand-orange/50 hover:shadow-sm transition-all text-xs font-medium text-gray-600 hover:text-brand-blue disabled:opacity-50"
+                        className="flex flex-col items-center justify-center p-2.5 sm:p-2 bg-white border border-gray-200 rounded-xl sm:rounded-lg hover:border-brand-orange/50 hover:shadow-sm active:scale-[0.98] transition-all text-xs font-medium text-gray-600 hover:text-brand-blue disabled:opacity-50"
                     >
                         {isGeneratingGTM ? <span className="animate-pulse">...</span> : <SparklesIcon />}
                         <span className="mt-1">GTM Strat</span>
@@ -173,7 +173,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
                      <button
                         onClick={handlePublishDeck}
                         disabled={isPublishing}
-                        className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2 rounded-lg hover:bg-gray-50 transition-colors text-xs disabled:opacity-50"
+                        className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 font-bold py-2.5 sm:py-2 rounded-xl sm:rounded-lg hover:bg-gray-50 active:scale-[0.98] transition-all text-sm sm:text-xs disabled:opacity-50"
                     >
                         {isPublishing ? (
                             <span className="animate-pulse">{publishProgressMessage}...</span>
@@ -183,7 +183,7 @@ const SlideOutline: React.FC<SlideOutlineProps> = ({ isCollapsed }) => {
                     </button>
                     <Link
                         to={`/pitch-decks/${deck.id}/present`}
-                        className="flex-1 flex items-center justify-center gap-2 bg-brand-blue text-white font-bold py-2 rounded-lg hover:bg-opacity-90 transition-colors text-xs"
+                        className="flex-1 flex items-center justify-center gap-2 bg-brand-blue text-white font-bold py-2.5 sm:py-2 rounded-xl sm:rounded-lg hover:bg-opacity-90 active:scale-[0.98] transition-all text-sm sm:text-xs"
                     >
                         <PlayIcon /> Present
                     </Link>

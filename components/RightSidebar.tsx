@@ -52,10 +52,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ isMobile = false }) => {
     return (
         <div className={`flex flex-col bg-white transition-all duration-300 ease-in-out h-full ${widthClass} flex-shrink-0 relative shadow-xl z-30`}>
             
-            {/* Header Area */}
-            <div className={`h-14 border-b border-gray-200 flex items-center ${isCollapsed && !isMobile ? 'justify-center' : 'justify-between px-4'} bg-white flex-shrink-0`}>
+            {/* Header Area - Mobile Optimized */}
+            <div className={`h-12 sm:h-14 border-b border-gray-200 flex items-center ${isCollapsed && !isMobile ? 'justify-center' : 'justify-between px-3 sm:px-4'} bg-white flex-shrink-0`}>
                 {(!isCollapsed || isMobile) && (
-                    <span className="font-bold text-sm text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                    <span className="font-bold text-sm sm:text-sm text-gray-800 uppercase tracking-wide flex items-center gap-2">
                         {tabs.find(t => t.id === activeTab)?.icon}
                         {tabs.find(t => t.id === activeTab)?.label}
                     </span>
@@ -76,16 +76,26 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ isMobile = false }) => {
             {/* Main Body */}
             <div className="flex-1 flex overflow-hidden h-full">
                 
-                {/* Navigation Rail */}
-                <div className={`flex flex-col items-center py-3 gap-1 bg-gray-50 border-r border-gray-100 transition-all duration-300 overflow-y-auto ${isCollapsed && !isMobile ? 'w-full' : 'w-14'}`}>
+                {/* Navigation Rail - Mobile Optimized */}
+                <div className={`flex ${isMobile ? 'flex-row w-full justify-around border-b' : 'flex-col w-14'} items-center py-2 sm:py-3 gap-1 bg-gray-50 ${!isMobile ? 'border-r' : ''} border-gray-100 transition-all duration-300 overflow-auto ${isCollapsed && !isMobile ? 'w-full' : ''}`}>
                     {tabs.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => handleTabClick(tab.id)}
-                            className={`p-2.5 rounded-lg transition-all group relative flex-shrink-0 ${activeTab === tab.id ? 'bg-white text-brand-orange shadow-sm border border-gray-200' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}
+                            className={`p-2.5 sm:p-2.5 rounded-xl sm:rounded-lg transition-all group relative flex-shrink-0 active:scale-95 ${
+                                activeTab === tab.id 
+                                    ? 'bg-white text-brand-orange shadow-sm border border-gray-200' 
+                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'
+                            }`}
                             title={tab.label}
                         >
                             {tab.icon}
+                            {/* Mobile tab label */}
+                            {isMobile && (
+                                <span className={`text-[9px] font-bold block mt-0.5 ${activeTab === tab.id ? 'text-brand-orange' : 'text-gray-400'}`}>
+                                    {tab.label}
+                                </span>
+                            )}
                             {/* Tooltip for collapsed state */}
                             {isCollapsed && !isMobile && (
                                 <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50 shadow-lg">
@@ -96,10 +106,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ isMobile = false }) => {
                     ))}
                 </div>
 
-                {/* Content Area */}
+                {/* Content Area - Mobile Optimized */}
                 {(!isCollapsed || isMobile) && (
                     <div className="flex-1 overflow-hidden bg-white relative">
-                         <div className="absolute inset-0 overflow-y-auto custom-scrollbar">
+                         <div className="absolute inset-0 overflow-y-auto scroll-smooth overscroll-contain custom-scrollbar">
                              <AIToolbox activeTab={activeTab} />
                          </div>
                     </div>

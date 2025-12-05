@@ -64,7 +64,7 @@ const SlideRenderer: React.FC<{ slide: Slide, templateKey: string, isGeneratingI
     const showStackedVisuals = slide.chartData && slide.tableData;
 
     return (
-        <div className={`w-full h-full overflow-hidden rounded-sm ${templateStyles.slide}`}>
+        <div className={`w-full h-full overflow-hidden rounded-[20px] sm:rounded-sm ${templateStyles.slide}`}>
             {/* Image Logic */}
             {slide.imageUrl && isUrl(slide.imageUrl) && (
                 <div className={templateStyles.imageContainer}>
@@ -72,37 +72,39 @@ const SlideRenderer: React.FC<{ slide: Slide, templateKey: string, isGeneratingI
                 </div>
             )}
             {slide.imageUrl && !isUrl(slide.imageUrl) && (
-                <div className={`${templateStyles.imageContainer} flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg m-4 print:hidden`}>
+                <div className={`${templateStyles.imageContainer} flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl sm:rounded-lg m-3 sm:m-4 print:hidden relative`}>
+                    {/* Generate Image Button - Fixed to top */}
+                    {onGenerateImage && !isGeneratingImage && (
+                        <button
+                            onClick={onGenerateImage}
+                            className="absolute top-3 right-3 z-10 bg-brand-blue text-white text-xs font-bold py-2 px-3 sm:py-2 sm:px-4 rounded-full hover:bg-opacity-90 transition-colors shadow-md active:scale-95"
+                        >
+                            Generate Image
+                        </button>
+                    )}
+                    
                     {isGeneratingImage ? (
-                        <div className="flex flex-col items-center justify-center text-center p-6">
-                            <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-brand-orange mb-3"></div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Generating Visual...</p>
+                        <div className="flex flex-col items-center justify-center text-center p-4 sm:p-6">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 border-4 border-dashed rounded-full animate-spin border-brand-orange mb-2 sm:mb-3"></div>
+                            <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">Generating Visual...</p>
                         </div>
                     ) : (
-                        <div className="text-center p-6 max-w-sm">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Image Prompt</p>
-                            <p className="text-sm text-gray-600 mb-4 italic line-clamp-3">"{slide.imageUrl}"</p>
-                            {onGenerateImage && (
-                                <button
-                                    onClick={onGenerateImage}
-                                    className="bg-brand-blue text-white text-xs font-bold py-2 px-4 rounded-full hover:bg-opacity-90 transition-colors shadow-sm"
-                                >
-                                    Generate Image
-                                </button>
-                            )}
-                            {imageError && <p className="mt-2 text-xs text-red-500 font-medium">{imageError}</p>}
+                        <div className="text-center p-4 sm:p-6 max-w-sm">
+                            <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 sm:mb-3">Image Prompt</p>
+                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 italic line-clamp-2 sm:line-clamp-3">"{slide.imageUrl}"</p>
+                            {imageError && <p className="mt-2 text-[10px] sm:text-xs text-red-500 font-medium">{imageError}</p>}
                         </div>
                     )}
                 </div>
             )}
 
-            {/* Content Logic */}
-            <div className={templateStyles.textContainer ?? ''}>
-                <h1 className={templateStyles.title}>{slide.title}</h1>
+            {/* Content Logic - Mobile-optimized typography */}
+            <div className={`${templateStyles.textContainer ?? ''} mobile-content`}>
+                <h1 className={`${templateStyles.title} text-[20px] sm:text-[28px] md:text-4xl leading-tight`}>{slide.title}</h1>
                 
                 <div className="flex-1 overflow-auto custom-scrollbar">
                     {showStackedVisuals ? (
-                        <div className="flex flex-col h-full gap-4">
+                        <div className="flex flex-col h-full gap-3 sm:gap-4">
                             <div className="h-1/2"><Chart chartData={slide.chartData!} /></div>
                             <div className="h-1/2"><Table tableData={slide.tableData!} /></div>
                         </div>
@@ -111,9 +113,9 @@ const SlideRenderer: React.FC<{ slide: Slide, templateKey: string, isGeneratingI
                     ) : slide.tableData ? (
                         <Table tableData={slide.tableData} />
                     ) : (
-                        <ul className={templateStyles.content}>
+                        <ul className={`${templateStyles.content} text-[15px] sm:text-lg md:text-xl`}>
                             {slide.content.split('\n').map((point, i) => (
-                                point && <li key={i} className={templateStyles.bullet}>{renderWithMarkdown(point)}</li>
+                                point && <li key={i} className={`${templateStyles.bullet} leading-relaxed`}>{renderWithMarkdown(point)}</li>
                             ))}
                         </ul>
                     )}
@@ -163,21 +165,37 @@ const EditorPanel: React.FC = () => {
     return (
         <main className="flex-1 flex flex-col h-full relative bg-[#F3F4F6]">
             
-            {/* Top Toolbar */}
-            <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 flex-shrink-0 z-20 shadow-sm print:hidden gap-4">
+            {/* Top Toolbar - Mobile Optimized */}
+            <div className="h-12 sm:h-14 bg-white border-b border-gray-200 flex items-center justify-between px-2 sm:px-4 flex-shrink-0 z-20 shadow-sm print:hidden gap-2 sm:gap-4">
                 
-                {/* Left: Navigation */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                     <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
-                        <button onClick={handlePrevSlide} disabled={selectedSlideIndex === 0} className="p-1.5 rounded-md hover:bg-white hover:shadow-sm text-gray-600 disabled:opacity-30 transition-all" title="Previous Slide"><ChevronLeftIcon /></button>
-                        <span className="text-xs font-semibold text-gray-500 w-12 sm:w-16 text-center tabular-nums">{selectedSlideIndex + 1} / {totalSlides}</span>
-                        <button onClick={handleNextSlide} disabled={selectedSlideIndex === totalSlides - 1} className="p-1.5 rounded-md hover:bg-white hover:shadow-sm text-gray-600 disabled:opacity-30 transition-all" title="Next Slide"><ChevronRightIcon /></button>
+                {/* Left: Navigation - Larger tap targets on mobile */}
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                     <div className="flex items-center bg-gray-100 rounded-xl sm:rounded-lg p-0.5">
+                        <button 
+                            onClick={handlePrevSlide} 
+                            disabled={selectedSlideIndex === 0} 
+                            className="p-2.5 sm:p-1.5 rounded-lg sm:rounded-md hover:bg-white hover:shadow-sm text-gray-600 disabled:opacity-30 transition-all active:scale-95" 
+                            title="Previous Slide"
+                        >
+                            <ChevronLeftIcon />
+                        </button>
+                        <span className="text-sm sm:text-xs font-bold sm:font-semibold text-gray-600 w-14 sm:w-16 text-center tabular-nums select-none">
+                            {selectedSlideIndex + 1} / {totalSlides}
+                        </span>
+                        <button 
+                            onClick={handleNextSlide} 
+                            disabled={selectedSlideIndex === totalSlides - 1} 
+                            className="p-2.5 sm:p-1.5 rounded-lg sm:rounded-md hover:bg-white hover:shadow-sm text-gray-600 disabled:opacity-30 transition-all active:scale-95" 
+                            title="Next Slide"
+                        >
+                            <ChevronRightIcon />
+                        </button>
                      </div>
                 </div>
 
-                {/* Center: Tools (Scrollable) */}
-                <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide mask-linear-fade">
-                    <div className="h-6 w-px bg-gray-200 mx-2 flex-shrink-0"></div>
+                {/* Center: Tools (Scrollable) - Hidden on small mobile */}
+                <div className="hidden xs:flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide mask-linear-fade flex-1 justify-center">
+                    <div className="h-6 w-px bg-gray-200 mx-1 sm:mx-2 flex-shrink-0"></div>
                     
                     <ToolbarButton 
                         onClick={handleSuggestLayout} 
@@ -188,7 +206,7 @@ const EditorPanel: React.FC = () => {
                         error={layoutError}
                     />
                     
-                    <div className="h-6 w-px bg-gray-200 mx-2 flex-shrink-0"></div>
+                    <div className="h-6 w-px bg-gray-200 mx-1 sm:mx-2 flex-shrink-0 hidden sm:block"></div>
 
                     <ToolbarButton 
                         onClick={handleSuggestChart} 
@@ -228,10 +246,10 @@ const EditorPanel: React.FC = () => {
                 </div>
                 
                 {/* Right: Actions */}
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                      <button 
                         onClick={handlePrint}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-brand-blue bg-blue-50 hover:bg-blue-100 transition-colors"
+                        className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-1.5 rounded-lg sm:rounded-md text-xs sm:text-sm font-medium text-brand-blue bg-blue-50 hover:bg-blue-100 transition-colors active:scale-95"
                         title="Export as PDF (via Print)"
                     >
                         <PrinterIcon />
@@ -240,10 +258,10 @@ const EditorPanel: React.FC = () => {
                 </div>
             </div>
             
-            {/* Canvas Area */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex flex-col items-center justify-center min-h-0 bg-[#F3F4F6] print:bg-white print:p-0 print:overflow-visible">
-                {/* Standard Editor View */}
-                <div className="w-full max-w-5xl aspect-video bg-white shadow-2xl rounded-sm transition-transform duration-200 ease-out transform origin-center hover:scale-[1.005] print:hidden">
+            {/* Canvas Area - Mobile Optimized */}
+            <div className="flex-1 overflow-y-auto scroll-smooth overscroll-contain pt-4 sm:pt-6 md:pt-8 pb-4 sm:pb-8 px-3 sm:px-6 md:px-8 flex flex-col items-center justify-start sm:justify-center min-h-0 bg-[#F3F4F6] print:bg-white print:p-0 print:overflow-visible">
+                {/* Standard Editor View - Mobile Card Optimized */}
+                <div className="w-[92%] sm:w-[90%] md:w-full max-w-5xl aspect-[4/3] sm:aspect-video bg-white shadow-lg sm:shadow-2xl rounded-[20px] sm:rounded-lg transition-transform duration-200 ease-out transform origin-center hover:scale-[1.005] print:hidden ring-1 ring-black/5">
                     <SlideRenderer 
                         slide={selectedSlide} 
                         templateKey={String(deck.template)} 
@@ -251,6 +269,12 @@ const EditorPanel: React.FC = () => {
                         imageError={imageError}
                         onGenerateImage={handleGenerateImage}
                     />
+                </div>
+
+                {/* Slide Title Label - Mobile Only */}
+                <div className="sm:hidden mt-4 text-center px-4">
+                    <p className="text-sm font-semibold text-gray-700 line-clamp-1">{selectedSlide.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Slide {selectedSlideIndex + 1} of {totalSlides}</p>
                 </div>
 
                 {/* Print-Only View: Renders ALL slides vertically */}
