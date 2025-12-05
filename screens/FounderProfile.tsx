@@ -142,20 +142,26 @@ const FounderProfile: React.FC = () => {
             {/* Left Column / Profile Sidebar */}
             <aside className="w-full lg:w-1/3 lg:flex-shrink-0">
                 <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center sticky top-28 relative">
-                    {strategicAnalysis && (
-                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur p-2 rounded-lg shadow-lg border border-gray-200 flex flex-col items-center animate-fade-in z-10">
-                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                                <TargetIcon className="w-3 h-3" /> Viability
-                            </span>
-                            <span className={`text-3xl font-extrabold ${getScoreColorText(strategicAnalysis.investorReadinessScore)}`}>
-                                {strategicAnalysis.investorReadinessScore}
-                            </span>
-                        </div>
-                    )}
                     
                     <img src={profile.avatarUrl} alt={profile.name} className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-md" />
                     <h1 className="text-3xl font-bold text-brand-blue">{profile.name}</h1>
                     <p className="text-gray-500 mt-1">{profile.title}</p>
+                    
+                    {strategicAnalysis && (
+                        <div className="mt-6 mb-2 bg-gradient-to-br from-slate-50 to-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center justify-center gap-1">
+                                <TargetIcon className="w-4 h-4 text-brand-orange" /> Viability Score
+                            </p>
+                            <div className="flex items-center justify-center gap-2">
+                                <span className={`text-5xl font-extrabold ${getScoreColorText(strategicAnalysis.investorReadinessScore)}`}>
+                                    {strategicAnalysis.investorReadinessScore}
+                                </span>
+                                <span className="text-lg text-gray-400 font-medium">/100</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2 italic">AI-analyzed Investor Readiness</p>
+                        </div>
+                    )}
+
                     <button className="mt-6 w-full bg-brand-orange text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors">
                         Connect
                     </button>

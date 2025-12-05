@@ -159,6 +159,13 @@ export interface StartupStrategicAnalysis {
     keyCompetitors: string[];
 }
 
+export interface EnrichedProfile {
+    tagline: string;
+    description: string;
+    industry: string;
+    mission: string;
+}
+
 // --- Data Room ---
 export interface DataRoomFile {
     id: string;

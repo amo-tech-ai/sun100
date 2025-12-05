@@ -1,5 +1,5 @@
 
-import { OnePagerContent, MarketSizeAnalysis, InvestorUpdateContent, StartupStrategicAnalysis, FinancialData, InvestmentMemoContent } from './types';
+import { OnePagerContent, MarketSizeAnalysis, InvestorUpdateContent, StartupStrategicAnalysis, FinancialData, InvestmentMemoContent, EnrichedProfile } from './types';
 import { invokeEdgeFunction } from '../edgeFunctionService';
 
 export const generateOnePager = async (startupProfile: any): Promise<OnePagerContent> => {
@@ -146,5 +146,25 @@ export const askInvestorData = async (query: string, metricsContext: any[]): Pro
     } catch (error) {
         console.warn("Edge Function failed. Returning mock Chat response.");
         return "Based on your current metrics, your burn rate has decreased by 10% month-over-month, extending your runway to 14 months.";
+    }
+};
+
+export const enrichStartupProfile = async (name: string, website: string, pitch: string): Promise<EnrichedProfile> => {
+    try {
+        return await invokeEdgeFunction<EnrichedProfile>('investor-ai', {
+            action: 'enrichStartupProfile',
+            name,
+            website,
+            pitch
+        });
+    } catch (error) {
+         console.warn("Edge Function failed. Returning mock enrichment.");
+         await new Promise(r => setTimeout(r, 2000));
+         return {
+             tagline: `${name} - The future of ${pitch || 'innovation'}`,
+             description: `We are building ${name} to solve critical problems in the industry. Our solution leverages cutting-edge technology to deliver value.`,
+             industry: "Technology",
+             mission: "To revolutionize the way people work and live."
+         };
     }
 };

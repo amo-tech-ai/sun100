@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStartup } from '../hooks/useStartup';
+import { enrichStartupProfile } from '../services/ai/investor';
+import { EnrichedProfile } from '../services/ai/types';
 import { 
   ChevronRight, ChevronLeft, Check, Sparkles, 
   UploadCloud, TrendingUp, Users, DollarSign, 
@@ -170,6 +172,143 @@ const ScreenBasics = ({ data, update }: { data: WizardState; update: (k: keyof W
     </WizardCard>
   </div>
 );
+
+const ScreenAIAnalysis = ({ data, update, onNext }: { data: WizardState; update: (k: keyof WizardState, v: any) => void, onNext: () => void }) => {
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState<EnrichedProfile | null>(null);
+
+    const handleAnalyze = async () => {
+        setIsAnalyzing(true);
+        try {
+            const result = await enrichStartupProfile(data.name, data.website, data.pitch);
+            setAnalysisResult(result);
+        } catch (error) {
+            console.error("Analysis failed", error);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    return (
+        <div className="animate-fade-in-up space-y-6">
+            <div className="text-center lg:text-left mb-8">
+                <h2 className="text-3xl font-extrabold text-brand-blue flex items-center gap-2">
+                    <Sparkles className="text-brand-orange" /> AI Analysis
+                </h2>
+                <p className="text-slate-500 mt-2 text-lg">Let Gemini 3 refine your profile based on your input.</p>
+            </div>
+
+            <WizardCard className="bg-gradient-to-br from-slate-50 to-white">
+                {!analysisResult && !isAnalyzing && (
+                    <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-brand-orange/10 text-brand-orange rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Sparkles className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-2">Refine with AI</h3>
+                        <p className="text-slate-500 mb-6 max-w-md mx-auto">
+                            We'll analyze your website or pitch to generate a professional tagline, solution summary, and mission statement.
+                        </p>
+                        <button 
+                            onClick={handleAnalyze}
+                            className="px-8 py-3 bg-brand-orange text-white font-bold rounded-xl hover:bg-opacity-90 transition-all shadow-lg hover:shadow-brand-orange/20"
+                        >
+                            Start Analysis
+                        </button>
+                    </div>
+                )}
+
+                {isAnalyzing && (
+                    <div className="text-center py-12">
+                         <div className="w-16 h-16 border-4 border-brand-orange border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+                         <h3 className="text-xl font-bold text-slate-800">Analyzing Context...</h3>
+                         <p className="text-slate-500 mt-2">Gemini is reading your website and structuring your profile.</p>
+                    </div>
+                )}
+
+                {analysisResult && (
+                    <div className="space-y-6 animate-fade-in-up">
+                        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+                            <p className="text-sm text-blue-800 font-medium flex items-center gap-2">
+                                <Check className="w-4 h-4" /> Analysis Complete. Review suggestions below.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-6">
+                            {/* Tagline */}
+                            <div className="p-4 bg-white border border-gray-200 rounded-xl hover:border-brand-orange/50 transition-all">
+                                <div className="flex justify-between items-center mb-3">
+                                    <h4 className="font-bold text-slate-700 text-sm uppercase">Tagline</h4>
+                                    <button 
+                                        onClick={() => update('pitch', analysisResult.tagline)}
+                                        className="text-xs font-bold text-brand-orange bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
+                                    >
+                                        Use This
+                                    </button>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <p className="text-xs text-gray-400 font-bold mb-1">Current</p>
+                                        <p className="text-gray-600 bg-gray-50 p-2 rounded">{data.pitch || '(Empty)'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-brand-orange font-bold mb-1">AI Suggestion</p>
+                                        <p className="text-gray-800 font-medium bg-orange-50/30 p-2 rounded border border-orange-100">{analysisResult.tagline}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Solution / Description */}
+                            <div className="p-4 bg-white border border-gray-200 rounded-xl hover:border-brand-orange/50 transition-all">
+                                <div className="flex justify-between items-center mb-3">
+                                    <h4 className="font-bold text-slate-700 text-sm uppercase">Solution Summary</h4>
+                                    <button 
+                                        onClick={() => update('solution', analysisResult.description)}
+                                        className="text-xs font-bold text-brand-orange bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
+                                    >
+                                        Use This
+                                    </button>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                                     <div>
+                                        <p className="text-xs text-gray-400 font-bold mb-1">Current</p>
+                                        <p className="text-gray-600 bg-gray-50 p-2 rounded min-h-[60px]">{data.solution || '(Empty)'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-brand-orange font-bold mb-1">AI Suggestion</p>
+                                        <p className="text-gray-800 font-medium bg-orange-50/30 p-2 rounded border border-orange-100 min-h-[60px]">{analysisResult.description}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                             {/* UVP / Mission */}
+                             <div className="p-4 bg-white border border-gray-200 rounded-xl hover:border-brand-orange/50 transition-all">
+                                <div className="flex justify-between items-center mb-3">
+                                    <h4 className="font-bold text-slate-700 text-sm uppercase">Unique Value Prop</h4>
+                                    <button 
+                                        onClick={() => update('uvp', analysisResult.mission)}
+                                        className="text-xs font-bold text-brand-orange bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
+                                    >
+                                        Use This
+                                    </button>
+                                </div>
+                                <div className="text-sm">
+                                    <p className="text-xs text-brand-orange font-bold mb-1">AI Suggestion</p>
+                                    <p className="text-gray-800 font-medium bg-orange-50/30 p-2 rounded border border-orange-100">{analysisResult.mission}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex justify-end pt-4">
+                             <button onClick={onNext} className="flex items-center gap-2 font-bold text-brand-blue hover:text-brand-orange transition-colors">
+                                Continue to Problem & Solution <ChevronRight size={16} />
+                             </button>
+                        </div>
+                    </div>
+                )}
+            </WizardCard>
+        </div>
+    );
+};
 
 const ScreenProblem = ({ data, update }: { data: WizardState; update: (k: keyof WizardState, v: any) => void }) => (
   <div className="animate-fade-in-up space-y-6">
@@ -558,11 +697,11 @@ const ScreenFunding = ({ data, update }: { data: WizardState; update: (k: keyof 
 const ScreenReview = ({ data, setStep }: { data: WizardState; setStep: (s: number) => void }) => {
   const sections = [
     { title: 'Basics', step: 1, content: [data.name, data.website] },
-    { title: 'Problem & Solution', step: 2, content: [data.problem, data.solution] },
-    { title: 'Stage & Traction', step: 3, content: [data.stage, data.tractionStatus] },
-    { title: 'Business Model', step: 4, content: [data.businessModel.join(', '), data.pricing] },
-    { title: 'Team', step: 5, content: [`${data.teamSize} Members`, data.founders[0]?.name] },
-    { title: 'Funding', step: 6, content: [data.raising ? `Raising $${data.raiseAmount}` : 'Not raising'] },
+    { title: 'Problem & Solution', step: 3, content: [data.problem, data.solution] },
+    { title: 'Stage & Traction', step: 4, content: [data.stage, data.tractionStatus] },
+    { title: 'Business Model', step: 5, content: [data.businessModel.join(', '), data.pricing] },
+    { title: 'Team', step: 6, content: [`${data.teamSize} Members`, data.founders[0]?.name] },
+    { title: 'Funding', step: 7, content: [data.raising ? `Raising $${data.raiseAmount}` : 'Not raising'] },
   ];
 
   return (
@@ -664,14 +803,14 @@ const StartupWizard: React.FC = () => {
     goals: { short: '', mid: '', major: '' }
   });
 
-  const totalSteps = 8;
+  const totalSteps = 9;
 
   const updateData = (key: keyof WizardState, value: any) => {
     setWizardData(prev => ({ ...prev, [key]: value }));
   };
 
   const handleNext = () => {
-    if (step === 7) {
+    if (step === totalSteps - 1) {
         // Save to global context/DB on completion
         updateProfile({
             name: wizardData.name,
@@ -683,7 +822,7 @@ const StartupWizard: React.FC = () => {
         });
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setStep(s => Math.min(s + 1, 8));
+    setStep(s => Math.min(s + 1, totalSteps));
   };
 
   const handleBack = () => {
@@ -694,13 +833,14 @@ const StartupWizard: React.FC = () => {
   const renderScreen = () => {
     switch (step) {
       case 1: return <ScreenBasics data={wizardData} update={updateData} />;
-      case 2: return <ScreenProblem data={wizardData} update={updateData} />;
-      case 3: return <ScreenTraction data={wizardData} update={updateData} />;
-      case 4: return <ScreenBusiness data={wizardData} update={updateData} />;
-      case 5: return <ScreenTeam data={wizardData} update={updateData} />;
-      case 6: return <ScreenFunding data={wizardData} update={updateData} />;
-      case 7: return <ScreenReview data={wizardData} setStep={setStep} />;
-      case 8: return <ScreenSuccess data={wizardData} />;
+      case 2: return <ScreenAIAnalysis data={wizardData} update={updateData} onNext={handleNext} />;
+      case 3: return <ScreenProblem data={wizardData} update={updateData} />;
+      case 4: return <ScreenTraction data={wizardData} update={updateData} />;
+      case 5: return <ScreenBusiness data={wizardData} update={updateData} />;
+      case 6: return <ScreenTeam data={wizardData} update={updateData} />;
+      case 7: return <ScreenFunding data={wizardData} update={updateData} />;
+      case 8: return <ScreenReview data={wizardData} setStep={setStep} />;
+      case 9: return <ScreenSuccess data={wizardData} />;
       default: return <ScreenBasics data={wizardData} update={updateData} />;
     }
   };
@@ -708,11 +848,12 @@ const StartupWizard: React.FC = () => {
   const getAIPreviewText = () => {
     switch(step) {
        case 1: return ["Market positioning statement", "Competitor analysis", "Investor intro blurb"];
-       case 2: return ["Refined Problem Statement", "Solution Benefit Analysis", "Customer Persona Profile"];
-       case 3: return ["Growth Trajectory Chart", "Key Metric Highlights", "Stage-Gate Analysis"];
-       case 4: return ["Revenue Model Diagram", "Pricing Tier Strategy", "Competitive Matrix"];
-       case 5: return ["Team Strength Assessment", "Founder Bio Highlights", "Skill Gap Analysis"];
-       case 6: return ["Funding Ask Slide", "Use of Funds Chart", "Milestone Roadmap"];
+       case 2: return ["Optimized Tagline", "Mission Statement", "Solution Draft"];
+       case 3: return ["Refined Problem Statement", "Solution Benefit Analysis", "Customer Persona Profile"];
+       case 4: return ["Growth Trajectory Chart", "Key Metric Highlights", "Stage-Gate Analysis"];
+       case 5: return ["Revenue Model Diagram", "Pricing Tier Strategy", "Competitive Matrix"];
+       case 6: return ["Team Strength Assessment", "Founder Bio Highlights", "Skill Gap Analysis"];
+       case 7: return ["Funding Ask Slide", "Use of Funds Chart", "Milestone Roadmap"];
        default: return ["Complete Startup Profile", "Investor Pitch Deck", "One-Pager Summary"];
     }
   };
@@ -727,7 +868,7 @@ const StartupWizard: React.FC = () => {
               <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center text-white font-bold shadow-sm">S</div>
               <span className="font-bold text-lg tracking-tight text-brand-blue hidden sm:inline">StartupAI</span>
            </div>
-           {step < 8 && (
+           {step < totalSteps && (
              <div className="flex items-center gap-4">
                <span className="text-sm font-medium text-slate-500 hidden sm:inline">Step {step} of {totalSteps - 1}</span>
                <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -743,12 +884,12 @@ const StartupWizard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
             
             {/* Left / Center Content */}
-            <div className={`lg:col-span-${step === 8 ? '12' : '8'} w-full max-w-3xl mx-auto lg:mx-0`}>
+            <div className={`lg:col-span-${step === totalSteps ? '12' : '8'} w-full max-w-3xl mx-auto lg:mx-0`}>
                {renderScreen()}
             </div>
 
             {/* Right Sidebar (Desktop) */}
-            {step < 8 && (
+            {step < totalSteps && (
               <div className="hidden lg:block lg:col-span-4">
                  <div className="sticky top-24 space-y-6">
                     <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-lg ring-1 ring-slate-900/5">
@@ -791,14 +932,14 @@ const StartupWizard: React.FC = () => {
       </div>
 
       {/* Footer Navigation (Sticky) */}
-      {step < 8 && (
+      {step < totalSteps && step !== 2 && (
         <div className="sticky bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200 p-4 z-40">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <NavButton onClick={handleBack} variant="secondary" disabled={step === 1}>
                <ChevronLeft size={18} /> Back
             </NavButton>
             <NavButton onClick={handleNext} variant="primary">
-               {step === 7 ? 'Complete Profile' : 'Continue'} <ChevronRight size={18} />
+               {step === totalSteps - 1 ? 'Complete Profile' : 'Continue'} <ChevronRight size={18} />
             </NavButton>
           </div>
         </div>

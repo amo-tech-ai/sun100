@@ -217,6 +217,21 @@ const auditDataRoomFunctionDeclaration = {
     }
 };
 
+const enrichStartupProfileFunctionDeclaration = {
+    name: 'enrichStartupProfile',
+    description: 'Generates professional startup profile content from a website URL or brief description.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            tagline: { type: Type.STRING, description: "A catchy, one-sentence value proposition." },
+            description: { type: Type.STRING, description: "A concise 2-3 sentence company description." },
+            industry: { type: Type.STRING, description: "The primary industry/sector." },
+            mission: { type: Type.STRING, description: "A powerful mission statement." },
+        },
+        required: ['tagline', 'description', 'industry', 'mission']
+    }
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -251,13 +266,13 @@ serve(async (req) => {
         case 'analyzeStartupStrategy':
             prompt = `Act as a Venture Capitalist. Analyze the viability of this startup based on the context provided: "${params.profileContext}". 
             
-            Calculate an 'investorReadinessScore' (0-100) based on:
-            1. Team Experience (30%): Look for previous exits, domain expertise, or blue-chip backgrounds.
-            2. Market Potential (30%): Is it a large, growing market? (Use Search if needed).
-            3. Product/Solution Clarity (20%): Is the value prop clear?
-            4. Traction/Stage (20%): Evidence of growth or users.
+            Calculate a 'Viability Score' (mapped to investorReadinessScore 0-100) based on:
+            1. Team (30%): Experience, exits, domain expertise.
+            2. Market (30%): Size (TAM), growth trends, timing.
+            3. Product (20%): Solution clarity, differentiators.
+            4. Traction (20%): Revenue, users, growth rate vs stage.
 
-            Provide a 'readinessReasoning' summary explaining the score.
+            Provide a 'readinessReasoning' summary explaining this viability score.
             Perform a SWOT analysis.
             Use Google Search to validate market trends if needed.
             Call 'analyzeStartupStrategy'.`;
@@ -297,6 +312,14 @@ serve(async (req) => {
             prompt = `Audit this data room file list for a ${params.stage} round. Files: ${JSON.stringify(params.files)}. Identify missing items. Call 'auditDataRoom'.`;
             toolConfig = { tools: [{ functionDeclarations: [auditDataRoomFunctionDeclaration] }] };
             targetFunction = 'auditDataRoom';
+            break;
+        case 'enrichStartupProfile':
+            prompt = `Analyze the startup "${params.name}" ${params.website ? `(${params.website})` : ''}. Initial Pitch: "${params.pitch}".
+            Use Google Search to find more context if a website is provided or if the company is known.
+            Generate a professional profile including a tagline, description, industry, and mission. 
+            Call 'enrichStartupProfile'.`;
+            toolConfig = { tools: [{ googleSearch: {} }, { functionDeclarations: [enrichStartupProfileFunctionDeclaration] }] };
+            targetFunction = 'enrichStartupProfile';
             break;
         default:
             throw new Error(`Unknown action: ${action}`);
