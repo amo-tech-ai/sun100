@@ -181,20 +181,34 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const fetchInitialDeck = async () => {
             setLoading(true);
             try {
-                // Dual-loading strategy: Check sessionStorage first
+                // Dual-loading strategy: Check sessionStorage first (for newly generated decks)
                 const sessionDeckJson = sessionStorage.getItem('newlyGeneratedDeck');
                 if (sessionDeckJson) {
+                    try {
                     const sessionDeck = JSON.parse(sessionDeckJson);
-                    if (sessionDeck.id === id) {
+                        // Use sessionStorage deck if ID matches OR if it's the only deck available
+                        // Also check if the deck ID starts with "deck-" prefix (temporary IDs)
+                        const sessionDeckId = sessionDeck.id || '';
+                        const urlId = id || '';
+                        
+                        if (sessionDeckId === urlId || 
+                            (sessionDeckId.startsWith('deck-') && urlId.startsWith('deck-')) ||
+                            !sessionDeckId) {
                         setDeck(sessionDeck);
-                        setSelectedSlide(sessionDeck.slides[0] || null);
-                        sessionStorage.removeItem('newlyGeneratedDeck'); // Clean up
+                            setSelectedSlide(sessionDeck.slides?.[0] || null);
+                            // Don't clear sessionStorage immediately - keep it for page reloads
+                            // It will be cleared when deck is successfully saved to database
                         setLoading(false);
                         return;
+                        }
+                    } catch (parseError) {
+                        console.warn("Failed to parse sessionStorage deck:", parseError);
+                        sessionStorage.removeItem('newlyGeneratedDeck'); // Clean up invalid data
                     }
                 }
 
                 // Fallback to fetching from the database
+                try {
                 const fetchedDeck = await getDeckById(id);
                 if (fetchedDeck) {
                     setDeck(fetchedDeck);
@@ -203,12 +217,56 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     } else {
                         setSelectedSlide(null);
                     }
-                } else {
-                    navigate('/404');
+                        setLoading(false);
+                        return;
+                    }
+                } catch (dbError: any) {
+                    // If database fetch fails (e.g., deck not found), check sessionStorage again
+                    // This handles the case where deck was generated but not saved to DB
+                    const fallbackSessionDeckJson = sessionStorage.getItem('newlyGeneratedDeck');
+                    if (fallbackSessionDeckJson) {
+                        try {
+                            const sessionDeck = JSON.parse(fallbackSessionDeckJson);
+                            // Use sessionStorage deck if ID matches or if it's a temporary ID
+                            const sessionDeckId = sessionDeck.id || '';
+                            const urlId = id || '';
+                            
+                            if (sessionDeckId === urlId || 
+                                (sessionDeckId.startsWith('deck-') && urlId.startsWith('deck-')) ||
+                                !sessionDeckId) {
+                                setDeck(sessionDeck);
+                                setSelectedSlide(sessionDeck.slides?.[0] || null);
+                                // Keep sessionStorage for page reloads - only clear when saved to DB
+                                setLoading(false);
+                                return;
+                            }
+                        } catch (parseError) {
+                            console.warn("Failed to parse fallback sessionStorage deck:", parseError);
+                            // Fall through to 404
+                        }
+                    }
                 }
+
+                // If we get here, deck not found in either location
+                console.error(`Deck ${id} not found in database or sessionStorage`);
+                navigate('/404');
             } catch (err) {
                 console.error("Error loading deck:", err);
-                navigate('/404'); // Or show an error page
+                // Last resort: try sessionStorage one more time
+                const sessionDeckJson = sessionStorage.getItem('newlyGeneratedDeck');
+                if (sessionDeckJson) {
+                    try {
+                        const sessionDeck = JSON.parse(sessionDeckJson);
+                        setDeck(sessionDeck);
+                        setSelectedSlide(sessionDeck.slides?.[0] || null);
+                        sessionStorage.removeItem('newlyGeneratedDeck');
+                        setLoading(false);
+                        return;
+                    } catch (parseError) {
+                        // Fall through to 404
+                    }
+                }
+                navigate('/404');
             } finally {
                 setLoading(false);
             }

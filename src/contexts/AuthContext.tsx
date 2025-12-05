@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { supabase, IS_MOCK_MODE } from '../lib/supabaseClient';
+import { supabase, IS_MOCK_MODE } from '../../lib/supabaseClient';
 
 interface AuthContextType {
     user: any | null;

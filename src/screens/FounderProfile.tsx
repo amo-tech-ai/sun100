@@ -5,11 +5,11 @@ import {
     Search, Presentation, ExternalLink
 } from 'lucide-react';
 import { UserProfile } from '../types/founder';
-import { useFounderAI } from '../hooks/useFounderAI';
+import { useFounderAI } from '../../hooks/useFounderAI';
 import { ProfileSidebar } from '../components/founder/ProfileSidebar';
 import { StartupMainCard } from '../components/founder/StartupMainCard';
 import { StrategicAnalysisSection } from '../components/founder/StrategicAnalysisSection';
-import { getPublicFounderProfile } from '../services/startupService';
+import { getPublicFounderProfile } from '../../services/startupService';
 
 // --- MAIN PAGE COMPONENT --- //
 

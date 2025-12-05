@@ -1,0 +1,697 @@
+---
+alwaysApply: false
+---
+
+# Safe GitHub Update - Preserve Local Files
+
+You are an expert Git workflow manager. When updating from GitHub, you must preserve all local files, folders, and important changes while safely integrating remote updates.
+
+## 🎯 Core Principle
+
+**NEVER DELETE LOCAL FILES OR FOLDERS** - Always preserve local work, especially:
+- `prd.md` - **CRITICAL** Product Requirements Document
+- `.cursor/` folder and all rules
+- `plan/` folder and all subfolders (pitch-deck/, database/, events/, gemeni/, investors/, crm/, media/, shoot/, fix/)
+- `docs/` subfolders (fix/, frontend/, shoot/, events/, sponsor/, services/, media/, prompts/, test-reports/, gemeni/, setup/)
+- `screenshoots/` folder - Screenshot references (note: original typo preserved)
+- `screenshots/` folder - Screenshot references (if renamed)
+- Local test reports and documentation
+- Configuration files (`.mcp.json`, etc.)
+- Any untracked files that are important
+
+**See also:** `.cursor/rules/never-delete-folders.mdc` for complete folder protection rules.
+
+## 📋 Pre-Update Checklist
+
+Before pulling from GitHub, ALWAYS:
+
+### Step 1: Identify Local Files to Preserve
+
+```bash
+# Check for important local files and folders
+ls -la prd.md 2>/dev/null && echo "✅ prd.md exists" || echo "❌ prd.md missing"
+ls -la AGENTS.md 2>/dev/null && echo "✅ AGENTS.md exists" || echo "❌ AGENTS.md missing"
+ls -la supabase/AGENTS.md 2>/dev/null && echo "✅ supabase/AGENTS.md exists" || echo "❌ supabase/AGENTS.md missing"
+ls -la services/AGENTS.md 2>/dev/null && echo "✅ services/AGENTS.md exists" || echo "❌ services/AGENTS.md missing"
+ls -la components/AGENTS.md 2>/dev/null && echo "✅ components/AGENTS.md exists" || echo "❌ components/AGENTS.md missing"
+ls -la screens/AGENTS.md 2>/dev/null && echo "✅ screens/AGENTS.md exists" || echo "❌ screens/AGENTS.md missing"
+ls -la .cursor/ 2>/dev/null && echo "✅ .cursor exists" || echo "❌ .cursor missing"
+ls -la plan/ 2>/dev/null && echo "✅ plan exists" || echo "❌ plan missing"
+ls -la plan/pitch-deck/ 2>/dev/null && echo "✅ plan/pitch-deck exists" || echo "❌ plan/pitch-deck missing"
+ls -la plan/database/ 2>/dev/null && echo "✅ plan/database exists" || echo "❌ plan/database missing"
+ls -la plan/events/ 2>/dev/null && echo "✅ plan/events exists" || echo "❌ plan/events missing"
+ls -la plan/gemeni/ 2>/dev/null && echo "✅ plan/gemeni exists" || echo "❌ plan/gemeni missing"
+ls -la plan/investors/ 2>/dev/null && echo "✅ plan/investors exists" || echo "❌ plan/investors missing"
+ls -la plan/crm/ 2>/dev/null && echo "✅ plan/crm exists" || echo "❌ plan/crm missing"
+ls -la plan/media/ 2>/dev/null && echo "✅ plan/media exists" || echo "⚠️  plan/media missing (may not exist)"
+ls -la docs/fix/ 2>/dev/null && echo "✅ docs/fix exists" || echo "❌ docs/fix missing"
+ls -la docs/frontend/ 2>/dev/null && echo "✅ docs/frontend exists" || echo "❌ docs/frontend missing"
+ls -la docs/shoot/ 2>/dev/null && echo "✅ docs/shoot exists" || echo "❌ docs/shoot missing"
+ls -la docs/events/ 2>/dev/null && echo "✅ docs/events exists" || echo "❌ docs/events missing"
+ls -la docs/sponsor/ 2>/dev/null && echo "✅ docs/sponsor exists" || echo "❌ docs/sponsor missing"
+ls -la docs/services/ 2>/dev/null && echo "✅ docs/services exists" || echo "❌ docs/services missing"
+ls -la docs/media/ 2>/dev/null && echo "✅ docs/media exists" || echo "❌ docs/media missing"
+ls -la docs/prompts/ 2>/dev/null && echo "✅ docs/prompts exists" || echo "❌ docs/prompts missing"
+ls -la screenshoots/ 2>/dev/null && echo "✅ screenshoots exists" || echo "❌ screenshoots missing"
+ls -la screenshots/ 2>/dev/null && echo "✅ screenshots exists" || echo "⚠️  screenshots missing (may not exist)"
+ls -la .mcp.json 2>/dev/null && echo "✅ .mcp.json exists" || echo "❌ .mcp.json missing"
+```
+
+### Step 2: Create Backup of Critical Files
+
+```bash
+# Create timestamped backup
+BACKUP_DIR=".backup-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+mkdir -p "$BACKUP_DIR/docs"
+mkdir -p "$BACKUP_DIR/plan"
+
+# Backup CRITICAL files
+[ -f prd.md ] && cp prd.md "$BACKUP_DIR/" 2>/dev/null
+[ -f AGENTS.md ] && cp AGENTS.md "$BACKUP_DIR/" 2>/dev/null
+[ -f .mcp.json ] && cp .mcp.json "$BACKUP_DIR/" 2>/dev/null
+[ -f supabase/AGENTS.md ] && cp supabase/AGENTS.md "$BACKUP_DIR/" 2>/dev/null
+[ -f services/AGENTS.md ] && cp services/AGENTS.md "$BACKUP_DIR/" 2>/dev/null
+[ -f components/AGENTS.md ] && cp components/AGENTS.md "$BACKUP_DIR/" 2>/dev/null
+[ -f screens/AGENTS.md ] && cp screens/AGENTS.md "$BACKUP_DIR/" 2>/dev/null
+
+# Backup critical folders
+[ -d .cursor ] && cp -r .cursor "$BACKUP_DIR/" 2>/dev/null
+[ -d plan ] && cp -r plan "$BACKUP_DIR/" 2>/dev/null
+[ -d plan/pitch-deck ] && cp -r plan/pitch-deck "$BACKUP_DIR/plan/" 2>/dev/null
+[ -d plan/database ] && cp -r plan/database "$BACKUP_DIR/plan/" 2>/dev/null
+[ -d plan/events ] && cp -r plan/events "$BACKUP_DIR/plan/" 2>/dev/null
+[ -d plan/gemeni ] && cp -r plan/gemeni "$BACKUP_DIR/plan/" 2>/dev/null
+[ -d plan/investors ] && cp -r plan/investors "$BACKUP_DIR/plan/" 2>/dev/null
+[ -d plan/crm ] && cp -r plan/crm "$BACKUP_DIR/plan/" 2>/dev/null
+[ -d plan/media ] && cp -r plan/media "$BACKUP_DIR/plan/" 2>/dev/null
+[ -d docs/fix ] && cp -r docs/fix "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d docs/frontend ] && cp -r docs/frontend "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d docs/shoot ] && cp -r docs/shoot "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d docs/events ] && cp -r docs/events "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d docs/sponsor ] && cp -r docs/sponsor "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d docs/services ] && cp -r docs/services "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d docs/media ] && cp -r docs/media "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d docs/prompts ] && cp -r docs/prompts "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d docs/test-reports ] && cp -r docs/test-reports "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d docs/gemeni ] && cp -r docs/gemeni "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d docs/setup ] && cp -r docs/setup "$BACKUP_DIR/docs/" 2>/dev/null
+[ -d screenshoots ] && cp -r screenshoots "$BACKUP_DIR/" 2>/dev/null
+[ -d screenshots ] && cp -r screenshots "$BACKUP_DIR/" 2>/dev/null
+[ -d supabase ] && cp -r supabase "$BACKUP_DIR/" 2>/dev/null
+
+echo "✅ Backup created: $BACKUP_DIR"
+```
+
+### Step 3: Check Git Status
+
+```bash
+# Check what will be affected
+git status --short
+git status --porcelain | grep -E "^\\?\\?" | head -20  # Untracked files
+```
+
+### Step 4: Stash Local Changes
+
+```bash
+# Stash tracked changes with descriptive message
+git stash push -m "Local changes before GitHub update $(date +%Y%m%d-%H%M%S)" --include-untracked
+
+# Verify stash was created
+git stash list | head -1
+```
+
+## 🔄 Update Process
+
+### Step 5: Fetch and Check Remote Changes
+
+```bash
+# Fetch without merging
+git fetch origin
+
+# Check what will change
+git log HEAD..origin/main --oneline | head -10
+git diff --stat HEAD origin/main | head -20
+```
+
+### Step 6: Pull with Strategy
+
+```bash
+# Pull with rebase to avoid merge commits (or use merge if preferred)
+git pull origin main --no-rebase
+
+# If conflicts occur, handle them carefully (see Conflict Resolution below)
+```
+
+### Step 7: Restore Critical Local Files
+
+```bash
+# PROTECTED FOLDERS LIST
+PROTECTED_FOLDERS=(
+  "prd.md"                # CRITICAL: Product Requirements Document
+  ".cursor"
+  "plan"
+  "plan/pitch-deck"
+  "plan/database"
+  "plan/events"
+  "plan/gemeni"
+  "plan/investors"
+  "plan/crm"
+  "plan/media"
+  "plan/media/events"
+  "plan/media/shoot"
+  "plan/media/fix"
+  "docs/fix"
+  "docs/frontend"
+  "docs/shoot"
+  "docs/events"
+  "docs/sponsor"
+  "docs/services"
+  "docs/media"
+  "docs/prompts"
+  "docs/test-reports"
+  "docs/gemeni"
+  "docs/setup"
+  "docs/tasks"
+  "screenshoots"  # Screenshot references (note: original typo preserved)
+  "screenshots"   # Screenshot references (if renamed)
+  "supabase"
+  ".mcp.json"     # MCP configuration
+)
+
+# Restore prd.md if missing
+if [ ! -f prd.md ]; then
+  if [ -f "$BACKUP_DIR/prd.md" ]; then
+    cp "$BACKUP_DIR/prd.md" .
+    echo "✅ Restored prd.md from backup"
+  elif git stash show stash@{0} --name-only 2>/dev/null | grep -q "^prd.md"; then
+    git checkout stash@{0} -- prd.md
+    echo "✅ Restored prd.md from stash"
+  else
+    echo "🔴 CRITICAL: prd.md missing and not in backup/stash"
+  fi
+fi
+
+# Restore .cursor folder if missing
+if [ ! -d .cursor ]; then
+  if [ -d "$BACKUP_DIR/.cursor" ]; then
+    cp -r "$BACKUP_DIR/.cursor" .
+    echo "✅ Restored .cursor from backup"
+  elif git stash show stash@{0} --name-only 2>/dev/null | grep -q "^\.cursor"; then
+    git checkout stash@{0} -- .cursor
+    echo "✅ Restored .cursor from stash"
+  else
+    echo "🔴 CRITICAL: .cursor folder missing and not in backup/stash"
+  fi
+fi
+
+# Restore plan folder if missing
+if [ ! -d plan ]; then
+  if [ -d "$BACKUP_DIR/plan" ]; then
+    cp -r "$BACKUP_DIR/plan" .
+    echo "✅ Restored plan from backup"
+  elif git stash show stash@{0} --name-only 2>/dev/null | grep -q "^plan"; then
+    git checkout stash@{0} -- plan
+    echo "✅ Restored plan from stash"
+  else
+    echo "🔴 CRITICAL: plan folder missing and not in backup/stash"
+  fi
+fi
+
+# Restore plan subfolders if missing
+for subfolder in pitch-deck database events gemeni investors crm media; do
+  if [ ! -d "plan/$subfolder" ]; then
+    echo "⚠️  WARNING: plan/$subfolder is missing!"
+    if [ -d "$BACKUP_DIR/plan/$subfolder" ]; then
+      mkdir -p plan 2>/dev/null
+      cp -r "$BACKUP_DIR/plan/$subfolder" "plan/"
+      echo "✅ Restored plan/$subfolder from backup"
+    elif git stash show stash@{0} --name-only 2>/dev/null | grep -q "^plan/$subfolder"; then
+      git checkout stash@{0} -- "plan/$subfolder"
+      echo "✅ Restored plan/$subfolder from stash"
+    else
+      echo "🔴 CRITICAL: plan/$subfolder missing and not in backup/stash - CHECK GIT HISTORY"
+    fi
+  fi
+done
+
+# Restore ALL protected docs subfolders if missing
+for folder in fix frontend shoot events sponsor services media prompts test-reports gemeni setup; do
+  if [ ! -d "docs/$folder" ]; then
+    echo "⚠️  WARNING: docs/$folder is missing!"
+    if [ -d "$BACKUP_DIR/docs/$folder" ]; then
+      cp -r "$BACKUP_DIR/docs/$folder" "docs/"
+      echo "✅ Restored docs/$folder from backup"
+    elif git stash show stash@{0} --name-only 2>/dev/null | grep -q "^docs/$folder"; then
+      git checkout stash@{0} -- "docs/$folder"
+      echo "✅ Restored docs/$folder from stash"
+    else
+      echo "🔴 CRITICAL: docs/$folder missing and not in backup/stash - CHECK GIT HISTORY"
+    fi
+  fi
+done
+
+# Restore screenshoots folder if missing
+if [ ! -d screenshoots ]; then
+  if [ -d "$BACKUP_DIR/screenshoots" ]; then
+    cp -r "$BACKUP_DIR/screenshoots" .
+    echo "✅ Restored screenshoots from backup"
+  elif git stash show stash@{0} --name-only 2>/dev/null | grep -q "^screenshoots"; then
+    git checkout stash@{0} -- screenshoots
+    echo "✅ Restored screenshoots from stash"
+  else
+    echo "⚠️  WARNING: screenshoots folder missing - CHECK GIT HISTORY"
+  fi
+fi
+
+# Restore screenshots folder if missing (if renamed)
+if [ ! -d screenshots ] && [ -d "$BACKUP_DIR/screenshots" ]; then
+  cp -r "$BACKUP_DIR/screenshots" .
+  echo "✅ Restored screenshots from backup"
+fi
+
+# Restore .mcp.json if missing
+if [ ! -f .mcp.json ] && [ -f "$BACKUP_DIR/.mcp.json" ]; then
+  cp "$BACKUP_DIR/.mcp.json" .
+  echo "✅ Restored .mcp.json from backup"
+fi
+
+# Restore AGENTS.md files if missing
+if [ ! -f AGENTS.md ] && [ -f "$BACKUP_DIR/AGENTS.md" ]; then
+  cp "$BACKUP_DIR/AGENTS.md" .
+  echo "✅ Restored AGENTS.md from backup"
+fi
+
+if [ ! -f supabase/AGENTS.md ] && [ -f "$BACKUP_DIR/supabase/AGENTS.md" ]; then
+  cp "$BACKUP_DIR/supabase/AGENTS.md" supabase/
+  echo "✅ Restored supabase/AGENTS.md from backup"
+fi
+
+if [ ! -f services/AGENTS.md ] && [ -f "$BACKUP_DIR/services/AGENTS.md" ]; then
+  cp "$BACKUP_DIR/services/AGENTS.md" services/
+  echo "✅ Restored services/AGENTS.md from backup"
+fi
+
+if [ ! -f components/AGENTS.md ] && [ -f "$BACKUP_DIR/components/AGENTS.md" ]; then
+  cp "$BACKUP_DIR/components/AGENTS.md" components/
+  echo "✅ Restored components/AGENTS.md from backup"
+fi
+
+if [ ! -f screens/AGENTS.md ] && [ -f "$BACKUP_DIR/screens/AGENTS.md" ]; then
+  cp "$BACKUP_DIR/screens/AGENTS.md" screens/
+  echo "✅ Restored screens/AGENTS.md from backup"
+fi
+
+# Verify all protected folders exist
+echo "🔍 Verifying protected folders..."
+for folder in "${PROTECTED_FOLDERS[@]}"; do
+  if [ ! -e "$folder" ]; then
+    echo "🔴 MISSING: $folder"
+  else
+    echo "✅ EXISTS: $folder"
+  fi
+done
+```
+
+### Step 8: Restore Stashed Changes (Selective)
+
+```bash
+# List stashed changes
+git stash show stash@{0} --name-only | head -20
+
+# Apply stash (this may create conflicts - handle carefully)
+git stash pop stash@{0}
+
+# If conflicts occur, resolve them (see Conflict Resolution)
+```
+
+## 🔧 Conflict Resolution
+
+### When Conflicts Occur:
+
+1. **Identify conflicting files:**
+   ```bash
+   git status | grep "both modified"
+   ```
+
+2. **For each conflict:**
+   - **If local file is important:** Keep local version
+   - **If remote file is important:** Accept remote version
+   - **If both are important:** Manually merge
+
+3. **Example: Resolve conflict in `src/index.css`:**
+   ```bash
+   # Open file and look for conflict markers:
+   # <<<<<<< HEAD (local)
+   # ... local changes ...
+   # =======
+   # ... remote changes ...
+   # >>>>>>> origin/main (remote)
+   
+   # Manually edit to combine both changes
+   # Then mark as resolved:
+   git add src/index.css
+   ```
+
+4. **For `.cursor/` folder conflicts:**
+   - **ALWAYS keep local version** - Cursor rules are local configuration
+   - If remote has new rules, manually copy them
+
+5. **For `docs/` subfolder conflicts:**
+   - **ALWAYS keep local version** - Local documentation is important
+   - Review remote changes and manually integrate if needed
+
+## ✅ Post-Update Verification
+
+### Step 9: Verify Critical Files Exist
+
+```bash
+# Verify all critical files and folders exist
+[ -f prd.md ] && echo "✅ prd.md exists" || echo "❌ prd.md MISSING - RESTORE IMMEDIATELY"
+[ -d .cursor ] && echo "✅ .cursor exists" || echo "❌ .cursor MISSING - RESTORE IMMEDIATELY"
+[ -d .cursor/rules ] && echo "✅ .cursor/rules exists" || echo "❌ .cursor/rules MISSING"
+[ -d plan ] && echo "✅ plan exists" || echo "❌ plan MISSING - RESTORE IMMEDIATELY"
+[ -d plan/pitch-deck ] && echo "✅ plan/pitch-deck exists" || echo "❌ plan/pitch-deck MISSING - RESTORE IMMEDIATELY"
+[ -d plan/database ] && echo "✅ plan/database exists" || echo "❌ plan/database MISSING - RESTORE IMMEDIATELY"
+[ -d plan/events ] && echo "✅ plan/events exists" || echo "❌ plan/events MISSING - RESTORE IMMEDIATELY"
+[ -d plan/gemeni ] && echo "✅ plan/gemeni exists" || echo "❌ plan/gemeni MISSING - RESTORE IMMEDIATELY"
+[ -d plan/investors ] && echo "✅ plan/investors exists" || echo "❌ plan/investors MISSING - RESTORE IMMEDIATELY"
+[ -d plan/crm ] && echo "✅ plan/crm exists" || echo "❌ plan/crm MISSING - RESTORE IMMEDIATELY"
+[ -d plan/media ] && echo "✅ plan/media exists" || echo "⚠️  plan/media missing (may not exist)"
+[ -d docs/fix ] && echo "✅ docs/fix exists" || echo "⚠️  docs/fix missing (may be new)"
+[ -d docs/frontend ] && echo "✅ docs/frontend exists" || echo "⚠️  docs/frontend missing (may be new)"
+[ -d screenshoots ] && echo "✅ screenshoots exists" || echo "❌ screenshoots MISSING - RESTORE IMMEDIATELY"
+[ -d screenshots ] && echo "✅ screenshots exists" || echo "⚠️  screenshots missing (may not exist)"
+[ -d supabase ] && echo "✅ supabase exists" || echo "❌ supabase MISSING - RESTORE IMMEDIATELY"
+[ -f .mcp.json ] && echo "✅ .mcp.json exists" || echo "⚠️  .mcp.json missing"
+```
+
+### Step 10: Check for Deleted Files
+
+```bash
+# Check if any important files were deleted
+git status | grep "deleted:" | head -10
+
+# If critical folders were deleted, restore immediately:
+if [ ! -d .cursor ]; then
+  echo "🔴 CRITICAL: .cursor folder deleted - restoring from backup"
+  [ -d "$BACKUP_DIR/.cursor" ] && cp -r "$BACKUP_DIR/.cursor" .
+fi
+if [ ! -d plan ]; then
+  echo "🔴 CRITICAL: plan folder deleted - restoring from backup"
+  [ -d "$BACKUP_DIR/plan" ] && cp -r "$BACKUP_DIR/plan" .
+fi
+if [ ! -d screenshoots ]; then
+  echo "🔴 CRITICAL: screenshoots folder deleted - restoring from backup"
+  [ -d "$BACKUP_DIR/screenshoots" ] && cp -r "$BACKUP_DIR/screenshoots" .
+fi
+if [ ! -d supabase ]; then
+  echo "🔴 CRITICAL: supabase folder deleted - restoring from backup"
+  [ -d "$BACKUP_DIR/supabase" ] && cp -r "$BACKUP_DIR/supabase" .
+fi
+```
+
+### Step 11: Update Progress Tracker
+
+```bash
+# Update progress tracker with update info
+TRACKER_FILE="plan/media/progress-tracker-matrix.md"
+[ -f "$TRACKER_FILE" ] || TRACKER_FILE="docs/progress-tracker-matrix.md"
+[ -f "$TRACKER_FILE" ] && {
+  echo "## GitHub Update - $(date +%Y-%m-%d %H:%M:%S)" >> "$TRACKER_FILE"
+  echo "- Updated from: $(git log origin/main --oneline -1)" >> "$TRACKER_FILE"
+  echo "- Local files preserved: ✅" >> "$TRACKER_FILE"
+}
+```
+
+## 🚨 Critical Rules - FOLDER PROTECTION
+
+### ❌ NEVER DO:
+- ❌ `git reset --hard` (destroys local changes)
+- ❌ `git clean -fd` (deletes untracked files)
+- ❌ Delete `.cursor/` folder
+- ❌ Delete `docs/` subfolders
+- ❌ Delete ANY folder without explicit user permission
+- ❌ Force push without backup
+- ❌ Skip backup step
+- ❌ Use `rm -rf` on any project folder
+- ❌ Accept deletions of folders in git operations
+
+### 🛡️ FOLDER PROTECTION RULES
+
+**CRITICAL FILES & FOLDERS - NEVER DELETE:**
+1. `prd.md` - **CRITICAL** Product Requirements Document (complete product spec)
+2. `AGENTS.md` - **CRITICAL** Root agent instructions (coding guidelines)
+3. `.cursor/` - Cursor configuration and rules (including cursor-browser.mdc)
+4. `.mcp.json` - MCP configuration
+5. `supabase/AGENTS.md` - Edge Functions & database patterns
+6. `services/AGENTS.md` - Service layer patterns
+7. `components/AGENTS.md` - React component guidelines
+8. `screens/AGENTS.md` - Page-level component patterns
+4. `plan/` - Planning and documentation root
+5. `plan/pitch-deck/` - Pitch deck generation planning and documentation
+6. `plan/database/` - Database schema and migration planning
+7. `plan/events/` - Event wizard planning
+8. `plan/gemeni/` - Gemini AI integration planning
+9. `plan/investors/` - Investor docs module planning
+10. `plan/crm/` - CRM system planning and documentation
+11. `plan/media/` - Media integration planning (Cloudinary, Instagram, Amazon, Shopify)
+12. `plan/media/events/` - Event media planning
+13. `plan/media/shoot/` - Shoot booking media planning
+14. `plan/media/fix/` - Fix and restoration planning
+15. `docs/fix/` - Fix documentation
+16. `docs/frontend/` - Frontend documentation
+17. `docs/shoot/` - Shoot booking documentation
+18. `docs/events/` - Event planning documentation
+19. `docs/sponsor/` - Sponsor system documentation
+20. `docs/services/` - Service documentation
+21. `docs/media/` - Media integration documentation
+22. `docs/prompts/` - AI prompts and templates
+23. `docs/test-reports/` - Test reports
+24. `docs/gemeni/` - Gemini AI documentation
+25. `docs/setup/` - Setup guides
+26. `docs/tasks/` - Task documentation
+27. `screenshoots/` - Screenshot references (note: original typo preserved)
+28. `screenshots/` - Screenshot references (if renamed)
+29. `supabase/` - Supabase migrations and docs
+
+**BEFORE ANY DELETE OPERATION:**
+1. Check if folder is in protected list
+2. If protected, STOP and ask user
+3. Create backup before deletion
+4. Verify backup succeeded
+5. Only then proceed with deletion (if user confirms)
+
+### ✅ ALWAYS DO:
+- ✅ Create backup before update
+- ✅ Check git status first
+- ✅ Stash with `--include-untracked`
+- ✅ Verify critical files after update
+- ✅ Restore missing files immediately
+- ✅ Document what was changed
+- ✅ Test application after update
+
+## 📝 Standard Workflow
+
+```bash
+# 1. Backup
+BACKUP_DIR=".backup-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+mkdir -p "$BACKUP_DIR/docs"
+mkdir -p "$BACKUP_DIR/plan"
+[ -f prd.md ] && cp prd.md "$BACKUP_DIR/"
+[ -f .mcp.json ] && cp .mcp.json "$BACKUP_DIR/"
+[ -d .cursor ] && cp -r .cursor "$BACKUP_DIR/"
+[ -d plan ] && cp -r plan "$BACKUP_DIR/"
+[ -d docs ] && find docs -type d -mindepth 1 -maxdepth 1 -exec cp -r {} "$BACKUP_DIR/docs/" \;
+[ -d screenshoots ] && cp -r screenshoots "$BACKUP_DIR/" 2>/dev/null
+[ -d screenshots ] && cp -r screenshots "$BACKUP_DIR/" 2>/dev/null
+[ -d supabase ] && cp -r supabase "$BACKUP_DIR/"
+
+# 2. Stash
+git stash push -m "Local changes before GitHub update $(date +%Y%m%d-%H%M%S)" --include-untracked
+
+# 3. Pull
+git pull origin main
+
+# 4. Restore critical files
+[ ! -f prd.md ] && [ -f "$BACKUP_DIR/prd.md" ] && cp "$BACKUP_DIR/prd.md" .
+[ ! -f .mcp.json ] && [ -f "$BACKUP_DIR/.mcp.json" ] && cp "$BACKUP_DIR/.mcp.json" .
+[ ! -d .cursor ] && [ -d "$BACKUP_DIR/.cursor" ] && cp -r "$BACKUP_DIR/.cursor" .
+[ ! -d plan ] && [ -d "$BACKUP_DIR/plan" ] && cp -r "$BACKUP_DIR/plan" .
+# Restore plan subfolders
+for subfolder in pitch-deck database events gemeni investors crm media; do
+  [ ! -d "plan/$subfolder" ] && [ -d "$BACKUP_DIR/plan/$subfolder" ] && mkdir -p plan && cp -r "$BACKUP_DIR/plan/$subfolder" "plan/"
+done
+[ ! -d screenshoots ] && [ -d "$BACKUP_DIR/screenshoots" ] && cp -r "$BACKUP_DIR/screenshoots" .
+[ ! -d screenshots ] && [ -d "$BACKUP_DIR/screenshots" ] && cp -r "$BACKUP_DIR/screenshots" .
+[ ! -d supabase ] && [ -d "$BACKUP_DIR/supabase" ] && cp -r "$BACKUP_DIR/supabase" .
+
+# 5. Pop stash (handle conflicts)
+git stash pop
+
+# 6. Verify
+[ -f prd.md ] && echo "✅ prd.md exists" || echo "❌ RESTORE prd.md"
+[ -d .cursor ] && echo "✅ .cursor exists" || echo "❌ RESTORE .cursor"
+[ -d plan ] && echo "✅ plan exists" || echo "❌ RESTORE plan"
+[ -d plan/pitch-deck ] && echo "✅ plan/pitch-deck exists" || echo "❌ RESTORE plan/pitch-deck"
+[ -d plan/database ] && echo "✅ plan/database exists" || echo "❌ RESTORE plan/database"
+[ -d plan/events ] && echo "✅ plan/events exists" || echo "❌ RESTORE plan/events"
+[ -d plan/gemeni ] && echo "✅ plan/gemeni exists" || echo "❌ RESTORE plan/gemeni"
+[ -d plan/investors ] && echo "✅ plan/investors exists" || echo "❌ RESTORE plan/investors"
+[ -d plan/crm ] && echo "✅ plan/crm exists" || echo "❌ RESTORE plan/crm"
+[ -d screenshoots ] && echo "✅ screenshoots exists" || echo "❌ RESTORE screenshoots"
+[ -d screenshots ] && echo "✅ screenshots exists" || echo "⚠️  screenshots missing (may not exist)"
+[ -d supabase ] && echo "✅ supabase exists" || echo "❌ RESTORE supabase"
+[ -f .mcp.json ] && echo "✅ .mcp.json exists" || echo "⚠️  .mcp.json missing"
+```
+
+## 🔍 Troubleshooting
+
+### Issue: `prd.md` file deleted after update
+
+**Solution:**
+```bash
+# Option 1: Restore from backup
+cp "$BACKUP_DIR/prd.md" .
+
+# Option 2: Restore from stash
+git checkout stash@{0} -- prd.md
+
+# Option 3: Restore from git history
+git log --all --full-history --oneline -- prd.md | head -1
+git checkout <commit-hash> -- prd.md
+```
+
+### Issue: `.cursor` folder deleted after update
+
+**Solution:**
+```bash
+# Option 1: Restore from backup
+cp -r "$BACKUP_DIR/.cursor" .
+
+# Option 2: Restore from stash
+git checkout stash@{0} -- .cursor
+
+# Option 3: Restore from git history
+git log --all --full-history --oneline -- .cursor | head -1
+git checkout <commit-hash> -- .cursor
+```
+
+### Issue: `plan/` folder or subfolders deleted
+
+**Solution:**
+```bash
+# Restore entire plan folder from backup
+if [ ! -d plan ] && [ -d "$BACKUP_DIR/plan" ]; then
+  cp -r "$BACKUP_DIR/plan" .
+  echo "✅ Restored plan/ from backup"
+fi
+
+# OR restore individual subfolders
+for subfolder in pitch-deck database events gemeni investors crm media; do
+  if [ ! -d "plan/$subfolder" ] && [ -d "$BACKUP_DIR/plan/$subfolder" ]; then
+    mkdir -p plan
+    cp -r "$BACKUP_DIR/plan/$subfolder" "plan/"
+    echo "✅ Restored plan/$subfolder from backup"
+  fi
+done
+
+# OR restore from git history
+git log --all --full-history --oneline -- plan/ | head -5
+git checkout <commit-hash> -- plan/
+```
+
+### Issue: `docs/` subfolders deleted
+
+**Solution:**
+```bash
+# Restore from backup
+for folder in fix frontend shoot events sponsor services media prompts test-reports gemeni setup tasks; do
+  [ ! -d "docs/$folder" ] && [ -d "$BACKUP_DIR/docs/$folder" ] && \
+    cp -r "$BACKUP_DIR/docs/$folder" "docs/"
+done
+```
+
+### Issue: `screenshoots/` folder deleted
+
+**Solution:**
+```bash
+# Restore from backup
+if [ ! -d screenshoots ] && [ -d "$BACKUP_DIR/screenshoots" ]; then
+  cp -r "$BACKUP_DIR/screenshoots" .
+  echo "✅ Restored screenshoots/ from backup"
+fi
+
+# Or restore from git history
+git log --all --full-history --oneline -- screenshoots/ | head -1
+git checkout <commit-hash> -- screenshoots/
+```
+
+### Issue: Merge conflicts in important files
+
+**Solution:**
+- For `.cursor/` files: **Always keep local**
+- For `docs/` files: **Keep local, review remote manually**
+- For `src/` files: **Merge carefully, test after**
+
+## 📊 Update Log Template
+
+After each update, document:
+
+```markdown
+## GitHub Update - YYYY-MM-DD HH:MM:SS
+
+**Remote Changes:**
+- Commit: `git log origin/main --oneline -1`
+- Files changed: `git diff --stat HEAD@{1} HEAD`
+
+**Local Files Preserved:**
+- ✅ prd.md (Product Requirements Document)
+- ✅ .cursor/ folder
+- ✅ plan/ folder and all subfolders:
+  - ✅ plan/pitch-deck/
+  - ✅ plan/database/
+  - ✅ plan/events/
+  - ✅ plan/gemeni/
+  - ✅ plan/investors/
+  - ✅ plan/crm/
+  - ✅ plan/media/ (if exists)
+- ✅ docs/fix/ folder
+- ✅ docs/frontend/ folder
+- ✅ screenshoots/ folder (screenshot references)
+- ✅ screenshots/ folder (if renamed)
+- ✅ supabase/ folder
+- ✅ .mcp.json
+- ✅ ... (list all preserved)
+
+**Conflicts Resolved:**
+- File: `path/to/file` - Resolution: (kept local/merged/kept remote)
+
+**Issues Found:**
+- (List any issues)
+
+**Status:** ✅ Complete / ⚠️ Needs Attention
+```
+
+## 🎯 Quick Reference
+
+**Before Update:**
+1. Backup critical folders
+2. Stash local changes
+3. Check remote changes
+
+**During Update:**
+1. Pull from GitHub
+2. Restore critical files if missing
+3. Resolve conflicts (prefer local for config/docs)
+
+**After Update:**
+1. Verify critical files exist
+2. Test application
+3. Update progress tracker
+4. Document changes
+
+---
+
+**Remember:** Local files are valuable. When in doubt, preserve local over remote for configuration and documentation files.

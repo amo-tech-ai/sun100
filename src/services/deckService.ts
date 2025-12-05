@@ -1,6 +1,6 @@
 
 import { Deck, Slide, mockDeck } from '../data/decks';
-import { supabase, IS_MOCK_MODE } from '../lib/supabaseClient';
+import { supabase, IS_MOCK_MODE } from '../../lib/supabaseClient';
 
 
 export const getDecks = async (): Promise<Deck[]> => {

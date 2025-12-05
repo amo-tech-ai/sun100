@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
-import { getJobById, applyForJob, Job } from '../services/jobService';
-import { useAuth } from '../hooks/useAuth';
-import { useToast } from '../contexts/ToastContext';
+import { getJobById, applyForJob, Job } from '../../services/jobService';
+import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../../contexts/ToastContext';
 import { MapPin, Clock, Briefcase, DollarSign, Building2, ArrowLeft } from 'lucide-react';
 
 const { useParams, Link, useNavigate } = ReactRouterDOM;

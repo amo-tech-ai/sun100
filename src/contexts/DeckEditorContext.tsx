@@ -2,10 +2,10 @@
 import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Deck, Slide, ChartData, TableData } from '../data/decks';
-import { getDeckById, updateDeck, updateSlide } from '../services/deckService';
-import { generateRoadmapSlide, checkForWebsiteUpdates } from '../services/ai/deck';
-import { generateSlideImage, editSlideImage } from '../services/ai/image';
-import { researchTopic } from '../services/ai/research';
+import { getDeckById, updateDeck, updateSlide } from '../../services/deckService';
+import { generateRoadmapSlide, checkForWebsiteUpdates } from '../../services/ai/deck';
+import { generateSlideImage, editSlideImage } from '../../services/ai/image';
+import { researchTopic } from '../../services/ai/research';
 import {
     modifySlideContent,
     analyzeSlide,
@@ -23,15 +23,15 @@ import {
     generateMarketData,
     generateTrends,
     generateCompetitorMatrix
-} from '../services/ai/slide';
+} from '../../services/ai/slide';
 import {
     ExtractedMetric,
     SlideAnalysis,
     ResearchResult,
     DeckUpdateSuggestion
-} from '../services/ai/types';
+} from '../../services/ai/types';
 import { templates } from '../styles/templates';
-import { formatAIError } from '../services/ai/utils';
+import { formatAIError } from '../../services/ai/utils';
 
 interface DeckEditorContextType {
     deck: Deck | null;

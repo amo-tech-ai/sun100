@@ -1,0 +1,339 @@
+---
+description: Gemini Structured Outputs - Generate predictable JSON responses using JSON Schema for data extraction and classification
+alwaysApply: false
+---
+
+# Gemini Structured Outputs Rules
+
+When you need predictable, parsable JSON responses from Gemini models, use structured outputs instead of parsing unstructured text.
+
+## Core Principle
+
+**Structured outputs guarantee JSON format and type-safety.** Use when you need the model's final response in a specific format, not when the model needs to call functions.
+
+## When to Use Structured Outputs
+
+- **Data extraction:** Extract specific information from unstructured text (names, dates, amounts)
+- **Structured classification:** Classify text into predefined categories with labels
+- **Agentic workflows:** Generate structured data for APIs or databases
+- **NOT for function calling:** Use function calling when model needs to call your functions
+
+## Basic Pattern
+
+```typescript
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: prompt,
+  config: {
+    responseMimeType: "application/json",
+    responseJsonSchema: {
+      type: "object",
+      properties: {
+        fieldName: {
+          type: "string",
+          description: "Clear description of what this field contains"
+        }
+      },
+      required: ["fieldName"]
+    }
+  }
+});
+
+const data = JSON.parse(response.text);
+```
+
+## JSON Schema Structure
+
+### Supported Types
+- `string` - Text values
+- `number` - Floating-point numbers
+- `integer` - Whole numbers
+- `boolean` - True/false values
+- `object` - Key-value pairs
+- `array` - Lists of items
+- `null` - Allow null values: `{"type": ["string", "null"]}`
+
+### Required Fields
+- `type` - Data type (required)
+- `description` - Clear explanation (highly recommended)
+- `properties` - For objects (required)
+- `required` - Array of required property names (for objects)
+- `items` - Schema for array items (required for arrays)
+
+### Type-Specific Properties
+
+**For `string`:**
+- `enum` - Fixed set of values: `["positive", "neutral", "negative"]`
+- `format` - Syntax format: `"date-time"`, `"date"`, `"time"`
+
+**For `number`/`integer`:**
+- `enum` - Fixed numeric values
+- `minimum` - Minimum value
+- `maximum` - Maximum value
+
+**For `array`:**
+- `items` - Schema for all items
+- `minItems` - Minimum array length
+- `maxItems` - Maximum array length
+
+**For `object`:**
+- `properties` - Property schemas (required)
+- `required` - Array of required property names
+- `additionalProperties` - Allow extra properties (boolean or schema)
+
+## Common Patterns for Sun AI
+
+### Pattern 1: Extract Metrics from Text
+
+```typescript
+const extractMetricsSchema = {
+  type: "object",
+  properties: {
+    metrics: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          label: { type: "string", description: "Metric name" },
+          value: { type: "string", description: "Metric value with units" }
+        },
+        required: ["label", "value"]
+      }
+    }
+  },
+  required: ["metrics"]
+};
+
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: `Extract all metrics from: "${slideContent}"`,
+  config: {
+    responseMimeType: "application/json",
+    responseJsonSchema: extractMetricsSchema
+  }
+});
+
+const { metrics } = JSON.parse(response.text);
+```
+
+### Pattern 2: Classify Slide Type
+
+```typescript
+const classifySlideSchema = {
+  type: "object",
+  properties: {
+    slideType: {
+      type: "string",
+      enum: ["vision", "problem", "solution", "market", "product", "business", "traction", "competition", "team", "ask"],
+      description: "The type of pitch deck slide"
+    },
+    confidence: {
+      type: "number",
+      minimum: 0,
+      maximum: 1,
+      description: "Confidence score from 0 to 1"
+    }
+  },
+  required: ["slideType", "confidence"]
+};
+```
+
+### Pattern 3: Extract Chart Data
+
+```typescript
+const chartDataSchema = {
+  type: "object",
+  properties: {
+    type: {
+      type: "string",
+      enum: ["bar", "line", "pie"],
+      description: "Chart type"
+    },
+    data: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          label: { type: "string" },
+          value: { type: "number" }
+        },
+        required: ["label", "value"]
+      }
+    }
+  },
+  required: ["type", "data"]
+};
+```
+
+## Best Practices
+
+### ✅ Do This:
+
+1. **Clear Descriptions**
+   - Every property needs a clear `description`
+   - Explain what the field represents and format expectations
+   - Include examples in descriptions when helpful
+
+2. **Strong Typing**
+   - Use specific types (`integer` not `number` when appropriate)
+   - Use `enum` for fixed value sets
+   - Specify `minimum`/`maximum` for numbers
+
+3. **Prompt Clarity**
+   - State clearly what to extract: "Extract the following information..."
+   - Provide context about the data source
+   - Use few-shot examples in prompt
+
+4. **Validation**
+   - Always validate parsed JSON in your code
+   - Check semantic correctness, not just syntax
+   - Handle edge cases and missing data
+
+### ❌ Don't Do This:
+
+1. **Vague Descriptions**
+   - ❌ `description: "The data"`
+   - ✅ `description: "The metric name (e.g., 'Users', 'Revenue', 'Growth Rate')"`
+
+2. **Weak Typing**
+   - ❌ `type: "string"` for everything
+   - ✅ Use `integer` for numbers, `enum` for fixed values
+
+3. **Missing Required Fields**
+   - ❌ Forgetting `required` array for objects
+   - ✅ Always specify which properties are mandatory
+
+4. **Over-Complicated Schemas**
+   - ❌ Deeply nested structures (3+ levels)
+   - ✅ Keep schemas simple and flat when possible
+
+## Streaming Structured Outputs
+
+You can stream structured outputs for better perceived performance:
+
+```typescript
+const stream = await ai.models.generateContentStream({
+  model: "gemini-2.5-flash",
+  contents: prompt,
+  config: {
+    responseMimeType: "application/json",
+    responseJsonSchema: mySchema
+  }
+});
+
+let jsonString = '';
+for await (const chunk of stream) {
+  jsonString += chunk.candidates[0].content.parts[0].text;
+}
+
+const data = JSON.parse(jsonString);
+```
+
+## Structured Outputs vs Function Calling
+
+| Feature | Use Case | Example |
+|---------|----------|---------|
+| **Structured Outputs** | Format final response | Extract recipe data from text to save to database |
+| **Function Calling** | Model calls your functions | Model calls `getWeather()` then responds |
+
+**Rule:** Use structured outputs for final responses, function calling for actions.
+
+## Supported Models
+
+- Gemini 2.5 Pro ✔️
+- Gemini 2.5 Flash ✔️
+- Gemini 2.5 Flash-Lite ✔️
+- Gemini 2.0 Flash ✔️ (requires `propertyOrdering`)
+
+## Error Handling
+
+```typescript
+try {
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseJsonSchema: schema
+    }
+  });
+
+  const data = JSON.parse(response.text);
+  
+  // Validate semantic correctness
+  if (!data.metrics || data.metrics.length === 0) {
+    throw new Error("No metrics extracted");
+  }
+  
+  return data;
+} catch (error) {
+  if (error instanceof SyntaxError) {
+    throw new Error("Invalid JSON response from model");
+  }
+  throw error;
+}
+```
+
+## Application to Sun AI
+
+### Use Cases:
+- **Extract metrics** from slide content (Problem, Traction slides)
+- **Classify slide type** for conditional features
+- **Extract chart data** from text descriptions
+- **Parse pricing tables** from unstructured text
+- **Extract fund allocation** percentages from The Ask slide
+
+### Example: Extract Metrics
+
+```typescript
+const extractMetricsFromSlide = async (content: string): Promise<ExtractedMetric[]> => {
+  const schema = {
+    type: "object",
+    properties: {
+      metrics: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            label: { type: "string", description: "Metric name" },
+            value: { type: "string", description: "Metric value with units" }
+          },
+          required: ["label", "value"]
+        }
+      }
+    },
+    required: ["metrics"]
+  };
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: `Extract all numeric metrics from: "${content}"`,
+    config: {
+      responseMimeType: "application/json",
+      responseJsonSchema: schema
+    }
+  });
+
+  const { metrics } = JSON.parse(response.text);
+  return metrics;
+};
+```
+
+## Key Insights
+
+1. **Guaranteed format:** Structured outputs ensure valid JSON
+2. **Type safety:** Schema enforces types and constraints
+3. **Simpler than parsing:** No need to parse unstructured text
+4. **Validation still needed:** Check semantic correctness in code
+5. **Use with function calling:** Can combine both approaches
+
+## References
+
+- [Gemini Structured Outputs Docs](https://ai.google.dev/gemini-api/docs/structured-outputs)
+- [JSON Schema Specification](https://json-schema.org/)
+
+**Remember:** Use structured outputs when you need predictable JSON responses. Keep schemas simple, use clear descriptions, and always validate the results.

@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { StartupProvider } from './contexts/StartupContext';
 import { ToastProvider } from './contexts/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Layouts
 import DashboardLayout from './screens/DashboardLayout';
@@ -167,7 +168,11 @@ const App: React.FC = () => {
                   <Route path="/pitch-decks" element={<PitchDecks />} />
                   <Route path="/pitch-decks/new" element={<WizardSteps />} />
                   <Route path="/pitch-decks/generating" element={<GeneratingScreen />} />
-                  <Route path="/pitch-decks/:id/edit" element={<DeckEditor />} />
+                  <Route path="/pitch-decks/:id/edit" element={
+                    <ErrorBoundary>
+                      <DeckEditor />
+                    </ErrorBoundary>
+                  } />
                   <Route path="/pitch-decks/:id/publish-success" element={<PublishSuccessScreen />} />
                 </Route>
 

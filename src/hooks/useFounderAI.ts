@@ -1,8 +1,8 @@
 
 import { useState, useCallback } from 'react';
-import { summarizeBio, extractMetrics } from '../services/ai/slide';
-import { analyzeStartupStrategy, extractStartupMetadata, suggestDeckFocus } from '../services/ai/investor';
-import { BioSummary, ExtractedMetric, StartupStrategicAnalysis, StartupMetadata, DeckStrategy } from '../services/ai/types';
+import { summarizeBio, extractMetrics } from '../../services/ai/slide';
+import { analyzeStartupStrategy, extractStartupMetadata, suggestDeckFocus } from '../../services/ai/investor';
+import { BioSummary, ExtractedMetric, StartupStrategicAnalysis, StartupMetadata, DeckStrategy } from '../../services/ai/types';
 import { UserProfile } from '../types/founder';
 
 export interface UseFounderAIReturn {

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Deck } from '../data/decks';
-import { getDecks } from '../services/deckService';
+import { getDecks } from '../../services/deckService';
 
 
 // --- ICONS ---

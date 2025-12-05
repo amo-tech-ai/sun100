@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { getStartupProfile, updateStartupProfile } from '../services/startupService';
-import { useAuth } from '../hooks/useAuth';
+import { getStartupProfile, updateStartupProfile } from '../../services/startupService';
+import { useAuth } from '../../hooks/useAuth';
 
 export interface StartupProfile {
     name: string;

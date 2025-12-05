@@ -4,93 +4,93 @@ import * as ReactRouterDOM from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { StartupProvider } from './contexts/StartupContext';
 import { ToastProvider } from './contexts/ToastContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from '../components/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Layouts
-import DashboardLayout from './screens/DashboardLayout';
-import PublicLayout from './screens/PublicLayout';
+import DashboardLayout from '../screens/DashboardLayout';
+import PublicLayout from '../screens/PublicLayout';
 
 // Public Screens
-import Landing from './screens/Landing';
-import Terms from './screens/Terms';
-import Privacy from './screens/Privacy';
-import NotFound from './screens/NotFound';
+import Landing from '../screens/Landing';
+import Terms from '../screens/Terms';
+import Privacy from '../screens/Privacy';
+import NotFound from '../screens/NotFound';
 
 // App Screens
-import Dashboard from './screens/Dashboard';
-import WizardSteps from './screens/WizardSteps';
-import GeneratingScreen from './screens/GeneratingScreen';
-import PublishSuccessScreen from './screens/PublishSuccessScreen';
-import Sitemap from './screens/Sitemap';
+import Dashboard from '../screens/Dashboard';
+import WizardSteps from '../screens/WizardSteps';
+import GeneratingScreen from '../screens/GeneratingScreen';
+import PublishSuccessScreen from '../screens/PublishSuccessScreen';
+import Sitemap from '../screens/Sitemap';
 
 // Lazily loaded components
-const DeckEditor = lazy(() => import('./screens/DeckEditor'));
-const PresentationScreen = lazy(() => import('./screens/PresentationScreen'));
+const DeckEditor = lazy(() => import('../screens/DeckEditor'));
+const PresentationScreen = lazy(() => import('../screens/PresentationScreen'));
 
 // --- Restored Public Screens ---
-const About = lazy(() => import('./screens/About'));
-const Perks = lazy(() => import('./screens/Perks'));
-const PerkDetail = lazy(() => import('./screens/PerkDetail'));
-const Events = lazy(() => import('./screens/Events'));
-const EventDetail = lazy(() => import('./screens/EventDetail'));
-const Jobs = lazy(() => import('./screens/Jobs'));
-const JobDetail = lazy(() => import('./screens/JobDetail'));
-const HowItWorks = lazy(() => import('./screens/HowItWorks'));
-const Blogs = lazy(() => import('./screens/Blogs'));
-const BlogDetail = lazy(() => import('./screens/BlogDetail'));
-const Services = lazy(() => import('./screens/Services'));
-const WebDesign = lazy(() => import('./screens/WebDesign'));
-const LogoBranding = lazy(() => import('./screens/LogoBranding'));
-const MvpDevelopment = lazy(() => import('./screens/MvpDevelopment'));
-const Login = lazy(() => import('./screens/Login'));
-const Signup = lazy(() => import('./screens/Signup'));
-const BusinessModel = lazy(() => import('./screens/BusinessModel'));
-const FounderProfile = lazy(() => import('./screens/FounderProfile'));
+const About = lazy(() => import('../screens/About'));
+const Perks = lazy(() => import('../screens/Perks'));
+const PerkDetail = lazy(() => import('../screens/PerkDetail'));
+const Events = lazy(() => import('../screens/Events'));
+const EventDetail = lazy(() => import('../screens/EventDetail'));
+const Jobs = lazy(() => import('../screens/Jobs'));
+const JobDetail = lazy(() => import('../screens/JobDetail'));
+const HowItWorks = lazy(() => import('../screens/HowItWorks'));
+const Blogs = lazy(() => import('../screens/Blogs'));
+const BlogDetail = lazy(() => import('../screens/BlogDetail'));
+const Services = lazy(() => import('../screens/Services'));
+const WebDesign = lazy(() => import('../screens/WebDesign'));
+const LogoBranding = lazy(() => import('../screens/LogoBranding'));
+const MvpDevelopment = lazy(() => import('../screens/MvpDevelopment'));
+const Login = lazy(() => import('../screens/Login'));
+const Signup = lazy(() => import('../screens/Signup'));
+const BusinessModel = lazy(() => import('../screens/BusinessModel'));
+const FounderProfile = lazy(() => import('../screens/FounderProfile'));
 
 // --- NEW VC DIRECTORY SCREENS ---
-const VCDirectory = lazy(() => import('./screens/VCDirectory'));
-const VCDetail = lazy(() => import('./screens/VCDetail'));
-const DirectoryAdmin = lazy(() => import('./screens/DirectoryAdmin'));
-const FundingManager = lazy(() => import('./screens/FundingManager')); 
-const HiringManager = lazy(() => import('./screens/HiringManager'));
+const VCDirectory = lazy(() => import('../screens/VCDirectory'));
+const VCDetail = lazy(() => import('../screens/VCDetail'));
+const DirectoryAdmin = lazy(() => import('../screens/DirectoryAdmin'));
+const FundingManager = lazy(() => import('../screens/FundingManager')); 
+const HiringManager = lazy(() => import('../screens/HiringManager'));
 
 // --- NEW GTM STRATEGY SCREEN ---
-const GTMStrategy = lazy(() => import('./screens/GTMStrategy'));
+const GTMStrategy = lazy(() => import('../screens/GTMStrategy'));
 
 // --- NEW DATA ROOM SCREEN ---
-const DataRoom = lazy(() => import('./screens/DataRoom'));
+const DataRoom = lazy(() => import('../screens/DataRoom'));
 
 // --- NEW MARKET SIZE SCREEN ---
-const MarketSizeAnalysis = lazy(() => import('./screens/MarketSizeAnalysis'));
+const MarketSizeAnalysis = lazy(() => import('../screens/MarketSizeAnalysis'));
 
 // --- NEW FINANCIAL OVERVIEW SCREEN ---
-const FinancialOverview = lazy(() => import('./screens/FinancialOverview'));
+const FinancialOverview = lazy(() => import('../screens/FinancialOverview'));
 
 // --- NEW CUSTOMER CRM SCREEN ---
-const CustomerCRM = lazy(() => import('./screens/CustomerCRM'));
-const Prospecting = lazy(() => import('./screens/Prospecting'));
+const CustomerCRM = lazy(() => import('../screens/CustomerCRM'));
+const Prospecting = lazy(() => import('../screens/Prospecting'));
 
 // --- Renamed StartupDeck Screens ---
-const StartupDeckLayout = lazy(() => import('./screens/SponsorDeckLayout'));
-const StartupDeckOverview = lazy(() => import('./screens/SponsorDeckOverview'));
-const StartupDeckShowcase = lazy(() => import('./screens/SponsorDeckShowcase'));
-const StartupDeckCategories = lazy(() => import('./screens/SponsorDeckCategories'));
-const StartupDeckApply = lazy(() => import('./screens/SponsorDeckApply'));
-const StartupDeckStories = lazy(() => import('./screens/SponsorDeckStories'));
+const StartupDeckLayout = lazy(() => import('../screens/SponsorDeckLayout'));
+const StartupDeckOverview = lazy(() => import('../screens/SponsorDeckOverview'));
+const StartupDeckShowcase = lazy(() => import('../screens/SponsorDeckShowcase'));
+const StartupDeckCategories = lazy(() => import('../screens/SponsorDeckCategories'));
+const StartupDeckApply = lazy(() => import('../screens/SponsorDeckApply'));
+const StartupDeckStories = lazy(() => import('../screens/SponsorDeckStories'));
 
 
 // --- Restored App Screens ---
-const StartupWizard = lazy(() => import('./screens/StartupWizard'));
-const PitchDecks = lazy(() => import('./screens/PitchDecks'));
-const MyEvents = lazy(() => import('./screens/MyEvents'));
-const EventWizard = lazy(() => import('./screens/EventWizard'));
-const VideoGenerator = lazy(() => import('./screens/VideoGenerator'));
-const InvestorDashboard = lazy(() => import('./screens/InvestorDashboard'));
-const DocBuilder = lazy(() => import('./screens/DocBuilder'));
+const StartupWizard = lazy(() => import('../screens/StartupWizard'));
+const PitchDecks = lazy(() => import('../screens/PitchDecks'));
+const MyEvents = lazy(() => import('../screens/MyEvents'));
+const EventWizard = lazy(() => import('../screens/EventWizard'));
+const VideoGenerator = lazy(() => import('../screens/VideoGenerator'));
+const InvestorDashboard = lazy(() => import('../screens/InvestorDashboard'));
+const DocBuilder = lazy(() => import('../screens/DocBuilder'));
 
 // New Metrics Component import
-const Metrics = lazy(() => import('./screens/Metrics'));
+const Metrics = lazy(() => import('../screens/Metrics'));
 
 const { BrowserRouter, Routes, Route } = ReactRouterDOM;
 
@@ -102,6 +102,9 @@ const LoadingSpinner: React.FC = () => (
 );
 
 const App: React.FC = () => {
+  console.log("✅ App component rendering");
+  console.log("✅ App component - About to return JSX");
+  
   return (
     <ErrorBoundary>
       <BrowserRouter>

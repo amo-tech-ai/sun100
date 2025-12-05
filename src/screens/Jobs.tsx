@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { getJobs, Job } from '../services/jobService';
+import { getJobs, Job } from '../../services/jobService';
 import { MapPin, Clock, Briefcase, Search } from 'lucide-react';
 
 const timeAgo = (date: string): string => {

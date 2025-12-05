@@ -20,7 +20,6 @@ const PublicLayout: React.FC = () => {
             <header className="relative z-20 py-6 px-4 sm:px-6 lg:px-8 bg-brand-off-white/80 backdrop-blur-sm border-b border-gray-200/50">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <Link className="flex items-center space-x-2" to="/">
-                        <span className="material-symbols-outlined text-brand-orange text-3xl">flare</span>
                         <span className="font-bold text-xl text-brand-blue">StartupAI</span>
                     </Link>
                     <nav className="hidden md:flex items-center space-x-8 text-sm text-gray-700">
@@ -47,7 +46,6 @@ const PublicLayout: React.FC = () => {
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
                         <div className="col-span-2 md:col-span-1">
                             <Link className="flex items-center space-x-2" to="/">
-                                <span className="material-symbols-outlined text-brand-orange text-3xl">flare</span>
                                 <span className="font-bold text-xl text-brand-blue">StartupAI</span>
                             </Link>
                         </div>

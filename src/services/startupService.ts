@@ -1,5 +1,5 @@
 
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient';
 import { StartupProfile } from '../contexts/StartupContext';
 import { UserProfile } from '../types/founder';
 

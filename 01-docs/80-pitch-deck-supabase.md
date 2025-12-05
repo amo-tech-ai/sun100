@@ -196,12 +196,19 @@ The root entity for a presentation.
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | `PK`, `DEFAULT gen_random_uuid()` | Unique identifier. |
-| `org_id` | `uuid` | `FK(organizations.id)`, `NOT NULL` | Tenant ownership (Multi-tenancy). |
-| `user_id` | `uuid` | `FK(users.id)`, `NOT NULL` | The creator of the deck. |
+| `org_id` | `uuid` | `FK(orgs.id)`, `NOT NULL` | Tenant ownership (Multi-tenancy). |
+| `user_id` | `uuid` | `FK(auth.users.id)`, nullable | The creator of the deck. |
+| `startup_id` | `uuid` | `FK(startups.id)`, nullable | Link to startup profile. |
 | `title` | `text` | `NOT NULL` | Internal title of the deck. |
 | `template` | `text` | `DEFAULT 'default'` | Visual theme key (e.g., 'vibrant'). |
-| `status` | `text` | `CHECK(in 'draft', 'published')` | Lifecycle state. |
-| `meta` | `jsonb` | `DEFAULT '{}'` | Extra context (e.g., source URLs). |
+| `status` | `text` | `CHECK(in 'draft', 'published')`, `DEFAULT 'draft'` | Lifecycle state. |
+| `meta` | `jsonb` | `DEFAULT '{}'` | Extra context (e.g., source URLs, generation metadata). |
+| `description` | `text` | nullable | Deck description. |
+| `slides` | `jsonb` | `DEFAULT '[]'` | JSONB storage alternative (dual storage pattern). |
+| `theme_config` | `jsonb` | nullable | Theme and styling configuration. |
+| `last_accessed_at` | `timestamptz` | `DEFAULT now()` | Last time deck was accessed. |
+| `created_at` | `timestamptz` | `DEFAULT now()` | Creation timestamp. |
+| `updated_at` | `timestamptz` | `DEFAULT now()` | Last update timestamp. |
 
 ### B. Table: `public.slides`
 The content units. Order is managed by `position`.
@@ -210,13 +217,17 @@ The content units. Order is managed by `position`.
 | :--- | :--- | :--- | :--- |
 | `id` | `uuid` | `PK`, `DEFAULT gen_random_uuid()` | Unique identifier. |
 | `deck_id` | `uuid` | `FK(decks.id)`, `ON DELETE CASCADE` | Parent deck. |
-| `position` | `int` | `NOT NULL` | Ordering index. |
-| `type` | `text` | `CHECK(in 'vision', ...)` | Semantic type for AI context. |
+| `position` | `int` | `NOT NULL` | Ordering index (0-based). |
+| `type` | `text` | `CHECK(in 'vision', 'problem', 'solution', 'market', 'product', 'traction', 'competition', 'team', 'ask', 'roadmap', 'generic')` | Semantic type for AI context. |
 | `title` | `text` | `NOT NULL` | Slide header. |
-| `content` | `text` | - | Bullet points or body text. |
-| `image_url`| `text` | - | URL to image asset. |
-| `chart_data`| `jsonb`| - | Structured data for dynamic charts. |
-| `table_data`| `jsonb`| - | Structured data for pricing tables. |
+| `content` | `text` | nullable | Bullet points or body text (Markdown supported). |
+| `image_url`| `text` | nullable | URL to image asset (Storage path or external URL). |
+| `template` | `text` | nullable | Slide-level template override. |
+| `chart_data`| `jsonb`| nullable | Structured data for dynamic charts. |
+| `table_data`| `jsonb`| nullable | Structured data for pricing tables. |
+| `speaker_notes` | `text` | nullable | Presentation notes for speaker mode. |
+| `created_at` | `timestamptz` | `DEFAULT now()` | Creation timestamp. |
+| `updated_at` | `timestamptz` | `DEFAULT now()` | Last update timestamp. |
 
 ---
 
@@ -229,33 +240,58 @@ We strictly enforce data isolation at the database row level.
 ALTER TABLE public.decks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.slides ENABLE ROW LEVEL SECURITY;
 
--- Policy: Organization Isolation
--- Users can only access decks belonging to their organization.
-CREATE POLICY "Org Access Policy" ON public.decks
-FOR ALL
+-- Policy: Role-Based Access Control (Actual Implementation)
+-- More sophisticated than simple org-based access - includes role checks
+
+-- Decks: View access for all org members
+CREATE POLICY "authenticated_users_can_view_org_decks" ON public.decks
+FOR SELECT
 USING (
-    org_id IN (
-        SELECT organization_id 
-        FROM public.organization_members 
-        WHERE user_id = auth.uid()
+    EXISTS (
+        SELECT 1 FROM org_members
+        WHERE org_members.org_id = decks.org_id
+        AND org_members.user_id = auth.uid()
     )
 );
 
--- Policy: Inherited Access for Slides
--- Users access slides if they have access to the parent deck.
-CREATE POLICY "Deck Inheritance Policy" ON public.slides
-FOR ALL
-USING (
-    deck_id IN (
-        SELECT id 
-        FROM public.decks 
-        WHERE org_id IN (
-            SELECT organization_id 
-            FROM public.organization_members 
-            WHERE user_id = auth.uid()
-        )
+-- Decks: Create access for editors and above
+CREATE POLICY "Editors and above can create decks" ON public.decks
+FOR INSERT
+WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM org_members
+        WHERE org_members.org_id = decks.org_id
+        AND org_members.user_id = auth.uid()
+        AND org_members.role IN ('owner', 'admin', 'editor')
     )
 );
+
+-- Decks: Update access for editors and above
+CREATE POLICY "Editors and above can update decks" ON public.decks
+FOR UPDATE
+USING (
+    EXISTS (
+        SELECT 1 FROM org_members
+        WHERE org_members.org_id = decks.org_id
+        AND org_members.user_id = auth.uid()
+        AND org_members.role IN ('owner', 'admin', 'editor')
+    )
+);
+
+-- Decks: Delete access for admins and above
+CREATE POLICY "Admins and above can delete decks" ON public.decks
+FOR DELETE
+USING (
+    EXISTS (
+        SELECT 1 FROM org_members
+        WHERE org_members.org_id = decks.org_id
+        AND org_members.user_id = auth.uid()
+        AND org_members.role IN ('owner', 'admin')
+    )
+);
+
+-- Slides: Inherited access policies (same role-based pattern)
+-- Slides inherit access from parent deck via org_members join
 ```
 
 ---
@@ -265,15 +301,20 @@ USING (
 To ensure sub-100ms query times for the editor.
 
 ```sql
--- Optimize fetching a full deck
-CREATE INDEX idx_slides_deck_id ON public.slides(deck_id);
+-- Optimize fetching a full deck with slides
+CREATE INDEX idx_slides_deck_id_position ON public.slides(deck_id, position);
 
--- Optimize ordering slides
-CREATE INDEX idx_slides_deck_position ON public.slides(deck_id, position);
+-- Unique constraint: One slide per position per deck
+CREATE UNIQUE INDEX slides_deck_id_position_key ON public.slides(deck_id, position);
 
 -- Optimize finding user's decks
 CREATE INDEX idx_decks_org_id ON public.decks(org_id);
 CREATE INDEX idx_decks_user_id ON public.decks(user_id);
+CREATE INDEX idx_decks_startup_id ON public.decks(startup_id);
+
+-- Full-text search indexes (enhanced beyond basic requirements)
+CREATE INDEX idx_decks_title_fts ON public.decks USING gin (to_tsvector('english', title));
+CREATE INDEX idx_slides_content_fts ON public.slides USING gin (to_tsvector('english', (title || ' ' || COALESCE(content, ''))));
 ```
 
 ---
@@ -310,8 +351,14 @@ These functions serve as the secure API gateway for the frontend.
 
 ### `generate-deck`
 *   **Method:** `POST`
-*   **Input:** `{ context: string, urls: string[], theme: string }`
-*   **Role:** Orchestrator. Calls Gemini to generate structure, then inserts rows into `decks` and `slides` in a single transaction.
+*   **Input:** `{ businessContext: string, companyDetails?: object, deckType: string, theme: string, orgId?: uuid, userId?: uuid, startupId?: uuid, urls?: string[] }`
+*   **Role:** Orchestrator. Calls Gemini 3 Pro to generate structure, then inserts rows into `decks` and `slides` tables in a transaction.
+*   **Authentication:** Optional - if `authorization` header provided, extracts user and org_id automatically. Falls back to provided `orgId`/`userId` or sessionStorage mode.
+*   **Output:** `{ generatedDeck: object, deckId: uuid, savedToDatabase: boolean }`
+*   **Database Persistence:** 
+    - If `org_id` available: Saves deck and slides to database, returns database ID
+    - If no `org_id`: Returns generated deck structure (fallback to sessionStorage)
+*   **Transaction Safety:** Deck insert and slides insert are atomic - if slides fail, deck is rolled back
 
 ### `slide-ai`
 *   **Method:** `POST`
@@ -322,3 +369,28 @@ These functions serve as the secure API gateway for the frontend.
 *   **Method:** `POST`
 *   **Input:** `{ action: 'generate' | 'edit', prompt: string, ... }`
 *   **Role:** Wraps Imagen 4.0 / Gemini Flash Image. Handles Base64 conversion and Storage upload logic.
+
+---
+
+## 9. Implementation Notes (2025-01-22)
+
+### Database Persistence
+The `generate-deck` Edge Function now **saves decks to the database** when `org_id` is available:
+
+1. **With Authentication:** If `authorization` header is provided, function extracts `user_id` and `org_id` from `org_members` table
+2. **Without Authentication:** Falls back to provided `orgId`/`userId` in payload, or returns deck structure for sessionStorage mode
+3. **Transaction Safety:** Deck and slides inserts are atomic - if slides fail, deck is rolled back
+4. **Backward Compatibility:** Frontend still supports sessionStorage mode for development/testing
+
+### Enhanced Features Beyond Documentation
+- **Role-based RLS:** More sophisticated than documented (owner/admin/editor/viewer roles)
+- **Full-text search:** Indexes enable search across deck titles and slide content
+- **Dual storage:** `decks.slides` JSONB field allows alternative storage pattern
+- **Startup linking:** `decks.startup_id` links decks to startup profiles
+- **Usage tracking:** `last_accessed_at` field for analytics
+
+### Migration Status
+- ✅ `status` field added (defaults to 'draft')
+- ✅ `meta` field added (stores generation metadata, source URLs)
+- ✅ `speaker_notes` field added to slides
+- ✅ `user_id` FK constraint added (nullable, references auth.users)

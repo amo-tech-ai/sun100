@@ -43,31 +43,43 @@ interface GenerationPayload {
 
 /**
  * Generates a full pitch deck outline using secure Edge Function.
- * Includes a fallback to mock data if the backend fails during development.
+ * Saves to database if user/org context is available, otherwise falls back to sessionStorage.
  */
 export const generateFullDeck = async (payload: GenerationPayload): Promise<{ deckId: string }> => {
-    try {
-        const result = await invokeEdgeFunction<{ generatedDeck: any }>('generate-deck', payload as any);
-        
-        // Save to session storage for retrieval by DeckEditor
-        sessionStorage.setItem('newlyGeneratedDeck', JSON.stringify(result.generatedDeck));
-        return { deckId: result.generatedDeck.id };
-
-    } catch (error) {
-        console.warn("⚠️ Edge Function 'generate-deck' failed. Falling back to local mock deck for development continuity.", error);
-        
-        // Create a fallback mock deck so the UI doesn't break
-        const fallbackDeck: Deck = {
-            ...mockDeck,
-            id: `fallback-${Date.now()}`,
-            title: payload.companyDetails?.name ? `${payload.companyDetails.name} Pitch Deck` : "New Startup Pitch",
-            template: payload.theme || 'default',
-            slides: mockDeck.slides.map(s => ({...s, id: `slide-${Math.random().toString(36).substr(2,9)}`}))
-        };
-
-        sessionStorage.setItem('newlyGeneratedDeck', JSON.stringify(fallbackDeck));
-        return { deckId: fallbackDeck.id };
+    // Get user context if available (for database persistence)
+    const user = JSON.parse(sessionStorage.getItem('auth_user') || 'null');
+    const orgId = JSON.parse(sessionStorage.getItem('current_org_id') || 'null');
+    const startupId = payload.companyDetails ? JSON.parse(sessionStorage.getItem('current_startup_id') || 'null') : null;
+    
+    // Prepare payload with user context
+    const payloadWithContext = {
+        ...payload,
+        orgId: orgId,
+        userId: user?.id,
+        startupId: startupId,
+        urls: payload.urls || []
+    };
+    
+    const result = await invokeEdgeFunction<{ 
+        generatedDeck: any; 
+        deckId?: string;
+        savedToDatabase?: boolean;
+    }>('generate-deck', payloadWithContext as any);
+    
+    // If saved to database, use the database ID
+    const deckId = result.savedToDatabase && result.deckId 
+        ? result.deckId 
+        : result.generatedDeck.id;
+    
+    // Fallback to sessionStorage if not saved to database (backward compatibility)
+    if (!result.savedToDatabase) {
+    sessionStorage.setItem('newlyGeneratedDeck', JSON.stringify(result.generatedDeck));
+        console.log('Deck saved to sessionStorage (not persisted to database)');
+    } else {
+        console.log('Deck saved to database:', deckId);
     }
+    
+    return { deckId };
 };
 
 /**
@@ -76,9 +88,9 @@ export const generateFullDeck = async (payload: GenerationPayload): Promise<{ de
 export const generateRoadmapSlide = async (companyContext: string): Promise<{ slide: Slide }> => {
     try {
         return await invokeEdgeFunction<{ slide: Slide }>('slide-ai', { 
-            action: 'generateRoadmap',
-            context: companyContext 
-        });
+        action: 'generateRoadmap',
+        context: companyContext 
+    });
     } catch (error) {
          console.warn("Edge Function failed. Returning mock roadmap slide.");
          return {

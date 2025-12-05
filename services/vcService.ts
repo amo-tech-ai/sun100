@@ -22,6 +22,7 @@ export interface Investor {
     application_link?: string;
     contact_email?: string;
     terms_summary?: string; // Context on equity (e.g. "SAFE + MFN")
+    social_links?: Record<string, string>; // JSONB object for social media links (e.g., {twitter: "url", linkedin: "url"})
 }
 
 const mockInvestors: Investor[] = [

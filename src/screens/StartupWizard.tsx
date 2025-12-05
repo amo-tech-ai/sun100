@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStartup } from '../hooks/useStartup';
-import { enrichStartupProfile } from '../services/ai/investor';
-import { EnrichedProfile } from '../services/ai/types';
+import { useStartup } from '../../hooks/useStartup';
+import { enrichStartupProfile } from '../../services/ai/investor';
+import { EnrichedProfile } from '../../services/ai/types';
 import { 
   ChevronRight, ChevronLeft, Check, Sparkles, 
   UploadCloud, TrendingUp, Users, DollarSign, 

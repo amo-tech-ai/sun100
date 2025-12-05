@@ -1,5 +1,5 @@
 
-import { supabase, IS_MOCK_MODE } from '../lib/supabaseClient';
+import { supabase, IS_MOCK_MODE } from '../../lib/supabaseClient';
 
 export interface Job {
     id: string;

@@ -1,0 +1,663 @@
+---
+alwaysApply: true
+---
+
+# Gemini File Search (RAG) - Cursor Rule
+
+## Overview
+
+File Search enables **Retrieval Augmented Generation (RAG)** by importing, chunking, and indexing your data to enable fast semantic retrieval of relevant information. This information is then provided as context to the model, allowing more accurate and relevant answers based on your documents.
+
+### Key Benefits
+- **Semantic Search:** Understands meaning and context, not just keywords
+- **Persistent Storage:** Data stored indefinitely (unlike Files API which deletes after 48 hours)
+- **Automatic Chunking:** Files automatically broken into searchable chunks
+- **Citations:** Model responses include citations to source documents
+- **Metadata Filtering:** Search within subsets of documents using custom metadata
+
+## How It Works
+
+File Search uses **semantic search** powered by embeddings:
+
+1. **Import:** File is chunked, converted to embeddings (using `gemini-embedding-001`), and indexed
+2. **Query:** User prompt is converted to embedding, then semantic search finds relevant chunks
+3. **Context:** Relevant chunks are provided to the model as context
+4. **Response:** Model generates answer grounded in your documents with citations
+
+**Key Difference from Files API:**
+- **Files API:** Temporary storage (48 hours), direct file reference
+- **File Search:** Permanent storage, semantic search over indexed content
+
+## Core Workflow
+
+### Step 1: Create File Search Store
+
+**JavaScript/TypeScript (Deno Edge Functions):**
+```typescript
+import { GoogleGenAI } from "https://esm.sh/@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: Deno.env.get('GEMINI_API_KEY') });
+
+// Create a File Search store
+const fileSearchStore = await ai.fileSearchStores.create({
+  config: { displayName: 'fashionos-event-docs' }
+});
+
+console.log("Store created:", fileSearchStore.name);
+// Format: fileSearchStores/xxxxxxx
+```
+
+### Step 2: Upload and Import File (Direct Method)
+
+```typescript
+// ✅ RECOMMENDED - Direct upload to File Search store
+let operation = await ai.fileSearchStores.uploadToFileSearchStore({
+  file: '/path/to/document.pdf',
+  fileSearchStoreName: fileSearchStore.name,
+  config: {
+    displayName: 'event-guidelines-2025', // Visible in citations
+  }
+});
+
+// Wait until import is complete (chunking, embedding, indexing)
+while (!operation.done) {
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  operation = await ai.operations.get({ operation });
+}
+
+console.log("File imported successfully");
+```
+
+### Step 2 Alternative: Upload Then Import
+
+```typescript
+// Alternative: Upload file first, then import
+const uploadedFile = await ai.files.upload({
+  file: '/path/to/document.pdf',
+  config: { name: 'event-guidelines' }
+});
+
+// Import into File Search store
+let operation = await ai.fileSearchStores.importFile({
+  fileSearchStoreName: fileSearchStore.name,
+  fileName: uploadedFile.name
+});
+
+// Wait for completion
+while (!operation.done) {
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  operation = await ai.operations.get({ operation });
+}
+```
+
+### Step 3: Query with File Search
+
+```typescript
+// Query your documents
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: "What are the event planning guidelines?",
+  config: {
+    tools: [
+      {
+        fileSearch: {
+          fileSearchStoreNames: [fileSearchStore.name]
+        }
+      }
+    ]
+  },
+});
+
+console.log(response.text);
+
+// Access citations
+const metadata = response.candidates?.[0]?.groundingMetadata;
+console.log("Citations:", metadata);
+```
+
+## Chunking Configuration
+
+### ✅ CORRECT: Custom Chunking
+
+```typescript
+// Configure chunking strategy for better retrieval
+let operation = await ai.fileSearchStores.uploadToFileSearchStore({
+  file: '/path/to/large-document.pdf',
+  fileSearchStoreName: fileSearchStore.name,
+  config: {
+    displayName: 'large-document',
+    chunkingConfig: {
+      whiteSpaceConfig: {
+        maxTokensPerChunk: 200,      // Max tokens per chunk
+        maxOverlapTokens: 20         // Overlap between chunks for context
+      }
+    }
+  }
+});
+```
+
+**Chunking Best Practices:**
+- **Smaller chunks (100-200 tokens):** Better precision, more chunks to search
+- **Larger chunks (500-1000 tokens):** More context per chunk, fewer chunks
+- **Overlap (10-20 tokens):** Prevents losing context at chunk boundaries
+- **Default:** Automatic chunking if not specified
+
+## File Search Store Management
+
+### ✅ CORRECT: List Stores
+
+```typescript
+// List all File Search stores
+const stores = await ai.fileSearchStores.list();
+for await (const store of stores) {
+  console.log(store.name, store.displayName);
+}
+```
+
+### ✅ CORRECT: Get Store
+
+```typescript
+// Get specific store
+const store = await ai.fileSearchStores.get({
+  name: 'fileSearchStores/xxxxxxx'
+});
+```
+
+### ✅ CORRECT: Delete Store
+
+```typescript
+// Delete a File Search store
+await ai.fileSearchStores.delete({
+  name: 'fileSearchStores/xxxxxxx',
+  config: { force: true } // Required to delete
+});
+```
+
+## Custom Metadata
+
+### ✅ CORRECT: Add Metadata to Files
+
+```typescript
+// Upload with custom metadata for filtering
+let operation = await ai.fileSearchStores.uploadToFileSearchStore({
+  file: '/path/to/document.pdf',
+  fileSearchStoreName: fileSearchStore.name,
+  config: {
+    displayName: 'event-contract-2025',
+    customMetadata: [
+      { key: "eventType", stringValue: "Runway" },
+      { key: "year", numericValue: 2025 },
+      { key: "status", stringValue: "active" }
+    ]
+  }
+});
+```
+
+### ✅ CORRECT: Filter by Metadata
+
+```typescript
+// Search only within documents matching metadata filter
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: "What are the runway event guidelines?",
+  config: {
+    tools: [
+      {
+        fileSearch: {
+          fileSearchStoreNames: [fileSearchStore.name],
+          metadataFilter: 'eventType="Runway" AND year=2025'
+        }
+      }
+    ]
+  },
+});
+```
+
+**Metadata Filter Syntax:**
+- `key="value"` - String equality
+- `key=123` - Numeric equality
+- `key="value1" OR key="value2"` - OR conditions
+- `key1="value1" AND key2=123` - AND conditions
+- See [google.aip.dev/160](https://google.aip.dev/160) for full syntax
+
+## Citations
+
+### ✅ CORRECT: Access Citations
+
+```typescript
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: "What are the event planning guidelines?",
+  config: {
+    tools: [
+      {
+        fileSearch: {
+          fileSearchStoreNames: [fileSearchStore.name]
+        }
+      }
+    ]
+  },
+});
+
+// Access grounding metadata with citations
+const metadata = response.candidates?.[0]?.groundingMetadata;
+
+if (metadata) {
+  // Grounding chunks (source documents)
+  const chunks = metadata.groundingChunks;
+  chunks.forEach((chunk, index) => {
+    console.log(`Source ${index + 1}:`, chunk.file?.displayName);
+  });
+
+  // Grounding supports (text segments linked to sources)
+  const supports = metadata.groundingSupports;
+  supports.forEach((support) => {
+    console.log("Text segment:", support.segment?.text);
+    console.log("Sources:", support.groundingChunkIndices);
+  });
+}
+```
+
+## Common Patterns
+
+### Pattern 1: Knowledge Base Q&A
+
+```typescript
+// Create knowledge base from documents
+const store = await ai.fileSearchStores.create({
+  config: { displayName: 'fashionos-kb' }
+});
+
+// Upload multiple documents
+await ai.fileSearchStores.uploadToFileSearchStore({
+  file: 'event-guidelines.pdf',
+  fileSearchStoreName: store.name,
+  config: { displayName: 'Event Guidelines' }
+});
+
+// Query knowledge base
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: "How do I create a runway event?",
+  config: {
+    tools: [{ fileSearch: { fileSearchStoreNames: [store.name] } }]
+  },
+});
+```
+
+### Pattern 2: Document Comparison
+
+```typescript
+// Upload multiple versions
+await ai.fileSearchStores.uploadToFileSearchStore({
+  file: 'contract-v1.pdf',
+  fileSearchStoreName: store.name,
+  config: {
+    displayName: 'Contract v1',
+    customMetadata: [{ key: "version", stringValue: "1" }]
+  }
+});
+
+await ai.fileSearchStores.uploadToFileSearchStore({
+  file: 'contract-v2.pdf',
+  fileSearchStoreName: store.name,
+  config: {
+    displayName: 'Contract v2',
+    customMetadata: [{ key: "version", stringValue: "2" }]
+  }
+});
+
+// Compare versions
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: "What changed between contract versions?",
+  config: {
+    tools: [{ fileSearch: { fileSearchStoreNames: [store.name] } }]
+  },
+});
+```
+
+### Pattern 3: Structured Output from Documents
+
+```typescript
+import { Type } from "https://esm.sh/@google/genai";
+
+// Extract structured data from documents
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: "Extract event details from the uploaded documents",
+  config: {
+    tools: [
+      {
+        fileSearch: {
+          fileSearchStoreNames: [fileSearchStore.name]
+        }
+      }
+    ],
+    responseMimeType: "application/json",
+    responseSchema: {
+      type: Type.OBJECT,
+      properties: {
+        eventName: { type: Type.STRING },
+        date: { type: Type.STRING },
+        location: { type: Type.STRING }
+      },
+      required: ["eventName", "date", "location"]
+    }
+  },
+});
+```
+
+## Model Support
+
+| Model | File Search Support |
+|-------|---------------------|
+| Gemini 3 Pro Preview | ✔️ |
+| Gemini 2.5 Pro | ✔️ |
+| Gemini 2.5 Flash | ✔️ (Recommended) |
+| Gemini 2.5 Flash-Lite | ✔️ |
+
+## Supported File Types
+
+### Application Files
+- PDF: `application/pdf`
+- Office: `application/msword`, `application/vnd.ms-excel`, `application/vnd.openxmlformats-officedocument.*`
+- Code: `application/json`, `application/typescript`, `application/xml`
+- Archives: `application/zip`
+
+### Text Files
+- Documents: `text/html`, `text/markdown`, `text/plain`, `text/rtf`
+- Code: `text/javascript`, `text/x-python`, `text/x-c`, `text/x-java`, etc.
+- Data: `text/csv`, `text/xml`, `text/yaml`
+
+**Full list:** See documentation for complete list of 200+ supported file types.
+
+## Rate Limits
+
+### File Size Limits
+- **Per document:** Maximum 100 MB
+- **Per store (recommended):** Under 20 GB for optimal latency
+- **Total project storage (by tier):**
+  - Free: 1 GB
+  - Tier 1: 10 GB
+  - Tier 2: 100 GB
+  - Tier 3: 1 TB
+
+**Note:** Storage size = input size × 3 (includes embeddings)
+
+## Pricing
+
+- **Embeddings (indexing):** $0.15 per 1M tokens (charged when importing)
+- **Storage:** Free
+- **Query embeddings:** Free
+- **Retrieved tokens:** Charged as regular context tokens
+
+**Cost Optimization:**
+- Import files once, query many times
+- Use metadata filters to reduce retrieved chunks
+- Optimize chunk size to balance precision and cost
+
+## Best Practices
+
+### ✅ DO: Use Descriptive Display Names
+
+```typescript
+// ✅ GOOD - Clear display names for citations
+config: {
+  displayName: 'fashion-week-2025-guidelines'
+}
+```
+
+### ✅ DO: Add Metadata for Organization
+
+```typescript
+// ✅ GOOD - Metadata for filtering and organization
+customMetadata: [
+  { key: "category", stringValue: "Guidelines" },
+  { key: "year", numericValue: 2025 }
+]
+```
+
+### ✅ DO: Wait for Import Completion
+
+```typescript
+// ✅ GOOD - Always wait for import to complete
+while (!operation.done) {
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  operation = await ai.operations.get({ operation });
+}
+```
+
+### ✅ DO: Use Metadata Filters
+
+```typescript
+// ✅ GOOD - Filter to relevant documents
+metadataFilter: 'category="Guidelines" AND year=2025'
+```
+
+### ✅ DO: Check Citations
+
+```typescript
+// ✅ GOOD - Verify sources
+const metadata = response.candidates?.[0]?.groundingMetadata;
+if (metadata?.groundingChunks) {
+  // Display citations to users
+}
+```
+
+### ❌ DON'T: Skip Import Wait
+
+```typescript
+// ❌ BAD - File may not be indexed yet
+const operation = await ai.fileSearchStores.uploadToFileSearchStore({...});
+// Immediately querying may fail or return incomplete results
+
+// ✅ GOOD - Wait for completion
+while (!operation.done) {
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  operation = await ai.operations.get({ operation });
+}
+```
+
+### ❌ DON'T: Exceed Size Limits
+
+```typescript
+// ❌ BAD - Files over 100 MB will fail
+file: '/path/to/200mb-document.pdf'
+
+// ✅ GOOD - Split large documents or use Files API for direct reference
+```
+
+### ❌ DON'T: Ignore Store Size
+
+```typescript
+// ❌ BAD - Store over 20 GB may have latency issues
+// ✅ GOOD - Keep stores under 20 GB, create multiple stores if needed
+```
+
+## Error Handling
+
+### ✅ CORRECT: Robust Error Handling
+
+```typescript
+try {
+  // Create store
+  const store = await ai.fileSearchStores.create({
+    config: { displayName: 'my-store' }
+  });
+
+  // Upload and import
+  let operation = await ai.fileSearchStores.uploadToFileSearchStore({
+    file: filePath,
+    fileSearchStoreName: store.name,
+    config: { displayName: 'my-document' }
+  });
+
+  // Wait with timeout
+  const maxWaitTime = 300000; // 5 minutes
+  const startTime = Date.now();
+  
+  while (!operation.done) {
+    if (Date.now() - startTime > maxWaitTime) {
+      throw new Error("Import timeout");
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    operation = await ai.operations.get({ operation });
+    
+    // Check for errors
+    if (operation.error) {
+      throw new Error(`Import failed: ${operation.error.message}`);
+    }
+  }
+
+  // Query
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: query,
+    config: {
+      tools: [{
+        fileSearch: {
+          fileSearchStoreNames: [store.name]
+        }
+      }]
+    },
+  });
+
+  return response.text;
+} catch (error: any) {
+  console.error("File Search error:", error);
+  throw new Error(`File Search failed: ${error.message}`);
+}
+```
+
+## Use Cases
+
+### ✅ Good Use Cases
+
+1. **Knowledge Base:** Q&A over company documents, guidelines, policies
+2. **Document Analysis:** Extract structured data from contracts, reports
+3. **Code Documentation:** Answer questions about codebases, APIs
+4. **Research:** Query research papers, articles, studies
+5. **Event Planning:** Store event guidelines, contracts, schedules for quick reference
+
+### ❌ Poor Use Cases
+
+1. **Real-time Data:** Use Google Search for current information
+2. **Small, Simple Queries:** Direct model knowledge may suffice
+3. **Frequently Changing Content:** Files API or URL Context may be better
+4. **Binary Files:** Images, videos (use Files API for direct reference)
+
+## Current Implementation Status
+
+### ⚠️ Not Currently Used
+
+File Search is not currently implemented in the codebase. Consider using it for:
+
+- **Event Guidelines Knowledge Base:** Store event planning documents, contracts, schedules
+- **Brand Documentation:** Index brand guidelines, style guides, past event materials
+- **FAQ System:** Create searchable knowledge base from support documents
+
+### 💡 Recommended Implementation
+
+```typescript
+// Example: Event guidelines knowledge base
+const guidelinesStore = await ai.fileSearchStores.create({
+  config: { displayName: 'fashionos-event-guidelines' }
+});
+
+// Upload guidelines
+await ai.fileSearchStores.uploadToFileSearchStore({
+  file: 'event-planning-guide.pdf',
+  fileSearchStoreName: guidelinesStore.name,
+  config: {
+    displayName: 'Event Planning Guide 2025',
+    customMetadata: [
+      { key: "type", stringValue: "guidelines" },
+      { key: "year", numericValue: 2025 }
+    ]
+  }
+});
+
+// Query in edge function
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: userQuestion,
+  config: {
+    tools: [{
+      fileSearch: {
+        fileSearchStoreNames: [guidelinesStore.name]
+      }
+    }]
+  },
+});
+```
+
+## Quick Reference
+
+**Create Store:**
+```typescript
+const store = await ai.fileSearchStores.create({
+  config: { displayName: 'my-store' }
+});
+```
+
+**Upload File:**
+```typescript
+let operation = await ai.fileSearchStores.uploadToFileSearchStore({
+  file: filePath,
+  fileSearchStoreName: store.name,
+  config: { displayName: 'my-document' }
+});
+```
+
+**Wait for Import:**
+```typescript
+while (!operation.done) {
+  await new Promise(resolve => setTimeout(resolve, 5000));
+  operation = await ai.operations.get({ operation });
+}
+```
+
+**Query:**
+```typescript
+config: {
+  tools: [{
+    fileSearch: {
+      fileSearchStoreNames: [store.name],
+      metadataFilter: 'key="value"' // Optional
+    }
+  }]
+}
+```
+
+**Access Citations:**
+```typescript
+const metadata = response.candidates?.[0]?.groundingMetadata;
+const chunks = metadata?.groundingChunks;
+const supports = metadata?.groundingSupports;
+```
+
+**Limits:**
+- Max file size: 100 MB
+- Recommended store size: < 20 GB
+- Storage tiers: 1 GB (Free) to 1 TB (Tier 3)
+
+**Pricing:**
+- Embeddings: $0.15 per 1M tokens (indexing)
+- Storage: Free
+- Query embeddings: Free
+- Retrieved tokens: Regular context pricing
+
+## When Implementing File Search
+
+1. **Create store** - Use descriptive display names
+2. **Upload files** - Use direct upload method for simplicity
+3. **Wait for import** - Always wait for operation completion
+4. **Add metadata** - Organize documents with custom metadata
+5. **Query with tool** - Enable fileSearch tool in generateContent
+6. **Check citations** - Verify sources in groundingMetadata
+7. **Use filters** - Filter by metadata for precise searches
+8. **Monitor size** - Keep stores under 20 GB for performance
+9. **Optimize chunks** - Configure chunking for your use case
+10. **Handle errors** - Robust error handling for operations

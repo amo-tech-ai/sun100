@@ -1,0 +1,1 @@
+# Cursor Configuration Directory
