@@ -16,6 +16,7 @@ export interface StartupProfile {
     logoUrl?: string;
     coverImageUrl?: string;
     fundingAsk?: string;
+    lookingFor?: string[]; // Added field
 }
 
 interface StartupContextType {

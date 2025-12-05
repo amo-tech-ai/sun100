@@ -30,11 +30,13 @@ interface VCCardProps {
 export const VCCard: React.FC<VCCardProps> = ({ investor, score }) => {
     
     // Generate a stable hypothetical score if one isn't provided
-    const matchScore = score || useMemo(() => {
+    const generatedScore = useMemo(() => {
         // Deterministic pseudo-random score based on ID characters for demo consistency
         const seed = investor.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
         return 70 + (seed % 29); // Generates a score between 70 and 98
     }, [investor.id]);
+    
+    const matchScore = score || generatedScore;
 
     const formatCurrency = (value: number) => {
         if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;

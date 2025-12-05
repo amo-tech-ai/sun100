@@ -84,7 +84,7 @@ const EventDetail: React.FC = () => {
         if (!event || !supabase) {
             toastError("Could not RSVP. Supabase client not available.")
             return;
-        };
+        }
         
         setIsSubmitting(true);
         try {
