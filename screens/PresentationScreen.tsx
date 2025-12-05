@@ -123,9 +123,9 @@ const PresentationScreen: React.FC = () => {
 
     return (
         <div className="relative w-screen h-screen overflow-hidden bg-black flex flex-col">
-            {/* Main Slide Display */}
-            <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
-                <div className={`w-full max-w-[1600px] aspect-video shadow-2xl overflow-hidden rounded-lg relative bg-white ${templateStyles.slide}`}>
+            {/* Main Slide Display - Mobile Optimized */}
+            <div className="flex-1 flex items-center justify-center p-3 sm:p-6 md:p-8">
+                <div className={`w-[94%] sm:w-[92%] md:w-full max-w-[1600px] aspect-[4/3] sm:aspect-video shadow-2xl overflow-hidden rounded-[20px] sm:rounded-xl md:rounded-lg relative bg-white ${templateStyles.slide}`}>
                     
                     {/* Image Section */}
                     {currentSlide.imageUrl && (
@@ -136,11 +136,11 @@ const PresentationScreen: React.FC = () => {
 
                     {/* Content Section */}
                     <div className={templateStyles.textContainer ?? ''}>
-                        <h1 className={templateStyles.title}>{currentSlide.title}</h1>
+                        <h1 className={`${templateStyles.title} text-xl sm:text-2xl md:text-4xl leading-tight`}>{currentSlide.title}</h1>
                         
                         <div className="flex-1 overflow-hidden relative">
                              {showStackedVisuals ? (
-                                <div className="flex flex-col h-full gap-4">
+                                <div className="flex flex-col h-full gap-3 sm:gap-4">
                                     <div className="h-1/2"><Chart chartData={currentSlide.chartData!} /></div>
                                     <div className="h-1/2"><Table tableData={currentSlide.tableData!} /></div>
                                 </div>
@@ -149,9 +149,9 @@ const PresentationScreen: React.FC = () => {
                             ) : currentSlide.tableData ? (
                                 <Table tableData={currentSlide.tableData} />
                             ) : (
-                                <ul className={templateStyles.content}>
+                                <ul className={`${templateStyles.content} text-[15px] sm:text-lg md:text-xl`}>
                                     {currentSlide.content.split('\n').map((point, i) => (
-                                        point && <li key={i} className={templateStyles.bullet}>{renderWithMarkdown(point)}</li>
+                                        point && <li key={i} className={`${templateStyles.bullet} leading-relaxed`}>{renderWithMarkdown(point)}</li>
                                     ))}
                                 </ul>
                             )}
@@ -160,21 +160,34 @@ const PresentationScreen: React.FC = () => {
                 </div>
             </div>
 
-            {/* Overlay Controls */}
-            <div className="absolute top-4 right-4 z-50">
-                <button onClick={handleExit} className="p-2 bg-black/50 text-white rounded-full hover:bg-black/80 transition-colors" title="Exit Presentation (Esc)">
+            {/* Overlay Controls - Exit Button */}
+            <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-50">
+                <button 
+                    onClick={handleExit} 
+                    className="p-2.5 sm:p-2 bg-black/50 text-white rounded-full hover:bg-black/80 active:scale-95 transition-all backdrop-blur-sm" 
+                    title="Exit Presentation (Esc)"
+                >
                     <XIcon />
                 </button>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-center items-center gap-4 opacity-0 hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/50 to-transparent h-24">
-                <button onClick={handlePrev} disabled={currentSlideIndex === 0} className="p-3 bg-white/10 text-white rounded-full hover:bg-white/20 disabled:opacity-30 backdrop-blur-sm transition-all">
+            {/* Bottom Navigation - Always visible on mobile, hover on desktop */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-4 flex justify-center items-center gap-4 sm:gap-4 opacity-100 sm:opacity-0 sm:hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/60 sm:from-black/50 to-transparent h-20 sm:h-24 pb-safe">
+                <button 
+                    onClick={handlePrev} 
+                    disabled={currentSlideIndex === 0} 
+                    className="p-3.5 sm:p-3 bg-white/15 text-white rounded-full hover:bg-white/25 active:scale-95 disabled:opacity-30 backdrop-blur-md transition-all shadow-lg"
+                >
                     <ChevronLeftIcon />
                 </button>
-                <span className="text-white/80 font-medium text-sm">
+                <span className="text-white font-bold text-base sm:text-sm tabular-nums min-w-[4rem] text-center bg-black/30 px-3 py-1.5 rounded-full backdrop-blur-sm">
                     {currentSlideIndex + 1} / {deck.slides.length}
                 </span>
-                <button onClick={handleNext} disabled={currentSlideIndex === deck.slides.length - 1} className="p-3 bg-white/10 text-white rounded-full hover:bg-white/20 disabled:opacity-30 backdrop-blur-sm transition-all">
+                <button 
+                    onClick={handleNext} 
+                    disabled={currentSlideIndex === deck.slides.length - 1} 
+                    className="p-3.5 sm:p-3 bg-white/15 text-white rounded-full hover:bg-white/25 active:scale-95 disabled:opacity-30 backdrop-blur-md transition-all shadow-lg"
+                >
                     <ChevronRightIcon />
                 </button>
             </div>

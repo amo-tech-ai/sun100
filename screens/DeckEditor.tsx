@@ -54,39 +54,45 @@ const DeckEditorContent: React.FC = () => {
             {/* --- MOBILE VIEW (Single Column with Bottom Nav) --- */}
             <div className="lg:hidden flex-1 flex flex-col overflow-hidden relative">
                 {/* Content Panels (Only one active at a time) */}
-                <div className={`flex-1 flex flex-col h-full ${activeMobileTab === 'slides' ? 'block' : 'hidden'}`}>
+                <div className={`flex-1 flex flex-col h-full overflow-hidden ${activeMobileTab === 'slides' ? 'block' : 'hidden'}`}>
                     <SlideOutline isCollapsed={false} />
                 </div>
-                <div className={`flex-1 flex flex-col h-full bg-gray-50 ${activeMobileTab === 'editor' ? 'block' : 'hidden'}`}>
+                <div className={`flex-1 flex flex-col h-full bg-[#F3F4F6] overflow-hidden ${activeMobileTab === 'editor' ? 'block' : 'hidden'}`}>
                     <EditorPanel />
                 </div>
-                <div className={`flex-1 flex flex-col h-full ${activeMobileTab === 'ai' ? 'block' : 'hidden'}`}>
+                <div className={`flex-1 flex flex-col h-full overflow-hidden ${activeMobileTab === 'ai' ? 'block' : 'hidden'}`}>
                     <RightSidebar isMobile={true} />
                 </div>
             </div>
 
-            {/* Mobile Bottom Navigation Bar */}
-            <div className="lg:hidden bg-white border-t border-gray-200 flex justify-around items-center h-16 flex-shrink-0 z-50 pb-safe">
+            {/* Mobile Bottom Navigation Bar - Enhanced */}
+            <div className="lg:hidden bg-white/95 backdrop-blur-lg border-t border-gray-200/80 flex justify-around items-center h-[60px] flex-shrink-0 z-50 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                 <button 
                     onClick={() => setActiveMobileTab('slides')} 
-                    className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeMobileTab === 'slides' ? 'text-brand-orange' : 'text-gray-400'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-200 active:scale-95 ${activeMobileTab === 'slides' ? 'text-brand-orange' : 'text-gray-400 hover:text-gray-600'}`}
                 >
-                    <LayersIcon />
-                    <span className="text-[10px] font-bold mt-1">Slides</span>
+                    <div className={`p-1.5 rounded-xl transition-colors ${activeMobileTab === 'slides' ? 'bg-brand-orange/10' : ''}`}>
+                        <LayersIcon />
+                    </div>
+                    <span className={`text-[10px] font-bold mt-0.5 ${activeMobileTab === 'slides' ? 'text-brand-orange' : ''}`}>Slides</span>
                 </button>
                 <button 
                     onClick={() => setActiveMobileTab('editor')} 
-                    className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeMobileTab === 'editor' ? 'text-brand-orange' : 'text-gray-400'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-200 active:scale-95 ${activeMobileTab === 'editor' ? 'text-brand-orange' : 'text-gray-400 hover:text-gray-600'}`}
                 >
-                    <EditIcon />
-                    <span className="text-[10px] font-bold mt-1">Editor</span>
+                    <div className={`p-1.5 rounded-xl transition-colors ${activeMobileTab === 'editor' ? 'bg-brand-orange/10' : ''}`}>
+                        <EditIcon />
+                    </div>
+                    <span className={`text-[10px] font-bold mt-0.5 ${activeMobileTab === 'editor' ? 'text-brand-orange' : ''}`}>Editor</span>
                 </button>
                 <button 
                     onClick={() => setActiveMobileTab('ai')} 
-                    className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeMobileTab === 'ai' ? 'text-brand-orange' : 'text-gray-400'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-200 active:scale-95 ${activeMobileTab === 'ai' ? 'text-brand-orange' : 'text-gray-400 hover:text-gray-600'}`}
                 >
-                    <SparklesIcon />
-                    <span className="text-[10px] font-bold mt-1">AI Tools</span>
+                    <div className={`p-1.5 rounded-xl transition-colors ${activeMobileTab === 'ai' ? 'bg-brand-orange/10' : ''}`}>
+                        <SparklesIcon />
+                    </div>
+                    <span className={`text-[10px] font-bold mt-0.5 ${activeMobileTab === 'ai' ? 'text-brand-orange' : ''}`}>AI Tools</span>
                 </button>
             </div>
 
