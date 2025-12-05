@@ -28,7 +28,7 @@ export interface JobApplication {
     appliedAt: string;
 }
 
-const MOCK_JOBS: Job[] = [
+let MOCK_JOBS: Job[] = [
     {
         id: '1',
         title: "AI Prompt Engineer",
@@ -340,5 +340,99 @@ export const updateApplicationStatus = async (id: string, status: JobApplication
         .update({ status })
         .eq('id', id);
 
+    if (error) throw error;
+};
+
+export const createJob = async (job: Omit<Job, 'id' | 'postedAt' | 'startupId' | 'startupName' | 'startupLogo'>): Promise<Job> => {
+    if (IS_MOCK_MODE) {
+        const newJob = {
+            ...job,
+            id: `job-${Date.now()}`,
+            postedAt: new Date().toISOString(),
+            startupId: 's1',
+            startupName: 'Nexus AI',
+            startupLogo: 'N',
+            isActive: true,
+            applicantCount: 0
+        };
+        MOCK_JOBS.unshift(newJob);
+        return newJob;
+    }
+
+    const { data: { user } } = await (supabase.auth as any).getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const { data: membership } = await supabase
+        .from('team_members')
+        .select('startup_id')
+        .eq('user_id', user.id)
+        .single();
+
+    if (!membership) throw new Error("Startup not found");
+
+    const { data, error } = await supabase
+        .from('jobs')
+        .insert({
+            startup_id: membership.startup_id,
+            user_id: user.id,
+            title: job.title,
+            description: job.description,
+            location: job.location,
+            type: job.type,
+            salary_range: job.salaryRange,
+            is_active: true
+        })
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        location: data.location,
+        type: data.type,
+        postedAt: data.created_at,
+        salaryRange: data.salary_range,
+        startupId: membership.startup_id,
+        startupName: 'My Startup', // Simplified for response
+        startupLogo: '',
+        isActive: true,
+        applicantCount: 0
+    };
+};
+
+export const updateJob = async (id: string, updates: Partial<Job>): Promise<void> => {
+    if (IS_MOCK_MODE) {
+        const idx = MOCK_JOBS.findIndex(j => j.id === id);
+        if (idx !== -1) {
+            MOCK_JOBS[idx] = { ...MOCK_JOBS[idx], ...updates };
+        }
+        return;
+    }
+
+    const payload: any = {
+        title: updates.title,
+        description: updates.description,
+        location: updates.location,
+        type: updates.type,
+        salary_range: updates.salaryRange,
+        is_active: updates.isActive
+    };
+
+    Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+
+    const { error } = await supabase.from('jobs').update(payload).eq('id', id);
+    if (error) throw error;
+};
+
+export const deleteJob = async (id: string): Promise<void> => {
+    if (IS_MOCK_MODE) {
+        MOCK_JOBS = MOCK_JOBS.filter(j => j.id !== id);
+        return;
+    }
+
+    const { error } = await supabase.from('jobs').delete().eq('id', id);
     if (error) throw error;
 };

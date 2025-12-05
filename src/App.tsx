@@ -28,7 +28,7 @@ import Sitemap from './screens/Sitemap';
 const DeckEditor = lazy(() => import('./screens/DeckEditor'));
 const PresentationScreen = lazy(() => import('./screens/PresentationScreen'));
 
-// --- Restored Public Screens ---
+// --- Public Screens ---
 const About = lazy(() => import('./screens/About'));
 const Perks = lazy(() => import('./screens/Perks'));
 const PerkDetail = lazy(() => import('./screens/PerkDetail'));
@@ -134,7 +134,7 @@ const App: React.FC = () => {
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     
-                    {/* VC Directory Routes (Public for now, or move to protected if needed) */}
+                    {/* VC Directory Routes */}
                     <Route path="/directory" element={<VCDirectory />} />
                     <Route path="/directory/:id" element={<VCDetail />} />
                     

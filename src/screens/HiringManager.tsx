@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { getMyJobs, getJobApplications, updateApplicationStatus, Job, JobApplication } from '../services/jobService';
+import { getMyJobs, getJobApplications, updateApplicationStatus, Job, JobApplication, deleteJob } from '../services/jobService';
 import { useToast } from '../contexts/ToastContext';
+import { JobFormModal } from '../components/hiring/JobFormModal';
 
 // Icons
 const BriefcaseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
@@ -11,6 +12,8 @@ const CheckCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16"
 const XCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>;
 const ClockIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
 const ChevronRightIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
+const EditIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>;
+const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>;
 
 const StatusBadge: React.FC<{ status: JobApplication['status'] }> = ({ status }) => {
     const styles = {
@@ -91,26 +94,31 @@ const HiringManager: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'applicants' | 'jobs'>('applicants');
     const [selectedJobId, setSelectedJobId] = useState<string>('all');
+    
+    // Modal State
+    const [isJobModalOpen, setIsJobModalOpen] = useState(false);
+    const [editingJob, setEditingJob] = useState<Job | undefined>(undefined);
 
     useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            try {
-                const [fetchedJobs, fetchedApps] = await Promise.all([
-                    getMyJobs(),
-                    getJobApplications()
-                ]);
-                setJobs(fetchedJobs);
-                setApplications(fetchedApps);
-            } catch (e) {
-                console.error(e);
-                toastError("Failed to load hiring data.");
-            } finally {
-                setLoading(false);
-            }
-        };
         loadData();
     }, []);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const [fetchedJobs, fetchedApps] = await Promise.all([
+                getMyJobs(),
+                getJobApplications()
+            ]);
+            setJobs(fetchedJobs);
+            setApplications(fetchedApps);
+        } catch (e) {
+            console.error(e);
+            toastError("Failed to load hiring data.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleStatusUpdate = async (id: string, status: JobApplication['status']) => {
         // Optimistic Update
@@ -122,8 +130,29 @@ const HiringManager: React.FC = () => {
         } catch (e) {
             // Revert
             toastError("Failed to update status");
-            // In a real app, we would revert the state here by re-fetching
+            loadData(); // Re-fetch to revert
         }
+    };
+    
+    const handleDeleteJob = async (id: string) => {
+        if (!window.confirm("Are you sure you want to delete this job? This cannot be undone.")) return;
+        try {
+            await deleteJob(id);
+            setJobs(prev => prev.filter(j => j.id !== id));
+            success("Job deleted successfully.");
+        } catch (e) {
+            toastError("Failed to delete job.");
+        }
+    };
+
+    const openCreateJobModal = () => {
+        setEditingJob(undefined);
+        setIsJobModalOpen(true);
+    };
+
+    const openEditJobModal = (job: Job) => {
+        setEditingJob(job);
+        setIsJobModalOpen(true);
     };
 
     const filteredApps = useMemo(() => {
@@ -149,7 +178,10 @@ const HiringManager: React.FC = () => {
                         <h1 className="text-3xl font-bold text-brand-blue">Hiring Manager</h1>
                         <p className="text-gray-500 mt-1">Manage your open roles and candidate pipeline.</p>
                     </div>
-                    <button className="bg-brand-orange text-white font-bold py-2.5 px-5 rounded-xl hover:bg-opacity-90 shadow-lg shadow-brand-orange/20 transition-all flex items-center gap-2">
+                    <button 
+                        onClick={openCreateJobModal}
+                        className="bg-brand-orange text-white font-bold py-2.5 px-5 rounded-xl hover:bg-opacity-90 shadow-lg shadow-brand-orange/20 transition-all flex items-center gap-2"
+                    >
                         <BriefcaseIcon /> Post New Job
                     </button>
                 </div>
@@ -225,7 +257,7 @@ const HiringManager: React.FC = () => {
                 ) : (
                     <div className="space-y-4">
                         {jobs.map(job => (
-                            <div key={job.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex justify-between items-center">
+                            <div key={job.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex justify-between items-center group">
                                 <div>
                                     <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
                                     <p className="text-sm text-gray-500">{job.type} • {job.location}</p>
@@ -235,20 +267,33 @@ const HiringManager: React.FC = () => {
                                         <span className="block font-bold text-xl text-brand-blue">{job.applicantCount}</span>
                                         <span className="text-xs text-gray-400 uppercase font-bold">Applicants</span>
                                     </div>
-                                    <Link to={`/jobs/${job.id}`} className="text-gray-400 hover:text-brand-orange">
-                                        <ChevronRightIcon />
-                                    </Link>
+                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => openEditJobModal(job)} className="p-2 text-gray-400 hover:text-brand-blue hover:bg-blue-50 rounded transition-colors" title="Edit">
+                                            <EditIcon />
+                                        </button>
+                                        <button onClick={() => handleDeleteJob(job.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Delete">
+                                            <TrashIcon />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                         {jobs.length === 0 && (
                             <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
                                 <p className="text-gray-500 font-medium">You haven't posted any jobs yet.</p>
+                                <button onClick={openCreateJobModal} className="mt-4 text-brand-orange font-bold hover:underline">Create your first job</button>
                             </div>
                         )}
                     </div>
                 )}
             </div>
+            
+            <JobFormModal 
+                isOpen={isJobModalOpen}
+                onClose={() => setIsJobModalOpen(false)}
+                onComplete={loadData}
+                jobToEdit={editingJob}
+            />
         </div>
     );
 };
