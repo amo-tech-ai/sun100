@@ -10,7 +10,7 @@ const AnimatedCounter: React.FC<{ value: number, duration?: number, suffix?: str
     useEffect(() => {
         if (isVisible && !hasAnimated.current) {
             hasAnimated.current = true;
-            let start = 0;
+            const start = 0;
             const end = value;
             if (start === end) return;
 

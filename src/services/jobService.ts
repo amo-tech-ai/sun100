@@ -87,7 +87,7 @@ let MOCK_JOBS: Job[] = [
     }
 ];
 
-let MOCK_APPLICATIONS: JobApplication[] = [
+const MOCK_APPLICATIONS: JobApplication[] = [
     {
         id: 'app-1',
         jobId: '1',

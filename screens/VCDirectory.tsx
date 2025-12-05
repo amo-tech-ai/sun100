@@ -52,7 +52,7 @@ const VCDirectory: React.FC = () => {
     };
 
     const filteredInvestors = useMemo(() => {
-        let result = investors.filter(inv => {
+        const result = investors.filter(inv => {
             const matchesType = selectedTypes.length === 0 || selectedTypes.includes(inv.type);
             const matchesStage = selectedStages.length === 0 || inv.stages.some(s => selectedStages.includes(s));
             const matchesGeo = selectedGeos.length === 0 || inv.geographies.some(g => selectedGeos.includes(g));
