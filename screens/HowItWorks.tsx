@@ -335,4 +335,26 @@ const HowItWorks: React.FC = () => {
                             {/* Animated Bar Chart */}
                             <div className="h-48 flex items-end gap-2 justify-between px-2">
                                 {[30, 45, 35, 50, 65, 55, 70, 85, 95].map((h, i) => (
-                                    <div key={i} className="w-full bg-brand-orange rounded-t-md animate-float" style={{ height:
+                                    <div key={i} className="w-full bg-brand-orange rounded-t-md animate-float" style={{ height: `${h}%`, animationDelay: `${i * 100}ms` }}></div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+             {/* Section 5: CTA */}
+            <section className="py-24 px-4 text-center relative z-10">
+                <div className="max-w-3xl mx-auto">
+                    <h2 className="text-4xl font-extrabold text-slate-900 mb-6">Ready to Accelerate?</h2>
+                    <p className="text-xl text-slate-600 mb-10">Join the platform that understands your journey from day zero.</p>
+                    <Link to="/signup" className="inline-block px-8 py-4 text-lg font-bold text-white bg-brand-blue rounded-xl hover:bg-opacity-90 shadow-lg transition-all">
+                        Join for Free
+                    </Link>
+                </div>
+            </section>
+        </div>
+    );
+};
+
+export default HowItWorks;

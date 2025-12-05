@@ -15,6 +15,7 @@ const CheckIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www
 const ClipboardIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>;
 const BrainIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>;
 const BarChartIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>;
+const TargetIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
 
 const Spinner = () => <svg className="animate-spin h-4 w-4 text-brand-orange" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>;
 
@@ -53,7 +54,9 @@ const mockProfile = {
         tagline: 'Your AI-Powered Startup Hub for Growth.',
         website: 'https://startupai.com',
         fundingGoal: '$1.5M Seed',
-        industry: 'Generative AI / SaaS'
+        industry: 'Generative AI / SaaS',
+        stage: 'Seed',
+        traction: '500+ Beta Users, $10k MRR'
     },
     lookingFor: ['Seed Funding', 'Technical Co-founder', 'Beta Testers'],
     publicDecks: [
@@ -97,7 +100,7 @@ const FounderProfile: React.FC = () => {
         setAiError(null);
         try {
             // Combine bio and tagline for context
-            const textToAnalyze = `${profile.startup.tagline} ${profile.bio}`;
+            const textToAnalyze = `${profile.startup.tagline} ${profile.bio} ${profile.startup.traction}`;
             const { metrics } = await extractMetrics(textToAnalyze);
             setExtractedMetrics(metrics);
         } catch (err) {
@@ -105,13 +108,13 @@ const FounderProfile: React.FC = () => {
         } finally {
             setIsExtractingMetrics(false);
         }
-    }, [profile.bio, profile.startup.tagline]);
+    }, [profile.bio, profile.startup.tagline, profile.startup.traction]);
 
     const handleStrategicAnalysis = useCallback(async () => {
         setIsAnalyzingStrategy(true);
         setAiError(null);
         try {
-            const context = `Startup: ${profile.startup.name}. Industry: ${profile.startup.industry}. Tagline: ${profile.startup.tagline}. Founder Bio: ${profile.bio}`;
+            const context = `Startup: ${profile.startup.name}. Industry: ${profile.startup.industry}. Stage: ${profile.startup.stage}. Traction: ${profile.startup.traction}. Tagline: ${profile.startup.tagline}. Founder Bio: ${profile.bio}`;
             const result = await analyzeStartupStrategy(context);
             setStrategicAnalysis(result);
         } catch (err) {
@@ -126,13 +129,30 @@ const FounderProfile: React.FC = () => {
         if (score >= 60) return 'text-yellow-600 border-yellow-500 bg-yellow-50';
         return 'text-red-600 border-red-500 bg-red-50';
     };
+    
+    const getScoreColorText = (score: number) => {
+        if (score >= 80) return 'text-green-600';
+        if (score >= 60) return 'text-yellow-600';
+        return 'text-red-600';
+    };
 
 
     return (
         <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Column / Profile Sidebar */}
             <aside className="w-full lg:w-1/3 lg:flex-shrink-0">
-                <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center sticky top-28">
+                <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center sticky top-28 relative">
+                    {strategicAnalysis && (
+                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur p-2 rounded-lg shadow-lg border border-gray-200 flex flex-col items-center animate-fade-in z-10">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                                <TargetIcon className="w-3 h-3" /> Viability
+                            </span>
+                            <span className={`text-3xl font-extrabold ${getScoreColorText(strategicAnalysis.investorReadinessScore)}`}>
+                                {strategicAnalysis.investorReadinessScore}
+                            </span>
+                        </div>
+                    )}
+                    
                     <img src={profile.avatarUrl} alt={profile.name} className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-md" />
                     <h1 className="text-3xl font-bold text-brand-blue">{profile.name}</h1>
                     <p className="text-gray-500 mt-1">{profile.title}</p>
@@ -230,6 +250,7 @@ const FounderProfile: React.FC = () => {
                                 <p className="text-gray-600">{profile.startup.tagline}</p>
                                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                                     <span className="bg-gray-100 px-2 py-1 rounded">{profile.startup.industry}</span>
+                                    <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100">{profile.startup.stage}</span>
                                     <a href={profile.startup.website} target="_blank" rel="noopener noreferrer" className="text-brand-orange font-semibold hover:underline flex items-center gap-1">
                                         <LinkIcon className="w-3 h-3" />
                                         {profile.startup.website.replace('https://', '')}
@@ -255,7 +276,7 @@ const FounderProfile: React.FC = () => {
                                 disabled={isAnalyzingStrategy}
                                 className="text-sm bg-white border border-gray-300 text-gray-700 font-semibold py-1.5 px-4 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
                             >
-                                {isAnalyzingStrategy ? 'Analyzing Market...' : 'Run Deep Analysis with Gemini 3'}
+                                {isAnalyzingStrategy ? 'Calculating Viability...' : 'Calculate Viability Score'}
                             </button>
                         </div>
                         
@@ -267,7 +288,7 @@ const FounderProfile: React.FC = () => {
                                         <span className="text-2xl font-extrabold">{strategicAnalysis.investorReadinessScore}</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-gray-900">Investor Readiness</h4>
+                                        <h4 className="font-bold text-gray-900">Startup Viability Report</h4>
                                         <p className="text-sm text-gray-600 mt-1 leading-relaxed">{strategicAnalysis.readinessReasoning}</p>
                                     </div>
                                 </div>
@@ -336,7 +357,7 @@ const FounderProfile: React.FC = () => {
                             !isAnalyzingStrategy && (
                                 <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-8 text-center">
                                     <p className="text-gray-500 text-sm">
-                                        Gemini 3 will research live market data, identify competitors, and perform a strategic SWOT analysis.
+                                        Gemini 3 will research live market data, evaluate team strength, and score startup viability.
                                     </p>
                                 </div>
                             )
@@ -346,7 +367,7 @@ const FounderProfile: React.FC = () => {
                              <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
                                 <div className="w-12 h-12 mx-auto mb-4 border-4 border-dashed rounded-full animate-spin border-brand-orange"></div>
                                 <p className="text-gray-800 font-semibold">Gemini 3 is thinking...</p>
-                                <p className="text-gray-500 text-sm mt-2">Analyzing market trends and competitors via Google Search.</p>
+                                <p className="text-gray-500 text-sm mt-2">Evaluating Team, Market, Product, and Traction.</p>
                             </div>
                         )}
                     </div>

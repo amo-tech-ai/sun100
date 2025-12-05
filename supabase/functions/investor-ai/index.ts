@@ -249,7 +249,18 @@ serve(async (req) => {
             targetFunction = 'generateInvestorUpdate';
             break;
         case 'analyzeStartupStrategy':
-            prompt = `Perform SWOT and Readiness check for: "${params.profileContext}". Use Google Search for market trends. Call 'analyzeStartupStrategy'.`;
+            prompt = `Act as a Venture Capitalist. Analyze the viability of this startup based on the context provided: "${params.profileContext}". 
+            
+            Calculate an 'investorReadinessScore' (0-100) based on:
+            1. Team Experience (30%): Look for previous exits, domain expertise, or blue-chip backgrounds.
+            2. Market Potential (30%): Is it a large, growing market? (Use Search if needed).
+            3. Product/Solution Clarity (20%): Is the value prop clear?
+            4. Traction/Stage (20%): Evidence of growth or users.
+
+            Provide a 'readinessReasoning' summary explaining the score.
+            Perform a SWOT analysis.
+            Use Google Search to validate market trends if needed.
+            Call 'analyzeStartupStrategy'.`;
             toolConfig = { tools: [{ googleSearch: {} }, { functionDeclarations: [analyzeStartupStrategyFunctionDeclaration] }] };
             targetFunction = 'analyzeStartupStrategy';
             break;

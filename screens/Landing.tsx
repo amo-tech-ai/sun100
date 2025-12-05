@@ -6,6 +6,40 @@ import useOnScreen from '../hooks/useOnScreen';
 
 const { Link } = ReactRouterDOM;
 
+// --- NEW ICONS FOR REDESIGN ---
+const LayoutIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+        <line x1="3" y1="9" x2="21" y2="9" />
+        <line x1="9" y1="21" x2="9" y2="9" />
+    </svg>
+);
+
+const MagicPenIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M12 19l7-7 3 3-7 7-3-3z" />
+        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+        <path d="M2 2l7.586 7.586" />
+        <circle cx="11" cy="11" r="2" />
+    </svg>
+);
+
+const EyeIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+        <circle cx="12" cy="12" r="3" />
+    </svg>
+);
+
+const RefreshIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+        <path d="M3 3v5h5" />
+        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74 2.74L21 16" />
+        <path d="M16 16h5v5" />
+    </svg>
+);
+
 const FeatureHighlightCard: React.FC<{ icon: React.ReactNode; title: string; description: string; delay: number }> = ({ icon, title, description, delay }) => {
     const [ref, isVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.1 });
     return (
@@ -18,6 +52,16 @@ const FeatureHighlightCard: React.FC<{ icon: React.ReactNode; title: string; des
         </div>
     );
 };
+
+const BenefitCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
+    <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 hover:shadow-md hover:border-brand-orange/20 transition-all duration-300 group">
+        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-brand-blue shadow-sm mb-3 border border-gray-100 group-hover:text-brand-orange transition-colors">
+            {icon}
+        </div>
+        <h4 className="font-bold text-slate-900 mb-1 text-sm">{title}</h4>
+        <p className="text-xs text-slate-500 leading-relaxed">{description}</p>
+    </div>
+);
 
 const TestimonialCard: React.FC<{ quote: string; name: string; title: string; avatar: string; }> = ({ quote, name, title, avatar }) => (
     <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-lg relative mt-8 sm:mt-0">
@@ -213,48 +257,93 @@ const Landing: React.FC = () => {
             </div>
         </section>
 
-        {/* Section 3: Pain & Promise (Moved up to replace Social Proof gap) */}
+        {/* Section 3: Pain & Promise - Redesigned */}
         <section className="px-4 sm:px-6 lg:px-8 py-16 lg:py-24 bg-white">
             <div className="max-w-7xl mx-auto">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                    {/* Order on mobile: Text First (1), Visual Second (2) */}
-                    <div ref={painRef} className="space-y-8 order-1 lg:order-1">
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight">
-                            Stop Wrestling With <br/>
-                            <span className="text-brand-orange">PowerPoint.</span>
+                    {/* Order on mobile: Visual Second (2), Text First (1) */}
+                    <div ref={painRef} className="order-1 lg:order-1">
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight mb-4">
+                            Stop Wrestling With PowerPoint. <br/>
+                            <span className="text-brand-orange">Start Building With AI.</span>
                         </h2>
-                        <ul className="space-y-6">
-                            {[
-                                "Hours wasted on tedious formatting and design tweaks.",
-                                "Stale, uninspired content that fails to capture your vision.",
-                                "The constant struggle to find compelling visuals and data."
-                            ].map((item, index) => (
-                                <li 
-                                    key={index}
-                                    className={`flex items-start gap-4 text-lg text-slate-600 transition-all duration-500 ${isPainVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} 
-                                    style={{transitionDelay: `${index * 150}ms`}}
-                                >
-                                    <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-red-50 text-red-500 flex items-center justify-center font-bold text-xs">✕</div>
-                                    <span>{item}</span>
-                                </li>
-                            ))}
-                        </ul>
+                        <p className="text-lg text-slate-600 mb-8">
+                            Create investor-ready slides instantly with AI-powered design, content, and visuals. No design skills required.
+                        </p>
+                        
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <BenefitCard 
+                                icon={<LayoutIcon className="w-5 h-5" />}
+                                title="Automated Layouts"
+                                description="Intelligent formatting that adapts instantly to your content."
+                            />
+                            <BenefitCard 
+                                icon={<MagicPenIcon className="w-5 h-5" />}
+                                title="AI-Written Messaging"
+                                description="Compelling copy generation optimized for investors."
+                            />
+                            <BenefitCard 
+                                icon={<EyeIcon className="w-5 h-5" />}
+                                title="Visual Intelligence"
+                                description="Auto-generated charts and images that match your brand."
+                            />
+                            <BenefitCard 
+                                icon={<RefreshIcon className="w-5 h-5" />}
+                                title="Smart Revisions"
+                                description="Iterate instantly with simple natural language commands."
+                            />
+                        </div>
                     </div>
-                     <div className={`relative order-2 lg:order-2 transition-all duration-1000 ease-out ${isPainVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-                        <div className="aspect-square bg-gray-100 rounded-3xl p-8 relative overflow-hidden border border-gray-200">
-                            {/* Abstract representation of chaos vs order */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-                                <div className="bg-white rounded-xl shadow-xl p-6 space-y-4 transform -rotate-3 border border-gray-200">
-                                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                                    <div className="h-20 bg-gray-100 rounded"></div>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        <div className="h-16 bg-gray-100 rounded"></div>
-                                        <div className="h-16 bg-gray-100 rounded"></div>
-                                        <div className="h-16 bg-gray-100 rounded"></div>
-                                    </div>
+                    
+                    <div className={`relative order-2 lg:order-2 transition-all duration-1000 ease-out ${isPainVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
+                        {/* Before -> After Visual */}
+                        <div className="relative aspect-square max-w-md mx-auto lg:max-w-none">
+                            {/* Background Blob */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-blue-50 to-orange-50 rounded-full blur-3xl opacity-60"></div>
+                            
+                            {/* "Before" Card - Peeking from behind */}
+                            <div className="absolute top-8 left-8 w-3/4 h-3/4 bg-white border border-gray-200 rounded-xl shadow-lg transform -rotate-6 opacity-60 flex flex-col p-6 grayscale">
+                                <div className="h-4 w-1/2 bg-gray-200 rounded mb-4"></div>
+                                <div className="space-y-2">
+                                    <div className="h-2 w-full bg-gray-100 rounded"></div>
+                                    <div className="h-2 w-full bg-gray-100 rounded"></div>
+                                    <div className="h-2 w-3/4 bg-gray-100 rounded"></div>
                                 </div>
-                                <div className="absolute -right-4 -bottom-4 bg-brand-orange text-white px-4 py-2 rounded-lg shadow-lg font-bold text-sm transform rotate-3">
-                                    AI Solves This
+                                <div className="mt-auto text-center">
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Before</span>
+                                </div>
+                            </div>
+
+                            {/* "After" Card - Front and Center */}
+                            <div className="absolute top-16 left-16 w-3/4 h-3/4 bg-white border border-gray-100 rounded-xl shadow-2xl transform rotate-3 flex flex-col overflow-hidden">
+                                <div className="h-32 bg-slate-900 p-6 flex flex-col justify-center relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-20 h-20 bg-brand-orange/20 rounded-full blur-xl"></div>
+                                    <div className="h-6 w-2/3 bg-white/20 rounded mb-2 backdrop-blur-sm"></div>
+                                    <div className="h-3 w-1/2 bg-white/10 rounded backdrop-blur-sm"></div>
+                                </div>
+                                <div className="p-6 flex-1 bg-white relative">
+                                     <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <div className="h-2 w-full bg-gray-100 rounded"></div>
+                                            <div className="h-2 w-5/6 bg-gray-100 rounded"></div>
+                                        </div>
+                                        <div className="h-16 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-center">
+                                            <div className="w-8 h-8 bg-blue-500/20 rounded-full"></div>
+                                        </div>
+                                     </div>
+                                     <div className="absolute bottom-4 right-4">
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold border border-green-200 shadow-sm">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                            AI Solves This
+                                        </span>
+                                     </div>
+                                </div>
+                            </div>
+                            
+                            {/* Connecting Arrow */}
+                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                                <div className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-brand-orange border border-orange-100">
+                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                                 </div>
                             </div>
                         </div>
@@ -274,7 +363,7 @@ const Landing: React.FC = () => {
                     <FeatureHighlightCard 
                         title="AI Wizard" 
                         description="Generate a complete 10-slide deck from a single prompt or URL. Our AI structures the narrative, writes the content, and suggests visuals."
-                        icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>}
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>}
                         delay={0}
                     />
                     <FeatureHighlightCard 
