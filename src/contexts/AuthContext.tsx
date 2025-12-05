@@ -32,16 +32,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const initializeAuth = async () => {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
-                
-                if (error) {
-                    throw error;
-                }
-
+                if (error) throw error;
                 setSession(session);
                 setUser(session?.user ?? null);
             } catch (e) {
                 console.error("Error checking auth session:", e);
-                // Don't force mock user here on error, let the user login again
                 setUser(null);
                 setSession(null);
             } finally {
