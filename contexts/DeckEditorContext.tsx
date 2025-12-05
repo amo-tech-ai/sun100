@@ -31,6 +31,7 @@ import {
     DeckUpdateSuggestion
 } from '../services/ai/types';
 import { templates } from '../styles/templates';
+import { formatAIError } from '../services/ai/utils';
 
 interface DeckEditorContextType {
     deck: Deck | null;
@@ -304,10 +305,6 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (!deck) return;
         setIsGeneratingRoadmap(true);
         try {
-            // Context Strategy:
-            // 1. Base context is the deck title and vision (slide 0).
-            // 2. If the user is currently on a slide that might contain strategy, add it.
-            
             const visionContext = deck.slides[0]?.content || deck.title;
             let context = `Company Vision: ${visionContext}`;
             
@@ -316,10 +313,6 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             }
             
             const { slide: newSlide } = await generateRoadmapSlide(context);
-            
-            // TODO: This needs a backend function to add a slide to a deck properly in the DB
-            // For now, update local state only which might be lost on refresh if not persisted
-            console.warn("Roadmap slide generated but persistence requires implementing addSlide backend function.");
             
             const updatedSlides = [...deck.slides, newSlide];
             setDeck({ ...deck, slides: updatedSlides });
@@ -344,7 +337,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const imageUrl = `data:image/png;base64,${base64Image}`;
             await updateSlideStateAndPersist(selectedSlide.id, { imageUrl });
         } catch (err) {
-            setImageError(err instanceof Error ? err.message : "An unknown error occurred.");
+            setImageError(formatAIError(err));
         } finally {
             setIsGeneratingImage(false);
         }
@@ -366,7 +359,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const imageUrl = `data:${mimeType};base64,${base64Image}`;
             await updateSlideStateAndPersist(selectedSlide.id, { imageUrl });
         } catch (err) {
-            setImageError(err instanceof Error ? err.message : "An unknown error occurred during image editing.");
+            setImageError(formatAIError(err));
         } finally {
             setIsEditingImage(false);
         }
@@ -394,7 +387,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             await updateSlideStateAndPersist(selectedSlide.id, finalUpdates);
         } catch (err) {
             console.error("Copilot error:", err);
-            setCopilotError(err instanceof Error ? err.message : "An unknown error occurred.");
+            setCopilotError(formatAIError(err));
         } finally {
             setIsCopilotLoading(false);
         }
@@ -430,7 +423,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const handleApplyResearch = useCallback(async (researchSummary: string) => {
         if (!selectedSlide) return;
-        setIsCopilotLoading(true); // Reuse copilot loading state for content modification
+        setIsCopilotLoading(true);
         setCopilotError(null);
         try {
             const instruction = `Rewrite the slide content to incorporate the following market research findings. Structure it clearly (e.g., with sections for Market Size and Trends if applicable) and keep it concise for a presentation.\n\nResearch Insights:\n${researchSummary}`;
@@ -438,7 +431,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             await updateSlideStateAndPersist(selectedSlide.id, { content: newContent });
         } catch (err) {
             console.error("Failed to apply research:", err);
-            setCopilotError(err instanceof Error ? err.message : "Failed to update slide with research data.");
+            setCopilotError(formatAIError(err));
         } finally {
             setIsCopilotLoading(false);
         }
@@ -452,8 +445,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const { layout: newLayout } = await suggestLayout(selectedSlide.title, selectedSlide.content);
             await updateSlideStateAndPersist(selectedSlide.id, { template: newLayout });
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-            setLayoutError(errorMessage);
+            setLayoutError(formatAIError(err));
         } finally {
             setIsSuggestingLayout(false);
         }
@@ -468,8 +460,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const updates = { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined };
             await updateSlideStateAndPersist(selectedSlide.id, updates);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-            setChartError(errorMessage);
+            setChartError(formatAIError(err));
         } finally {
             setIsSuggestingChart(false);
         }
@@ -484,7 +475,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const { headlines } = await generateHeadlineVariations(selectedSlide.title);
             setHeadlineIdeas(headlines);
         } catch (err) {
-            setHeadlineError(err instanceof Error ? err.message : "An unknown error occurred.");
+            setHeadlineError(formatAIError(err));
         } finally {
             setIsGeneratingHeadlines(false);
         }
@@ -499,7 +490,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const { metrics } = await extractMetrics(selectedSlide.content);
             setExtractedMetrics(metrics);
         } catch (err) {
-            setMetricError(err instanceof Error ? err.message : "An unknown error occurred.");
+            setMetricError(formatAIError(err));
         } finally {
             setIsExtractingMetrics(false);
         }
@@ -521,7 +512,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const updates = { content: '', tableData, chartData: undefined };
             await updateSlideStateAndPersist(selectedSlide.id, updates);
         } catch (err) {
-            setTableError(err instanceof Error ? err.message : "An unknown error occurred.");
+            setTableError(formatAIError(err));
         } finally {
             setIsGeneratingTable(false);
         }
@@ -547,7 +538,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             await handleCopilotGenerate(`Replace the content with the following summary:\n${newContent}`);
         } catch (err) {
             console.error("Bio summarization error:", err);
-            setCopilotError(err instanceof Error ? err.message : "Failed to summarize bio.");
+            setCopilotError(formatAIError(err));
         } finally {
             setIsCopilotLoading(false);
         }
@@ -562,7 +553,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const updates = { content: chartData ? '' : selectedSlide.content, chartData: chartData ?? undefined, tableData: undefined };
             await updateSlideStateAndPersist(selectedSlide.id, updates);
         } catch (err) {
-            setPieChartError(err instanceof Error ? err.message : "An unknown error occurred.");
+            setPieChartError(formatAIError(err));
         } finally {
             setIsSuggestingPieChart(false);
         }
@@ -575,7 +566,6 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         try {
             const financialData = await generateFinancialProjections(assumptions);
             
-            // 1. Map to new 'financials' TableData structure
             const tableData: TableData = {
                 type: 'financials',
                 financials: {
@@ -584,7 +574,6 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 }
             };
 
-            // 2. Try to extract "Revenue" or "Sales" for a Chart
             let chartData: ChartData | undefined = undefined;
             const revenueRow = financialData.rows.find(r => 
                 r.label.toLowerCase().includes('revenue') || r.label.toLowerCase().includes('sales')
@@ -592,7 +581,6 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
             if (revenueRow && financialData.headers.length === revenueRow.values.length) {
                 const chartValues = revenueRow.values.map((val, index) => {
-                    // Remove currency symbols, commas, 'M', 'K', spaces to parse number
                     const numericString = val.replace(/[^0-9.-]+/g, "");
                     return {
                         label: financialData.headers[index],
@@ -600,7 +588,6 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     };
                 });
                 
-                // Only create chart if we have valid numbers
                 if (chartValues.some(d => d.value > 0)) {
                     chartData = {
                         type: 'bar',
@@ -609,16 +596,15 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 }
             }
             
-            // Update slide with both table and potential chart
             const updates = { 
                 content: financialData.summary, 
                 tableData, 
-                chartData // Can be undefined if extraction failed
+                chartData 
             };
             await updateSlideStateAndPersist(selectedSlide.id, updates);
 
         } catch (err) {
-             setFinancialError(err instanceof Error ? err.message : "An unknown error occurred.");
+             setFinancialError(formatAIError(err));
         } finally {
             setIsGeneratingFinancials(false);
         }
@@ -638,7 +624,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const suggestions = await checkForWebsiteUpdates(deck, url);
             setSyncSuggestions(suggestions);
         } catch (err) {
-            setSyncError(err instanceof Error ? err.message : "Failed to check for updates.");
+            setSyncError(formatAIError(err));
         } finally {
             setIsSyncing(false);
         }
@@ -647,8 +633,6 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const handleApplyUpdate = useCallback(async (suggestion: DeckUpdateSuggestion) => {
         if (!deck) return;
         
-        // Find the slide to update based on the suggestion's title reference
-        // This is a fuzzy match, ideally we'd have slide IDs
         const targetSlide = deck.slides.find(s => s.title === suggestion.slideTitle || s.content.includes(suggestion.currentValue));
         
         if (!targetSlide) {
@@ -656,21 +640,18 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             return;
         }
 
-        // Use AI to apply the specific update instruction
-        // We pass the context to modifySlideContent
-        setIsCopilotLoading(true); // Reuse copilot loading state
+        setIsCopilotLoading(true);
         setCopilotError(null);
         try {
             const instruction = `Update this slide based on new website data. Change "${suggestion.currentValue}" to "${suggestion.newValue}". Context: ${suggestion.reason}`;
             const { newContent } = await modifySlideContent(targetSlide.title, targetSlide.content, instruction);
             await updateSlideStateAndPersist(targetSlide.id, { content: newContent });
             
-            // Remove the applied suggestion from the list
             setSyncSuggestions(prev => prev.filter(s => s !== suggestion));
 
         } catch (err) {
             console.error("Failed to apply update:", err);
-            setCopilotError(err instanceof Error ? err.message : "Failed to apply update automatically.");
+            setCopilotError(formatAIError(err));
         } finally {
             setIsCopilotLoading(false);
         }
@@ -689,7 +670,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 setSwotError("AI could not generate SWOT analysis.");
             }
         } catch (err) {
-            setSwotError(err instanceof Error ? err.message : "An unknown error occurred.");
+            setSwotError(formatAIError(err));
         } finally {
             setIsGeneratingSWOT(false);
         }
@@ -703,20 +684,19 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const strategy = await generateGTMStrategy(context);
             
             const newSlide: Slide = {
-                id: `slide-${Date.now()}`, // simple ID gen
+                id: `slide-${Date.now()}`,
                 title: "Go-To-Market Strategy",
                 content: `${strategy.strategy_summary}\n\n**Key Channels:**\n- ${strategy.channels.join('\n- ')}\n\n**Success Metrics:**\n- ${strategy.key_metrics.join('\n- ')}`,
                 template: 'default',
                 type: 'market'
             };
 
-            // Mocking persistence as per existing roadmap pattern
             const updatedSlides = [...deck.slides, newSlide];
             setDeck({ ...deck, slides: updatedSlides });
             handleSlideSelect(newSlide);
         } catch (err) {
             console.error("Failed to generate GTM slide:", err);
-            alert("Failed to generate GTM slide");
+            alert(formatAIError(err));
         } finally {
             setIsGeneratingGTM(false);
         }
@@ -727,13 +707,11 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setIsGeneratingMarketData(true);
         setMarketDataError(null);
         try {
-            // Use deck context to infer industry if needed, but for now rely on slide content or default
             const industry = selectedSlide.content.split('\n')[0] || 'Tech'; 
             const location = 'Global';
             
             const data = await generateMarketData(industry, location);
             
-            // Format as text content with source links
             const newContent = `**Total Addressable Market (TAM):** ${data.tam}\n` +
                                `**Serviceable Available Market (SAM):** ${data.sam}\n` +
                                `**Serviceable Obtainable Market (SOM):** ${data.som}\n\n` +
@@ -742,7 +720,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
             await updateSlideStateAndPersist(selectedSlide.id, { content: newContent });
         } catch (err) {
-            setMarketDataError(err instanceof Error ? err.message : "Failed to fetch market data.");
+            setMarketDataError(formatAIError(err));
         } finally {
             setIsGeneratingMarketData(false);
         }
@@ -761,7 +739,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             
             await updateSlideStateAndPersist(selectedSlide.id, { content: newContent });
         } catch (err) {
-            setTrendsError(err instanceof Error ? err.message : "Failed to fetch trends.");
+            setTrendsError(formatAIError(err));
         } finally {
             setIsGeneratingTrends(false);
         }
@@ -775,7 +753,6 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const context = selectedSlide.content || "Unknown startup";
             const matrix = await generateCompetitorMatrix(context);
             
-            // Map CompetitorMatrix to TableData (comparison type)
             const tableData: TableData = {
                 type: 'comparison',
                 headers: matrix.headers,
@@ -785,7 +762,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             const updates = { content: '', tableData, chartData: undefined };
             await updateSlideStateAndPersist(selectedSlide.id, updates);
         } catch (err) {
-             setTableError(err instanceof Error ? err.message : "Failed to generate competitor matrix.");
+             setTableError(formatAIError(err));
         } finally {
             setIsGeneratingTable(false);
         }
@@ -820,7 +797,7 @@ export const DeckEditorProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             navigate(`/pitch-decks/${deck.id}/publish-success`, { state: { deckTitle: deck.title } });
 
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during publishing.";
+            const errorMessage = formatAIError(err);
             setPublishError(errorMessage);
             alert(`Publish failed: ${errorMessage}`);
         } finally {

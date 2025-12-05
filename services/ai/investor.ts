@@ -1,5 +1,5 @@
 
-import { OnePagerContent, MarketSizeAnalysis, InvestorUpdateContent, StartupStrategicAnalysis, FinancialData, InvestmentMemoContent, EnrichedProfile } from './types';
+import { OnePagerContent, MarketSizeAnalysis, InvestorUpdateContent, StartupStrategicAnalysis, FinancialData, InvestmentMemoContent, EnrichedProfile, StartupMetadata, DeckStrategy } from './types';
 import { invokeEdgeFunction } from '../edgeFunctionService';
 
 export const generateOnePager = async (startupProfile: any): Promise<OnePagerContent> => {
@@ -81,6 +81,12 @@ export const analyzeStartupStrategy = async (profileContext: string): Promise<St
         return {
             investorReadinessScore: 72,
             readinessReasoning: "Strong product vision but metrics need more historical data to prove retention.",
+            marketTimingVerdict: "Perfect Timing",
+            actionableRecommendations: [
+                "Focus on reducing churn in the next quarter.",
+                "Hire a dedicated sales lead.",
+                "Update pitch deck with recent traction."
+            ],
             swot: {
                 strengths: ["Innovative AI Tech", "Experienced Team", "Fast Velocity"],
                 weaknesses: ["Limited Marketing Budget", "High Server Costs"],
@@ -169,6 +175,44 @@ export const enrichStartupProfile = async (name: string, website: string, pitch:
              description: `We are building ${name} to solve critical problems in the industry. Our solution leverages cutting-edge technology to deliver value.`,
              industry: "Technology",
              mission: "To revolutionize the way people work and live."
+         };
+    }
+};
+
+export const extractStartupMetadata = async (description: string, tagline: string): Promise<StartupMetadata> => {
+    try {
+        return await invokeEdgeFunction<StartupMetadata>('investor-ai', {
+            action: 'extractStartupMetadata',
+            description,
+            tagline
+        });
+    } catch (error) {
+         console.warn("Edge Function failed. Returning mock metadata.");
+         await new Promise(r => setTimeout(r, 1500));
+         return {
+             industry: "Technology",
+             stage: "Seed",
+             businessModel: "SaaS"
+         };
+    }
+};
+
+export const suggestDeckFocus = async (profileContext: string): Promise<DeckStrategy> => {
+    try {
+        return await invokeEdgeFunction<DeckStrategy>('investor-ai', {
+            action: 'suggestDeckFocus',
+            profileContext
+        });
+    } catch (error) {
+         console.warn("Edge Function failed. Returning mock deck focus.");
+         await new Promise(r => setTimeout(r, 2000));
+         return {
+            narrativeArc: "Focus on your early traction and unique technology to validate the market need.",
+            topSlides: [
+                { slideType: "Traction", title: "Early Velocity", reason: "You have revenue data.", contentFocus: "Show MoM growth." },
+                { slideType: "Team", title: "Expert Founders", reason: "Deep domain expertise.", contentFocus: "Highlight past exits." },
+                { slideType: "Problem", title: "Critical Gap", reason: "Clear market pain point.", contentFocus: "Quantify the inefficiency." }
+            ]
          };
     }
 };

@@ -67,17 +67,19 @@ const generateInvestorUpdateFunctionDeclaration = {
 
 const analyzeStartupStrategyFunctionDeclaration = {
     name: 'analyzeStartupStrategy',
-    description: 'Performs a strategic analysis (SWOT, Investor Readiness) of a startup.',
+    description: 'Performs a detailed strategic due diligence of a startup, providing critical feedback and scoring.',
     parameters: {
         type: Type.OBJECT,
         properties: {
-            investorReadinessScore: { type: Type.NUMBER },
-            readinessReasoning: { type: Type.STRING },
+            investorReadinessScore: { type: Type.NUMBER, description: "0-100 Score." },
+            readinessReasoning: { type: Type.STRING, description: "Executive summary of the score." },
+            marketTimingVerdict: { type: Type.STRING, description: "Assessment of 'Why Now?' (e.g., 'Perfect Timing', 'Too Early', 'Crowded')." },
+            actionableRecommendations: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3-5 Specific, tactical steps to improve the score or mitigate risks." },
             swot: {
                 type: Type.OBJECT,
                 properties: {
-                    strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    strengths: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Defensible moats or unique assets." },
+                    weaknesses: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Existential risks or gaps." },
                     opportunities: { type: Type.ARRAY, items: { type: Type.STRING } },
                     threats: { type: Type.ARRAY, items: { type: Type.STRING } },
                 },
@@ -86,7 +88,7 @@ const analyzeStartupStrategyFunctionDeclaration = {
             marketTrends: { type: Type.ARRAY, items: { type: Type.STRING } },
             keyCompetitors: { type: Type.ARRAY, items: { type: Type.STRING } }
         },
-        required: ['investorReadinessScore', 'readinessReasoning', 'swot', 'marketTrends', 'keyCompetitors']
+        required: ['investorReadinessScore', 'readinessReasoning', 'marketTimingVerdict', 'actionableRecommendations', 'swot', 'marketTrends', 'keyCompetitors']
     }
 };
 
@@ -232,6 +234,46 @@ const enrichStartupProfileFunctionDeclaration = {
     }
 };
 
+const extractStartupMetadataFunctionDeclaration = {
+    name: 'extractStartupMetadata',
+    description: 'Analyzes a startup description to classify its industry, stage, and business model.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            industry: { type: Type.STRING, description: "e.g. Fintech, Biotech, SaaS" },
+            stage: { type: Type.STRING, description: "e.g. Idea, Pre-Seed, Seed, Series A" },
+            businessModel: { type: Type.STRING, description: "e.g. B2B SaaS, Marketplace, D2C" }
+        },
+        required: ['industry', 'stage', 'businessModel']
+    }
+};
+
+const suggestDeckFocusFunctionDeclaration = {
+    name: 'suggestDeckFocus',
+    description: 'Suggests the 3 most critical slides to focus on based on startup profile analysis.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            narrativeArc: { type: Type.STRING, description: "A one-sentence summary of the best narrative approach (e.g. 'Traction-first' or 'Vision-first')." },
+            topSlides: {
+                type: Type.ARRAY,
+                description: "The top 3 recommended slides.",
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        slideType: { type: Type.STRING, description: "e.g. 'Traction', 'Team', 'Problem'." },
+                        title: { type: Type.STRING, description: "Suggested slide title." },
+                        reason: { type: Type.STRING, description: "Why this slide is critical for this specific startup." },
+                        contentFocus: { type: Type.STRING, description: "What specific data points or story elements to include." }
+                    },
+                    required: ['slideType', 'title', 'reason', 'contentFocus']
+                }
+            }
+        },
+        required: ['narrativeArc', 'topSlides']
+    }
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -264,17 +306,23 @@ serve(async (req) => {
             targetFunction = 'generateInvestorUpdate';
             break;
         case 'analyzeStartupStrategy':
-            prompt = `Act as a Venture Capitalist. Analyze the viability of this startup based on the context provided: "${params.profileContext}". 
+            prompt = `Act as a Lead Investor performing critical due diligence. Analyze the viability of this startup based on: "${params.profileContext}".
             
-            Calculate a 'Viability Score' (mapped to investorReadinessScore 0-100) based on:
-            1. Team (30%): Experience, exits, domain expertise.
-            2. Market (30%): Size (TAM), growth trends, timing.
-            3. Product (20%): Solution clarity, differentiators.
-            4. Traction (20%): Revenue, users, growth rate vs stage.
+            **Objective:**
+            Provide a brutally honest assessment of "Investor Readiness".
+            
+            **Scoring Logic (0-100):**
+            - <50: Critical flaws (e.g., no traction, undefined market).
+            - 50-70: Promising but raw (e.g., good team, pre-revenue).
+            - 70-85: Investable (strong signals, clear path).
+            - >85: Hot Deal (top 1% metrics/team).
 
-            Provide a 'readinessReasoning' summary explaining this viability score.
-            Perform a SWOT analysis.
-            Use Google Search to validate market trends if needed.
+            **Requirements:**
+            1. **SWOT:** Focus on *defensible* strengths (moats) and *existential* risks (weaknesses). Avoid generic fluff.
+            2. **Market Timing:** Explicitly verdict on "Why Now?".
+            3. **Competitors:** Use Google Search to find *actual* competitors, not just categories.
+            4. **Actionable Recommendations:** Generate 3-5 specific, tactical steps the founder can take *this week* to improve their score.
+
             Call 'analyzeStartupStrategy'.`;
             toolConfig = { tools: [{ googleSearch: {} }, { functionDeclarations: [analyzeStartupStrategyFunctionDeclaration] }] };
             targetFunction = 'analyzeStartupStrategy';
@@ -333,6 +381,31 @@ serve(async (req) => {
             Call 'enrichStartupProfile'.`;
             toolConfig = { tools: [{ googleSearch: {} }, { functionDeclarations: [enrichStartupProfileFunctionDeclaration] }] };
             targetFunction = 'enrichStartupProfile';
+            break;
+        case 'extractStartupMetadata':
+            prompt = `Analyze the startup description and tagline to classify its Industry, Stage, and Business Model.
+            
+            Description: "${params.description}"
+            Tagline: "${params.tagline}"
+            
+            Call 'extractStartupMetadata'.`;
+            toolConfig = { tools: [{ functionDeclarations: [extractStartupMetadataFunctionDeclaration] }] };
+            targetFunction = 'extractStartupMetadata';
+            break;
+        case 'suggestDeckFocus':
+            prompt = `Analyze this startup profile to suggest a high-impact pitch deck strategy.
+            
+            **Context:**
+            ${params.profileContext}
+            
+            **Rules:**
+            1. Determine the best narrative arc (e.g. if high revenue -> Traction First).
+            2. Pick the Top 3 most critical slide types (e.g. Vision, Problem, Team, Traction, Market).
+            3. Explain WHY for each.
+            
+            Call 'suggestDeckFocus'.`;
+            toolConfig = { tools: [{ functionDeclarations: [suggestDeckFocusFunctionDeclaration] }] };
+            targetFunction = 'suggestDeckFocus';
             break;
         default:
             throw new Error(`Unknown action: ${action}`);

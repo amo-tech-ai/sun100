@@ -18,11 +18,13 @@ export const invokeEdgeFunction = async <T>(
     
     let errorMessage = `An error occurred while processing your request via ${functionName}.`;
     
+    // Prioritize the message directly on the error object if it exists
     if (error instanceof Error) {
         errorMessage = error.message;
     }
     
-    // Deep dive into Supabase error context to find the real cause (e.g. "API Key not set")
+    // Deep dive into Supabase error context to find the real cause
+    // Supabase functions often return the real error details in a nested HTTP response body
     if (typeof error === 'object' && error !== null && 'context' in error) {
         try {
             // specific check for response object
@@ -30,14 +32,20 @@ export const invokeEdgeFunction = async <T>(
             if (response instanceof Response) {
                  const text = await response.text();
                  try {
+                     // Try to parse JSON error from the backend (e.g. { error: "Safety violation" })
                      const json = JSON.parse(text);
-                     if (json.error) errorMessage = json.error;
+                     if (json.error) {
+                        errorMessage = typeof json.error === 'string' ? json.error : JSON.stringify(json.error);
+                     } else if (json.message) {
+                        errorMessage = json.message;
+                     }
                  } catch {
-                     if (text) errorMessage = text;
+                     // If text is not JSON, use the raw text if it's not too long (e.g. HTML error page)
+                     if (text && text.length < 200) errorMessage = text;
                  }
             }
         } catch (e) {
-            // Ignore parsing errors
+            // Ignore parsing errors, stick to default
         }
     }
 

@@ -1,6 +1,7 @@
 
 import { supabase } from '../lib/supabaseClient';
 import { StartupProfile } from '../contexts/StartupContext';
+import { UserProfile } from '../types/founder';
 
 export interface Milestone {
     id: string;
@@ -15,7 +16,7 @@ export interface TeamStats {
     distribution: { department: string; count: number }[];
 }
 
-// Mock Data
+// Mock Data for Startup Context
 const MOCK_PROFILE: StartupProfile = {
     name: 'My Startup',
     website: 'https://example.com',
@@ -29,6 +30,42 @@ const MOCK_PROFILE: StartupProfile = {
     fundingAsk: '$2M',
     logoUrl: '',
     coverImageUrl: ''
+};
+
+// Mock Data for Founder Profile (Public View)
+const MOCK_FOUNDER_PROFILE: UserProfile = {
+    username: 'alex-chen',
+    name: 'Alex Chen',
+    title: 'Founder & CEO, StartupAI',
+    avatarUrl: 'https://storage.googleapis.com/aistudio-hosting/profile-placeholders/person3.jpg',
+    bio: "Obsessed with democratizing access to AI for the next generation of founders. Building tools that make professional design and storytelling effortless. Previously at Google AI, scaling infrastructure for machine learning models to millions of users.",
+    socials: {
+        linkedin: '#',
+        twitter: '#',
+        website: 'https://startupai.com'
+    },
+    startup: {
+        name: 'StartupAI',
+        logoUrl: 'https://www.gstatic.com/mobilesdk/160503_mobilesdk/logo/2x/firebase_28dp.png',
+        tagline: 'Your AI-Powered Startup Hub for Growth.',
+        description: 'An all-in-one platform that helps founders build pitch decks, find investors, and manage their startup journey using advanced AI tools.',
+        website: 'https://startupai.com',
+        fundingGoal: '$1.5M Seed',
+        industry: 'Generative AI / SaaS',
+        stage: 'Seed',
+        traction: '500+ Beta Users, $10k MRR',
+        businessModel: 'SaaS Subscription ($49/mo)',
+        team: [
+             { name: 'Alex Chen', role: 'CEO', background: 'Ex-Google AI' },
+             { name: 'Samantha Rao', role: 'CTO', background: 'PhD in ML' },
+             { name: 'David Kim', role: 'Product', background: '2x Founder' }
+        ]
+    },
+    lookingFor: ['Seed Funding', 'Technical Co-founder', 'Beta Testers'],
+    publicDecks: [
+        { id: 'deck-1', title: 'StartupAI Seed Round Pitch', imageUrl: 'https://storage.googleapis.com/aistudio-hosting/docs/service-web.png' },
+        { id: 'deck-2', title: 'Q3 Product Update', imageUrl: 'https://storage.googleapis.com/aistudio-hosting/docs/service-mvp.png' },
+    ]
 };
 
 const MOCK_MILESTONES: Milestone[] = [
@@ -152,6 +189,98 @@ export const updateStartupProfile = async (updates: Partial<StartupProfile>): Pr
             role: 'owner'
         });
         if (memberError) throw memberError;
+    }
+};
+
+// --- Public Profile Fetching ---
+
+export const getPublicFounderProfile = async (username: string): Promise<UserProfile | null> => {
+    try {
+        // Mock Check
+        if (!(supabase as any).realtime) {
+             // Simulate network delay
+             await new Promise(r => setTimeout(r, 800));
+             // Return mock if username matches mock, else null (simulate 404)
+             return username === 'alex-chen' ? MOCK_FOUNDER_PROFILE : null;
+        }
+
+        // 1. Get User Profile by username
+        const { data: userProfile, error: userError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('username', username) // Assumes 'username' column exists in profiles table
+            .single();
+
+        if (userError || !userProfile) {
+            console.warn("User not found for username:", username);
+            return null;
+        }
+
+        // 2. Get Associated Startup (Owner/Admin)
+        const { data: membership } = await supabase
+            .from('team_members')
+            .select('startup_id')
+            .eq('user_id', userProfile.id)
+            .in('role', ['owner', 'admin'])
+            .limit(1)
+            .single();
+
+        if (!membership) return null;
+
+        const { data: startup } = await supabase
+            .from('startups')
+            .select('*')
+            .eq('id', membership.startup_id)
+            .single();
+
+        if (!startup) return null;
+
+        // 3. Get Public Decks
+        const { data: decks } = await supabase
+            .from('decks')
+            .select('id, title, slides(image_url)') // Fetch first slide image roughly
+            .eq('startup_id', startup.id)
+            .eq('status', 'published') // Assuming 'status' column
+            .limit(4);
+
+        const publicDecks = (decks || []).map((d: any) => ({
+            id: d.id,
+            title: d.title,
+            imageUrl: d.slides?.[0]?.image_url || 'https://via.placeholder.com/300x200?text=Deck'
+        }));
+
+        // 4. Construct UserProfile object
+        return {
+            username: userProfile.username || username,
+            name: userProfile.full_name || 'Founder',
+            title: userProfile.title || 'Founder',
+            avatarUrl: userProfile.avatar_url || '',
+            bio: userProfile.bio || '',
+            socials: {
+                linkedin: userProfile.linkedin_url || '#',
+                twitter: userProfile.twitter_url || '#',
+                website: userProfile.website_url || ''
+            },
+            startup: {
+                name: startup.name,
+                logoUrl: startup.logo_url || '',
+                tagline: startup.tagline || '',
+                description: startup.description || '',
+                website: startup.website_url || '',
+                fundingGoal: startup.funding_ask || '',
+                industry: startup.industry || 'Tech',
+                stage: startup.stage || 'Seed',
+                traction: 'See deck', // Placeholder if not in DB
+                businessModel: 'See deck', // Placeholder
+                team: [] // Populate if team data available
+            },
+            lookingFor: ['Investors', 'Partners'], // Could be a DB field
+            publicDecks
+        };
+
+    } catch (err) {
+        console.error("Error fetching public profile:", err);
+        return null;
     }
 };
 

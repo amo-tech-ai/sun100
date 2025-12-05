@@ -9,7 +9,6 @@ import { useFounderAI } from '../hooks/useFounderAI';
 import { ProfileSidebar } from '../components/founder/ProfileSidebar';
 import { StartupMainCard } from '../components/founder/StartupMainCard';
 import { StrategicAnalysisSection } from '../components/founder/StrategicAnalysisSection';
-import { DeckStrategySection } from '../components/founder/DeckStrategySection';
 import { getPublicFounderProfile } from '../services/startupService';
 
 // --- MAIN PAGE COMPONENT --- //
@@ -108,12 +107,6 @@ export default function FounderProfile() {
                     analysis={ai.strategicAnalysis} 
                     isAnalyzing={ai.isAnalyzingStrategy} 
                     onAnalyze={ai.handleStrategicAnalysis} 
-                />
-
-                <DeckStrategySection 
-                    strategy={ai.deckStrategy}
-                    isAnalyzing={ai.isAnalyzingDeckFocus}
-                    onAnalyze={ai.handleSuggestDeckFocus}
                 />
                 
                 {/* Looking For Card */}

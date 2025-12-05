@@ -6,6 +6,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.0] - 2025-01-25
+
+### Added
+- **Public Founder Profiles:** Implemented real data fetching for the Founder Profile screen (`/community/profile/:username`). It now attempts to fetch data from Supabase, with a robust fallback to mock data if the backend is offline.
+- **Startup Service Expansion:** Added `getPublicFounderProfile` to `startupService.ts` to support public profile lookups by username.
+
+### Fixed
+- **Architecture Cleanup:** Resolved "Split-Brain" application structure by deprecating redundant `src/App.jsx` and root-level `main.tsx` files. The application now cleanly relies on `src/main.tsx` and `src/App.tsx`.
+
+## [2.14.0] - 2025-01-24
+
+### Refactored
+- **Founder Profile Screen:** Modularized `FounderProfile.tsx` into focused sub-components (`ProfileSidebar`, `BioSection`, etc.) and extracted AI logic into a `useFounderAI` hook. This improves maintainability and separation of concerns.
+- **UI Library:** Extracted `AIBadge`, `CompletionIndicator`, and `ScoreRing` into reusable atoms in `components/ui`.
+- **Type Definitions:** Centralized founder-related types in `types/founder.ts`.
+
 ## [2.13.0] - 2025-01-23
 
 ### Added

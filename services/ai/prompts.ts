@@ -846,6 +846,20 @@ export const enrichStartupProfileFunctionDeclaration: FunctionDeclaration = {
     }
 };
 
+export const extractStartupMetadataFunctionDeclaration: FunctionDeclaration = {
+    name: 'extractStartupMetadata',
+    description: 'Analyzes a startup description to classify its industry, stage, and business model.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            industry: { type: Type.STRING, description: "e.g. Fintech, Biotech, SaaS" },
+            stage: { type: Type.STRING, description: "e.g. Idea, Pre-Seed, Seed, Series A" },
+            businessModel: { type: Type.STRING, description: "e.g. B2B SaaS, Marketplace, D2C" }
+        },
+        required: ['industry', 'stage', 'businessModel']
+    }
+};
+
 // --- CRM Function Declarations ---
 
 export const analyzeAccountHealthFunctionDeclaration: FunctionDeclaration = {
@@ -944,5 +958,33 @@ export const generateBattlecardFunctionDeclaration: FunctionDeclaration = {
             }
         },
         required: ['competitors', 'our_advantages', 'objection_handling']
+    }
+};
+
+// --- NEW: Deck Strategy Suggestion ---
+
+export const suggestDeckFocusFunctionDeclaration: FunctionDeclaration = {
+    name: 'suggestDeckFocus',
+    description: 'Suggests the 3 most critical slides to focus on based on startup profile analysis.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            narrativeArc: { type: Type.STRING, description: "A one-sentence summary of the best narrative approach (e.g. 'Traction-first' or 'Vision-first')." },
+            topSlides: {
+                type: Type.ARRAY,
+                description: "The top 3 recommended slides.",
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        slideType: { type: Type.STRING, description: "e.g. 'Traction', 'Team', 'Problem'." },
+                        title: { type: Type.STRING, description: "Suggested slide title." },
+                        reason: { type: Type.STRING, description: "Why this slide is critical for this specific startup." },
+                        contentFocus: { type: Type.STRING, description: "What specific data points or story elements to include." }
+                    },
+                    required: ['slideType', 'title', 'reason', 'contentFocus']
+                }
+            }
+        },
+        required: ['narrativeArc', 'topSlides']
     }
 };

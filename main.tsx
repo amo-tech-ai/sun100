@@ -1,16 +1,9 @@
+
+// DEPRECATED: This file is redundant and has been superseded by src/main.tsx.
+// Please do not use or import this file. It is kept only to prevent build errors if referenced by legacy scripts.
+// See src/main.tsx for the active entry point.
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
-import './index.css';
 
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  throw new Error("Could not find root element to mount to");
-}
-
-const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+root.render(<React.StrictMode></React.StrictMode>);

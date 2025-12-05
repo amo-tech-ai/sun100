@@ -52,6 +52,16 @@ export interface CompetitorMatrix {
     rows: string[][];
 }
 
+export interface DeckStrategy {
+    narrativeArc: string;
+    topSlides: {
+        slideType: string;
+        title: string;
+        reason: string;
+        contentFocus: string;
+    }[];
+}
+
 // --- Research ---
 export interface ResearchResult {
     summary: string;
@@ -149,6 +159,8 @@ export interface MarketSizeAnalysis {
 export interface StartupStrategicAnalysis {
     investorReadinessScore: number;
     readinessReasoning: string;
+    marketTimingVerdict: string;
+    actionableRecommendations: string[];
     swot: {
         strengths: string[];
         weaknesses: string[];
@@ -164,6 +176,12 @@ export interface EnrichedProfile {
     description: string;
     industry: string;
     mission: string;
+}
+
+export interface StartupMetadata {
+    industry: string;
+    stage: string;
+    businessModel: string;
 }
 
 // --- Data Room ---
