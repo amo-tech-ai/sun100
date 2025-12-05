@@ -7,6 +7,10 @@ import { getLatestMetrics, getMetrics, MetricEntry } from '../services/metricsSe
 import { getInvestorDocs } from '../services/investorDocService';
 import { getDataRoomAudit } from '../services/dataRoomService';
 import { getStartupTeamStats, getStartupMilestones, TeamStats, Milestone } from '../services/startupService';
+import { getDecks } from '../services/deckService';
+import { getCustomers } from '../services/crm/customers';
+import { Deck } from '../data/decks';
+import { Customer } from '../services/crm/types';
 import { MetricsTable } from '../components/investor/MetricsTable';
 import { InvestorChat } from '../components/investor/InvestorChat';
 import Table from '../components/Table';
@@ -125,6 +129,10 @@ const StartupCommandCenter: React.FC = () => {
     const [dataRoomAudit, setDataRoomAudit] = useState<DataRoomAudit | null>(null);
     const [teamStats, setTeamStats] = useState<TeamStats>({ total: 0, openRoles: 0, distribution: [] });
     const [milestones, setMilestones] = useState<Milestone[]>([]);
+    
+    // Context Data for Chat
+    const [pitchDecks, setPitchDecks] = useState<Deck[]>([]);
+    const [crmAccounts, setCrmAccounts] = useState<Customer[]>([]);
 
     // Mock Values for uninitialized state
     const [tam, setTam] = useState("N/A");
@@ -137,12 +145,14 @@ const StartupCommandCenter: React.FC = () => {
             setDocsLoading(true);
             try {
                 // Parallel fetching
-                const [history, docData, audit, team, milestoneList] = await Promise.all([
+                const [history, docData, audit, team, milestoneList, decksData, crmData] = await Promise.all([
                     getMetrics(),
                     getInvestorDocs(),
                     getDataRoomAudit(),
                     getStartupTeamStats(),
-                    getStartupMilestones()
+                    getStartupMilestones(),
+                    getDecks(),
+                    getCustomers()
                 ]);
 
                 setAllMetrics(history);
@@ -155,6 +165,8 @@ const StartupCommandCenter: React.FC = () => {
                 setDataRoomAudit(audit);
                 setTeamStats(team);
                 setMilestones(milestoneList);
+                setPitchDecks(decksData);
+                setCrmAccounts(crmData);
 
             } catch (error) {
                 console.error("Error loading dashboard data", error);
@@ -457,7 +469,11 @@ const StartupCommandCenter: React.FC = () => {
 
                         {/* Investor Chat */}
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden h-[400px]">
-                             <InvestorChat metrics={allMetrics} />
+                             <InvestorChat 
+                                metrics={allMetrics} 
+                                pitchDecks={pitchDecks}
+                                crmAccounts={crmAccounts}
+                             />
                         </div>
 
                         {/* Quick Actions List */}

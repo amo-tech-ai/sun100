@@ -3,9 +3,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { askInvestorData } from '../../services/ai/investor';
 import { useTypewriter } from '../../hooks/useTypewriter';
 import { MetricEntry } from '../../services/metricsService';
+import { Deck } from '../../data/decks';
+import { Customer } from '../../services/crm/types';
 
 interface InvestorChatProps {
     metrics: MetricEntry[];
+    pitchDecks?: Deck[];
+    crmAccounts?: Customer[];
 }
 
 const SparklesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
@@ -29,10 +33,10 @@ const ChatMessage: React.FC<{ role: 'user' | 'ai'; text: string }> = ({ role, te
     );
 };
 
-export const InvestorChat: React.FC<InvestorChatProps> = ({ metrics }) => {
+export const InvestorChat: React.FC<InvestorChatProps> = ({ metrics, pitchDecks = [], crmAccounts = [] }) => {
     const [query, setQuery] = useState('');
     const [history, setHistory] = useState<{ role: 'user' | 'ai'; text: string }[]>([
-        { role: 'ai', text: "Hi! I'm your AI Financial Analyst. Ask me anything about your metrics, runway, or growth trends." }
+        { role: 'ai', text: "Hi! I'm your AI Investment Analyst. Ask me about your metrics, decks, or pipeline status." }
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -52,8 +56,14 @@ export const InvestorChat: React.FC<InvestorChatProps> = ({ metrics }) => {
         setIsLoading(true);
 
         try {
-            // Pass metrics context to the AI service
-            const response = await askInvestorData(userQuery, metrics);
+            // Pass richer context to the AI service
+            const context = {
+                metrics,
+                decks: pitchDecks.map(d => ({ title: d.title, slideCount: d.slides.length, template: d.template })),
+                crm: crmAccounts.map(c => ({ name: c.name, status: c.status, mrr: c.mrr, health: c.healthScore }))
+            };
+            
+            const response = await askInvestorData(userQuery, context);
             setHistory(prev => [...prev, { role: 'ai', text: response }]);
         } catch (error) {
             setHistory(prev => [...prev, { role: 'ai', text: "Sorry, I encountered an error analyzing your data." }]);
@@ -70,7 +80,7 @@ export const InvestorChat: React.FC<InvestorChatProps> = ({ metrics }) => {
                 </div>
                 <div>
                     <h3 className="font-bold text-gray-800 text-sm">Ask Your Data</h3>
-                    <p className="text-xs text-gray-500">Powered by Gemini 3 Reasoning</p>
+                    <p className="text-xs text-gray-500">Gemini 3 • Decks, CRM & Finance</p>
                 </div>
             </div>
 
@@ -96,7 +106,7 @@ export const InvestorChat: React.FC<InvestorChatProps> = ({ metrics }) => {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="e.g. What is my average burn rate?"
+                        placeholder="e.g. Is my Series A deck ready?"
                         className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 focus:border-brand-orange text-sm transition-all bg-gray-50 focus:bg-white"
                         disabled={isLoading}
                     />

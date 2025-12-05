@@ -1,56 +1,65 @@
-# Step 1 — Problem Understanding
-1.  **Problem:** The application renders as a blank or unstyled page, making it unusable. The browser console shows critical errors, including `404 Not Found` for several image assets. Even if the application were to load, the layout across different pages is inconsistent.
-2.  **Symptoms:**
-    -   Critical Console Error: `Failed to load resource: the server responded with a status of 404 ()` for image URLs from unreliable placeholder services.
-    -   Visual inspection of the code reveals inconsistent layout styling across multiple page components, which would cause a disjointed user experience.
-3.  **Scope:** The layout inconsistency affects all pages rendered within the `PublicLayout`. The image errors affect specific pages like `Dashboard.tsx`.
 
-## Step 2 — Root Cause Analysis
-1.  **Possible Causes:**
-    -   Inconsistent component-level styling.
-    -   Broken or unreliable image paths.
-2.  **Pinpointed Cause:**
-    -   **Primary Failure (Layout):** A structural layout issue exists in the code. `PublicLayout.tsx` is intended to provide a consistent page frame (padding, max-width), but it currently does not. This forces over 10 child pages to define their own conflicting layout styles (`max-w-*`, `mx-auto`, `p-*`), causing a disjointed and inconsistent user experience when navigating between pages.
-    -   **Secondary Failure (Content):** Image assets are being loaded from unreliable third-party placeholder services (e.g., `images.unsplash.com`) which are not suitable for production use and can fail to load.
-3.  **Explanation:** The application suffers from an architectural flaw where layout logic is decentralized, violating the Don't Repeat Yourself (DRY) principle. This is compounded by content issues where assets are not loaded from a reliable, managed source.
+# 🚨 System Troubleshooting Report: Critical Errors & Remediation
 
-## Step 3 — Solution Design
-1.  **Guaranteed Solution:**
-    1.  **Unify the Layout:** Centralize all page-framing styles in `PublicLayout.tsx`. It will be responsible for setting the `max-w-*`, horizontal margin, and vertical padding for all standard pages. All child pages will be refactored to remove their redundant, conflicting layout styles. This creates a single source of truth and guarantees consistency.
-    2.  **Fix Broken Images:** Replace all unreliable placeholder URLs with stable, absolute URLs from a reliable content delivery network (e.g., `storage.googleapis.com`).
-2.  **Alternative Fixes:**
-    -   *Alternative A (Layout):* Add consistent padding to every individual page. This is less optimal because it decentralizes layout logic, making future changes difficult.
-    -   *Alternative B (Images):* Host all image assets locally within a `/public` directory. This is a valid approach but using a CDN is generally better for performance.
+**Date:** 2025-01-23
+**Status:** Critical Action Required
 
-## Step 4 — Implementation Plan
-1.  **Create Documentation:** Create this `01-docs/errors.md` file to document the findings.
-2.  **Refactor Layout:**
-    -   Modify `screens/PublicLayout.tsx` to apply consistent page framing to its `<main>` element.
-    -   Systematically edit all child pages rendered by `PublicLayout` (e.g., `Terms.tsx`, `Landing.tsx`, `Login.tsx`) to remove any top-level `max-w-*`, `mx-auto`, `p-*`, `px-*`, or `py-*` classes from their root elements.
-3.  **Replace Image URLs:**
-    -   In `screens/Dashboard.tsx`, replace the unreliable `images.unsplash.com` URL with a new placeholder URL from a reliable CDN.
+## 1. 🔴 Critical Architecture Errors (Build & Runtime Blockers)
 
-## Step 5 — Verification & Validation
-1.  **Success Criteria:**
-    -   The application loads and runs without console errors related to broken assets.
-    -   All public-facing pages have a consistent, unified layout and spacing.
-    -   There are no more `404 Not Found` errors for image assets in the console.
-2.  **Test Cases:**
-    -   **Layout Test:** Navigate between `/about`, `/terms`, `/events`, and `/jobs`. Verify that the main content container has the exact same width, centering, and vertical spacing from the header on every page.
-    -   **Dashboard Test:** Load the dashboard page (`/dashboard`). Verify all images load correctly.
+### 1.1. "Split-Brain" Application Structure
+**Severity:** Critical
+**Location:** Root vs. `src/`
+- **Observation:** The codebase contains conflicting entry points and structure.
+    - `main.tsx` exists at the root level.
+    - `src/App.jsx` exists inside a `src` folder.
+    - `App.tsx` (implied by `main.tsx` import) exists at the root.
+- **Why it breaks:** Vite expects a clean `src/` directory. Having source files at the root *and* in `src/` creates duplicate code paths, build failures, and confusion about which `App` component is the source of truth.
+- **Fix:** Move all source code (`main.tsx`, `App.tsx`, `screens`, `components`, `services`, `hooks`, `contexts`, `lib`) into the `src/` directory. Update `index.html` to point to `/src/main.tsx`. Delete the redundant `src/App.jsx`.
 
-## Step 6 — Production-Ready Checklist
-✅ **Logs clean:** Console errors related to broken images will be resolved.
-✅ **System performance:** Removing redundant styles is a micro-optimization that improves maintainability.
-✅ **Rollback plan:** Revert the file changes via `git`.
-✅ **Tested:** The changes will be validated via the test cases above.
-✅ **Documentation updated:** This report serves as the documentation for the fix.
-✅ **Peer-reviewed:** The proposed solution follows standard frontend architecture best practices.
+### 1.2. Hardcoded Auth Bypass (Security Risk)
+**Severity:** Critical
+**Location:** `contexts/AuthContext.tsx`
+- **Observation:** The `useEffect` explicitly forces a mock user: `setUser({ id: 'mock-user-id', ... })` and logs "🔓 Auth disabled for development".
+- **Why it breaks:** If deployed to production, **Authentication is effectively disabled**. Furthermore, this mock user ID (`mock-user-id`) will fail Postgres Row-Level Security (RLS) policies if the app attempts to talk to a real Supabase database (which requires a valid JWT UUID).
+- **Fix:** Remove the forced mock override or wrap it strictly in a `if (import.meta.env.DEV && IS_MOCK_MODE)` check. Ensure the fallback handles RLS failures gracefully.
 
-## Step 7 — Final Report
--   **Root Cause:** An architectural flaw where child pages contained redundant and conflicting layout styles, combined with the use of unreliable third-party image placeholders.
--   **Fix Applied:** A comprehensive code-level fix was implemented. `PublicLayout.tsx` was established as the single source of truth for page layout, and all conflicting styles were removed from child pages. Unreliable image URLs were replaced with stable placeholders.
--   **Validation Results:** The layout is now architecturally sound, guaranteeing visual consistency. The application is more robust against content-loading failures.
--   **Future Prevention:**
-    -   A new development guideline should be enforced: Child components rendered within a layout **must not** define their own top-level container styles.
-    -   Prefer self-hosted or reliable CDN assets for all images.
+### 1.3. Edge Function Timeout Risk
+**Severity:** High
+**Location:** `supabase/functions/investor-ai/index.ts` (and others)
+- **Observation:** Functions use `thinkingConfig` (reasoning models) and `googleSearch` tools synchronously.
+- **Why it breaks:** Reasoning models can take 30-60+ seconds to generate. Standard Supabase Edge Functions have a default timeout (often 60s). Long-running generations will result in `504 Gateway Timeout` errors on the frontend.
+- **Fix:** Implement client-side retries/polling or ensure Edge Function timeouts are configured to maximum. Ideally, switch to an async job queue for heavy reasoning tasks.
+
+---
+
+## 2. ⚠️ Important Code Quality & Consistency Flags
+
+### 2.1. Inconsistent File Extensions
+- **Observation:** `src/App.jsx` uses `.jsx` while the rest of the project uses `.tsx`.
+- **Impact:** Inconsistent type safety. `.jsx` files lose TypeScript benefits.
+- **Fix:** Convert all component files to `.tsx`.
+
+### 2.2. Prop Drilling in CRM
+- **Observation:** `CustomerCRM.tsx` manages extensive state (`selectedCustomer`, `emailTarget`, `isFormOpen`, `tasks`, `deals`) and passes it down deeply.
+- **Impact:** Hard to maintain.
+- **Fix:** Refactor `CustomerCRM` state into a localized Context or Zustand store, similar to the `DeckEditorContext` pattern.
+
+### 2.3. "Magic String" Dependencies
+- **Observation:** AI Prompts (e.g., in `services/ai/deck.ts`) rely on implicit knowledge of the slide structure.
+- **Impact:** If the `Slide` type changes, prompts might generate invalid JSON.
+- **Fix:** Ensure `zod` schemas or strict TypeScript interfaces are shared between the AI service prompt generation and the response validation.
+
+---
+
+## 3. 🔍 Missing Best Practices
+
+1.  **No Error Boundary:** If a specific widget (e.g., `TaskAdvisorWidget`) crashes, it might take down the whole dashboard. Wrap complex widgets in React Error Boundaries.
+2.  **Environment Variable Validation:** `lib/supabaseClient.ts` checks for env vars but doesn't validate their format. Malformed keys can cause silent auth failures.
+3.  **Accessibility (a11y):** Many icon-only buttons in `RightSidebar.tsx` and `CRM` components lack `aria-label` attributes.
+
+## 4. Recommended Remediation Plan
+
+1.  **Consolidate Source:** Move root source files into `src/`.
+2.  **Secure Auth:** Restore real Supabase Auth logic in `AuthContext.tsx`.
+3.  **Unify App Entry:** Delete `src/App.jsx` and ensure `src/App.tsx` is the master router.
+4.  **Timeout Handling:** Add robust error handling in `edgeFunctionService.ts` specifically for 504 Timeouts.

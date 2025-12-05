@@ -295,7 +295,20 @@ serve(async (req) => {
             targetFunction = 'generateFullGTMStrategy';
             break;
         case 'askInvestorData':
-            const chatPrompt = `You are a financial analyst. Context Metrics: ${JSON.stringify(params.metricsContext)}. User Query: ${params.query}. Answer the user using the metrics provided.`;
+            // The context parameter now includes metrics, decks, and CRM data
+            const chatPrompt = `You are a smart Investor Command Center AI Assistant.
+            
+            **Startup Data Context:**
+            ${JSON.stringify(params.context, null, 2)}
+            
+            **User Query:** "${params.query}"
+            
+            **Instructions:**
+            - Answer the user's question using the provided data context.
+            - You have access to Financial Metrics (Revenue, Burn, Cash), Pitch Decks (Titles, Status), and CRM Accounts (Leads, Customers).
+            - Be concise, helpful, and act as a financial analyst.
+            - If the user asks about something not in the data, state that you don't have that information.
+            `;
             const chatRes = await ai.models.generateContent({ model, contents: chatPrompt });
             return new Response(JSON.stringify({ response: chatRes.text }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         case 'matchInvestor':
@@ -335,6 +348,13 @@ serve(async (req) => {
 
     if (call && call.name === targetFunction) {
         return new Response(JSON.stringify(call.args), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
+
+    // Fallback for non-function responses (e.g. chat)
+    if (!targetFunction && response.text) {
+        return new Response(JSON.stringify({ response: response.text }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }

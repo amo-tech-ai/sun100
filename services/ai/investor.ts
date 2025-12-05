@@ -135,17 +135,21 @@ export const generateInvestmentMemo = async (startupProfile: any): Promise<Inves
     }
 };
 
-export const askInvestorData = async (query: string, metricsContext: any[]): Promise<string> => {
+/**
+ * Handles natural language queries about the startup's status.
+ * Accepts a context object containing metrics, decks, and CRM data.
+ */
+export const askInvestorData = async (query: string, context: any): Promise<string> => {
     try {
         const result = await invokeEdgeFunction<{ response: string }>('investor-ai', { 
             action: 'askInvestorData',
             query, 
-            metricsContext 
+            context 
         });
         return result.response;
     } catch (error) {
         console.warn("Edge Function failed. Returning mock Chat response.");
-        return "Based on your current metrics, your burn rate has decreased by 10% month-over-month, extending your runway to 14 months.";
+        return "Based on your current data, you have a healthy pipeline with 3 active negotiation deals, and your burn rate allows for 14 months of runway.";
     }
 };
 
