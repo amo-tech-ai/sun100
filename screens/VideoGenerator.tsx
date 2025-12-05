@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GoogleGenAI, GenerateVideosOperation } from '@google/genai';
+import { 
+    generateVideo, 
+    pollVideoOperation, 
+    extendVideo, 
+    fileToBase64, 
+    base64ToVideoUrl,
+    VideoPollResult 
+} from '../services/ai/video';
 
 // --- ICONS ---
 const VideoIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22 10.78v3.44a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7.78a2 2 0 0 1 2-2h12.58"/><path d="m22 8-6 4 6 4V8Z"/></svg>;
@@ -17,20 +24,13 @@ const progressMessages = [
     "Polling for final video..."
 ];
 
-const blobToBase64 = (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = (reader.result as string).split(',')[1];
-      resolve(base64String);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-};
+// Operation data type for video extension
+interface OperationData {
+    name: string;
+    video: any;
+}
 
 const VideoGenerator: React.FC = () => {
-    const [apiKeySelected, setApiKeySelected] = useState(false);
     const [prompt, setPrompt] = useState('A neon hologram of a cat driving at top speed');
     const [extensionPrompt, setExtensionPrompt] = useState('something unexpected happens');
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -40,19 +40,11 @@ const VideoGenerator: React.FC = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [generationStatus, setGenerationStatus] = useState('');
     const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
-    const [lastOperation, setLastOperation] = useState<GenerateVideosOperation | null>(null);
+    const [lastOperation, setLastOperation] = useState<OperationData | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const statusIntervalRef = useRef<number | null>(null);
-
-    const checkApiKey = async () => {
-        const hasKey = await (window as any).aistudio?.hasSelectedApiKey();
-        setApiKeySelected(hasKey);
-    };
-
-    useEffect(() => {
-        checkApiKey();
-    }, []);
+    const pollingRef = useRef<boolean>(false);
 
     useEffect(() => {
         if (isGenerating) {
@@ -71,19 +63,37 @@ const VideoGenerator: React.FC = () => {
             if (statusIntervalRef.current) {
                 clearInterval(statusIntervalRef.current);
             }
+            pollingRef.current = false;
         };
     }, [isGenerating]);
-
-
-    const handleSelectKey = async () => {
-        await (window as any).aistudio?.openSelectKey();
-        await checkApiKey();
-    };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             setImageFile(e.target.files[0]);
         }
+    };
+
+    // Poll for video completion
+    const pollForCompletion = async (operationName: string): Promise<VideoPollResult> => {
+        pollingRef.current = true;
+        
+        while (pollingRef.current) {
+            try {
+                const result = await pollVideoOperation(operationName);
+                
+                if (result.done) {
+                    return result;
+                }
+                
+                // Wait 10 seconds before polling again
+                await new Promise(resolve => setTimeout(resolve, 10000));
+            } catch (err) {
+                pollingRef.current = false;
+                throw err;
+            }
+        }
+        
+        throw new Error('Polling cancelled');
     };
 
     const handleGenerateVideo = async () => {
@@ -93,67 +103,53 @@ const VideoGenerator: React.FC = () => {
         setLastOperation(null);
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-            let imagePayload: { imageBytes: string; mimeType: string } | undefined = undefined;
+            let imageBytes: string | undefined = undefined;
+            let mimeType: string | undefined = undefined;
+            
             if (imageFile) {
                 setGenerationStatus("Processing uploaded image...");
-                const base64Data = await blobToBase64(imageFile);
-                imagePayload = {
-                    imageBytes: base64Data,
-                    mimeType: imageFile.type,
-                };
+                imageBytes = await fileToBase64(imageFile);
+                mimeType = imageFile.type;
             }
 
-            let operation: GenerateVideosOperation = await ai.models.generateVideos({
-                model: 'veo-3.1-fast-generate-preview',
-                prompt: prompt,
-                image: imagePayload,
-                config: {
-                    numberOfVideos: 1,
-                    resolution: resolution,
-                    aspectRatio: aspectRatio,
-                }
+            setGenerationStatus("Starting video generation...");
+            
+            // Start generation via Edge Function
+            const startResult = await generateVideo({
+                prompt,
+                imageBytes,
+                mimeType,
+                aspectRatio,
+                resolution
             });
 
             setGenerationStatus("Video generation started. Polling for results...");
-            while (!operation.done) {
-                await new Promise(resolve => setTimeout(resolve, 10000));
-                operation = await ai.operations.getVideosOperation({ operation: operation });
-            }
-
-            const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-            if (!downloadLink) {
-                throw new Error("Video generation completed, but no download link was found.");
-            }
-            setLastOperation(operation);
-
-            setGenerationStatus("Generation complete! Downloading video...");
-            const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-            if (!response.ok) {
-                 const errorText = await response.text();
-                 throw new Error(`Failed to download video: ${response.status} ${response.statusText}. Details: ${errorText}`);
-            }
             
-            const videoBlob = await response.blob();
-            const videoObjectUrl = URL.createObjectURL(videoBlob);
-            setGeneratedVideoUrl(videoObjectUrl);
+            // Poll for completion
+            const pollResult = await pollForCompletion(startResult.operationName);
+            
+            if (pollResult.videoBase64 && pollResult.operationData) {
+                setGenerationStatus("Generation complete!");
+                
+                // Convert base64 to blob URL
+                const videoUrl = base64ToVideoUrl(pollResult.videoBase64, pollResult.mimeType);
+                setGeneratedVideoUrl(videoUrl);
+                setLastOperation(pollResult.operationData);
+            } else {
+                throw new Error("Video generation completed but no video data returned.");
+            }
 
         } catch (err) {
-             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-             if(errorMessage.includes("Requested entity was not found.")){
-                 setError("API Key error. Please re-select your API key and try again.");
-                 setApiKeySelected(false);
-             } else {
-                setError(errorMessage);
-             }
+            const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+            setError(errorMessage);
         } finally {
             setIsGenerating(false);
+            pollingRef.current = false;
         }
     };
 
     const handleExtendVideo = async () => {
-        if (!lastOperation || !lastOperation.response?.generatedVideos?.[0]?.video) {
+        if (!lastOperation) {
             setError("Cannot extend video: previous generation data not found.");
             return;
         }
@@ -162,70 +158,39 @@ const VideoGenerator: React.FC = () => {
         setError(null);
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-            let operation: GenerateVideosOperation = await ai.models.generateVideos({
-                model: 'veo-3.1-generate-preview',
+            setGenerationStatus("Starting video extension...");
+            
+            // Start extension via Edge Function
+            const startResult = await extendVideo({
                 prompt: extensionPrompt,
-                video: lastOperation.response.generatedVideos[0].video,
-                config: {
-                    numberOfVideos: 1,
-                    resolution: '720p',
-                    aspectRatio: aspectRatio,
-                }
+                operationData: lastOperation,
+                aspectRatio
             });
 
             setGenerationStatus("Extending video. Polling for results...");
-            while (!operation.done) {
-                await new Promise(resolve => setTimeout(resolve, 10000));
-                operation = await ai.operations.getVideosOperation({ operation: operation });
+            
+            // Poll for completion
+            const pollResult = await pollForCompletion(startResult.operationName);
+            
+            if (pollResult.videoBase64 && pollResult.operationData) {
+                setGenerationStatus("Extension complete!");
+                
+                // Convert base64 to blob URL
+                const videoUrl = base64ToVideoUrl(pollResult.videoBase64, pollResult.mimeType);
+                setGeneratedVideoUrl(videoUrl);
+                setLastOperation(pollResult.operationData);
+            } else {
+                throw new Error("Video extension completed but no video data returned.");
             }
-
-            const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-            if (!downloadLink) {
-                throw new Error("Video extension completed, but no download link was found.");
-            }
-            setLastOperation(operation);
-
-            setGenerationStatus("Extension complete! Downloading new video...");
-            const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-             if (!response.ok) {
-                 const errorText = await response.text();
-                 throw new Error(`Failed to download video: ${response.status} ${response.statusText}. Details: ${errorText}`);
-            }
-
-            const videoBlob = await response.blob();
-            const videoObjectUrl = URL.createObjectURL(videoBlob);
-            setGeneratedVideoUrl(videoObjectUrl);
 
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-             if(errorMessage.includes("Requested entity was not found.")){
-                 setError("API Key error. Please re-select your API key and try again.");
-                 setApiKeySelected(false);
-             } else {
-                setError(errorMessage);
-             }
+            setError(errorMessage);
         } finally {
             setIsGenerating(false);
+            pollingRef.current = false;
         }
-    }
-    
-    if (!apiKeySelected) {
-        return (
-            <div className="max-w-2xl mx-auto text-center bg-white p-8 rounded-lg shadow-md">
-                <h1 className="text-2xl font-bold text-brand-blue mb-4">API Key Required</h1>
-                <p className="text-gray-600 mb-6">To use the video generation feature, you must select an API key. This is a mandatory step for using the Veo model.</p>
-                <p className="text-sm text-gray-500 mb-6">For information on billing, please visit <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-brand-orange underline">ai.google.dev/gemini-api/docs/billing</a>.</p>
-                <button
-                    onClick={handleSelectKey}
-                    className="bg-brand-orange text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-colors"
-                >
-                    Select API Key
-                </button>
-            </div>
-        );
-    }
+    };
 
     if (isGenerating) {
         return (
