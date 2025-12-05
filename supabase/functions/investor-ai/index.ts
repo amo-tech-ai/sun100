@@ -74,7 +74,20 @@ const analyzeStartupStrategyFunctionDeclaration = {
             investorReadinessScore: { type: Type.NUMBER, description: "0-100 Score." },
             readinessReasoning: { type: Type.STRING, description: "Executive summary of the score." },
             marketTimingVerdict: { type: Type.STRING, description: "Assessment of 'Why Now?' (e.g., 'Perfect Timing', 'Too Early', 'Crowded')." },
-            actionableRecommendations: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3-5 Specific, tactical steps to improve the score or mitigate risks." },
+            actionableRecommendations: { 
+                type: Type.ARRAY, 
+                description: "3-5 Specific, tactical steps to improve the score or mitigate risks.",
+                items: { 
+                    type: Type.OBJECT,
+                    properties: {
+                        title: { type: Type.STRING, description: "Short action title" },
+                        description: { type: Type.STRING, description: "Detailed explanation of the action" },
+                        priority: { type: Type.STRING, enum: ['Critical', 'High', 'Medium'] },
+                        category: { type: Type.STRING, enum: ['Product', 'Growth', 'Team', 'Fundraising', 'Finance'] }
+                    },
+                    required: ['title', 'description', 'priority', 'category']
+                } 
+            },
             swot: {
                 type: Type.OBJECT,
                 properties: {
@@ -321,7 +334,7 @@ serve(async (req) => {
             1. **SWOT:** Focus on *defensible* strengths (moats) and *existential* risks (weaknesses). Avoid generic fluff.
             2. **Market Timing:** Explicitly verdict on "Why Now?".
             3. **Competitors:** Use Google Search to find *actual* competitors, not just categories.
-            4. **Actionable Recommendations:** Generate 3-5 specific, tactical steps the founder can take *this week* to improve their score.
+            4. **Actionable Recommendations:** Generate 3-5 specific, tactical steps the founder can take *this week*. **Crucial: Do not give generic advice (e.g., 'Improve sales'). Instead, specify metrics and strategies (e.g., 'Increase outbound conversion to 2% by targeting Series A CTOs').**
 
             Call 'analyzeStartupStrategy'.`;
             toolConfig = { tools: [{ googleSearch: {} }, { functionDeclarations: [analyzeStartupStrategyFunctionDeclaration] }] };

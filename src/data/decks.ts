@@ -1,0 +1,59 @@
+import { templates } from '../styles/templates';
+
+// --- Type Definitions ---
+export type ChartData = 
+  | { type: 'bar'; data: { label: string; value: number }[] }
+  | { type: 'pie'; data: { label: string; value: number }[] };
+
+export interface TableData {
+  type: 'pricing' | 'comparison' | 'financials';
+  // Pricing specific
+  tiers?: {
+    name: string;
+    price: string;
+    features: string[];
+  }[];
+  // Comparison specific (SWOT)
+  headers?: string[];
+  rows?: string[][];
+  // Financials specific
+  financials?: {
+    headers: string[];
+    rows: { label: string; values: string[] }[];
+  };
+}
+
+export interface Slide {
+  id: string;
+  title: string;
+  content: string; // Bullet points separated by newlines
+  imageUrl?: string; // Can be a URL or an AI prompt
+  template?: keyof typeof templates;
+  chartData?: ChartData;
+  tableData?: TableData; // New property for pricing tables and SWOT
+  type?: 'vision' | 'problem' | 'solution' | 'market' | 'product' | 'traction' | 'competition' | 'team' | 'ask' | 'roadmap' | 'generic'; // New property for robust context
+}
+
+export interface Deck {
+  id: string;
+  title: string;
+  template: keyof typeof templates;
+  slides: Slide[];
+  status?: 'draft' | 'published';
+  updatedAt?: string;
+}
+
+// --- Mock Data ---
+// This serves as a fallback if the AI generation fails or is bypassed.
+export const mockDeck: Deck = {
+  id: 'mock-deck-123',
+  title: 'Project Sunspot Q3 Update',
+  template: 'default',
+  status: 'draft',
+  updatedAt: new Date().toISOString(),
+  slides: [
+    { id: 'slide-1', title: 'Welcome to Project Sunspot', content: 'Our Q3 achievements\nRoadmap for Q4\nKey challenges and solutions', imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop', type: 'vision' },
+    { id: 'slide-2', title: 'Key Metrics', content: 'User growth increased by 25%\nRevenue surpassed $1.2M\nCustomer satisfaction at 98%', imageUrl: 'upward trending business chart', type: 'traction' },
+    { id: 'slide-3', title: 'What\'s Next?', content: 'Launch new marketing campaign\nExpand into European market\nHire 5 new engineers', imageUrl: 'global map with pins in Europe', type: 'roadmap' },
+  ]
+};

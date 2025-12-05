@@ -156,11 +156,18 @@ export interface MarketSizeAnalysis {
     methodology: string;
 }
 
+export interface Recommendation {
+    title: string;
+    description: string;
+    priority: 'Critical' | 'High' | 'Medium';
+    category: 'Growth' | 'Product' | 'Team' | 'Fundraising' | 'Finance';
+}
+
 export interface StartupStrategicAnalysis {
     investorReadinessScore: number;
     readinessReasoning: string;
     marketTimingVerdict: string;
-    actionableRecommendations: string[];
+    actionableRecommendations: Recommendation[];
     swot: {
         strengths: string[];
         weaknesses: string[];

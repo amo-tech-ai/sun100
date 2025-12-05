@@ -53,6 +53,7 @@ const VCDirectory = lazy(() => import('./screens/VCDirectory'));
 const VCDetail = lazy(() => import('./screens/VCDetail'));
 const DirectoryAdmin = lazy(() => import('./screens/DirectoryAdmin'));
 const FundingManager = lazy(() => import('./screens/FundingManager')); 
+const HiringManager = lazy(() => import('./screens/HiringManager'));
 
 // --- NEW GTM STRATEGY SCREEN ---
 const GTMStrategy = lazy(() => import('./screens/GTMStrategy'));
@@ -166,6 +167,7 @@ const App: React.FC = () => {
                     <Route path="/dashboard/sitemap" element={<Sitemap />} />
                     <Route path="/dashboard/directory-admin" element={<DirectoryAdmin />} />
                     <Route path="/dashboard/funding-manager" element={<FundingManager />} />
+                    <Route path="/dashboard/hiring" element={<HiringManager />} />
                     
                     <Route path="/pitch-decks" element={<PitchDecks />} />
                     <Route path="/pitch-decks/new" element={<WizardSteps />} />

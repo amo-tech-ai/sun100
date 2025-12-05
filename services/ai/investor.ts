@@ -83,9 +83,9 @@ export const analyzeStartupStrategy = async (profileContext: string): Promise<St
             readinessReasoning: "Strong product vision but metrics need more historical data to prove retention.",
             marketTimingVerdict: "Perfect Timing",
             actionableRecommendations: [
-                "Focus on reducing churn in the next quarter.",
-                "Hire a dedicated sales lead.",
-                "Update pitch deck with recent traction."
+                { title: "Churn Reduction", description: "Reduce churn to <5% in the next quarter.", priority: "Critical", category: "Growth" },
+                { title: "Sales Leadership", description: "Hire a dedicated sales lead to scale outbound.", priority: "High", category: "Team" },
+                { title: "Deck Update", description: "Update pitch deck traction slide with Q3 data.", priority: "Medium", category: "Fundraising" }
             ],
             swot: {
                 strengths: ["Innovative AI Tech", "Experienced Team", "Fast Velocity"],

@@ -1,8 +1,8 @@
 
 import { useState, useCallback } from 'react';
 import { summarizeBio, extractMetrics } from '../services/ai/slide';
-import { analyzeStartupStrategy, extractStartupMetadata } from '../services/ai/investor';
-import { BioSummary, ExtractedMetric, StartupStrategicAnalysis, StartupMetadata } from '../services/ai/types';
+import { analyzeStartupStrategy, extractStartupMetadata, suggestDeckFocus } from '../services/ai/investor';
+import { BioSummary, ExtractedMetric, StartupStrategicAnalysis, StartupMetadata, DeckStrategy } from '../services/ai/types';
 import { UserProfile } from '../types/founder';
 
 export interface UseFounderAIReturn {
@@ -14,11 +14,14 @@ export interface UseFounderAIReturn {
     strategicAnalysis: StartupStrategicAnalysis | null;
     isAnalyzingMetadata: boolean;
     metadataAnalysis: StartupMetadata | null;
+    isAnalyzingDeckFocus: boolean;
+    deckStrategy: DeckStrategy | null;
     error: string | null;
     handleSummarize: () => Promise<void>;
     handleExtractMetrics: () => Promise<void>;
     handleStrategicAnalysis: () => Promise<void>;
     handleAnalyzeMetadata: () => Promise<void>;
+    handleSuggestDeckFocus: () => Promise<void>;
 }
 
 export function useFounderAI(profile: UserProfile): UseFounderAIReturn {
@@ -34,9 +37,13 @@ export function useFounderAI(profile: UserProfile): UseFounderAIReturn {
     const [isAnalyzingMetadata, setIsAnalyzingMetadata] = useState(false);
     const [metadataAnalysis, setMetadataAnalysis] = useState<StartupMetadata | null>(null);
 
+    const [isAnalyzingDeckFocus, setIsAnalyzingDeckFocus] = useState(false);
+    const [deckStrategy, setDeckStrategy] = useState<DeckStrategy | null>(null);
+
     const [error, setError] = useState<string | null>(null);
 
     const handleSummarize = useCallback(async () => {
+        if (!profile?.bio) return;
         setIsSummarizing(true);
         setError(null);
         try {
@@ -47,13 +54,20 @@ export function useFounderAI(profile: UserProfile): UseFounderAIReturn {
         } finally {
             setIsSummarizing(false);
         }
-    }, [profile.bio]);
+    }, [profile?.bio]);
 
     const handleExtractMetrics = useCallback(async () => {
+        if (!profile?.startup) return;
         setIsExtractingMetrics(true);
         setError(null);
         try {
-            const textToAnalyze = `${profile.startup.tagline} ${profile.bio} ${profile.startup.traction}`;
+            const textToAnalyze = `
+                Tagline: ${profile.startup.tagline}
+                Description: ${profile.startup.description}
+                Bio: ${profile.bio}
+                Traction: ${profile.startup.traction}
+                Funding: ${profile.startup.fundingGoal}
+            `;
             const { metrics } = await extractMetrics(textToAnalyze);
             setExtractedMetrics(metrics);
         } catch (err) {
@@ -61,13 +75,28 @@ export function useFounderAI(profile: UserProfile): UseFounderAIReturn {
         } finally {
             setIsExtractingMetrics(false);
         }
-    }, [profile.bio, profile.startup.tagline, profile.startup.traction]);
+    }, [profile?.bio, profile?.startup]);
 
     const handleStrategicAnalysis = useCallback(async () => {
+        if (!profile?.startup) return;
         setIsAnalyzingStrategy(true);
         setError(null);
         try {
-            const context = `Startup: ${profile.startup.name}. Industry: ${profile.startup.industry}. Stage: ${profile.startup.stage}. Traction: ${profile.startup.traction}. Tagline: ${profile.startup.tagline}. Founder Bio: ${profile.bio}`;
+            // Detailed context for deeper AI analysis
+            const context = `
+                Startup Analysis Request:
+                Name: ${profile.startup.name}
+                Tagline: ${profile.startup.tagline}
+                Description: ${profile.startup.description}
+                Industry: ${profile.startup.industry}
+                Stage: ${profile.startup.stage}
+                Traction: ${profile.startup.traction}
+                Business Model: ${profile.startup.businessModel}
+                Funding Ask: ${profile.startup.fundingGoal}
+                Founder Bio: ${profile.bio}
+                Current Needs: ${profile.lookingFor?.join(', ') || 'None specified'}
+                Website: ${profile.startup.website}
+            `;
             const result = await analyzeStartupStrategy(context);
             setStrategicAnalysis(result);
         } catch (err) {
@@ -78,6 +107,7 @@ export function useFounderAI(profile: UserProfile): UseFounderAIReturn {
     }, [profile]);
 
     const handleAnalyzeMetadata = useCallback(async () => {
+        if (!profile?.startup) return;
         setIsAnalyzingMetadata(true);
         setError(null);
         try {
@@ -88,7 +118,30 @@ export function useFounderAI(profile: UserProfile): UseFounderAIReturn {
         } finally {
             setIsAnalyzingMetadata(false);
         }
-    }, [profile.startup.description, profile.startup.tagline]);
+    }, [profile?.startup]);
+
+    const handleSuggestDeckFocus = useCallback(async () => {
+        if (!profile?.startup) return;
+        setIsAnalyzingDeckFocus(true);
+        setError(null);
+        try {
+             const context = `
+                Startup: ${profile.startup.name}
+                Industry: ${profile.startup.industry}
+                Stage: ${profile.startup.stage}
+                Traction: ${profile.startup.traction}
+                Description: ${profile.startup.description}
+                Business Model: ${profile.startup.businessModel}
+                Founder Bio: ${profile.bio}
+             `;
+            const result = await suggestDeckFocus(context);
+            setDeckStrategy(result);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Deck focus suggestion failed.");
+        } finally {
+            setIsAnalyzingDeckFocus(false);
+        }
+    }, [profile]);
 
     return {
         isSummarizing,
@@ -99,10 +152,13 @@ export function useFounderAI(profile: UserProfile): UseFounderAIReturn {
         strategicAnalysis,
         isAnalyzingMetadata,
         metadataAnalysis,
+        isAnalyzingDeckFocus,
+        deckStrategy,
         error,
         handleSummarize,
         handleExtractMetrics,
         handleStrategicAnalysis,
-        handleAnalyzeMetadata
+        handleAnalyzeMetadata,
+        handleSuggestDeckFocus
     };
 }

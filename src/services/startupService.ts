@@ -29,7 +29,8 @@ const MOCK_PROFILE: StartupProfile = {
     teamSize: '5-15',
     fundingAsk: '$3M',
     logoUrl: 'https://ui-avatars.com/api/?name=Nexus+AI&background=E87C4D&color=fff&size=128&font-size=0.33',
-    coverImageUrl: ''
+    coverImageUrl: '',
+    lookingFor: ['Seed Funding', 'Enterprise Customers', 'Backend Engineers']
 };
 
 // Mock Data for Founder Profile (Public View)
@@ -120,6 +121,10 @@ export const getStartupProfile = async (): Promise<StartupProfile | null> => {
         if (error) throw error;
         if (!data) return MOCK_PROFILE;
 
+        // Try to parse 'looking_for' from extended_info if available, or default
+        const extendedInfo = data.extended_info || {};
+        const lookingFor = extendedInfo.lookingFor || [];
+
         // Map DB fields to Frontend fields
         return {
             name: data.name,
@@ -132,8 +137,9 @@ export const getStartupProfile = async (): Promise<StartupProfile | null> => {
             stage: data.stage || 'Seed',
             teamSize: data.team_size || '1-10',
             logoUrl: data.logo_url,
-            coverImageUrl: data.cover_image_url || undefined, // Use cover_image_url from DB if available
+            coverImageUrl: data.cover_image_url || undefined,
             fundingAsk: data.funding_ask,
+            lookingFor: lookingFor
         };
     } catch (err) {
         console.warn("Failed to fetch startup profile, using mock:", err);
@@ -151,7 +157,8 @@ export const updateStartupProfile = async (updates: Partial<StartupProfile>): Pr
     // Check if startup exists via team_members
     const { data: membership } = await supabase.from('team_members').select('startup_id').eq('user_id', user.id).maybeSingle();
 
-    const dbUpdates = {
+    // Prepare basic DB updates
+    const dbUpdates: any = {
         name: updates.name,
         website_url: updates.website,
         tagline: updates.tagline,
@@ -162,27 +169,43 @@ export const updateStartupProfile = async (updates: Partial<StartupProfile>): Pr
         stage: updates.stage,
         team_size: updates.teamSize,
         logo_url: updates.logoUrl,
-        cover_image_url: updates.coverImageUrl, // Ensure this field matches DB
+        cover_image_url: updates.coverImageUrl,
         funding_ask: updates.fundingAsk,
-        contact_email: (updates as any).email, // Map email from context if present
+        contact_email: (updates as any).email,
         socials: (updates as any).socials,
         updated_at: new Date().toISOString()
     };
 
+    // Handle extended_info (lookingFor) with merge strategy
+    if (updates.lookingFor) {
+        if (membership) {
+            // Fetch existing to merge
+            const { data: currentData } = await supabase
+                .from('startups')
+                .select('extended_info')
+                .eq('id', membership.startup_id)
+                .single();
+                
+            const existingInfo = currentData?.extended_info || {};
+            dbUpdates.extended_info = { ...existingInfo, lookingFor: updates.lookingFor };
+        } else {
+            // New startup creation case
+            dbUpdates.extended_info = { lookingFor: updates.lookingFor };
+        }
+    }
+
     // Clean undefined values
-    Object.keys(dbUpdates).forEach(key => (dbUpdates as any)[key] === undefined && delete (dbUpdates as any)[key]);
+    Object.keys(dbUpdates).forEach(key => dbUpdates[key] === undefined && delete dbUpdates[key]);
 
     if (membership) {
         const { error } = await supabase.from('startups').update(dbUpdates).eq('id', membership.startup_id);
         if (error) throw error;
     } else {
         // Create new startup and link member
-        // 1. Insert Startup
         if (!dbUpdates.name) dbUpdates.name = "My Startup";
         const { data: newStartup, error: startupError } = await supabase.from('startups').insert(dbUpdates).select().single();
         if (startupError) throw startupError;
 
-        // 2. Create Team Member link
         const { error: memberError } = await supabase.from('team_members').insert({
             startup_id: newStartup.id,
             user_id: user.id,
@@ -198,9 +221,7 @@ export const getPublicFounderProfile = async (username: string): Promise<UserPro
     try {
         // Mock Check
         if (!(supabase as any).realtime) {
-             // Simulate network delay
              await new Promise(r => setTimeout(r, 800));
-             // Return mock if username matches mock, else null (simulate 404)
              return username === 'alex-chen' ? MOCK_FOUNDER_PROFILE : null;
         }
 
@@ -208,7 +229,7 @@ export const getPublicFounderProfile = async (username: string): Promise<UserPro
         const { data: userProfile, error: userError } = await supabase
             .from('profiles')
             .select('*')
-            .eq('username', username) // Assumes 'username' column exists in profiles table
+            .eq('username', username)
             .single();
 
         if (userError || !userProfile) {
@@ -216,7 +237,7 @@ export const getPublicFounderProfile = async (username: string): Promise<UserPro
             return null;
         }
 
-        // 2. Get Associated Startup (Owner/Admin)
+        // 2. Get Associated Startup
         const { data: membership } = await supabase
             .from('team_members')
             .select('startup_id')
@@ -238,9 +259,9 @@ export const getPublicFounderProfile = async (username: string): Promise<UserPro
         // 3. Get Public Decks
         const { data: decks } = await supabase
             .from('decks')
-            .select('id, title, slides(image_url)') // Fetch first slide image roughly
+            .select('id, title, slides(image_url)')
             .eq('startup_id', startup.id)
-            .eq('status', 'published') // Assuming 'status' column
+            .eq('status', 'published')
             .limit(4);
 
         const publicDecks = (decks || []).map((d: any) => ({
@@ -248,6 +269,9 @@ export const getPublicFounderProfile = async (username: string): Promise<UserPro
             title: d.title,
             imageUrl: d.slides?.[0]?.image_url || 'https://via.placeholder.com/300x200?text=Deck'
         }));
+
+        // Extract lookingFor from extended_info
+        const lookingFor = startup.extended_info?.lookingFor || [];
 
         // 4. Construct UserProfile object
         return {
@@ -270,11 +294,11 @@ export const getPublicFounderProfile = async (username: string): Promise<UserPro
                 fundingGoal: startup.funding_ask || '',
                 industry: startup.industry || 'Tech',
                 stage: startup.stage || 'Seed',
-                traction: 'See deck', // Placeholder if not in DB
-                businessModel: 'See deck', // Placeholder
-                team: [] // Populate if team data available
+                traction: 'See deck', 
+                businessModel: 'See deck',
+                team: [] 
             },
-            lookingFor: ['Investors', 'Partners'], // Could be a DB field
+            lookingFor: lookingFor.length > 0 ? lookingFor : ['Network', 'Feedback'],
             publicDecks
         };
 
@@ -288,7 +312,6 @@ export const getPublicFounderProfile = async (username: string): Promise<UserPro
 
 export const getStartupTeamStats = async (): Promise<TeamStats> => {
     try {
-        // Mock Check
         if (!(supabase as any).realtime) return MOCK_TEAM_STATS;
 
         const { data: { user } } = await (supabase.auth as any).getUser();
@@ -299,7 +322,6 @@ export const getStartupTeamStats = async (): Promise<TeamStats> => {
 
         const startupId = membership.startup_id;
 
-        // Using Promise.allSettled to handle potential missing tables gracefully
         const [membersResult, jobsResult] = await Promise.allSettled([
             supabase.from('team_members').select('department').eq('startup_id', startupId),
             supabase.from('jobs').select('id').eq('startup_id', startupId).eq('is_active', true)
@@ -351,7 +373,6 @@ export const getStartupMilestones = async (): Promise<Milestone[]> => {
             .order('target_date', { ascending: true });
 
         if (error) {
-             // Graceful fallback if table is missing
              if (error.code === '42P01') return MOCK_MILESTONES; 
              throw error;
         }
