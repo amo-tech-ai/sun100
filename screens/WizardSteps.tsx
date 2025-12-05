@@ -7,7 +7,7 @@ import TemplateSelector from '../components/TemplateSelector';
 import { FinancialSettings } from '../services/ai/deck';
 import { templates } from '../styles/templates';
 
-const { useNavigate } = ReactRouterDOM;
+const { useNavigate, useLocation } = ReactRouterDOM;
 
 // --- ICONS ---
 const SparklesIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
@@ -63,6 +63,7 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 const WizardSteps: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const {
         step,
         setStep,
@@ -98,6 +99,49 @@ const WizardSteps: React.FC = () => {
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [step]);
+
+    // Handle Pre-filled Data from Founder Profile or other sources
+    useEffect(() => {
+        if (location.state?.prefill) {
+            const { prefill } = location.state;
+            console.log("Auto-populating wizard from profile data:", prefill);
+
+            // Step 1: Business Context
+            const context = `${prefill.name}: ${prefill.tagline}. ${prefill.description}`;
+            setBusinessContext(context);
+            if(prefill.website) setUrls([prefill.website]);
+
+            // Step 3: Details
+            if (prefill.stage) setStage(prefill.stage);
+            if (prefill.industry) setStartupType([prefill.industry]); // Simple mapping
+            if (prefill.teamSize) {
+                 // Map simplistic team size format if needed, currently assumes match
+                 setTeamSize(prefill.teamSize.replace('1-10', '2–5')); // Normalize
+            }
+            if (prefill.traction) {
+                // Simple heuristic
+                if (prefill.traction.includes('Users')) setTractionStage('Growing revenue');
+                else setTractionStage('Pre-launch');
+            }
+
+            // Step 4: Financials
+            if (prefill.fundingGoal) {
+                // Extract number
+                const goal = parseInt(prefill.fundingGoal.replace(/[^0-9]/g, '')) || 500000;
+                // Handle Millions vs Thousands based on text (e.g. $1.5M vs $500k) - simple fallback
+                const multiplier = prefill.fundingGoal.includes('M') ? 1000000 : prefill.fundingGoal.includes('k') ? 1000 : 1;
+                const amount = goal < 1000 ? goal * multiplier : goal; // if parsed 1.5 -> 1500000
+                
+                updateFinancials('fundingGoal', amount.toString());
+            }
+            if (prefill.businessModel) {
+                updateFinancials('revenueModel', prefill.businessModel.split(' ')[0]); // Take first word "SaaS"
+            }
+
+            // Clear navigation state to avoid re-triggering on refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state, setBusinessContext, setUrls, setStage, setStartupType, setTeamSize, setTractionStage, updateFinancials]);
 
     const handleNext = () => {
         if (step === 1 && !businessContext.trim() && urls.length === 0) {

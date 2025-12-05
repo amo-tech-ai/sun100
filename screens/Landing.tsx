@@ -40,6 +40,42 @@ const RefreshIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
+// --- NEW GRADIENT ICONS FOR COMMAND CENTER ---
+const IconCreation = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 19l7-7 3 3-7 7-3-3z" />
+        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+        <path d="M2 2l7.586 7.586" />
+        <circle cx="11" cy="11" r="2" />
+    </svg>
+);
+
+const IconIntelligence = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2a10 10 0 1 0 10 10H12V2z" />
+        <path d="M12 2a10 10 0 0 1 10 10" opacity="0.5" />
+        <path d="M12 12l9.5-2.5" />
+        <path d="M12 12l6 8.5" />
+    </svg>
+);
+
+const IconGrowth = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="20" x2="12" y2="10" />
+        <line x1="18" y1="20" x2="18" y2="4" />
+        <line x1="6" y1="20" x2="6" y2="16" />
+    </svg>
+);
+
+const IconCRM = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+);
+
 const FeatureHighlightCard: React.FC<{ icon: React.ReactNode; title: string; description: string; delay: number }> = ({ icon, title, description, delay }) => {
     const [ref, isVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.1 });
     return (
@@ -53,16 +89,6 @@ const FeatureHighlightCard: React.FC<{ icon: React.ReactNode; title: string; des
     );
 };
 
-const BenefitCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
-    <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 hover:shadow-md hover:border-brand-orange/20 transition-all duration-300 group">
-        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-brand-blue shadow-sm mb-3 border border-gray-100 group-hover:text-brand-orange transition-colors">
-            {icon}
-        </div>
-        <h4 className="font-bold text-slate-900 mb-1 text-sm">{title}</h4>
-        <p className="text-xs text-slate-500 leading-relaxed">{description}</p>
-    </div>
-);
-
 const TestimonialCard: React.FC<{ quote: string; name: string; title: string; avatar: string; }> = ({ quote, name, title, avatar }) => (
     <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-lg relative mt-8 sm:mt-0">
         <img src={avatar} alt={name} className="w-16 h-16 rounded-full absolute -top-8 left-8 border-4 border-white shadow-sm object-cover" />
@@ -74,8 +100,114 @@ const TestimonialCard: React.FC<{ quote: string; name: string; title: string; av
     </div>
 );
 
+const FeatureSuiteCard = ({ icon, title, features }: { icon: React.ReactNode, title: string, features: string[] }) => (
+    <div className="bg-white p-6 rounded-2xl shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-100 hover:border-indigo-100 transition-all hover:-translate-y-1 group">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 flex items-center justify-center mb-4 group-hover:from-indigo-100 group-hover:to-violet-100 transition-colors shadow-inner border border-white">
+            {icon}
+        </div>
+        <h3 className="text-lg font-bold text-slate-900 mb-3">{title}</h3>
+        <ul className="space-y-2.5">
+            {features.map((feat, i) => (
+                <li key={i} className="flex items-start gap-2.5 text-sm text-slate-600">
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0"></span>
+                    <span className="leading-snug">{feat}</span>
+                </li>
+            ))}
+        </ul>
+    </div>
+);
+
+const CommandConsoleIllustration = () => (
+  <div className="relative w-full aspect-square md:aspect-[4/3] bg-gradient-to-br from-indigo-50/50 via-white to-violet-50/50 rounded-3xl border border-indigo-100/50 p-4 sm:p-8 flex items-center justify-center overflow-hidden">
+    {/* Abstract Glows */}
+    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.15),transparent_70%)]"></div>
+    
+    {/* The Console Interface */}
+    <div className="relative z-10 w-full max-w-[380px] bg-white rounded-2xl shadow-2xl border border-gray-200/60 flex flex-col overflow-hidden transform transition-transform hover:scale-[1.02] duration-500">
+        {/* Header Bar */}
+        <div className="h-10 bg-slate-50 border-b border-gray-100 flex items-center px-4 gap-2">
+            <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+            </div>
+            <div className="flex-1 text-center text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Command Center</div>
+        </div>
+        
+        {/* Dashboard Content Mockup */}
+        <div className="p-5 grid gap-4 bg-white">
+            {/* Top Widgets */}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-indigo-50/50 border border-indigo-100">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-100 mb-2 flex items-center justify-center text-indigo-600">
+                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    </div>
+                    <div className="h-2 w-12 bg-indigo-200 rounded mb-1"></div>
+                    <div className="h-2 w-8 bg-indigo-100 rounded"></div>
+                </div>
+                <div className="p-3 rounded-xl bg-violet-50/50 border border-violet-100">
+                     <div className="w-8 h-8 rounded-lg bg-violet-100 mb-2 flex items-center justify-center text-violet-600">
+                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    </div>
+                    <div className="h-2 w-12 bg-violet-200 rounded mb-1"></div>
+                    <div className="h-2 w-8 bg-violet-100 rounded"></div>
+                </div>
+            </div>
+            
+            {/* Main Chart Area */}
+            <div className="h-32 rounded-xl bg-slate-900 border border-slate-800 p-4 relative overflow-hidden">
+                {/* Grid Lines */}
+                <div className="absolute inset-0 opacity-20 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+                {/* Abstract Curve */}
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-indigo-500/20 to-transparent"></div>
+                 <svg className="absolute bottom-4 left-4 right-4 h-16 w-[calc(100%-2rem)]" preserveAspectRatio="none">
+                    <path d="M0,30 Q30,50 60,20 T120,10 T180,40 T240,10 T300,30" fill="none" stroke="#818cf8" strokeWidth="2" />
+                </svg>
+            </div>
+
+            {/* Bottom List */}
+            <div className="space-y-2">
+                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
+                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                    <div className="h-2 w-24 bg-gray-200 rounded"></div>
+                </div>
+                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
+                     <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                    <div className="h-2 w-32 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {/* Floating Elements for Depth */}
+    <div className="absolute top-1/2 -right-4 md:-right-8 bg-white p-3 rounded-xl shadow-xl border border-gray-100 animate-float-delayed z-20">
+        <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs font-bold">
+                ✓
+            </div>
+            <div>
+                <div className="h-2 w-16 bg-gray-200 rounded mb-1"></div>
+                <div className="h-1.5 w-10 bg-gray-100 rounded"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div className="absolute bottom-12 -left-4 md:-left-8 bg-white p-3 rounded-xl shadow-xl border border-gray-100 animate-float z-20">
+        <div className="flex items-center gap-3">
+             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <div>
+                <div className="h-2 w-20 bg-gray-200 rounded mb-1"></div>
+                <div className="h-1.5 w-12 bg-gray-100 rounded"></div>
+            </div>
+        </div>
+    </div>
+  </div>
+);
+
 const Landing: React.FC = () => {
-    const [painRef, isPainVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.2 });
+    const [heroRef, isHeroVisible] = useOnScreen<HTMLDivElement>({ threshold: 0.1 });
 
     return (
     <div className="font-display bg-[#FBF8F5] overflow-x-hidden">
@@ -111,7 +243,7 @@ const Landing: React.FC = () => {
             }
         `}</style>
         
-        {/* Section 1: Hero - Redesigned */}
+        {/* Section 1: Hero */}
         <section className="relative pt-16 pb-20 lg:pt-32 lg:pb-40 overflow-hidden">
             {/* Background Elements */}
             <div className="absolute inset-0 bg-grid-slate -z-10"></div>
@@ -257,96 +389,50 @@ const Landing: React.FC = () => {
             </div>
         </section>
 
-        {/* Section 3: Pain & Promise - Redesigned */}
-        <section className="px-4 sm:px-6 lg:px-8 py-16 lg:py-24 bg-white">
+        {/* Section 3: AI Command Center (Redesigned) */}
+        <section className="px-4 sm:px-6 lg:px-8 py-20 lg:py-32 bg-white overflow-hidden">
             <div className="max-w-7xl mx-auto">
-                <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                    {/* Order on mobile: Visual Second (2), Text First (1) */}
-                    <div ref={painRef} className="order-1 lg:order-1">
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight mb-4">
-                            Stop Wrestling With PowerPoint. <br/>
-                            <span className="text-brand-orange">Start Building With AI.</span>
-                        </h2>
-                        <p className="text-lg text-slate-600 mb-8">
-                            Create investor-ready slides instantly with AI-powered design, content, and visuals. No design skills required.
-                        </p>
-                        
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <BenefitCard 
-                                icon={<LayoutIcon className="w-5 h-5" />}
-                                title="Automated Layouts"
-                                description="Intelligent formatting that adapts instantly to your content."
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
+                    {/* Left Column: Text & Features */}
+                    <div className="order-1 lg:order-1">
+                        <div className="mb-10">
+                             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 leading-tight mb-6">
+                                Your Startup’s <br/>
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">AI Command Center</span>
+                            </h2>
+                            <p className="text-lg text-slate-600 leading-relaxed max-w-lg">
+                                Unify your workflow. From planning and validation to scaling and fundraising, access a suite of intelligent tools designed to accelerate every stage of your startup journey.
+                            </p>
+                        </div>
+
+                        {/* 2x2 Feature Grid */}
+                        <div className="grid sm:grid-cols-2 gap-6">
+                            <FeatureSuiteCard
+                                icon={<IconCreation />}
+                                title="Creation Tools"
+                                features={["AI Pitch Deck Generator", "Strategy & Document Builder", "Visual Agent"]}
                             />
-                            <BenefitCard 
-                                icon={<MagicPenIcon className="w-5 h-5" />}
-                                title="AI-Written Messaging"
-                                description="Compelling copy generation optimized for investors."
+                            <FeatureSuiteCard
+                                icon={<IconIntelligence />}
+                                title="Intelligence Engine"
+                                features={["Intelligent Copilot", "Market Sizing & Research", "Context Understanding"]}
                             />
-                            <BenefitCard 
-                                icon={<EyeIcon className="w-5 h-5" />}
-                                title="Visual Intelligence"
-                                description="Auto-generated charts and images that match your brand."
+                            <FeatureSuiteCard
+                                icon={<IconGrowth />}
+                                title="Growth & Insights"
+                                features={["Real-time Founder Dashboard", "KPI Alerts & Summaries", "Daily Founder Briefing"]}
                             />
-                            <BenefitCard 
-                                icon={<RefreshIcon className="w-5 h-5" />}
-                                title="Smart Revisions"
-                                description="Iterate instantly with simple natural language commands."
+                            <FeatureSuiteCard
+                                icon={<IconCRM />}
+                                title="Automation & CRM"
+                                features={["AI Lead Enrichment", "Predictive Scoring", "Outreach Suggestions"]}
                             />
                         </div>
                     </div>
-                    
-                    <div className={`relative order-2 lg:order-2 transition-all duration-1000 ease-out ${isPainVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-                        {/* Before -> After Visual */}
-                        <div className="relative aspect-square max-w-md mx-auto lg:max-w-none">
-                            {/* Background Blob */}
-                            <div className="absolute inset-0 bg-gradient-to-tr from-blue-50 to-orange-50 rounded-full blur-3xl opacity-60"></div>
-                            
-                            {/* "Before" Card - Peeking from behind */}
-                            <div className="absolute top-8 left-8 w-3/4 h-3/4 bg-white border border-gray-200 rounded-xl shadow-lg transform -rotate-6 opacity-60 flex flex-col p-6 grayscale">
-                                <div className="h-4 w-1/2 bg-gray-200 rounded mb-4"></div>
-                                <div className="space-y-2">
-                                    <div className="h-2 w-full bg-gray-100 rounded"></div>
-                                    <div className="h-2 w-full bg-gray-100 rounded"></div>
-                                    <div className="h-2 w-3/4 bg-gray-100 rounded"></div>
-                                </div>
-                                <div className="mt-auto text-center">
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Before</span>
-                                </div>
-                            </div>
 
-                            {/* "After" Card - Front and Center */}
-                            <div className="absolute top-16 left-16 w-3/4 h-3/4 bg-white border border-gray-100 rounded-xl shadow-2xl transform rotate-3 flex flex-col overflow-hidden">
-                                <div className="h-32 bg-slate-900 p-6 flex flex-col justify-center relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-20 h-20 bg-brand-orange/20 rounded-full blur-xl"></div>
-                                    <div className="h-6 w-2/3 bg-white/20 rounded mb-2 backdrop-blur-sm"></div>
-                                    <div className="h-3 w-1/2 bg-white/10 rounded backdrop-blur-sm"></div>
-                                </div>
-                                <div className="p-6 flex-1 bg-white relative">
-                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <div className="h-2 w-full bg-gray-100 rounded"></div>
-                                            <div className="h-2 w-5/6 bg-gray-100 rounded"></div>
-                                        </div>
-                                        <div className="h-16 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-center">
-                                            <div className="w-8 h-8 bg-blue-500/20 rounded-full"></div>
-                                        </div>
-                                     </div>
-                                     <div className="absolute bottom-4 right-4">
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold border border-green-200 shadow-sm">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                                            AI Solves This
-                                        </span>
-                                     </div>
-                                </div>
-                            </div>
-                            
-                            {/* Connecting Arrow */}
-                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                                <div className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-brand-orange border border-orange-100">
-                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                                </div>
-                            </div>
-                        </div>
+                    {/* Right Column: Illustration */}
+                    <div className="order-2 lg:order-2 relative">
+                        <CommandConsoleIllustration />
                     </div>
                 </div>
             </div>

@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.13.0] - 2025-01-23
+
+### Added
+- **Startup Viability Score:** Introduced a Gemini 3-powered scoring system on the Founder Profile page (`FounderProfile.tsx`). It analyzes Team, Market, Product, and Traction to generate a 0-100 "Investor Readiness" score with SWOT analysis.
+- **AI Context Analysis (Wizard):** Added a new "AI Analysis" step to the `StartupWizard`. Users can now auto-enrich their profile (Tagline, Description, Mission) using Gemini 3 reasoning based on their website or initial pitch.
+
+### Changed
+- **Landing Page Redesign:**
+  - **Feature Block:** Completely overhauled the "Stop Wrestling With PowerPoint" section. Replaced negative messaging with a benefit-driven "Start Building With AI" header, feature cards, and a "Before/After" visual transformation.
+  - **Final CTA:** Updated the bottom CTA section to focus on "Create Your Startup Profile" and "Build a Deck," with direct links to the respective wizards.
+- **Backend Logic:** Updated `investor-ai` Edge Function to support the new `enrichStartupProfile` and `analyzeStartupStrategy` (with scoring) actions.
+
+### Fixed
+- **Module Integrity:** Resolved a critical syntax error in `screens/HowItWorks.tsx` caused by file truncation.
+
 ## [2.12.0] - 2025-01-22
 
 ### Added

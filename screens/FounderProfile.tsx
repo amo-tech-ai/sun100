@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { summarizeBio, extractMetrics } from '../services/ai/slide';
 import { analyzeStartupStrategy } from '../services/ai/investor';
 import { BioSummary, ExtractedMetric, StartupStrategicAnalysis } from '../services/ai/types';
@@ -16,6 +16,8 @@ const ClipboardIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http:/
 const BrainIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>;
 const BarChartIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>;
 const TargetIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+const PresentationIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></svg>;
+const UsersIcon = (props: React.ComponentProps<'svg'>) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 
 const Spinner = () => <svg className="animate-spin h-4 w-4 text-brand-orange" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>;
 
@@ -52,11 +54,18 @@ const mockProfile = {
         name: 'StartupAI',
         logoUrl: 'https://www.gstatic.com/mobilesdk/160503_mobilesdk/logo/2x/firebase_28dp.png', // Placeholder
         tagline: 'Your AI-Powered Startup Hub for Growth.',
+        description: 'An all-in-one platform that helps founders build pitch decks, find investors, and manage their startup journey using advanced AI tools.',
         website: 'https://startupai.com',
         fundingGoal: '$1.5M Seed',
         industry: 'Generative AI / SaaS',
         stage: 'Seed',
-        traction: '500+ Beta Users, $10k MRR'
+        traction: '500+ Beta Users, $10k MRR',
+        businessModel: 'SaaS Subscription ($49/mo)',
+        team: [
+             { name: 'Alex Chen', role: 'CEO', background: 'Ex-Google AI' },
+             { name: 'Samantha Rao', role: 'CTO', background: 'PhD in ML' },
+             { name: 'David Kim', role: 'Product', background: '2x Founder' }
+        ]
     },
     lookingFor: ['Seed Funding', 'Technical Co-founder', 'Beta Testers'],
     publicDecks: [
@@ -67,6 +76,7 @@ const mockProfile = {
 
 const FounderProfile: React.FC = () => {
     const { username } = useParams<{ username: string }>();
+    const navigate = useNavigate();
     const profile = mockProfile; // In a real app, you'd fetch this based on username
 
     // AI State
@@ -123,6 +133,10 @@ const FounderProfile: React.FC = () => {
             setIsAnalyzingStrategy(false);
         }
     }, [profile]);
+
+    const handleGenerateDeck = () => {
+        navigate('/pitch-decks/new', { state: { prefill: profile.startup } });
+    };
 
     const getScoreColor = (score: number) => {
         if (score >= 80) return 'text-green-600 border-green-500 bg-green-50';
@@ -246,137 +260,161 @@ const FounderProfile: React.FC = () => {
 
             {/* Right Column / Main Content */}
             <main className="flex-1 space-y-8">
-                {/* Startup Card */}
-                <section className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                {/* Startup Profile Section */}
+                <section className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 relative group">
+                    <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={handleGenerateDeck} className="bg-brand-blue text-white text-xs font-bold py-2 px-4 rounded-full hover:bg-opacity-90 shadow-md flex items-center gap-2">
+                            <PresentationIcon className="w-3 h-3" />
+                            Generate Pitch Deck
+                        </button>
+                    </div>
+
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-center gap-6">
                             <img src={profile.startup.logoUrl} alt={`${profile.startup.name} logo`} className="w-16 h-16"/>
                             <div>
                                 <h2 className="text-2xl font-bold text-brand-blue">{profile.startup.name}</h2>
-                                <p className="text-gray-600">{profile.startup.tagline}</p>
-                                <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                                <p className="text-gray-600 text-sm mt-1 max-w-lg">{profile.startup.description}</p>
+                                <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-gray-500">
                                     <span className="bg-gray-100 px-2 py-1 rounded">{profile.startup.industry}</span>
                                     <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100">{profile.startup.stage}</span>
+                                    <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded border border-purple-100">{profile.startup.businessModel}</span>
                                     <a href={profile.startup.website} target="_blank" rel="noopener noreferrer" className="text-brand-orange font-semibold hover:underline flex items-center gap-1">
                                         <LinkIcon className="w-3 h-3" />
-                                        {profile.startup.website.replace('https://', '')}
+                                        Website
                                     </a>
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center min-w-[150px]">
-                            <p className="text-xs text-green-600 font-bold uppercase tracking-wide">Funding Goal</p>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center min-w-[140px]">
+                            <p className="text-xs text-green-600 font-bold uppercase tracking-wide">Funding Ask</p>
                             <p className="text-xl font-bold text-green-800 mt-1">{profile.startup.fundingGoal}</p>
                         </div>
                     </div>
-
-                    {/* Strategic Analysis Section (Gemini 3) */}
-                    <div className="mt-8 border-t border-gray-100 pt-6">
-                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-brand-blue flex items-center gap-2">
-                                <BrainIcon className="text-brand-orange" />
-                                Strategic Analysis
-                            </h3>
-                             <button 
-                                onClick={handleStrategicAnalysis} 
-                                disabled={isAnalyzingStrategy}
-                                className="text-sm bg-white border border-gray-300 text-gray-700 font-semibold py-1.5 px-4 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-                            >
-                                {isAnalyzingStrategy ? 'Calculating Viability...' : 'Calculate Viability Score'}
-                            </button>
+                    
+                    {/* Founding Team Preview */}
+                    <div className="mt-6 pt-6 border-t border-gray-100">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Founding Team</h4>
+                        <div className="flex flex-wrap gap-4">
+                            {profile.startup.team.map((member, idx) => (
+                                <div key={idx} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                                    <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500"><UsersIcon className="w-3 h-3"/></div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-800">{member.name}</p>
+                                        <p className="text-[10px] text-gray-500">{member.role} • {member.background}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                        
-                        {strategicAnalysis ? (
-                            <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden animate-fade-in-up">
-                                {/* Score Header */}
-                                <div className="flex items-center gap-6 p-6 bg-white border-b border-gray-100">
-                                    <div className={`w-20 h-20 rounded-full border-8 flex items-center justify-center flex-shrink-0 ${getScoreColor(strategicAnalysis.investorReadinessScore)}`}>
-                                        <span className="text-2xl font-extrabold">{strategicAnalysis.investorReadinessScore}</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-bold text-gray-900">Startup Viability Report</h4>
-                                        <p className="text-sm text-gray-600 mt-1 leading-relaxed">{strategicAnalysis.readinessReasoning}</p>
-                                    </div>
-                                </div>
-
-                                {/* SWOT Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-1 bg-gray-200 border-b border-gray-200">
-                                    <div className="bg-white p-5">
-                                        <h5 className="text-xs font-bold text-green-600 uppercase mb-3">Strengths</h5>
-                                        <ul className="space-y-2">
-                                            {strategicAnalysis.swot.strengths.map((item, i) => (
-                                                <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-green-400 text-xs mt-1">●</span> {item}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div className="bg-white p-5">
-                                        <h5 className="text-xs font-bold text-red-500 uppercase mb-3">Weaknesses</h5>
-                                        <ul className="space-y-2">
-                                            {strategicAnalysis.swot.weaknesses.map((item, i) => (
-                                                <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-red-400 text-xs mt-1">●</span> {item}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div className="bg-white p-5">
-                                        <h5 className="text-xs font-bold text-blue-500 uppercase mb-3">Opportunities</h5>
-                                        <ul className="space-y-2">
-                                            {strategicAnalysis.swot.opportunities.map((item, i) => (
-                                                <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-blue-400 text-xs mt-1">●</span> {item}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div className="bg-white p-5">
-                                        <h5 className="text-xs font-bold text-orange-500 uppercase mb-3">Threats</h5>
-                                        <ul className="space-y-2">
-                                            {strategicAnalysis.swot.threats.map((item, i) => (
-                                                <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-orange-400 text-xs mt-1">●</span> {item}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                {/* Market Trends & Competitors */}
-                                <div className="p-6 bg-gray-50 grid md:grid-cols-2 gap-8">
-                                    <div>
-                                        <h5 className="font-bold text-sm text-gray-900 mb-3">Live Market Trends</h5>
-                                        <ul className="space-y-2">
-                                            {strategicAnalysis.marketTrends.map((trend, i) => (
-                                                <li key={i} className="text-xs text-gray-600 bg-white px-3 py-2 rounded border border-gray-200 shadow-sm">
-                                                    🔥 {trend}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h5 className="font-bold text-sm text-gray-900 mb-3">Key Competitors</h5>
-                                        <div className="flex flex-wrap gap-2">
-                                            {strategicAnalysis.keyCompetitors.map((comp, i) => (
-                                                <span key={i} className="text-xs font-semibold text-gray-600 bg-gray-200 px-3 py-1 rounded-full">
-                                                    {comp}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            !isAnalyzingStrategy && (
-                                <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                    <p className="text-gray-500 text-sm">
-                                        Gemini 3 will research live market data, evaluate team strength, and score startup viability.
-                                    </p>
-                                </div>
-                            )
-                        )}
-                        
-                        {isAnalyzingStrategy && (
-                             <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
-                                <div className="w-12 h-12 mx-auto mb-4 border-4 border-dashed rounded-full animate-spin border-brand-orange"></div>
-                                <p className="text-gray-800 font-semibold">Gemini 3 is thinking...</p>
-                                <p className="text-gray-500 text-sm mt-2">Evaluating Team, Market, Product, and Traction.</p>
-                            </div>
-                        )}
                     </div>
+                </section>
+
+                {/* Strategic Analysis Section (Gemini 3) */}
+                <section className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                     <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-bold text-brand-blue flex items-center gap-2">
+                            <BrainIcon className="text-brand-orange" />
+                            Strategic Analysis
+                        </h3>
+                         <button 
+                            onClick={handleStrategicAnalysis} 
+                            disabled={isAnalyzingStrategy}
+                            className="text-sm bg-white border border-gray-300 text-gray-700 font-semibold py-1.5 px-4 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                        >
+                            {isAnalyzingStrategy ? 'Calculating Viability...' : 'Calculate Viability Score'}
+                        </button>
+                    </div>
+                    
+                    {strategicAnalysis ? (
+                        <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden animate-fade-in-up">
+                            {/* Score Header */}
+                            <div className="flex items-center gap-6 p-6 bg-white border-b border-gray-100">
+                                <div className={`w-20 h-20 rounded-full border-8 flex items-center justify-center flex-shrink-0 ${getScoreColor(strategicAnalysis.investorReadinessScore)}`}>
+                                    <span className="text-2xl font-extrabold">{strategicAnalysis.investorReadinessScore}</span>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-gray-900">Startup Viability Report</h4>
+                                    <p className="text-sm text-gray-600 mt-1 leading-relaxed">{strategicAnalysis.readinessReasoning}</p>
+                                </div>
+                            </div>
+
+                            {/* SWOT Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 bg-gray-200 border-b border-gray-200">
+                                <div className="bg-white p-5">
+                                    <h5 className="text-xs font-bold text-green-600 uppercase mb-3">Strengths</h5>
+                                    <ul className="space-y-2">
+                                        {strategicAnalysis.swot.strengths.map((item, i) => (
+                                            <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-green-400 text-xs mt-1">●</span> {item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className="bg-white p-5">
+                                    <h5 className="text-xs font-bold text-red-500 uppercase mb-3">Weaknesses</h5>
+                                    <ul className="space-y-2">
+                                        {strategicAnalysis.swot.weaknesses.map((item, i) => (
+                                            <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-red-400 text-xs mt-1">●</span> {item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className="bg-white p-5">
+                                    <h5 className="text-xs font-bold text-blue-500 uppercase mb-3">Opportunities</h5>
+                                    <ul className="space-y-2">
+                                        {strategicAnalysis.swot.opportunities.map((item, i) => (
+                                            <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-blue-400 text-xs mt-1">●</span> {item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div className="bg-white p-5">
+                                    <h5 className="text-xs font-bold text-orange-500 uppercase mb-3">Threats</h5>
+                                    <ul className="space-y-2">
+                                        {strategicAnalysis.swot.threats.map((item, i) => (
+                                            <li key={i} className="text-sm text-gray-700 flex items-start gap-2"><span className="text-orange-400 text-xs mt-1">●</span> {item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Market Trends & Competitors */}
+                            <div className="p-6 bg-gray-50 grid md:grid-cols-2 gap-8">
+                                <div>
+                                    <h5 className="font-bold text-sm text-gray-900 mb-3">Live Market Trends</h5>
+                                    <ul className="space-y-2">
+                                        {strategicAnalysis.marketTrends.map((trend, i) => (
+                                            <li key={i} className="text-xs text-gray-600 bg-white px-3 py-2 rounded border border-gray-200 shadow-sm">
+                                                🔥 {trend}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 className="font-bold text-sm text-gray-900 mb-3">Key Competitors</h5>
+                                    <div className="flex flex-wrap gap-2">
+                                        {strategicAnalysis.keyCompetitors.map((comp, i) => (
+                                            <span key={i} className="text-xs font-semibold text-gray-600 bg-gray-200 px-3 py-1 rounded-full">
+                                                {comp}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        !isAnalyzingStrategy && (
+                            <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                <p className="text-gray-500 text-sm">
+                                    Gemini 3 will research live market data, evaluate team strength, and score startup viability.
+                                </p>
+                            </div>
+                        )
+                    )}
+                    
+                    {isAnalyzingStrategy && (
+                         <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
+                            <div className="w-12 h-12 mx-auto mb-4 border-4 border-dashed rounded-full animate-spin border-brand-orange"></div>
+                            <p className="text-gray-800 font-semibold">Gemini 3 is thinking...</p>
+                            <p className="text-gray-500 text-sm mt-2">Evaluating Team, Market, Product, and Traction.</p>
+                        </div>
+                    )}
                 </section>
                 
                 {/* Looking For Card */}
