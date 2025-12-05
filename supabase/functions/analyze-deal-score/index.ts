@@ -27,8 +27,8 @@ serve(async (req) => {
 
   try {
     const { deal, customer, interactions } = await req.json();
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) throw new Error("API_KEY not set");
+    const apiKey = Deno.env.get('GEMINI_API_KEY');
+    if (!apiKey) throw new Error("GEMINI_API_KEY not set");
 
     const ai = new GoogleGenAI({ apiKey });
 
