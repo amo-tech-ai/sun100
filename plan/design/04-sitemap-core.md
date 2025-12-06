@@ -1,4 +1,4 @@
-# Sun AI - Core Sitemap & Page Prompts
+# StartupAI - Core Sitemap & Page Prompts
 
 **Version:** 1.0  
 **Last Updated:** 2025-12-06  
@@ -300,7 +300,7 @@ PLACEHOLDERS:
 
 PROMPT:
 ---
-Create a modern SaaS landing page for "Sun AI" - an AI-powered startup operating system.
+Create a modern SaaS landing page for "StartupAI" - an AI-powered startup operating system.
 
 ## Hero Section
 - Headline: {{hero_headline}} (e.g., "Launch Your Startup 10x Faster")
@@ -378,7 +378,7 @@ PLACEHOLDERS:
 
 PROMPT:
 ---
-Create a comprehensive features page for "Sun AI" startup platform.
+Create a comprehensive features page for "StartupAI" startup platform.
 
 ## Hero
 - Title: "Everything You Need to Launch"
@@ -471,7 +471,7 @@ Create a comprehensive features page for "Sun AI" startup platform.
 
 ## Comparison Table
 - Feature comparison vs competitors
-- Checkmarks for Sun AI advantages
+- Checkmarks for StartupAI advantages
 
 ## CTA Section
 - "Start Building Your Startup"
@@ -500,7 +500,7 @@ PLACEHOLDERS:
 
 PROMPT:
 ---
-Create a pricing page for "Sun AI" startup platform.
+Create a pricing page for "StartupAI" startup platform.
 
 ## Hero
 - Title: "Simple, Transparent Pricing"
@@ -603,7 +603,7 @@ PLACEHOLDERS:
 
 PROMPT:
 ---
-Create a dashboard page for "Sun AI" startup platform.
+Create a dashboard page for "StartupAI" startup platform.
 
 ## Layout
 - Left sidebar (collapsible)
@@ -611,7 +611,7 @@ Create a dashboard page for "Sun AI" startup platform.
 - Main content area
 
 ## Sidebar Navigation
-- Logo + "Sun AI"
+- Logo + "StartupAI"
 - Navigation items:
   - 📊 Dashboard (active)
   - 🎯 Pitch Decks
@@ -709,7 +709,7 @@ PLACEHOLDERS:
 
 PROMPT:
 ---
-Create a pitch deck editor page for "Sun AI" platform.
+Create a pitch deck editor page for "StartupAI" platform.
 
 ## Layout: Three-panel design
 - Left: Slide outline (250px)
@@ -799,7 +799,7 @@ PLACEHOLDERS:
 
 PROMPT:
 ---
-Create a CRM pipeline page for "Sun AI" platform.
+Create a CRM pipeline page for "StartupAI" platform.
 
 ## Top Bar
 - Title: "Deals Pipeline"
@@ -890,7 +890,7 @@ PLACEHOLDERS:
 
 PROMPT:
 ---
-Create a task manager page for "Sun AI" platform using the 5-step workflow model.
+Create a task manager page for "StartupAI" platform using the 5-step workflow model.
 
 ## Top Bar
 - Title: "Task Manager"
@@ -977,7 +977,7 @@ PLACEHOLDERS:
 
 PROMPT:
 ---
-Create a document hub page for "Sun AI" platform.
+Create a document hub page for "StartupAI" platform.
 
 ## Top Bar
 - Title: "Documents"
@@ -1105,5 +1105,5 @@ Create a settings profile page with:
 ---
 
 **Last Updated:** 2025-12-06  
-**Author:** Sun AI Team
+**Author:** StartupAI Team
 
