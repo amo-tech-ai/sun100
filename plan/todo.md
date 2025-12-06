@@ -1,27 +1,68 @@
 # Sun AI - Master Todo & Progress Tracker
 
 **Last Updated:** 2025-12-06  
-**Overall Progress:** 45%  
+**Overall Progress:** 42%  
 **Target:** Production Ready (≥90%)
 
 ---
 
 ## 📊 Features Matrix
 
-| Module | Status | Progress | Priority | Owner |
-|--------|--------|----------|----------|-------|
-| **Core Platform** | ✅ Done | 100% | P0 | SK |
-| **Pitch Deck Editor** | ✅ Done | 95% | P0 | SK |
-| **Auth & Security** | ✅ Done | 100% | P0 | SK |
-| **Edge Functions** | ✅ Done | 100% | P0 | SK |
-| **CRM - Contacts** | 🟡 WIP | 60% | P1 | SK |
-| **CRM - Deals Pipeline** | 🟡 WIP | 50% | P1 | SK |
-| **CRM - Tasks System** | 🔴 Todo | 20% | P1 | SK |
-| **Workflows Engine** | 🔴 Todo | 10% | P1 | SK |
-| **Automation Rules** | 🔴 Todo | 0% | P2 | SK |
-| **Communication Hub** | 🔴 Todo | 0% | P2 | SK |
-| **AI Task Generator** | 🔴 Todo | 0% | P1 | SK |
-| **AI Insights & Forecast** | 🔴 Todo | 0% | P2 | SK |
+| Module | Status | Progress | Priority | Sprint |
+|--------|--------|----------|----------|--------|
+| **Core Platform** | ✅ Done | 100% | P0 | - |
+| **Pitch Deck Editor** | ✅ Done | 95% | P0 | - |
+| **Auth & Security** | ✅ Done | 100% | P0 | - |
+| **Edge Functions (33)** | ✅ Done | 100% | P0 | - |
+| **CRM - Contacts** | 🟡 WIP | 60% | P1 | S1 |
+| **CRM - Deals Pipeline** | 🟡 WIP | 50% | P1 | S1 |
+| **CRM - Tasks System** | 🔴 Todo | 20% | P1 | S1 |
+| **Workflows Engine** | 🔴 Todo | 10% | P1 | S2 |
+| **Automation Rules** | 🔴 Todo | 0% | P2 | S2 |
+| **📄 Document Suite (10 Docs)** | 🔴 Todo | 0% | P1 | S3 |
+| **AI Task Generator** | 🔴 Todo | 0% | P1 | S3 |
+| **AI Insights & Forecast** | 🔴 Todo | 0% | P2 | S4 |
+| **Communication Hub** | 🔴 Todo | 0% | P2 | S4 |
+
+---
+
+## 📄 Document Suite - The 10 Essential Startup Documents
+
+### Overview
+
+| # | Document | Purpose | AI Tools Used |
+|---|----------|---------|---------------|
+| 1 | **Pitch Deck** | Investor presentation (10-12 slides) | Gemini 3 Pro + Structured Output + URL Context |
+| 2 | **One-Pager** | Quick intro summary (1 page) | Gemini 2.5 Flash + Structured Output |
+| 3 | **Executive Summary** | 1-2 paragraph snapshot | Gemini 2.5 Flash + Text Gen |
+| 4 | **Business Plan / Lean Canvas** | Business model outline | Gemini 3 Pro + Thinking |
+| 5 | **Financial Model** | Revenue, costs, projections (12-36mo) | Gemini + Code Execution |
+| 6 | **GTM Strategy** | Go-to-market plan | Gemini 3 Pro + Google Search + Thinking |
+| 7 | **Market Research** | TAM/SAM/SOM + competitors | Gemini 3 Pro + Google Search |
+| 8 | **Product Roadmap** | Features timeline (MVP → V2) | Gemini 2.5 Flash + Structured Output |
+| 9 | **Legal Checklist** | Incorporation, IP, contracts | Gemini 2.5 Flash + Structured Output |
+| 10 | **Data Room Checklist** | Due diligence folder structure | Gemini 2.5 Flash + Structured Output |
+
+### Generation Flow
+
+```
+User Input → URL Context → RAG File Search → Google Search → Gemini 3 Pro → Structured JSON → UI Editor → Export (PDF/Slides/Notion)
+```
+
+### AI Features by Document
+
+| Document | Text Gen | Structured Output | Google Search | URL Context | RAG | Code Exec |
+|----------|----------|-------------------|---------------|-------------|-----|-----------|
+| Pitch Deck | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| One-Pager | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ |
+| Executive Summary | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ |
+| Business Plan | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Financial Model | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| GTM Strategy | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Market Research | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Product Roadmap | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ |
+| Legal Checklist | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Data Room | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
 
 ---
 
@@ -34,17 +75,29 @@
 | **Build** | `npm run build` passes with 0 errors | ✅ |
 | **Console** | 0 browser console errors | ✅ |
 | **Network** | 0 failed requests (no 404s) | ✅ |
-| **Edge Functions** | All 33 functions deployed | ✅ |
+| **Edge Functions** | All 33+ functions deployed | ✅ |
 | **Auth** | Login/logout works, mock mode only in dev | ✅ |
 | **RLS** | All tables have org_id RLS policies | 🟡 |
 | **CRM CRUD** | Create/read/update/delete contacts, deals, tasks | 🔴 |
 | **Workflows** | 5-step workflow runs end-to-end | 🔴 |
 | **Automation** | Rules trigger correctly on events | 🔴 |
 | **AI Integration** | Task generator returns valid JSON | 🔴 |
+| **Document Suite** | All 10 docs generate without errors | 🔴 |
 | **Performance** | Pipeline renders 200+ deals smoothly | 🔴 |
 | **Mobile** | Responsive on all breakpoints | 🟡 |
 
-### Acceptance Tests
+### Document Suite Acceptance Tests
+
+- [ ] Generate pitch deck from startup form (< 2 min)
+- [ ] Generate one-pager from URL context
+- [ ] Generate GTM strategy with Google Search grounding
+- [ ] Generate market research with cited sources
+- [ ] Generate financial model from CSV upload
+- [ ] Export documents to PDF
+- [ ] Edit any document section, regenerate with AI
+- [ ] All 10 documents stored and retrievable
+
+### CRM Acceptance Tests
 
 - [ ] Create org → add accounts → add contacts → add deals → create tasks
 - [ ] Run workflow → automation creates follow-up tasks
@@ -122,7 +175,7 @@
 
 ## 🔴 TODO
 
-### Phase 1: Database & Schema (Priority: P0)
+### Phase 1: Database & Schema (Sprint 1)
 
 #### 1.1 CRM Tasks Table
 ```sql
@@ -151,9 +204,100 @@
 - [ ] Add trigger functions
 ```
 
-### Phase 2: Edge Functions (Priority: P1)
+### Phase 2: Document Suite Tables (Sprint 3)
 
-#### 2.1 AI Task Generator
+#### 2.1 Documents Table
+```sql
+-- Migration: startup_documents
+- [ ] Create table: id, org_id, startup_id, doc_type, title, content_json, status, created_at, updated_at
+- [ ] doc_type ENUM: pitch_deck, one_pager, exec_summary, business_plan, financial_model, gtm_strategy, market_research, product_roadmap, legal_checklist, data_room
+- [ ] Add RLS policy (org_id)
+- [ ] Add indexes
+```
+
+#### 2.2 Document Versions
+```sql
+-- Migration: document_versions
+- [ ] Create table for version history
+- [ ] Link to startup_documents
+- [ ] Add RLS policy
+```
+
+### Phase 3: Document Suite Edge Functions (Sprint 3)
+
+#### 3.1 Master Document Generator
+```
+- [ ] Create supabase/functions/generate-startup-docs
+- [ ] Accept: startup info, doc_types[], grounding options
+- [ ] Use URL Context for website extraction
+- [ ] Use Google Search for market data
+- [ ] Return structured JSON for each doc type
+```
+
+#### 3.2 Individual Document Functions
+```
+- [ ] generate-one-pager (Gemini 2.5 Flash)
+- [ ] generate-exec-summary (Gemini 2.5 Flash)
+- [ ] generate-business-plan (Gemini 3 Pro + Thinking)
+- [ ] generate-financial-model (Gemini + Code Exec)
+- [ ] generate-gtm-strategy (EXISTS - enhance)
+- [ ] generate-market-sizing (EXISTS - enhance)
+- [ ] generate-product-roadmap (Gemini 2.5 Flash)
+- [ ] generate-legal-checklist (Gemini 2.5 Flash)
+- [ ] generate-data-room-checklist (Gemini 2.5 Flash)
+```
+
+#### 3.3 Document Editing Functions
+```
+- [ ] rewrite-document-section
+- [ ] expand-section
+- [ ] shorten-section
+- [ ] improve-clarity
+- [ ] add-citations
+```
+
+### Phase 4: Document Suite Frontend (Sprint 3-4)
+
+#### 4.1 Documents Dashboard
+```
+- [ ] Create screens/DocumentsHub.tsx
+- [ ] Grid of 10 document cards
+- [ ] Status: Not Started, Draft, Complete
+- [ ] Click to open editor
+- [ ] "Generate All" button
+```
+
+#### 4.2 Document Wizard
+```
+- [ ] Create components/documents/DocumentWizard.tsx
+- [ ] Step 1: Startup basics (name, tagline, stage)
+- [ ] Step 2: Website URL (for URL Context)
+- [ ] Step 3: Upload files (for RAG)
+- [ ] Step 4: Select documents to generate
+- [ ] Step 5: Grounding options (Search, URL, Files)
+```
+
+#### 4.3 Document Editor
+```
+- [ ] Create screens/DocumentEditor.tsx
+- [ ] Left: Document outline/sections
+- [ ] Center: Editable content
+- [ ] Right: AI actions panel
+- [ ] Export: PDF, PPTX, Notion, Google Docs
+```
+
+#### 4.4 Document Components
+```
+- [ ] components/documents/OnePagerCard.tsx
+- [ ] components/documents/PitchDeckSlide.tsx
+- [ ] components/documents/FinancialTable.tsx
+- [ ] components/documents/GTMTimeline.tsx
+- [ ] components/documents/ChecklistItem.tsx
+```
+
+### Phase 5: CRM Edge Functions (Sprint 2)
+
+#### 5.1 AI Task Generator
 ```
 - [ ] Create supabase/functions/crm-generate-tasks
 - [ ] Define input schema (deal context, pipeline, stage)
@@ -163,7 +307,7 @@
 - [ ] Test with sample deals
 ```
 
-#### 2.2 Automation Dispatcher
+#### 5.2 Automation Dispatcher
 ```
 - [ ] Create supabase/functions/crm-automation-dispatch
 - [ ] Load matching rules by trigger_event
@@ -173,7 +317,7 @@
 - [ ] Handle errors gracefully
 ```
 
-#### 2.3 Communication Drafts
+#### 5.3 Communication Drafts
 ```
 - [ ] Create supabase/functions/crm-communication-draft
 - [ ] Email drafting with Gemini 2.5 Flash
@@ -181,7 +325,7 @@
 - [ ] Activity summarization
 ```
 
-#### 2.4 Pipeline Forecast
+#### 5.4 Pipeline Forecast
 ```
 - [ ] Create supabase/functions/crm-forecast
 - [ ] Aggregate deal data by stage
@@ -190,9 +334,9 @@
 - [ ] Return structured JSON
 ```
 
-### Phase 3: Frontend Screens (Priority: P1)
+### Phase 6: CRM Frontend Screens (Sprint 1-2)
 
-#### 3.1 CRM Dashboard
+#### 6.1 CRM Dashboard
 ```
 - [ ] Create screens/CrmDashboard.tsx
 - [ ] KPI row (4 cards)
@@ -202,7 +346,7 @@
 - [ ] Responsive breakpoints
 ```
 
-#### 3.2 Contacts Screen
+#### 6.2 Contacts Screen
 ```
 - [ ] Update screens/CustomerCRM.tsx
 - [ ] Left filter sidebar
@@ -211,7 +355,7 @@
 - [ ] Tabs: Overview, Activity, Tasks, AI Insights
 ```
 
-#### 3.3 Deals Pipeline
+#### 6.3 Deals Pipeline
 ```
 - [ ] Update screens/Prospecting.tsx
 - [ ] Kanban board layout
@@ -220,7 +364,7 @@
 - [ ] Slide-over detail panel
 ```
 
-#### 3.4 Tasks & Workflows
+#### 6.4 Tasks & Workflows
 ```
 - [ ] Create screens/TasksWorkflows.tsx
 - [ ] Top tabs: All, Today, Week, Overdue, Workflows
@@ -229,18 +373,9 @@
 - [ ] Left filters: pipeline, owner, priority, type
 ```
 
-#### 3.5 Communication Hub
-```
-- [ ] Create screens/CommunicationHub.tsx
-- [ ] Left: conversation list
-- [ ] Center: thread view
-- [ ] Right: context panel
-- [ ] AI draft button
-```
+### Phase 7: Services & State (Sprint 1-2)
 
-### Phase 4: Services & State (Priority: P1)
-
-#### 4.1 CRM Service Layer
+#### 7.1 CRM Service Layer
 ```
 - [ ] Create src/services/crmService.ts
 - [ ] getTasks(), createTask(), updateTask()
@@ -249,44 +384,48 @@
 - [ ] getActivities(), logActivity()
 ```
 
-#### 4.2 Zustand Store
+#### 7.2 Document Service Layer
+```
+- [ ] Create src/services/documentService.ts
+- [ ] getDocuments(), createDocument()
+- [ ] generateDocument(docType, startupId, options)
+- [ ] updateDocumentSection()
+- [ ] exportDocument(format)
+```
+
+#### 7.3 Zustand Stores
 ```
 - [ ] Create src/stores/crmStore.ts
-- [ ] contacts, deals, tasks state
+- [ ] Create src/stores/documentStore.ts
+- [ ] contacts, deals, tasks, documents state
 - [ ] filters and sorting
 - [ ] optimistic updates
 - [ ] error handling
 ```
 
-#### 4.3 Workflow Service
-```
-- [ ] Create src/services/workflowService.ts
-- [ ] getWorkflows(), createWorkflow()
-- [ ] startWorkflowRun(), updateRunProgress()
-- [ ] getWorkflowRuns()
-```
+### Phase 8: Integration & Testing (Sprint 4)
 
-### Phase 5: Integration & Testing (Priority: P1)
-
-#### 5.1 Wire Everything Together
+#### 8.1 Wire Everything Together
 ```
 - [ ] Connect CRM screens to services
+- [ ] Connect Document Hub to services
 - [ ] Implement real-time subscriptions
 - [ ] Add loading states
 - [ ] Add error states
 - [ ] Add empty states
 ```
 
-#### 5.2 E2E Testing
+#### 8.2 E2E Testing
 ```
 - [ ] Test full CRM flow in browser
+- [ ] Test all 10 document generators
 - [ ] Test automation triggers
 - [ ] Test AI task generation
 - [ ] Test cross-org denial (RLS)
 - [ ] Test mobile responsiveness
 ```
 
-#### 5.3 Performance Optimization
+#### 8.3 Performance Optimization
 ```
 - [ ] Virtualize long lists (200+ items)
 - [ ] Implement pagination
@@ -298,7 +437,7 @@
 
 ## 📅 Sprint Plan
 
-### Sprint 1 (Current) - Foundation
+### Sprint 1 (Days 1-3) - CRM Foundation
 | Task | Status | ETA |
 |------|--------|-----|
 | crm_tasks migration | 🔴 | Day 1 |
@@ -306,30 +445,111 @@
 | Basic TaskRow component | 🔴 | Day 2 |
 | Tasks list view | 🔴 | Day 2 |
 | Task CRUD service | 🔴 | Day 3 |
+| Kanban board (deals) | 🔴 | Day 3 |
 
-### Sprint 2 - Workflows
+### Sprint 2 (Days 4-6) - Workflows & Automation
 | Task | Status | ETA |
 |------|--------|-----|
 | automation_rules migration | 🔴 | Day 4 |
 | crm-automation-dispatch function | 🔴 | Day 5 |
 | Workflow templates seed | 🔴 | Day 5 |
 | Workflow runs tracking | 🔴 | Day 6 |
+| crm-generate-tasks function | 🔴 | Day 6 |
 
-### Sprint 3 - AI Integration
+### Sprint 3 (Days 7-10) - Document Suite
 | Task | Status | ETA |
 |------|--------|-----|
-| crm-generate-tasks function | 🔴 | Day 7 |
-| AI task suggestions UI | 🔴 | Day 8 |
-| crm-forecast function | 🔴 | Day 9 |
-| Dashboard AI insights | 🔴 | Day 10 |
+| startup_documents migration | 🔴 | Day 7 |
+| Document Hub screen | 🔴 | Day 7 |
+| Document Wizard component | 🔴 | Day 8 |
+| generate-one-pager function | 🔴 | Day 8 |
+| generate-exec-summary function | 🔴 | Day 9 |
+| generate-business-plan function | 🔴 | Day 9 |
+| generate-financial-model function | 🔴 | Day 10 |
+| generate-product-roadmap function | 🔴 | Day 10 |
 
-### Sprint 4 - Polish & Testing
+### Sprint 4 (Days 11-14) - Polish & Testing
 | Task | Status | ETA |
 |------|--------|-----|
-| E2E testing | 🔴 | Day 11 |
-| Bug fixes | 🔴 | Day 12 |
-| Performance tuning | 🔴 | Day 13 |
+| generate-legal-checklist function | 🔴 | Day 11 |
+| generate-data-room-checklist function | 🔴 | Day 11 |
+| Document editor screen | 🔴 | Day 12 |
+| E2E testing (CRM + Docs) | 🔴 | Day 13 |
+| Bug fixes & performance | 🔴 | Day 14 |
 | Production deploy | 🔴 | Day 14 |
+
+---
+
+## 📋 JSON Schemas
+
+### Document Generation Request
+```json
+{
+  "startup": {
+    "name": "EventOS",
+    "tagline": "AI-powered operating system for event teams",
+    "stage": "Seed",
+    "url": "https://example.com",
+    "industry": "B2B SaaS - Events",
+    "target_users": ["event planners", "agencies"],
+    "region": "US + Europe"
+  },
+  "request": {
+    "documents": ["pitch_deck", "one_pager", "gtm_strategy"],
+    "grounding": {
+      "use_search": true,
+      "use_url_context": true,
+      "use_file_rag": true
+    },
+    "output_format": "structured_json"
+  }
+}
+```
+
+### Document Generation Response
+```json
+{
+  "pitch_deck": {
+    "slides": [
+      { "type": "vision", "title": "", "bullets": [] },
+      { "type": "problem", "title": "", "bullets": [] },
+      { "type": "solution", "title": "", "bullets": [] }
+    ]
+  },
+  "one_pager": {
+    "sections": [
+      { "type": "tagline", "content": "" },
+      { "type": "problem", "content": "" },
+      { "type": "solution", "content": "" },
+      { "type": "traction", "content": "" },
+      { "type": "team", "content": "" },
+      { "type": "ask", "content": "" }
+    ]
+  },
+  "gtm_strategy": {
+    "personas": [],
+    "channels": [],
+    "messaging": [],
+    "timeline": []
+  }
+}
+```
+
+### Task Schema
+```json
+{
+  "title": "string",
+  "description": "string",
+  "priority": "low | medium | high | urgent",
+  "task_type": "call | email | meeting | internal | document | other",
+  "status": "backlog | todo | in_progress | blocked | done | canceled",
+  "due_at": "ISO8601",
+  "linked_entity": {
+    "type": "deal | contact | account | startup",
+    "id": "uuid"
+  }
+}
+```
 
 ---
 
@@ -337,19 +557,25 @@
 
 ### Architecture Decisions
 - All CRM tables include `org_id` for RLS
+- All document tables include `org_id` + `startup_id`
 - Tasks always linked to at least one entity (deal/contact/account)
 - Workflows use 5-step model: Capture → Clarify → Plan → Execute → Review
 - Automation rules are event-driven, processed by Edge Functions
 - AI calls are server-side only (no client-side API keys)
+- Documents use structured JSON for easy UI mapping
 
-### Tech Stack
-- **Frontend:** React 19, TypeScript, Tailwind, Zustand
-- **Backend:** Supabase (Postgres + Edge Functions)
-- **AI:** Gemini 3 Pro (complex reasoning), Gemini 2.5 Flash (fast tasks)
-- **Auth:** Supabase Auth with RLS
+### Gemini 3 Pro Features Used
+- **Thinking (High):** Complex reasoning for GTM, market sizing, business plan
+- **Structured Outputs:** All document generation returns JSON
+- **Google Search:** Real-time market data, competitors, benchmarks
+- **URL Context:** Extract website content for context
+- **Function Calling:** Save docs, create tasks, update fields
+- **RAG File Search:** Pull from uploaded PDFs, past decks
+- **Code Execution:** Financial calculations, CSV processing
 
 ### Key Files
 - `prd.md` - Full product requirements
+- `plan/todo.md` - This file
 - `plan/errors/*.md` - Error documentation
 - `supabase/migrations/*.sql` - Database schemas
 - `supabase/functions/*.ts` - Edge Functions
@@ -366,6 +592,7 @@
 | Migrations | `/supabase/migrations/` |
 | Screens | `/screens/` |
 | Components | `/components/` |
+| Services | `/src/services/` |
 
 ---
 
@@ -376,5 +603,4 @@
 - P0 = Critical
 - P1 = High
 - P2 = Medium
-- P3 = Low
-
+- S1-S4 = Sprint 1-4
