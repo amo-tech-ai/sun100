@@ -1,7 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import '../index.css';
+
+// Context Providers - MUST be imported in correct order
+import { AuthProvider } from './contexts/AuthContext';
+import { StartupProvider } from './contexts/StartupContext';
+import { ToastProvider } from './contexts/ToastContext';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 console.log("✅ main.tsx executing");
 
@@ -15,12 +22,24 @@ if (!rootElement) {
 
 console.log("✅ Creating React root...");
 const root = ReactDOM.createRoot(rootElement);
-console.log("✅ Rendering App component...");
+console.log("✅ Rendering App component with provider chain...");
 
+// ✅ SINGLE SOURCE OF TRUTH: All providers defined here in correct order
+// Order: ErrorBoundary → BrowserRouter → AuthProvider → StartupProvider → ToastProvider → App
 root.render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <StartupProvider>
+            <ToastProvider>
+              <App />
+            </ToastProvider>
+          </StartupProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );
 
-console.log("✅ React render called");
+console.log("✅ React render called with provider chain");

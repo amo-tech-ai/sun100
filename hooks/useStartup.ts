@@ -1,6 +1,6 @@
 
 import { useContext } from 'react';
-import { StartupContext } from '../contexts/StartupContext';
+import { StartupContext } from '../src/contexts/StartupContext';
 
 export const useStartup = () => {
     const context = useContext(StartupContext);

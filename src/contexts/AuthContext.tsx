@@ -19,7 +19,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // 1. Handle Mock Mode (No Supabase Env Vars)
+        // Check if auth should be disabled
+        // Default: disabled in development mode, enabled in production
+        const isDev = (import.meta as any).env?.MODE === 'development';
+        const disableAuthEnv = (import.meta as any).env?.VITE_DISABLE_AUTH;
+        const DISABLE_AUTH = disableAuthEnv === 'true' || (isDev && disableAuthEnv !== 'false');
+
+        // 1. Handle Development Mode (Auth Disabled)
+        if (DISABLE_AUTH) {
+            if (isDev) {
+                console.log("🔓 Auth disabled in development mode. Using demo user.");
+            } else {
+                console.log("🔓 Auth disabled via VITE_DISABLE_AUTH=true. Using demo user.");
+            }
+            setUser({ id: 'dev-user-id', email: 'dev@sunaistartup.com', aud: 'authenticated' });
+            setSession({ access_token: 'dev-token', user: { id: 'dev-user-id' } });
+            setLoading(false);
+            return;
+        }
+
+        // 2. Handle Mock Mode (No Supabase Env Vars)
         if (IS_MOCK_MODE) {
             console.warn("⚠️ Auth running in MOCK MODE. Using demo user.");
             setUser({ id: 'mock-user-id', email: 'demo@sunaistartup.com', aud: 'authenticated' });

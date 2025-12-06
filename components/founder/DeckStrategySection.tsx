@@ -2,7 +2,7 @@
 import React from 'react';
 import { Presentation, Loader2, Sparkles, ArrowRight } from 'lucide-react';
 import { DeckStrategy } from '../../services/ai/types';
-import { AIBadge } from '../ui/AIBadge';
+import { AIBadge } from '../../src/components/ui/AIBadge';
 
 interface DeckStrategySectionProps {
     strategy: DeckStrategy | null;

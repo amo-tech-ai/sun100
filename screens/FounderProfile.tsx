@@ -6,9 +6,9 @@ import {
 } from 'lucide-react';
 import { UserProfile } from '../types/founder';
 import { useFounderAI } from '../hooks/useFounderAI';
-import { ProfileSidebar } from '../components/founder/ProfileSidebar';
-import { StartupMainCard } from '../components/founder/StartupMainCard';
-import { StrategicAnalysisSection } from '../components/founder/StrategicAnalysisSection';
+import { ProfileSidebar } from '../src/components/founder/ProfileSidebar';
+import { StartupMainCard } from '../src/components/founder/StartupMainCard';
+import { StrategicAnalysisSection } from '../src/components/founder/StrategicAnalysisSection';
 import { DeckStrategySection } from '../components/founder/DeckStrategySection';
 import { getPublicFounderProfile } from '../services/startupService';
 

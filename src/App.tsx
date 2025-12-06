@@ -1,11 +1,7 @@
 
 import React, { Suspense, lazy } from 'react';
 import * as ReactRouterDOM from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { StartupProvider } from './contexts/StartupContext';
-import { ToastProvider } from './contexts/ToastContext';
 import ProtectedRoute from '../components/ProtectedRoute';
-import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Layouts
 import DashboardLayout from '../screens/DashboardLayout';
@@ -92,7 +88,7 @@ const DocBuilder = lazy(() => import('../screens/DocBuilder'));
 // New Metrics Component import
 const Metrics = lazy(() => import('../screens/Metrics'));
 
-const { BrowserRouter, Routes, Route } = ReactRouterDOM;
+const { Routes, Route } = ReactRouterDOM;
 
 // Loading fallback component
 const LoadingSpinner: React.FC = () => (
@@ -105,14 +101,11 @@ const App: React.FC = () => {
   console.log("✅ App component rendering");
   console.log("✅ App component - About to return JSX");
   
+  // ✅ NO PROVIDERS HERE - All providers are in main.tsx
+  // App.tsx only renders routes
   return (
-    <ErrorBoundary>
-      <BrowserRouter>
-        <AuthProvider>
-          <StartupProvider>
-            <ToastProvider>
-              <Suspense fallback={<LoadingSpinner />}>
-                <Routes>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
                   {/* --- Public Routes --- */}
                   <Route element={<PublicLayout />}>
                     <Route path="/" element={<Landing />} />
@@ -189,11 +182,6 @@ const App: React.FC = () => {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
-            </ToastProvider>
-          </StartupProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </ErrorBoundary>
   );
 };
 

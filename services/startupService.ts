@@ -1,6 +1,6 @@
 
 import { supabase } from '../lib/supabaseClient';
-import { StartupProfile } from '../contexts/StartupContext';
+import { StartupProfile } from '../src/contexts/StartupContext';
 import { UserProfile } from '../types/founder';
 
 export interface Milestone {
