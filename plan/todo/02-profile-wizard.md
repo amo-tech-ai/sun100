@@ -1,10 +1,11 @@
 # Startup Profile Wizard & Dashboard - Implementation Plan
 
-**Version:** 1.0  
-**Last Updated:** 2025-12-06  
-**Status:** 🟡 In Progress (60%)  
+**Version:** 1.1  
+**Last Updated:** 2025-12-07  
+**Status:** 🟡 In Progress (70%)  
 **Module:** 02 - Profile Wizard + 11 - Founder Profile  
-**Sprint:** S1 (Days 1-7)
+**Sprint:** S1 (Days 1-7)  
+**Database:** ✅ Verified & Extended (2025-12-07)
 
 ---
 
@@ -12,18 +13,20 @@
 
 1. [Overview](#overview)
 2. [Feature Matrix](#feature-matrix)
-3. [User Journey](#user-journey)
-4. [System Architecture](#system-architecture)
-5. [Wizard Steps](#wizard-steps)
-6. [Gemini 3 AI Integration](#gemini-3-ai-integration)
-7. [Database Schema](#database-schema)
-8. [Edge Functions](#edge-functions)
-9. [Frontend Components](#frontend-components)
-10. [Backend Services](#backend-services)
-11. [Process Flows](#process-flows)
-12. [Mermaid Diagrams](#mermaid-diagrams)
-13. [Success Criteria](#success-criteria)
-14. [Implementation Checklist](#implementation-checklist)
+3. [Dashboard Improvements](#dashboard-improvements)
+4. [User Journey](#user-journey)
+5. [System Architecture](#system-architecture)
+6. [Wizard Steps](#wizard-steps)
+7. [Gemini 3 AI Integration](#gemini-3-ai-integration)
+8. [Database Schema](#database-schema)
+9. [Edge Functions](#edge-functions)
+10. [Frontend Components](#frontend-components)
+11. [Backend Services](#backend-services)
+12. [Process Flows](#process-flows)
+13. [Mermaid Diagrams](#mermaid-diagrams)
+14. [Success Criteria](#success-criteria)
+15. [Implementation Checklist](#implementation-checklist)
+16. [Figma Make AI Prompts](#figma-make-ai-prompts)
 
 ---
 
@@ -47,11 +50,14 @@ Create a comprehensive, AI-enhanced onboarding flow that captures startup data a
 | Component | Exists | Status | Improvements Needed |
 |-----------|--------|--------|---------------------|
 | `StartupWizard.tsx` | ✅ | 90% | DB persistence, validation |
-| `Dashboard.tsx` | ✅ | 85% | Real data, AI Coach sidebar |
+| `Dashboard.tsx` | ✅ | 85% | Real data, AI Coach sidebar, profile strength |
 | `FounderProfile.tsx` | ✅ | 80% | Public profile polish |
-| Database tables | ✅ | 100% | All startup tables exist |
+| Database tables | ✅ | 100% | **Verified & Extended** (2025-12-07) |
 | Edge Functions | 🟡 | 40% | Need profile enrichment |
 | AI Coach | ✅ | 100% | Implemented in docs |
+| RLS Policies | ✅ | 100% | Granular policies applied |
+| Database Functions | ✅ | 100% | Helper functions created |
+| Indexes | ✅ | 100% | 17 indexes on profile tables |
 
 ---
 
@@ -89,6 +95,163 @@ Create a comprehensive, AI-enhanced onboarding flow that captures startup data a
 | Next Best Action | ✅ | P1 |
 | Real Data from DB | 🔴 | P0 |
 | AI Coach Sidebar | 🟡 | P1 |
+| Profile Strength Progress | 🔴 | P1 |
+| Year Founded Display | 🔴 | P2 |
+| Startup Links Section | 🔴 | P2 |
+| Cover Image Banner | 🔴 | P2 |
+| Metrics History Chart | 🔴 | P1 |
+
+---
+
+## Dashboard Improvements
+
+### Current Dashboard Analysis
+
+Based on UI review (2025-12-07), the dashboard correctly displays:
+
+| Section | DB Field | Status |
+|---------|----------|--------|
+| Company Name | `startups.name` | ✅ |
+| Tagline | `startups.tagline` | ✅ |
+| Stage Tags | `startups.stage` | ✅ |
+| Problem & Solution | `startups.problem/solution` | ✅ |
+| Business Model | `startups.business_model` | ✅ |
+| Pricing | `startups.pricing_model` | ✅ |
+| Founders | `startup_founders.*` | ✅ |
+| Traction Metrics | `startup_metrics_snapshots.*` | ✅ |
+| Competitors | `startup_competitors.*` | ✅ |
+| AI Insights | `ai_coach_insights.*` | ✅ |
+
+### Missing from Dashboard (Exists in DB)
+
+#### 1. Profile Strength Progress Bar
+
+```typescript
+// Missing: Visual progress indicator
+<ProfileStrengthBar value={startup.profile_strength} />
+// DB: startups.profile_strength (0-100)
+```
+
+**Priority:** P1 (User engagement)  
+**Component:** `<CircularProgress />` or horizontal bar with % label
+
+#### 2. Year Founded
+
+```typescript
+// Missing: Display year in snapshot card
+<span>Founded {startup.year_founded}</span>
+// DB: startups.year_founded (INTEGER)
+```
+
+**Priority:** P2 (Context)  
+**Location:** Hero/Snapshot card
+
+#### 3. Startup Links Section
+
+```typescript
+// Missing: Social/external links
+// DB: startup_links (kind, label, url)
+// Kinds: 'pitch_deck', 'demo', 'docs', 'linkedin', 'x', 'website', 'other'
+```
+
+**Priority:** P2 (Completeness)  
+**Component:** `<StartupLinksRow />` with icons
+
+#### 4. Cover Image / Banner
+
+```typescript
+// Missing: Hero banner image
+// DB: startups.cover_image_url
+```
+
+**Priority:** P2 (Visual polish)  
+**Location:** Top of dashboard or behind profile card
+
+#### 5. Metrics History Chart
+
+```typescript
+// Missing: Historical trends
+// DB: startup_metrics_snapshots (monthly snapshots)
+// Fields: monthly_active_users, monthly_revenue, growth_rate_pct
+```
+
+**Priority:** P1 (Insight value)  
+**Component:** `<MetricsSparkline />` using Recharts
+
+### Recommended UI Improvements
+
+#### A. Add Profile Completion Card
+
+```tsx
+<Card className="bg-gradient-to-r from-indigo-50 to-violet-50">
+  <div className="flex items-center justify-between">
+    <div>
+      <h3>Profile Strength</h3>
+      <p className="text-sm text-gray-600">
+        Complete your profile to unlock AI features
+      </p>
+    </div>
+    <CircularProgress value={profileStrength} />
+  </div>
+  <div className="mt-4">
+    <p className="text-xs text-gray-500">
+      Add competitors, traction metrics, and team info to reach 100%
+    </p>
+  </div>
+</Card>
+```
+
+#### B. Add Metrics History Sparkline
+
+```tsx
+<Card>
+  <h3>Growth Trend (6 months)</h3>
+  <ResponsiveContainer width="100%" height={80}>
+    <AreaChart data={metricsHistory}>
+      <Area 
+        type="monotone" 
+        dataKey="monthly_revenue" 
+        stroke="#4F46E5" 
+        fill="#EEF2FF" 
+      />
+    </AreaChart>
+  </ResponsiveContainer>
+</Card>
+```
+
+#### C. Add Startup Links Row
+
+```tsx
+<div className="flex gap-2">
+  {startupLinks.map(link => (
+    <a 
+      key={link.id} 
+      href={link.url} 
+      className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+    >
+      <LinkIcon kind={link.kind} />
+    </a>
+  ))}
+</div>
+```
+
+### Implementation Priority
+
+| Task | Priority | Effort | Impact |
+|------|----------|--------|--------|
+| Profile Strength Bar | P1 | Low | High |
+| Metrics Sparkline | P1 | Medium | High |
+| DB → Dashboard Binding | P0 | Medium | Critical |
+| Startup Links | P2 | Low | Medium |
+| Cover Image | P2 | Low | Low |
+| Year Founded | P2 | Trivial | Low |
+
+### Quick Wins (< 30 min each)
+
+1. **Add Profile Strength** - Query `startups.profile_strength`, display in header
+2. **Add Year Founded** - Display in snapshot card subtitle
+3. **Fix Tag Display** - Ensure `stage` and `business_model` render correctly
+4. **Add Links Icons** - Map `startup_links.kind` to Lucide icons
 
 ---
 
