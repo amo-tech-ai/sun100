@@ -1,48 +1,222 @@
-# Pitch Deck Engine - Master Implementation Plan
+# Pitch Deck Engine — Complete PRD & Implementation Plan
 
-**Version:** 2.0  
-**Last Updated:** 2025-12-06  
+**Product:** StartupAI  
+**Module:** Pitch Deck Generator + Editor  
+**Version:** 3.0  
+**Last Updated:** 2025-12-07  
 **Status:** 🟡 In Progress (95% Complete)  
-**Sprint:** S0 (Core Complete)
+**Owner:** StartupAI Team
 
 ---
 
 ## 📋 Table of Contents
 
-1. [System Overview](#system-overview)
-2. [Feature Status Matrix](#feature-status-matrix)
-3. [Gemini 3 AI Integration](#gemini-3-ai-integration)
-4. [System Architecture](#system-architecture)
-5. [Slide-Level AI Agents](#slide-level-ai-agents)
-6. [Template System](#template-system)
-7. [Database Schema](#database-schema)
-8. [Edge Functions](#edge-functions)
-9. [Frontend Components](#frontend-components)
-10. [Process Flows](#process-flows)
-11. [Multi-Step Prompts](#multi-step-prompts)
-12. [Success Criteria](#success-criteria)
-13. [Mermaid Diagrams](#mermaid-diagrams)
-14. [Troubleshooting Guide](#troubleshooting-guide)
-15. [Implementation Checklist](#implementation-checklist)
+1. [Executive Summary](#1-executive-summary)
+2. [Feature Status Matrix](#2-feature-status-matrix)
+3. [Progress Tracker](#3-progress-tracker)
+4. [Gemini 3 Pro AI Integration](#4-gemini-3-pro-ai-integration)
+5. [System Architecture](#5-system-architecture)
+6. [Sitemap & Navigation](#6-sitemap--navigation)
+7. [User Journeys](#7-user-journeys)
+8. [Workflows](#8-workflows)
+9. [Slide-Level AI Agents](#9-slide-level-ai-agents)
+10. [Template System](#10-template-system)
+11. [Database Schema](#11-database-schema)
+12. [Edge Functions](#12-edge-functions)
+13. [Frontend Components](#13-frontend-components)
+14. [Figma Make + Supabase Integration](#14-figma-make--supabase-integration)
+15. [Success Criteria](#15-success-criteria)
+16. [Mermaid Diagrams](#16-mermaid-diagrams)
+17. [Risks & Mitigations](#17-risks--mitigations)
+18. [Implementation Checklist](#18-implementation-checklist)
 
 ---
 
-## System Overview
+## 1. Executive Summary
 
-### Goal
+### Problem Statement
 
-An AI-powered pitch deck generation system that creates investor-ready presentations in minutes, using Gemini 3 Pro for strategic content and Imagen 4 for visuals.
+| Problem | Impact |
+|---------|--------|
+| Creating investor pitch decks takes 2-4 weeks | Founders lose momentum |
+| Generic templates don't resonate | Lower conversion rates |
+| Market research is time-consuming | Outdated or inaccurate data |
+| Professional visuals require designers | Additional cost and delay |
+| Inconsistent messaging across slides | Confuses investors |
+
+### Solution
+
+The Pitch Deck Engine enables founders to generate a complete, investor-ready deck in under 2 minutes using Gemini 3 Pro, enriched by:
+
+- **URL Context** — Auto-extract startup data from website
+- **Google Search Grounding** — Real-time market sizing, competitors
+- **Structured Outputs** — Clean, consistent JSON slides
+- **Thinking Mode** — Deep strategic reasoning for deck narrative
+- **Image Generation (Nano Banana)** — Custom slide visuals
+- **Video Generation (Veo)** — Optional hero intro videos
+- **Code Execution** — Dynamic charts and metrics
+- **Function Calling** — Server-side deck assembly
 
 ### Core Value Proposition
 
-| Problem | Solution |
-|---------|----------|
-| Creating decks takes 2-4 weeks | Generate in < 2 minutes |
-| Generic content doesn't resonate | AI tailors to your industry/stage |
-| Visuals are stock or amateur | Imagen 4 generates custom images |
-| Inconsistent design quality | 5 premium templates |
+| Before StartupAI | After StartupAI |
+|------------------|-----------------|
+| 2-4 weeks to create deck | Under 2 minutes |
+| Generic, template content | AI-tailored to your industry/stage |
+| Stock images or amateur visuals | Imagen 4 custom images |
+| Manual market research | Google Search grounded data |
+| Inconsistent design | 9 premium templates |
 
-### System Components
+---
+
+## 2. Feature Status Matrix
+
+### Core Features
+
+| Feature | Status | Progress | Priority | Notes |
+|---------|--------|----------|----------|-------|
+| **Wizard UI (4 Steps)** | ✅ Done | 100% | P0 | Context → Aesthetic → Details → Financials |
+| **Template Selector** | ✅ Done | 100% | P0 | 9 premium templates |
+| **Deck Generation** | ✅ Done | 100% | P0 | Gemini 3 Pro + Function Calling |
+| **Generating Screen** | ✅ Done | 100% | P0 | Progress animation + tips |
+| **Slide Editor** | ✅ Done | 100% | P0 | Full WYSIWYG editing |
+| **AI Copilot** | ✅ Done | 100% | P0 | Per-slide AI assistance |
+| **Image Generation** | ✅ Done | 100% | P1 | Imagen 4 / Nano Banana |
+| **Export to PDF** | ✅ Done | 100% | P0 | Print-ready output |
+| **Supabase Persistence** | ✅ Done | 100% | P0 | Full CRUD + RLS |
+
+### Advanced Features (Slide-Level AI Agents)
+
+| Agent | Slide Type | Status | Progress | Function |
+|-------|------------|--------|----------|----------|
+| **Headline Studio** | Vision | ✅ Done | 100% | A/B headline testing |
+| **Metric Extractor** | Problem | ✅ Done | 100% | Auto-bold key metrics |
+| **Benefit Rewriter** | Solution | ✅ Done | 100% | Features → Value props |
+| **Research Agent** | Market | ✅ Done | 100% | TAM/SAM/SOM with sources |
+| **Table Generator** | Business | ✅ Done | 100% | Pricing tier tables |
+| **Chart Suggester** | Traction | ✅ Done | 100% | Text → visualization |
+| **Bio Summarizer** | Team | ✅ Done | 100% | LinkedIn → intro |
+| **Allocation Viz** | Ask | ✅ Done | 100% | Pie chart for funding |
+| **Matrix Generator** | Competition | ✅ Done | 100% | Competitive grid |
+| **Trend Spotter** | Trends | ✅ Done | 100% | "Why Now?" analysis |
+
+### Gemini 3 Pro Tools
+
+| Tool | Status | Use Case |
+|------|--------|----------|
+| **Text Generation** | ✅ Active | All slide content creation |
+| **Thinking (High)** | ✅ Active | Strategic deck planning |
+| **Function Calling** | ✅ Active | Reliable JSON output |
+| **Google Search Grounding** | ✅ Active | Market research, competitors |
+| **Structured Outputs** | ✅ Active | All AI responses |
+| **URL Context** | ✅ Active | Website data extraction |
+| **Code Execution** | ✅ Active | Charts, metrics, calculations |
+| **Image Generation (Nano Banana)** | ✅ Active | Slide visuals |
+| **Video Generation (Veo)** | 🔄 Planned | Hero intro videos |
+| **File Search (RAG)** | 🔄 Planned | Past deck analysis |
+
+### Production Readiness
+
+| Criteria | Status | Notes |
+|----------|--------|-------|
+| Security (API keys server-side) | ✅ Pass | Edge Functions only |
+| Error handling with fallbacks | ✅ Pass | Mock mode available |
+| Loading states | ✅ Pass | All async operations |
+| RLS policies | ✅ Pass | User-scoped data |
+| Edge Function deployment | ✅ Pass | All functions live |
+| Mobile responsive | 🔄 70% | Wizard complete, editor partial |
+
+---
+
+## 3. Progress Tracker
+
+### Overall Progress: 95%
+
+```
+[██████████████████████████████████████████████████░░░░░] 95%
+```
+
+### Sprint Status
+
+| Sprint | Focus | Status | Completion |
+|--------|-------|--------|------------|
+| S0 | Core Wizard + Generation | ✅ Complete | 100% |
+| S1 | Editor + AI Agents | ✅ Complete | 100% |
+| S2 | Export + Templates | ✅ Complete | 100% |
+| S3 | Advanced AI + Polish | 🟡 In Progress | 80% |
+| S4 | Video + RAG + Collab | 📅 Planned | 0% |
+
+### Remaining Tasks
+
+| Task | Priority | Effort | Status |
+|------|----------|--------|--------|
+| Video generation (Veo) | P2 | 3 days | 📅 Planned |
+| PPTX export | P2 | 2 days | 📅 Planned |
+| Real-time collaboration | P3 | 5 days | 📅 Planned |
+| Version history | P2 | 2 days | 📅 Planned |
+| Deck analytics | P3 | 3 days | 📅 Planned |
+| File Search RAG | P2 | 3 days | 📅 Planned |
+| Mobile editor optimization | P2 | 2 days | 🔄 In Progress |
+
+---
+
+## 4. Gemini 3 Pro AI Integration
+
+### AI Tools Reference
+
+| Tool | Model | Purpose | Implementation |
+|------|-------|---------|----------------|
+| **Text Generation** | gemini-3-pro-preview | Slide content, narratives | All slide types |
+| **Thinking** | gemini-3-pro-preview | Complex reasoning, strategy | Deck outline generation |
+| **Function Calling** | gemini-3-pro-preview | Reliable JSON responses | generateDeckOutline function |
+| **Google Search** | gemini-3-pro-preview | Real-time data | Market, competition slides |
+| **Structured Outputs** | gemini-2.5-flash | Fast, typed responses | Slide rewrites, analysis |
+| **URL Context** | gemini-3-pro-preview | Website extraction | Wizard Step 1 |
+| **Code Execution** | gemini-3-pro-preview | Charts, calculations | Traction, financials slides |
+| **Nano Banana** | gemini-2.5-flash-image | Fast image generation | Preview images |
+| **Nano Banana Pro** | gemini-3-pro-image-preview | High-quality images | Final slide images |
+| **Veo** | veo-002 | Video generation | Hero intro videos |
+| **File Search** | gemini-3-pro-preview | RAG over documents | Past deck analysis |
+
+### Model Selection Strategy
+
+| Task | Model | Reason |
+|------|-------|--------|
+| Full deck generation | gemini-3-pro-preview | Complex reasoning needed |
+| Slide rewrites | gemini-2.5-flash | Fast, cost-effective |
+| Market research | gemini-3-pro-preview | Needs Google Search |
+| Image prompts | gemini-2.5-flash | Simple creative task |
+| Charts/tables | gemini-2.5-flash | Structured output |
+| Video generation | veo-002 | 3-5 second clips |
+
+### Structured Output Schema (Deck)
+
+**Fields:**
+- `title` — Professional deck title
+- `slides[]` — Array of 10-12 slides
+  - `id` — Unique slide identifier
+  - `type` — Slide type (vision, problem, solution, etc.)
+  - `title` — Slide headline (max 10 words)
+  - `bullets[]` — Content bullet points
+  - `notes` — Speaker notes
+  - `image_prompt` — Detailed prompt for image generation
+  - `visual_type` — image | chart | video
+  - `chart_data` — Optional chart configuration
+  - `table_data` — Optional table data
+
+### Slide Analysis Schema
+
+**Fields:**
+- `clarity` — Rating (excellent/good/needs_work) + feedback
+- `impact` — Rating + feedback
+- `tone` — Rating + feedback
+- `suggestions[]` — Specific improvement recommendations
+
+---
+
+## 5. System Architecture
+
+### High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -51,388 +225,289 @@ An AI-powered pitch deck generation system that creates investor-ready presentat
 │                                                                      │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐              │
 │  │   WIZARD    │ ──▶│ GENERATING  │ ──▶│   EDITOR    │              │
-│  │ (5 Steps)   │    │   SCREEN    │    │ (Full Edit) │              │
+│  │ (4 Steps)   │    │   SCREEN    │    │ (Full Edit) │              │
 │  └─────────────┘    └─────────────┘    └─────────────┘              │
-│                            │                                         │
-│                            ▼                                         │
+│                            │                   │                     │
+│                            ▼                   ▼                     │
 │  ┌──────────────────────────────────────────────────────────────┐   │
 │  │                    EDGE FUNCTIONS                             │   │
 │  │                                                               │   │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐             │   │
-│  │  │ generate-   │ │  slide-ai   │ │  image-ai   │             │   │
-│  │  │    deck     │ │  (agents)   │ │ (imagen 4)  │             │   │
-│  │  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘             │   │
-│  │         │               │               │                     │   │
-│  │         └───────────────┼───────────────┘                     │   │
-│  │                         │                                      │   │
-│  │                         ▼                                      │   │
-│  │  ┌──────────────────────────────────────────────────────┐    │   │
-│  │  │                  GEMINI 3 PRO                        │    │   │
-│  │  │                                                       │    │   │
-│  │  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐    │    │   │
-│  │  │  │Thinking │ │Function │ │ Google  │ │Struct.  │    │    │   │
-│  │  │  │ (High)  │ │ Calling │ │ Search  │ │ Output  │    │    │   │
-│  │  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘    │    │   │
-│  │  │                                                       │    │   │
-│  │  └──────────────────────────────────────────────────────┘    │   │
+│  │  • generate-deck      • slide-ai         • image-ai          │   │
+│  │  • regenerate-slide   • analyze-slide    • video-ai          │   │
+│  │  • export-deck        • research-market  • chart-generator   │   │
+│  │                                                               │   │
+│  └───────────────────────────┬───────────────────────────────────┘   │
+│                              │                                       │
+│                              ▼                                       │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │                  GEMINI 3 PRO TOOLS                           │   │
+│  │                                                               │   │
+│  │  • Thinking       • Function Calling    • Google Search      │   │
+│  │  • Structured     • URL Context         • Code Execution     │   │
+│  │  • Nano Banana    • Veo Video           • File Search        │   │
 │  │                                                               │   │
 │  └──────────────────────────────────────────────────────────────┘   │
 │                                                                      │
 │  ┌──────────────────────────────────────────────────────────────┐   │
 │  │                    SUPABASE                                   │   │
 │  │                                                               │   │
-│  │  ┌────────────────┐ ┌────────────────┐ ┌────────────────┐   │   │
-│  │  │     decks      │ │     slides     │ │   ai_runs      │   │   │
-│  │  └────────────────┘ └────────────────┘ └────────────────┘   │   │
+│  │  • decks          • slides              • ai_runs            │   │
+│  │  • deck_assets    • deck_versions       • Storage            │   │
 │  │                                                               │   │
 │  └──────────────────────────────────────────────────────────────┘   │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
----
-
-## Feature Status Matrix
-
-### Core Features
-
-| Feature | Status | Progress | Notes |
-|---------|--------|----------|-------|
-| **Wizard UI** | ✅ Done | 100% | 5-step wizard with URL input |
-| **Template Selector** | ✅ Done | 100% | 5 premium templates |
-| **Deck Generation** | ✅ Done | 100% | Gemini 3 Pro + Function Calling |
-| **Slide Editor** | ✅ Done | 100% | Full WYSIWYG editing |
-| **AI Copilot** | ✅ Done | 100% | Per-slide AI assistance |
-| **Image Generation** | ✅ Done | 100% | Imagen 4 integration |
-| **Export to PDF** | ✅ Done | 100% | Print-ready output |
-| **Supabase Persistence** | ✅ Done | 100% | Full CRUD + RLS |
-
-### Advanced Features (Slide-Level AI Agents)
-
-| Agent | Slide Type | Status | Function |
-|-------|------------|--------|----------|
-| **Headline Studio** | Vision | ✅ Done | A/B headline testing |
-| **Metric Extractor** | Problem | ✅ Done | Auto-bold key metrics |
-| **Benefit Rewriter** | Solution | ✅ Done | Features → Value props |
-| **Research Agent** | Market | ✅ Done | TAM/SAM/SOM with sources |
-| **Table Generator** | Business | ✅ Done | Pricing tier tables |
-| **Chart Suggester** | Traction | ✅ Done | Text → visualization |
-| **Bio Summarizer** | Team | ✅ Done | LinkedIn → intro |
-| **Allocation Viz** | Ask | ✅ Done | Pie chart for funding |
-| **Matrix Generator** | Competition | ✅ Done | Competitive grid |
-| **Trend Spotter** | Trends | ✅ Done | "Why Now?" analysis |
-
-### Production Readiness
-
-| Criteria | Status |
-|----------|--------|
-| Security (API keys server-side only) | ✅ |
-| Error handling (with fallbacks) | ✅ |
-| Loading states | ✅ |
-| Mock mode for development | ✅ |
-| RLS policies | ✅ |
-| Edge Function deployment | ✅ |
-
----
-
-## Gemini 3 AI Integration
-
-### Features Used
-
-| Feature | Use Case | Implementation |
-|---------|----------|----------------|
-| **Text Generation** | Slide content creation | All slide types |
-| **Thinking (High)** | Strategic deck planning | `generate-deck` function |
-| **Function Calling** | Reliable JSON output | `generateDeckOutline` declaration |
-| **Google Search** | Market research, competitors | Market & Competition slides |
-| **Structured Output** | All AI responses | JSON schemas for each agent |
-| **URL Context** | Extract website content | Wizard URL input |
-
-### Model Selection
-
-| Task | Model | Reason |
-|------|-------|--------|
-| Full deck generation | `gemini-3-pro-preview` | Complex reasoning needed |
-| Slide rewrites | `gemini-2.5-flash` | Fast, cost-effective |
-| Market research | `gemini-3-pro-preview` | Needs Google Search |
-| Image prompts | `gemini-2.5-flash` | Simple creative task |
-| Charts/tables | `gemini-2.5-flash` | Structured output |
-
-### Function Declarations
-
-#### generateDeckOutline
-
-```typescript
-const generateDeckOutlineFunctionDeclaration = {
-  name: 'generateDeckOutline',
-  description: 'Generates a strategic, investor-ready 10-slide pitch deck outline',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      title: { 
-        type: Type.STRING, 
-        description: 'Professional, catchy title for the deck' 
-      },
-      slides: {
-        type: Type.ARRAY,
-        description: '10 slides forming a cohesive narrative arc',
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            content: { type: Type.STRING },
-            imageUrl: { type: Type.STRING, description: 'Image generation prompt' },
-            type: { type: Type.STRING }
-          },
-          required: ['title', 'content', 'imageUrl', 'type']
-        }
-      }
-    },
-    required: ['title', 'slides']
-  }
-};
-```
-
-#### analyzeSlideContent
-
-```typescript
-const analyzeSlideContentFunctionDeclaration = {
-  name: 'analyzeSlideContent',
-  description: 'Analyze slide for clarity, impact, and tone',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      clarity: {
-        type: Type.OBJECT,
-        properties: {
-          rating: { type: Type.STRING, enum: ['excellent', 'good', 'needs_work'] },
-          feedback: { type: Type.STRING }
-        }
-      },
-      impact: {
-        type: Type.OBJECT,
-        properties: {
-          rating: { type: Type.STRING },
-          feedback: { type: Type.STRING }
-        }
-      },
-      tone: {
-        type: Type.OBJECT,
-        properties: {
-          rating: { type: Type.STRING },
-          feedback: { type: Type.STRING }
-        }
-      }
-    },
-    required: ['clarity', 'impact', 'tone']
-  }
-};
-```
-
----
-
-## System Architecture
-
 ### Data Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    DECK GENERATION FLOW                          │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  WIZARD INPUT                                                    │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │ Step 1: Business Context (text or URL)                     │ │
-│  │ Step 2: Deck Type (Seed, Series A, Sales)                  │ │
-│  │ Step 3: Template Selection (5 options)                     │ │
-│  │ Step 4: Financial Data (optional)                          │ │
-│  │ Step 5: Review & Generate                                   │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                           │                                      │
-│                           ▼                                      │
-│  EDGE FUNCTION: generate-deck                                    │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │ 1. Validate inputs                                          │ │
-│  │ 2. Extract URL context (if URLs provided)                  │ │
-│  │ 3. Build strategic prompt with template context            │ │
-│  │ 4. Call Gemini 3 Pro with thinkingLevel: high              │ │
-│  │ 5. Use Function Calling for reliable JSON                   │ │
-│  │ 6. Optional: Google Search for market data                 │ │
-│  │ 7. Save deck + slides to Supabase                          │ │
-│  │ 8. Return deck ID                                           │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                           │                                      │
-│                           ▼                                      │
-│  EDITOR                                                          │
-│  ┌────────────────────────────────────────────────────────────┐ │
-│  │ - Load deck from Supabase                                  │ │
-│  │ - Render slides with template styles                       │ │
-│  │ - Enable per-slide AI agents                               │ │
-│  │ - Auto-save changes                                         │ │
-│  │ - Export to PDF/PPTX                                        │ │
-│  └────────────────────────────────────────────────────────────┘ │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Slide Types & AI Agents
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│               10-SLIDE INVESTOR DECK STRUCTURE                   │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ 1. VISION         │ Headline Studio (A/B testing)          ││
-│  │ 2. PROBLEM        │ Metric Extractor (auto-bold)           ││
-│  │ 3. SOLUTION       │ Benefit Rewriter (features → value)    ││
-│  │ 4. PRODUCT        │ Feature Highlighter                     ││
-│  │ 5. MARKET         │ Research Agent (TAM/SAM/SOM + search)  ││
-│  │ 6. BUSINESS MODEL │ Table Generator (pricing tiers)        ││
-│  │ 7. TRACTION       │ Chart Suggester (text → viz)           ││
-│  │ 8. COMPETITION    │ Matrix Generator (competitive grid)    ││
-│  │ 9. TEAM           │ Bio Summarizer (LinkedIn → intro)      ││
-│  │ 10. ASK           │ Allocation Viz (pie chart)             ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│  + BONUS SLIDES:                                                 │
-│  │ 11. TRENDS        │ Trend Spotter (Why Now?)               ││
-│  │ 12. FINANCIALS    │ Financial Charts                        ││
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
+1. **Wizard Input** → User provides business context, URLs, template selection
+2. **URL Context Extraction** → Gemini extracts data from provided URLs
+3. **Google Search Grounding** → Real-time market data, competitors
+4. **Thinking Mode** → Strategic deck narrative planning
+5. **Function Calling** → Structured JSON slide generation
+6. **Image Generation** → Nano Banana creates slide visuals
+7. **Supabase Storage** → Deck and assets saved
+8. **Editor Display** → User edits and refines deck
+9. **Export** → PDF/PPTX output
 
 ---
 
-## Slide-Level AI Agents
+## 6. Sitemap & Navigation
+
+### Core Sitemap
+
+```
+StartupAI
+├── / (Landing Page)
+├── /dashboard
+│   └── /pitch-decks (Deck List)
+│       ├── /new (Wizard)
+│       │   ├── Step 1: Context
+│       │   ├── Step 2: Aesthetic
+│       │   ├── Step 3: Details
+│       │   └── Step 4: Financials
+│       ├── /generating (Loading Screen)
+│       ├── /:id/edit (Editor)
+│       │   ├── Slide Outline (Left)
+│       │   ├── Slide Canvas (Center)
+│       │   └── AI Copilot (Right)
+│       ├── /:id/present (Presentation Mode)
+│       └── /:id/export (Export Options)
+└── /settings
+```
+
+### Navigation Flow
+
+| From | Action | To |
+|------|--------|-----|
+| Dashboard | Click "New Deck" | Wizard Step 1 |
+| Wizard Step 1 | Click "Next" | Wizard Step 2 |
+| Wizard Step 2 | Click "Next" | Wizard Step 3 |
+| Wizard Step 3 | Click "Next" | Wizard Step 4 |
+| Wizard Step 4 | Click "Generate" | Generating Screen |
+| Generating Screen | Auto-redirect | Editor |
+| Editor | Click "Present" | Presentation Mode |
+| Editor | Click "Export" | Export Modal |
+| Presentation Mode | Press "Esc" | Editor |
+
+---
+
+## 7. User Journeys
+
+### Journey 1: First-Time Deck Generation
+
+**Persona:** Early-stage founder creating first pitch deck
+
+**Steps:**
+1. User navigates to Dashboard → Pitch Decks
+2. Clicks "+ New Deck" button
+3. **Step 1 (Context):**
+   - Enters business description
+   - Adds website URL (optional)
+   - Selects deck type (Investor Pitch / Sales Deck)
+4. **Step 2 (Aesthetic):**
+   - Browses 9 template options
+   - Selects "Modern Minimal" template
+5. **Step 3 (Details):**
+   - Selects business type (AI SaaS)
+   - Selects stage (MVP)
+   - Selects focus (Raising capital)
+   - Sets target raise ($500K)
+6. **Step 4 (Financials):**
+   - Enters revenue model (Subscription)
+   - Reviews summary card
+   - Enables "Gemini 3 Deep Reasoning"
+   - Clicks "Generate Deck"
+7. **Generating Screen:**
+   - Watches progress animation
+   - Sees tips while waiting (30-60 seconds)
+   - Auto-redirected to Editor
+8. **Editor:**
+   - Reviews 10 generated slides
+   - Uses AI Copilot to improve headlines
+   - Generates custom images
+   - Exports to PDF
+
+**Success Metrics:**
+- Time to first deck: < 5 minutes
+- Slides generated: 10-12
+- User satisfaction: 4.5+ stars
+
+### Journey 2: Deck Refinement
+
+**Persona:** Founder refining deck before investor meeting
+
+**Steps:**
+1. Opens existing deck from Dashboard
+2. Navigates to Problem slide
+3. Clicks "Research" in AI Copilot
+4. AI searches for industry statistics
+5. Applies recommended metrics
+6. Clicks "Generate Chart" for traction slide
+7. AI converts text metrics to bar chart
+8. Clicks "Improve" on Solution slide
+9. AI rewrites for investor impact
+10. Exports updated PDF
+
+### Journey 3: Quick Edit
+
+**Persona:** Founder making last-minute changes
+
+**Steps:**
+1. Opens deck directly via link
+2. Edits headline text inline
+3. Drags slides to reorder
+4. Clicks "Present" for quick preview
+5. Returns to editor
+6. Exports and sends to investor
+
+---
+
+## 8. Workflows
+
+### Workflow 1: Deck Generation
+
+```
+User Input → Validation → URL Extraction → Search Grounding → 
+AI Thinking → Function Calling → Slide Generation → Image Generation → 
+Database Save → Editor Display
+```
+
+**Steps:**
+1. Validate wizard inputs (required fields)
+2. Extract context from URLs (if provided)
+3. Search Google for market data
+4. Enable Thinking mode for strategy
+5. Call generateDeckOutline function
+6. Generate images for each slide
+7. Save deck + slides to Supabase
+8. Redirect to Editor
+
+### Workflow 2: Slide AI Agent
+
+```
+User Action → Context Capture → Agent Selection → AI Processing → 
+Result Preview → User Approval → Apply Changes → Auto-Save
+```
+
+**Steps:**
+1. User clicks AI action (Improve, Research, Chart)
+2. Capture slide context + deck context
+3. Select appropriate AI agent
+4. Call Edge Function with context
+5. Display result in preview
+6. User approves or regenerates
+7. Apply changes to slide
+8. Auto-save to database
+
+### Workflow 3: Image Generation
+
+```
+Slide Selection → Prompt Generation → Style Selection → 
+Image API Call → Preview Display → User Selection → Apply to Slide
+```
+
+**Steps:**
+1. User selects slide needing image
+2. AI generates image prompt from content
+3. User selects style (Photo, Illustration, Abstract)
+4. Call Nano Banana API
+5. Display generated image
+6. User approves or regenerates
+7. Apply image to slide
+8. Upload to Supabase Storage
+
+### Workflow 4: Export
+
+```
+Export Request → Template Rendering → Asset Compilation → 
+PDF Generation → Download Delivery
+```
+
+**Steps:**
+1. User clicks Export → PDF
+2. Apply template styles to all slides
+3. Compile images and charts
+4. Generate PDF document
+5. Trigger download
+6. Log export event
+
+---
+
+## 9. Slide-Level AI Agents
 
 ### Agent Definitions
 
-#### 1. Headline Studio (Vision Slide)
+| Agent | Slide Type | Input | Output | Model |
+|-------|------------|-------|--------|-------|
+| **Headline Studio** | Vision | Current headline, context | 3-5 headline variations with tone tags | Flash |
+| **Metric Extractor** | Problem | Problem text | Highlighted metrics, statistics | Flash |
+| **Benefit Rewriter** | Solution | Feature list | Value propositions | Flash |
+| **Research Agent** | Market | Industry, region | TAM/SAM/SOM with citations | Pro + Search |
+| **Table Generator** | Business | Pricing info | Formatted pricing table | Flash |
+| **Chart Suggester** | Traction | Metrics text | Chart type + data points | Flash |
+| **Bio Summarizer** | Team | LinkedIn URLs, bios | Concise founder intros | Flash |
+| **Allocation Viz** | Ask | Funding amount, uses | Pie chart data | Flash |
+| **Matrix Generator** | Competition | Competitor names | 2x2 matrix + feature table | Pro + Search |
+| **Trend Spotter** | Trends | Industry | "Why Now?" factors | Pro + Search |
 
-```yaml
-Purpose: Generate multiple headline options for A/B testing
-Input:
-  - Current headline
-  - Business context
-  - Target audience
-Output:
-  - 3-5 headline variations
-  - Tone indicators (bold, professional, creative)
-Model: gemini-2.5-flash
-Schema:
-  headlines: [{ text, tone, impact_score }]
-```
+### Agent Trigger Points
 
-#### 2. Research Agent (Market Slide)
-
-```yaml
-Purpose: Find real TAM/SAM/SOM data with sources
-Input:
-  - Industry/vertical
-  - Geographic region
-  - Target segment
-Output:
-  - TAM with source citation
-  - SAM with calculation
-  - SOM with assumptions
-  - Growth rate
-Model: gemini-3-pro-preview
-Tools: [googleSearch]
-Schema:
-  market_size:
-    tam: { value, source }
-    sam: { value, calculation }
-    som: { value, assumptions }
-    growth_rate: number
-```
-
-#### 3. Chart Suggester (Traction Slide)
-
-```yaml
-Purpose: Convert text metrics into chart data
-Input:
-  - Traction text (e.g., "MRR grew from $10K to $100K")
-Output:
-  - Chart type (line, bar, pie)
-  - Data points
-  - Labels
-  - Suggested colors
-Model: gemini-2.5-flash
-Schema:
-  chart:
-    type: string
-    data: [{ label, value }]
-    title: string
-    colors: [string]
-```
-
-#### 4. Matrix Generator (Competition Slide)
-
-```yaml
-Purpose: Create competitive positioning matrix
-Input:
-  - Competitors (names)
-  - Comparison criteria
-Output:
-  - 2x2 matrix positioning
-  - Feature comparison table
-  - Differentiators
-Model: gemini-3-pro-preview
-Tools: [googleSearch]
-Schema:
-  matrix:
-    axes: { x_label, y_label }
-    positions: [{ name, x, y }]
-  features: [{ feature, us, competitor_1, competitor_2 }]
-```
+| User Action | Agent Triggered | Expected Result |
+|-------------|-----------------|-----------------|
+| Click "Improve" on Vision | Headline Studio | 3-5 headline options |
+| Click "Add Data" on Problem | Metric Extractor | Statistics highlighted |
+| Click "Research" on Market | Research Agent | TAM/SAM/SOM data |
+| Click "Generate Chart" on Traction | Chart Suggester | Chart configuration |
+| Click "Summarize" on Team | Bio Summarizer | Condensed bios |
 
 ---
 
-## Template System
+## 10. Template System
 
 ### Available Templates
 
 | Template | Style | Best For | Colors |
 |----------|-------|----------|--------|
-| **default** | Clean, balanced | General purpose | Blue, Orange |
-| **vibrant** | Bold, colorful | Consumer products | Purple, Mint |
-| **minimalist** | Simple, spacious | Tech startups | Black, White |
-| **professional** | Corporate, serious | Enterprise B2B | Navy, Gold |
-| **startup** | Energetic, modern | Early-stage | Teal, Coral |
+| **Classic Clean** | Clean, balanced | General purpose | White, Navy, Orange |
+| **Enterprise Pro** | Corporate, serious | Enterprise B2B | Navy, Gold |
+| **Modern Minimal** | Simple, spacious | SaaS startups | White, Black, Gray |
+| **Dark Mode** | Dark, modern | Tech startups | Black, White, Accent |
+| **Vibrant Bold** | Bold, colorful | Consumer products | Bright multi-color |
+| **Vibrant Vision** | Gradient, modern | Creative startups | Purple, Blue gradient |
+| **Vibrant Impact** | High contrast | Disruptive startups | Bold contrasts |
+| **Vibrant Features** | Feature-focused | Product launches | Feature highlights |
+| **Vibrant Journey** | Storytelling | Narrative decks | Purple, storytelling |
 
-### Template Structure
+### Template Components
 
-```typescript
-interface Template {
-  name: string;
-  slideLayouts: {
-    cover: SlideLayout;
-    vision: SlideLayout;
-    problem: SlideLayout;
-    solution: SlideLayout;
-    product: SlideLayout;
-    market: SlideLayout;
-    business: SlideLayout;
-    traction: SlideLayout;
-    competition: SlideLayout;
-    team: SlideLayout;
-    ask: SlideLayout;
-  };
-  colors: {
-    primary: string;
-    secondary: string;
-    accent: string;
-    background: string;
-    text: string;
-  };
-  typography: {
-    heading: string;
-    body: string;
-    caption: string;
-  };
-}
-```
+Each template defines:
+- **Colors:** Primary, secondary, accent, background, text
+- **Typography:** Heading font, body font, sizes
+- **Layouts:** Per-slide-type layouts
+- **Spacing:** Margins, padding, gaps
+- **Shadows:** Card shadows, text shadows
 
 ### Layout Variations
 
@@ -444,692 +519,301 @@ interface Template {
 | `layout-quote` | Testimonials | Centered large quote |
 | `layout-three-column` | Team, features | 3 equal columns |
 | `layout-timeline` | Roadmap | Horizontal timeline |
+| `layout-chart` | Data slides | Chart + key metrics |
 
 ---
 
-## Database Schema
+## 11. Database Schema
 
 ### Table: decks
 
-```sql
-CREATE TABLE decks (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID REFERENCES orgs(id) NOT NULL,
-  startup_id UUID REFERENCES startups(id),
-  
-  -- Deck metadata
-  title TEXT NOT NULL,
-  template TEXT DEFAULT 'default',
-  deck_type TEXT CHECK (deck_type IN ('seed', 'series_a', 'series_b', 'sales', 'partnership')),
-  
-  -- Generation context
-  business_context TEXT,
-  source_urls TEXT[], -- URLs used for context
-  financial_data JSONB,
-  
-  -- Status
-  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'review', 'final', 'archived')),
-  
-  -- Timestamps
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- RLS
-ALTER TABLE decks ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "org_isolation" ON decks
-  FOR ALL USING (org_id = auth.jwt()->>'org_id');
-```
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| org_id | UUID | Organization (FK) |
+| startup_id | UUID | Startup profile (FK) |
+| title | TEXT | Deck title |
+| template | TEXT | Template name |
+| deck_type | TEXT | seed, series_a, series_b, sales, partnership |
+| business_context | TEXT | Original input text |
+| source_urls | TEXT[] | URLs used for context |
+| financial_data | JSONB | Financial inputs |
+| status | TEXT | draft, review, final, archived |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update |
 
 ### Table: slides
 
-```sql
-CREATE TABLE slides (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  deck_id UUID REFERENCES decks(id) ON DELETE CASCADE,
-  
-  -- Slide content
-  title TEXT NOT NULL,
-  content TEXT,
-  notes TEXT, -- Speaker notes
-  
-  -- Slide type & layout
-  slide_type TEXT CHECK (slide_type IN (
-    'cover', 'vision', 'problem', 'solution', 'product',
-    'market', 'business', 'traction', 'competition', 'team', 'ask',
-    'trends', 'financials', 'custom'
-  )),
-  layout TEXT DEFAULT 'default',
-  
-  -- Visuals
-  image_url TEXT, -- Generated or uploaded image
-  image_prompt TEXT, -- Prompt used for generation
-  chart_data JSONB, -- For chart slides
-  table_data JSONB, -- For table slides
-  
-  -- Ordering
-  position INTEGER NOT NULL,
-  
-  -- Timestamps
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| deck_id | UUID | Parent deck (FK) |
+| title | TEXT | Slide headline |
+| content | TEXT | Bullet points |
+| notes | TEXT | Speaker notes |
+| slide_type | TEXT | vision, problem, solution, etc. |
+| layout | TEXT | Layout template |
+| image_url | TEXT | Generated/uploaded image |
+| image_prompt | TEXT | Prompt used for generation |
+| chart_data | JSONB | Chart configuration |
+| table_data | JSONB | Table data |
+| position | INTEGER | Slide order |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| updated_at | TIMESTAMPTZ | Last update |
 
--- Index for ordering
-CREATE INDEX idx_slides_deck_position ON slides(deck_id, position);
-```
+### Table: deck_assets
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| deck_id | UUID | Parent deck (FK) |
+| slide_id | UUID | Associated slide (FK) |
+| asset_type | TEXT | image, video, chart |
+| file_url | TEXT | Storage URL |
+| prompt_used | TEXT | Generation prompt |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+
+### RLS Policies
+
+| Table | Policy | Rule |
+|-------|--------|------|
+| decks | org_isolation | org_id = user's org_id |
+| slides | deck_access | deck_id in user's decks |
+| deck_assets | asset_access | deck_id in user's decks |
 
 ---
 
-## Edge Functions
+## 12. Edge Functions
 
 ### Function List
 
 | Function | Model | Tools | Purpose |
 |----------|-------|-------|---------|
-| `generate-deck` | Gemini 3 Pro | Thinking, Function Calling, Search | Full deck generation |
-| `slide-ai` | Gemini 2.5 Flash | Structured Output | Per-slide AI agents |
-| `image-ai` | Imagen 4 | - | Image generation |
+| `generate-deck` | Gemini 3 Pro | Thinking, Function Calling, Search, URL Context | Full deck generation |
+| `regenerate-slide` | Gemini 2.5 Flash | Structured Output | Single slide rewrite |
+| `slide-ai` | Gemini 2.5 Flash / 3 Pro | Various per agent | Per-slide AI agents |
+| `analyze-slide` | Gemini 2.5 Flash | Structured Output | Slide quality analysis |
+| `research-market` | Gemini 3 Pro | Google Search | Market sizing research |
+| `generate-image` | Nano Banana | Image generation | Slide visuals |
+| `generate-video` | Veo | Video generation | Hero intro clips |
+| `generate-chart` | Gemini 2.5 Flash | Code Execution | Chart data + rendering |
+| `export-pdf` | N/A | PDF library | PDF generation |
 
-### generate-deck Implementation
+### Function Descriptions
 
-```typescript
-// supabase/functions/generate-deck/index.ts
+**generate-deck:**
+- Receives wizard inputs (context, URLs, template, financials)
+- Validates all required fields
+- Extracts context from URLs using URL Context tool
+- Searches Google for market data using Grounding
+- Enables Thinking mode for strategic planning
+- Calls generateDeckOutline function for structured output
+- Saves deck and slides to Supabase
+- Returns deck ID for redirect
 
-import { GoogleGenAI, Type } from "npm:@google/genai@1.29.0";
-import { createClient } from "npm:@supabase/supabase-js@2.45.0";
+**slide-ai:**
+- Receives action type and slide context
+- Selects appropriate agent based on action
+- Builds agent-specific prompt
+- Calls model with relevant tools
+- Returns structured result for UI
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const generateDeckOutlineFunctionDeclaration = {
-  name: 'generateDeckOutline',
-  description: 'Generates a strategic 10-slide pitch deck outline',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      title: { type: Type.STRING },
-      slides: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            content: { type: Type.STRING },
-            imageUrl: { type: Type.STRING },
-            type: { type: Type.STRING }
-          },
-          required: ['title', 'content', 'imageUrl', 'type']
-        }
-      }
-    },
-    required: ['title', 'slides']
-  }
-};
-
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
-  try {
-    const { businessContext, deckType, theme, urls, orgId, userId } = await req.json();
-
-    // Validate inputs
-    if (!businessContext && (!urls || urls.length === 0)) {
-      throw new Error('Either businessContext or urls required');
-    }
-
-    const apiKey = Deno.env.get('GEMINI_API_KEY');
-    if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
-
-    const ai = new GoogleGenAI({ apiKey });
-
-    // Build context-aware prompt
-    let contextSection = '';
-    if (businessContext) {
-      contextSection = `Business Context: ${businessContext}`;
-    }
-
-    const prompt = `
-You are an expert pitch deck strategist for startups.
-
-${contextSection}
-
-Create a compelling ${deckType || 'seed'} pitch deck with:
-- Theme/Style: ${theme || 'professional'}
-- Target: Investors evaluating early-stage startups
-
-Generate exactly 10 slides following this structure:
-1. Vision - Bold, memorable headline
-2. Problem - Quantified pain point
-3. Solution - Clear value proposition
-4. Product - Key features
-5. Market - TAM/SAM/SOM with sources
-6. Business Model - Revenue streams
-7. Traction - Metrics and milestones
-8. Competition - Positioning matrix
-9. Team - Founder backgrounds
-10. Ask - Funding amount and use
-
-For each slide, provide:
-- Punchy headline (max 10 words)
-- Content with bullet points
-- Detailed image prompt for Imagen
-`;
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
-      contents: prompt,
-      config: {
-        thinkingConfig: { thinkingBudget: 1024 },
-        tools: [
-          { functionDeclarations: [generateDeckOutlineFunctionDeclaration] },
-          { googleSearch: {} }
-        ]
-      }
-    });
-
-    // Extract function call result
-    const functionCall = response.candidates?.[0]?.content?.parts?.find(
-      p => p.functionCall?.name === 'generateDeckOutline'
-    );
-
-    if (!functionCall) {
-      throw new Error('Failed to generate deck outline');
-    }
-
-    const deckData = functionCall.functionCall.args;
-
-    // Save to database
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
-    const { data: deck, error: deckError } = await supabase
-      .from('decks')
-      .insert({
-        org_id: orgId,
-        title: deckData.title,
-        template: theme,
-        deck_type: deckType,
-        business_context: businessContext,
-        source_urls: urls
-      })
-      .select()
-      .single();
-
-    if (deckError) throw deckError;
-
-    // Insert slides
-    const slidesData = deckData.slides.map((slide, index) => ({
-      deck_id: deck.id,
-      title: slide.title,
-      content: slide.content,
-      slide_type: slide.type,
-      image_prompt: slide.imageUrl,
-      position: index
-    }));
-
-    await supabase.from('slides').insert(slidesData);
-
-    return new Response(
-      JSON.stringify({ success: true, deckId: deck.id }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
-  } catch (error: any) {
-    console.error('Error:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-});
-```
-
-### slide-ai Implementation
-
-```typescript
-// supabase/functions/slide-ai/index.ts
-
-import { GoogleGenAI, Type } from "npm:@google/genai@1.29.0";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-// Multiple function declarations for different agents
-const agents = {
-  rewriteSlide: {
-    name: 'rewriteSlide',
-    description: 'Rewrite slide content for better clarity and impact',
-    parameters: {
-      type: Type.OBJECT,
-      properties: {
-        newTitle: { type: Type.STRING },
-        newContent: { type: Type.STRING }
-      },
-      required: ['newTitle', 'newContent']
-    }
-  },
-  
-  generateMarketData: {
-    name: 'generateMarketData',
-    description: 'Generate TAM/SAM/SOM market sizing',
-    parameters: {
-      type: Type.OBJECT,
-      properties: {
-        tam: { type: Type.OBJECT, properties: { value: { type: Type.STRING }, source: { type: Type.STRING } } },
-        sam: { type: Type.OBJECT, properties: { value: { type: Type.STRING }, calculation: { type: Type.STRING } } },
-        som: { type: Type.OBJECT, properties: { value: { type: Type.STRING }, assumptions: { type: Type.STRING } } },
-        growthRate: { type: Type.STRING }
-      }
-    }
-  },
-  
-  suggestChart: {
-    name: 'suggestChart',
-    description: 'Convert text metrics into chart data',
-    parameters: {
-      type: Type.OBJECT,
-      properties: {
-        chartType: { type: Type.STRING, enum: ['line', 'bar', 'pie', 'area'] },
-        title: { type: Type.STRING },
-        data: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { label: { type: Type.STRING }, value: { type: Type.NUMBER } } } }
-      }
-    }
-  },
-  
-  generateCompetitorMatrix: {
-    name: 'generateCompetitorMatrix',
-    description: 'Create competitive positioning matrix',
-    parameters: {
-      type: Type.OBJECT,
-      properties: {
-        axes: { type: Type.OBJECT, properties: { x: { type: Type.STRING }, y: { type: Type.STRING } } },
-        positions: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, x: { type: Type.NUMBER }, y: { type: Type.NUMBER } } } }
-      }
-    }
-  }
-};
-
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
-  try {
-    const { action, slideContent, slideType, context } = await req.json();
-
-    const apiKey = Deno.env.get('GEMINI_API_KEY');
-    if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
-
-    const ai = new GoogleGenAI({ apiKey });
-    const agentDeclaration = agents[action];
-    
-    if (!agentDeclaration) {
-      throw new Error(`Unknown agent action: ${action}`);
-    }
-
-    // Build agent-specific prompt
-    const prompts = {
-      rewriteSlide: `Rewrite this slide for maximum investor impact:\n${slideContent}`,
-      generateMarketData: `Generate market sizing data for: ${context}\nUse real sources where possible.`,
-      suggestChart: `Convert this traction data into a chart:\n${slideContent}`,
-      generateCompetitorMatrix: `Create a competitive positioning matrix for: ${context}`
-    };
-
-    const response = await ai.models.generateContent({
-      model: action === 'generateMarketData' ? 'gemini-3-pro-preview' : 'gemini-2.5-flash',
-      contents: prompts[action],
-      config: {
-        tools: [
-          { functionDeclarations: [agentDeclaration] },
-          ...(action === 'generateMarketData' ? [{ googleSearch: {} }] : [])
-        ]
-      }
-    });
-
-    const functionCall = response.candidates?.[0]?.content?.parts?.find(
-      p => p.functionCall?.name === action
-    );
-
-    return new Response(
-      JSON.stringify({ success: true, data: functionCall?.functionCall?.args || {} }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
-  } catch (error: any) {
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-});
-```
+**research-market:**
+- Receives industry, region, segment
+- Uses Google Search Grounding
+- Returns TAM/SAM/SOM with citations
+- Formats for slide insertion
 
 ---
 
-## Frontend Components
+## 13. Frontend Components
 
 ### Component Tree
 
 ```
 📁 screens/
-├── WizardSteps.tsx          # 5-step wizard
-├── GeneratingScreen.tsx     # Loading + progress
-├── DeckEditor.tsx           # Main editor
-└── PresentationScreen.tsx   # Slideshow mode
+├── WizardSteps.tsx          — 4-step wizard container
+├── GeneratingScreen.tsx     — Loading + progress
+├── DeckEditor.tsx           — Main editor layout
+└── PresentationScreen.tsx   — Slideshow mode
 
-📁 components/
-├── wizard/
-│   ├── UrlInput.tsx         # URL input with validation
-│   ├── TemplateSelector.tsx # Template previews
-│   └── FinancialForm.tsx    # Financial data input
-├── editor/
-│   ├── SlideOutline.tsx     # Slide list sidebar
-│   ├── EditorPanel.tsx      # Main slide canvas
-│   ├── RightSidebar.tsx     # AI tools panel
-│   ├── AICopilot.tsx        # Per-slide AI
-│   ├── Chart.tsx            # Chart rendering
-│   └── Table.tsx            # Table rendering
-└── common/
-    └── LoadingSpinner.tsx
+📁 components/wizard/
+├── ContextStep.tsx          — Business description + URLs
+├── AestheticStep.tsx        — Template selection
+├── DetailsStep.tsx          — Business details form
+├── FinancialsStep.tsx       — Revenue model + review
+└── ProgressIndicator.tsx    — Step progress bar
+
+📁 components/editor/
+├── SlideOutline.tsx         — Slide list sidebar
+├── EditorPanel.tsx          — Main slide canvas
+├── RightSidebar.tsx         — AI tools panel
+├── AICopilot.tsx            — Per-slide AI
+├── SlideToolbar.tsx         — Editing toolbar
+├── Chart.tsx                — Chart rendering
+└── Table.tsx                — Table rendering
+
+📁 components/common/
+├── TemplateCard.tsx         — Template preview
+├── SlidePreview.tsx         — Thumbnail preview
+├── LoadingSpinner.tsx       — Loading indicator
+└── ExportModal.tsx          — Export options
 
 📁 contexts/
-└── DeckEditorContext.tsx    # Editor state management
+└── DeckEditorContext.tsx    — Editor state management
 
 📁 services/
 ├── ai/
-│   ├── deck.ts              # Deck generation
-│   ├── slide.ts             # Slide AI agents
-│   └── image.ts             # Image generation
-└── deckService.ts           # Supabase CRUD
-
-📁 styles/
-└── templates.ts             # Template definitions
+│   ├── deck.ts              — Deck generation
+│   ├── slide.ts             — Slide AI agents
+│   └── image.ts             — Image generation
+└── deckService.ts           — Supabase CRUD
 ```
+
+### Key Component Responsibilities
+
+| Component | Responsibility |
+|-----------|---------------|
+| WizardSteps | Manages wizard state, navigation, validation |
+| GeneratingScreen | Displays progress, tips, handles completion |
+| DeckEditor | Orchestrates editor panels, manages selection |
+| SlideOutline | Displays slide list, handles reordering |
+| EditorPanel | Renders slide canvas, handles inline editing |
+| AICopilot | Provides AI actions, displays suggestions |
+| DeckEditorContext | Centralized state for deck, slides, selection |
 
 ---
 
-## Process Flows
+## 14. Figma Make + Supabase Integration
 
-### Wizard to Editor Flow
+### Overview
 
+Figma Make integrates with Supabase to enable rapid prototyping and validation of the Pitch Deck Engine UI/UX. This allows:
+
+- Quick MVP prototypes before full React development
+- Internal tools for testing AI workflows
+- Design validation with real backend data
+
+### Core Capabilities
+
+| Capability | Use Case for Pitch Deck Engine |
+|------------|-------------------------------|
+| **Auth** | Test founder login flows |
+| **Database** | Store deck drafts, slide edits |
+| **Storage** | Upload images, PDFs |
+| **Edge Functions** | Call AI generation functions |
+| **Secrets** | Store Gemini API key securely |
+
+### Prototype Ideas
+
+**1. Wizard Prototype**
+- Test 4-step flow with real form inputs
+- Validate template selection UX
+- Measure completion rates
+
+**2. AI Copilot Prototype**
+- Test AI action buttons
+- Validate suggestion display
+- Measure adoption of AI features
+
+**3. Export Preview Prototype**
+- Test PDF preview before download
+- Validate share link UX
+- Measure export conversion
+
+### Figma Make Prompts for Pitch Deck
+
+**Wizard Prototype:**
 ```
-User opens /pitch-decks/new
-        │
-        ▼
-┌───────────────────┐
-│ Step 1: Context   │  "Tell us about your startup"
-│ - Text input      │  OR
-│ - URL input       │  Paste website URLs
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Step 2: Deck Type │  Seed, Series A, Sales, etc.
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Step 3: Template  │  Select visual style
-│ - 5 options       │  (vibrant, minimalist, etc.)
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Step 4: Financials│  (Optional)
-│ - MRR, growth     │  
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Step 5: Review    │  Confirm & Generate
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Generating Screen │  Shows progress
-│ - Call generate-  │  
-│   deck function   │  
-│ - Save to DB      │  
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Deck Editor       │  Full editing UI
-│ - Edit slides     │  
-│ - Use AI agents   │  
-│ - Export PDF      │  
-└───────────────────┘
+Create a 4-step wizard for generating AI pitch decks.
+Step 1: Text input for business description + URL input.
+Step 2: Grid of 9 template cards with selection.
+Step 3: Multi-select chips for business type, stage, focus.
+Step 4: Review summary + "Generate" button.
+Add Supabase Auth for user login.
+Store wizard data in Supabase database.
 ```
 
-### AI Agent Interaction Flow
+**Editor Prototype:**
+```
+Create a slide editor with 3 panels:
+Left: Scrollable list of slide thumbnails (10 slides).
+Center: Large slide preview with editable title and bullets.
+Right: AI Copilot with action buttons (Improve, Research, Chart).
+Connect to Supabase Edge Function for AI actions.
+Store slide edits in Supabase database.
+```
 
-```
-User clicks AI action (e.g., "Improve Headline")
-        │
-        ▼
-┌───────────────────┐
-│ Capture context   │  Current slide content
-│ - Slide type      │  Previous/next slides
-│ - Business context│  Template theme
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Call slide-ai     │  Edge Function
-│ - Action: headline│  
-│ - Context: {...}  │  
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Gemini generates  │  3-5 headline options
-│ - Function call   │  
-│ - Structured JSON │  
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Display options   │  User selects one
-│ - Show previews   │  
-│ - Apply button    │  
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ Update slide      │  Auto-save to DB
-└───────────────────┘
-```
+### Benefits of Figma Make Prototyping
+
+| Benefit | Impact |
+|---------|--------|
+| Faster iteration | Test UI changes in hours, not days |
+| Real data validation | Use actual Supabase backend |
+| Stakeholder demos | Show working prototypes |
+| Design-to-code handoff | Export code to GitHub |
+| No backend expertise needed | AI-guided setup |
 
 ---
 
-## Multi-Step Prompts
-
-### Master Deck Generation Prompt
-
-```markdown
-# Pitch Deck Generation - System Prompt
-
-You are an expert pitch deck strategist who has helped 1000+ startups raise funding.
-
-## Your Role
-- Create compelling, investor-ready pitch decks
-- Structure narrative for maximum impact
-- Use data and specifics, not generic claims
-- Match content tone to selected template
-
-## Deck Structure (10 Slides)
-
-1. **Vision** - Bold, memorable headline that captures the opportunity
-2. **Problem** - Quantified pain point with real metrics
-3. **Solution** - Clear value proposition, not feature list
-4. **Product** - Key features with user benefits
-5. **Market** - TAM/SAM/SOM with real sources
-6. **Business Model** - Revenue streams, pricing
-7. **Traction** - Metrics, milestones, social proof
-8. **Competition** - Honest positioning, differentiation
-9. **Team** - Relevant experience, why this team
-10. **Ask** - Clear amount, use of funds
-
-## Content Guidelines
-
-- Headlines: Max 10 words, punchy
-- Bullets: 3-5 per slide, action-oriented
-- Metrics: Use real numbers when available
-- Tone: Match template style
-- Images: Provide detailed prompts for Imagen
-
-## Output Requirements
-
-Use the generateDeckOutline function to return structured JSON.
-Each slide must have: title, content, imageUrl (prompt), type.
-```
-
-### Slide Rewrite Prompt
-
-```markdown
-# Slide Improvement - System Prompt
-
-You are improving a single pitch deck slide for investor impact.
-
-## Context
-- Slide Type: {slideType}
-- Current Title: {currentTitle}
-- Current Content: {currentContent}
-- Template Style: {template}
-
-## Improvement Goals
-
-1. **Clarity** - Make the message immediately clear
-2. **Impact** - Create emotional/logical resonance
-3. **Specificity** - Replace generic claims with specifics
-4. **Action** - Use active voice, strong verbs
-
-## Output
-
-Return via rewriteSlide function:
-- newTitle: Improved headline
-- newContent: Improved bullet points
-```
-
-### Market Research Prompt
-
-```markdown
-# Market Sizing - System Prompt
-
-Generate market sizing data for an investor pitch deck.
-
-## Context
-- Industry: {industry}
-- Product: {product}
-- Geography: {region}
-
-## Requirements
-
-Use Google Search to find real data. Cite sources.
-
-1. **TAM** (Total Addressable Market)
-   - Full market size if everyone used this type of solution
-   - Use industry reports (Gartner, Statista, CB Insights)
-
-2. **SAM** (Serviceable Addressable Market)
-   - Subset that you could realistically serve
-   - Apply geographic and segment filters
-
-3. **SOM** (Serviceable Obtainable Market)
-   - Realistic 3-5 year capture
-   - Based on competitive landscape
-
-4. **Growth Rate**
-   - Annual growth rate of the market
-   - With source
-
-Return via generateMarketData function with source citations.
-```
-
----
-
-## Success Criteria
+## 15. Success Criteria
 
 ### Functional Tests
 
 | Test | Criteria | Status |
 |------|----------|--------|
-| Wizard completes | All 5 steps work | ✅ |
-| Deck generates | 10 slides created | ✅ |
-| Slides editable | All fields save | ✅ |
-| AI agents work | Each agent returns data | ✅ |
-| Templates apply | Styles render correctly | ✅ |
-| Export works | PDF generates | ✅ |
-| Mock mode works | Functions without API | ✅ |
+| Wizard completes | All 4 steps work | ✅ Pass |
+| Deck generates | 10-12 slides created | ✅ Pass |
+| Slides editable | All fields save | ✅ Pass |
+| AI agents work | Each agent returns data | ✅ Pass |
+| Templates apply | Styles render correctly | ✅ Pass |
+| Export works | PDF generates | ✅ Pass |
+| Mock mode works | Functions without API | ✅ Pass |
 
 ### Quality Tests
 
 | Test | Criteria | Status |
 |------|----------|--------|
-| Content relevance | Matches input context | ✅ |
-| Investor readiness | Follows best practices | ✅ |
-| Visual consistency | Template applied uniformly | ✅ |
-| Market data accuracy | Sources cited | ✅ |
+| Content relevance | Matches input context | ✅ Pass |
+| Investor readiness | Follows best practices | ✅ Pass |
+| Visual consistency | Template applied uniformly | ✅ Pass |
+| Market data accuracy | Sources cited | ✅ Pass |
 
 ### Performance Tests
 
 | Test | Criteria | Status |
 |------|----------|--------|
-| Generation time | < 60 seconds | ✅ |
-| Slide rewrite | < 10 seconds | ✅ |
-| Image generation | < 30 seconds | ✅ |
-| Editor load | < 2 seconds | ✅ |
+| Deck generation time | < 60 seconds | ✅ Pass |
+| Slide rewrite | < 10 seconds | ✅ Pass |
+| Image generation | < 30 seconds | ✅ Pass |
+| Editor load | < 2 seconds | ✅ Pass |
+| PDF export | < 15 seconds | ✅ Pass |
 
 ### Acceptance Tests
 
-```yaml
-# Test 1: Full Generation Flow
-Given: User with startup description
-When: Complete wizard and click Generate
-Then:
-  - 10 slides created
-  - Each slide has title + content
-  - Template styles applied
-  - Deck saved to database
-  - User redirected to editor
+**Test 1: Full Generation Flow**
+- Given: User with startup description
+- When: Complete wizard and click Generate
+- Then: 10 slides created, template applied, saved to database, redirected to editor
 
-# Test 2: Market Research Agent
-Given: Slide of type "market"
-When: Click "Generate Market Data"
-Then:
-  - TAM/SAM/SOM returned
-  - Sources cited
-  - Data formatted for slide
+**Test 2: Market Research Agent**
+- Given: Slide of type "market"
+- When: Click "Research"
+- Then: TAM/SAM/SOM returned with sources, data formatted for slide
 
-# Test 3: Template Selection
-Given: User in wizard
-When: Select "vibrant" template
-Then:
-  - Preview updates
-  - Generated deck uses vibrant styles
-  - Colors match template definition
+**Test 3: Template Selection**
+- Given: User in wizard Step 2
+- When: Select "Modern Minimal" template
+- Then: Preview updates, generated deck uses template styles
 
-# Test 4: Mock Mode Fallback
-Given: API key not configured
-When: Attempt generation
-Then:
-  - Mock deck created
-  - User flow continues
-  - Error logged for debugging
-```
+**Test 4: Mock Mode Fallback**
+- Given: API key not configured
+- When: Attempt generation
+- Then: Mock deck created, user flow continues, error logged
 
 ---
 
-## Mermaid Diagrams
+## 16. Mermaid Diagrams
 
 ### Deck Generation Sequence
 
@@ -1143,25 +827,30 @@ sequenceDiagram
     participant DB as Supabase
 
     U->>W: Enter business context
-    U->>W: Select deck type & template
+    U->>W: Add website URLs
+    U->>W: Select template
+    U->>W: Enter financial data
     U->>W: Click Generate
     W->>G: Navigate with params
     
     G->>E: POST /generate-deck
-    E->>AI: generateContent(prompt)
+    E->>AI: Extract URL context
+    E->>AI: Search for market data
+    E->>AI: Generate with Thinking
     
-    Note over AI: thinkingConfig: high
-    Note over AI: tools: [functionDeclarations, googleSearch]
+    Note over AI: thinkingLevel: high
+    Note over AI: tools: [functionDeclarations, googleSearch, urlContext]
     
     AI->>AI: Strategic reasoning
     AI->>AI: Call generateDeckOutline
     AI-->>E: Structured deck JSON
     
     E->>DB: INSERT deck
-    E->>DB: INSERT slides (10)
+    E->>DB: INSERT slides (10-12)
     DB-->>E: deck_id
     E-->>G: { deckId }
     
+    G->>G: Show progress animation
     G->>G: Navigate to Editor
     G->>DB: GET /decks/:id
     DB-->>G: Full deck + slides
@@ -1182,13 +871,18 @@ stateDiagram-v2
     Editing --> Saving: Auto-save trigger
     Saving --> Ready: Save complete
     
-    AIProcessing --> Ready: AI complete
+    AIProcessing --> PreviewResult: AI complete
     AIProcessing --> Error: AI failed
+    PreviewResult --> Ready: User applies
+    PreviewResult --> AIProcessing: User regenerates
     
     Error --> Ready: Retry
     
     Ready --> Exporting: Click export
     Exporting --> Ready: Export complete
+    
+    Ready --> Presenting: Click present
+    Presenting --> Ready: Exit presentation
 ```
 
 ### Slide AI Agent Flow
@@ -1200,131 +894,150 @@ flowchart TD
     end
     
     subgraph Agents["AI Agents"]
-        B -->|Improve| C[rewriteSlide]
-        B -->|Market| D[generateMarketData]
-        B -->|Chart| E[suggestChart]
-        B -->|Compete| F[generateCompetitorMatrix]
+        B -->|Improve| C[Headline Studio]
+        B -->|Research| D[Research Agent]
+        B -->|Chart| E[Chart Suggester]
+        B -->|Analyze| F[Slide Analyzer]
     end
     
     subgraph Process["Processing"]
         C --> G[Gemini 2.5 Flash]
         D --> H[Gemini 3 Pro + Search]
         E --> G
-        F --> H
+        F --> G
     end
     
     subgraph Output["Results"]
         G --> I[Structured JSON]
         H --> I
-        I --> J[Update Slide]
-        J --> K[Auto-save]
+        I --> J[Preview in UI]
+        J --> K{User Approves?}
+        K -->|Yes| L[Apply to Slide]
+        K -->|No| M[Regenerate]
+        M --> B
+        L --> N[Auto-save]
     end
 ```
 
-### Template System
-
-```mermaid
-flowchart LR
-    subgraph Selection["Wizard Step 3"]
-        A[Template Selector] --> B{User Choice}
-    end
-    
-    subgraph Templates["Available Templates"]
-        B -->|1| C[default]
-        B -->|2| D[vibrant]
-        B -->|3| E[minimalist]
-        B -->|4| F[professional]
-        B -->|5| G[startup]
-    end
-    
-    subgraph Applied["Generation"]
-        C --> H[Add to prompt context]
-        D --> H
-        E --> H
-        F --> H
-        G --> H
-        H --> I[Gemini uses for tone]
-        H --> J[Styles applied in editor]
-    end
-```
-
-### User Journey
+### User Journey Map
 
 ```mermaid
 journey
     title Create Pitch Deck Journey
     section Wizard
-        Enter startup info: 5: User
-        Select deck type: 5: User
-        Choose template: 5: User
-        Review & generate: 4: User
+        Open wizard: 5: User
+        Enter startup info: 4: User
+        Add website URL: 5: User
+        Select template: 5: User
+        Enter details: 4: User
+        Review & generate: 5: User
     section Generation
-        AI processes request: 5: System
+        AI processes: 5: System
+        URL context extracted: 5: System
+        Market data searched: 5: System
         10 slides created: 5: System
+        Images generated: 4: System
         Saved to database: 5: System
     section Editing
         Review slides: 4: User
         Use AI agents: 5: User, System
         Generate images: 4: System
         Make manual edits: 4: User
+        Reorder slides: 5: User
     section Export
+        Preview deck: 4: User
         Export to PDF: 5: User
         Share with investors: 5: User
 ```
 
----
+### System Architecture Diagram
 
-## Troubleshooting Guide
-
-### Common Issues
-
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| **500 Error on generate** | Missing GEMINI_API_KEY | Set secret in Supabase |
-| **403 Permission Denied** | API key suspended | Replace with new key |
-| **Blank slides** | JSON parsing failed | Use Function Calling |
-| **Mock mode active** | No .env.local | Restore from backup |
-| **Styles not applying** | Template mismatch | Check templates.ts |
-
-### Debug Commands
-
-```bash
-# Check Supabase secrets
-supabase secrets list
-
-# Redeploy edge function
-supabase functions deploy generate-deck
-
-# Check function logs
-# Go to: https://supabase.com/dashboard/project/YOUR_PROJECT/functions/generate-deck/logs
-
-# Test API key
-curl https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_KEY
-
-# Clear Vite cache
-rm -rf node_modules/.vite
+```mermaid
+flowchart TB
+    subgraph Frontend["Frontend (React)"]
+        WIZ[Wizard]
+        GEN[Generating Screen]
+        EDT[Editor]
+        PRS[Presentation]
+    end
+    
+    subgraph EdgeFunctions["Supabase Edge Functions"]
+        GD[generate-deck]
+        SA[slide-ai]
+        IA[image-ai]
+        VA[video-ai]
+        RM[research-market]
+    end
+    
+    subgraph Gemini["Gemini 3 Pro"]
+        TXT[Text Generation]
+        THK[Thinking]
+        FC[Function Calling]
+        GS[Google Search]
+        URL[URL Context]
+        CE[Code Execution]
+        SO[Structured Output]
+    end
+    
+    subgraph ImageVideo["Image/Video"]
+        NB[Nano Banana]
+        NBP[Nano Banana Pro]
+        VEO[Veo Video]
+    end
+    
+    subgraph Database["Supabase"]
+        DB[(PostgreSQL)]
+        ST[(Storage)]
+    end
+    
+    WIZ --> GD
+    GEN --> GD
+    EDT --> SA
+    EDT --> IA
+    EDT --> VA
+    
+    GD --> THK
+    GD --> FC
+    GD --> GS
+    GD --> URL
+    SA --> SO
+    SA --> GS
+    IA --> NB
+    IA --> NBP
+    VA --> VEO
+    RM --> GS
+    
+    GD --> DB
+    SA --> DB
+    IA --> ST
+    VA --> ST
 ```
 
-### Error Status Codes
+---
 
-| Code | Meaning | Action |
-|------|---------|--------|
-| 200 | Success | - |
-| 400 | Bad request | Check input validation |
-| 403 | Forbidden | API key issue |
-| 500 | Server error | Check function logs |
+## 17. Risks & Mitigations
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Gemini hallucination | Medium | High | Google Search Grounding + Structured Outputs |
+| Slow generation | Medium | Medium | Use Gemini Flash for local rewrites |
+| Image quality inconsistent | Medium | Medium | Multiple generation attempts + user regenerate |
+| Storage costs | Low | Medium | Automatic image compression |
+| Inconsistent slide formats | Low | High | Strict JSON schema enforcement |
+| API rate limits | Medium | High | Request queuing + fallback to mock |
+| User abandons wizard | Medium | Medium | Progress saving + validation feedback |
 
 ---
 
-## Implementation Checklist
+## 18. Implementation Checklist
 
 ### ✅ Completed (95%)
 
-- [x] Wizard UI (5 steps)
-- [x] Template selector (5 templates)
+- [x] Wizard UI (4 steps)
+- [x] Template selector (9 templates)
 - [x] generate-deck Edge Function
 - [x] slide-ai Edge Function
-- [x] image-ai Edge Function
+- [x] image-ai Edge Function (Nano Banana)
 - [x] DeckEditorContext
 - [x] Slide editor (EditorPanel)
 - [x] AI Copilot sidebar
@@ -1334,18 +1047,25 @@ rm -rf node_modules/.vite
 - [x] Mock mode fallback
 - [x] Supabase persistence
 - [x] RLS policies
+- [x] Google Search Grounding
+- [x] URL Context extraction
+- [x] Structured Output schemas
+- [x] Function Calling
 
-### 🔴 Remaining (5%)
+### 🔄 In Progress (5%)
 
-- [ ] Real-time collaboration
+- [ ] Mobile editor optimization
+- [ ] Additional AI agent refinements
+
+### 📅 Planned (Future)
+
+- [ ] Video generation (Veo)
 - [ ] PPTX export
-- [ ] Notion integration
+- [ ] Real-time collaboration
 - [ ] Version history
 - [ ] Deck analytics
-
-### 🔜 Future Enhancements
-
-- [ ] AI template suggestion (based on content)
+- [ ] File Search RAG
+- [ ] AI template suggestion
 - [ ] Custom color palettes
 - [ ] Multi-language support
 - [ ] Voice narration
@@ -1362,43 +1082,30 @@ rm -rf node_modules/.vite
 | `/functions/v1/generate-deck` | POST | Generate full deck |
 | `/functions/v1/slide-ai` | POST | Slide AI agents |
 | `/functions/v1/image-ai` | POST | Image generation |
-
-### Service Methods
-
-```typescript
-// services/ai/deck.ts
-generateFullDeck(context, deckType, template): Promise<Deck>
-
-// services/ai/slide.ts
-rewriteSlide(slideId, instruction): Promise<Slide>
-generateMarketData(industry): Promise<MarketData>
-suggestChart(content): Promise<ChartData>
-generateCompetitorMatrix(competitors): Promise<MatrixData>
-
-// services/ai/image.ts
-generateSlideImage(prompt): Promise<string>
-
-// services/deckService.ts
-getDeck(id): Promise<Deck>
-saveDeck(deck): Promise<void>
-saveSlide(slide): Promise<void>
-```
+| `/functions/v1/video-ai` | POST | Video generation |
+| `/functions/v1/research-market` | POST | Market research |
+| `/functions/v1/export-pdf` | POST | PDF generation |
 
 ### Environment Variables
 
-```bash
-# Frontend (.env.local)
-VITE_SUPABASE_URL=https://xxx.supabase.co
-VITE_SUPABASE_ANON_KEY=xxx
+**Frontend:**
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_ANON_KEY
 
-# Backend (Supabase Secrets)
-GEMINI_API_KEY=xxx
-SUPABASE_SERVICE_ROLE_KEY=xxx
-```
+**Backend (Supabase Secrets):**
+- GEMINI_API_KEY
+- SUPABASE_SERVICE_ROLE_KEY
+
+### Debug Commands
+
+- Check Supabase secrets: `supabase secrets list`
+- Redeploy Edge Function: `supabase functions deploy generate-deck`
+- Check function logs: Supabase Dashboard → Functions → Logs
+- Test API key: Gemini API test endpoint
+- Clear Vite cache: `rm -rf node_modules/.vite`
 
 ---
 
-**Last Updated:** 2025-12-06  
-**Author:** Sun AI Team  
-**Status:** 95% Complete - Production Ready
-
+**Last Updated:** 2025-12-07  
+**Author:** StartupAI Team  
+**Status:** 95% Complete — Production Ready
