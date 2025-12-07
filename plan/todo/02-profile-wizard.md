@@ -973,6 +973,496 @@ stateDiagram-v2
 
 ---
 
+## Figma Make AI Prompts
+
+### Prompt 1: Startup Profile Dashboard
+
+```markdown
+Design a clean, modern, responsive **Startup Profile Dashboard** for founders.  
+
+Use SaaS aesthetics (Linear / Notion / Vercel), soft shadows, white cards, violet/indigo accents for AI features, and Inter/Söhne typography.
+
+Include clear hierarchy, auto-layout, card grids, right-side AI Assistant panel, and sample startup data.
+
+---
+
+# 🧭 DASHBOARD LAYOUT STRUCTURE
+
+## 1. Header
+
+- Logo + "StartupAI"
+- Global search: "Search projects…"
+- Notifications icon
+- User avatar dropdown (name: Alex D.)
+- Subtle divider
+
+---
+
+## 2. Hero Section (Startup Snapshot)
+
+Top left card summarizing the startup:
+
+**Card Title:** Startup Profile  
+
+**Content:**
+- Logo placeholder (circle)  
+- Name: *SkyOffice*  
+- Tagline: *Virtual HQ for async & remote-first teams*  
+- Tags: SaaS / Seed Stage / B2B  
+- Edit Profile button (secondary)  
+
+---
+
+## 3. Quick Actions Row (Horizontal)
+
+Design 6 small action cards with icons:
+
+1. **✨ Generate Pitch Deck**  
+2. **📝 Create One-Pager**  
+3. **📊 Market Sizing (TAM/SAM/SOM)**  
+4. **🚀 GTM Strategy**  
+5. **📁 Data Room Setup**  
+6. **📬 Investor Outreach Tools**
+
+Each card: icon + title + small subtitle + hover elevation.
+
+---
+
+## 4. AI Insights Panel (Right Sidebar)
+
+Title: **Gemini 3 — AI Insights**  
+Accent background: subtle violet gradient.
+
+### Content:
+
+**Startup Summary**  
+- "SkyOffice provides virtual HQ rooms to improve remote team collaboration."
+
+**Detected Risks**  
+- Low pricing clarity  
+- Missing competitor detail  
+- No traction metrics added
+
+**Recommended Next Steps**  
+- Add competitors for stronger positioning  
+- Provide traction for better investor readiness  
+- Generate your pitch deck
+
+**Buttons:**  
+- Generate Tasks  
+- Improve Profile  
+- Ask Gemini Anything
+
+---
+
+## 5. Cards Section — 3 Columns (Core Startup Data)
+
+### A. Problem & Solution Card
+
+**Title:** Problem + Solution  
+
+**Sample Data:**  
+- Problem: "Remote teams struggle with fragmented workflows and async burnout."  
+- Solution: "A virtual HQ that unifies communication, standups, and task workflows."
+
+---
+
+### B. Target Market Card
+
+**Title:** Target Market  
+
+**Content:**  
+- SMB + Mid-market tech companies  
+- 20–500 employees  
+- Regions: USA, Canada, Europe  
+- AI note: "Based on your industry, typical TAM is $4.5B."
+
+---
+
+### C. Key Features Card
+
+**Title:** Product Features  
+
+Bullet list with icons:  
+- Virtual HQ Rooms  
+- Async Standups  
+- Unified Activity Feed  
+- Meeting Playback  
+- Integrations: Slack, Notion, Jira
+
+---
+
+## 6. Additional Cards Row (Business Model + Team + Metrics)
+
+### A. Business Model Card
+
+**Title:** Business Model  
+
+Sample data:  
+- Pricing: Subscription (per team, per workspace)  
+- Revenue: $49 / month starter  
+- Customer Type: B2B SaaS  
+- AI Suggestion: "Consider annual billing incentives."
+
+---
+
+### B. Founder & Team Card
+
+**Title:** Founder & Team  
+
+Sample Data:
+- **Alex Johnson — CEO**  
+  Background: ex-Slack PM / Remote systems expert  
+- **Maria Chen — CTO**  
+  Background: ML Engineer, ex-Notion  
+
+Button: Add Co-Founder
+
+---
+
+### C. Traction & Metrics Card
+
+**Title:** Traction  
+
+Sample Data:
+- Monthly Active Users: **1,250**  
+- MRR: **$12,400**  
+- Growth (MoM): **14%**  
+- Waitlist: **3,100** users  
+- Partners: RemoteWorks, Async.org  
+
+AI Insight: "Growth rate indicates strong early traction."
+
+---
+
+## 7. Competitors Card (Full Width)
+
+**Competitors:**  
+- Slack  
+- Zoom  
+- Gather  
+- Microsoft Teams  
+
+**Positioning Notes**  
+- Differentiator: "More async-first and task-integrated than Slack or Zoom."
+
+Add competitor comparison toggle button.
+
+---
+
+## 8. Recommended Workflows Section
+
+Horizontal workflow cards for:
+
+1. **Fundraising Workflow**  
+   "Get ready to pitch investors. Generates tasks, pitch deck, and updates."  
+
+2. **GTM Workflow**  
+   "Launch your product with channel strategy, messaging, and ICP analysis."  
+
+3. **Product Roadmap Workflow**  
+   "Define features, prioritization, and milestone planning."  
+
+Each card: icon + title + CTA.
+
+---
+
+## 9. Footer Section
+
+Small links:  
+- Docs  
+- Support  
+- Privacy  
+- Terms
+
+---
+
+# 🎨 COMPONENTS TO GENERATE
+
+- Card layouts (SaaS style)  
+- Right sidebar AI panel  
+- 3-column responsive grid  
+- Quick action buttons  
+- Icons for features + workflows  
+- Tags + pills + status indicators  
+- Data visualization placeholders (simple bar or sparkline for metrics)  
+
+---
+
+# 📱 RESPONSIVE RULES
+
+- Desktop: main content left, AI sidebar right  
+- Tablet: sidebar collapses under content  
+- Mobile: stacked cards, simplified header  
+
+---
+
+# ✔️ FINAL INSTRUCTIONS
+
+Create the **entire Startup Profile Dashboard UI**, including:  
+- Hero card  
+- All sections, cards, grids  
+- AI Insights sidebar  
+- Quick actions row  
+- Sample data  
+- Clean spacing & alignment  
+
+Use auto-layout, minimal noise, and professional SaaS design patterns.
+```
+
+---
+
+### Prompt 2: Startup Profile Wizard (5 Steps)
+
+```markdown
+Design a complete, modern, responsive **Startup Profile Wizard** with 5 steps.  
+
+Use clean SaaS UI patterns (Linear / Notion style), clear hierarchy, and integrated **Gemini 3 AI features** (URL Context Extraction, Search Grounding, File Search, AI Reasoning, Structured Outputs).
+
+Use auto-layout, minimal spacing (8–32px), rounded corners (12–16px), and Inter/Söhne typography.  
+Use subtle violet/indigo accents for AI-related elements.
+
+---
+
+# 🧭 WIZARD OVERVIEW (5 STEPS)
+
+1. **Context**  
+2. **Founder & Team**  
+3. **Business Fundamentals**  
+4. **Traction & Metrics**  
+5. **AI Summary**
+
+Each step must include hero title, description, content card, sidebar AI panel (where applicable), and bottom navigation (Back / Continue).
+
+---
+
+# 🔵 STEP 1 — CONTEXT  
+
+**Goal:** Capture raw startup description + website for Gemini extraction.
+
+### Layout
+
+- Large multiline text box with placeholder:  
+  "Describe your startup…"
+- Website URL field with Analyze button
+- Under the text box: **AI Structured Output Tags**  
+  - Problem  
+  - Target Audience  
+  - Core Solution  
+  - Features  
+  - Pricing Model  
+  (Inactive → Active when AI detects them)
+
+### Right-Side AI Panel (Gemini 3)
+
+- AI Reasoning bubble: "Analyzing your description…"  
+- URL Context Extraction card: tagline, features, pricing, product summary  
+- Suggestion buttons:  
+  - Improve clarity  
+  - Rewrite for investors  
+  - Make concise
+
+---
+
+# 🟣 STEP 2 — FOUNDER & TEAM  
+
+**Goal:** Gather founder info for pitch decks & personalization.
+
+### Fields
+
+- Founder Name  
+- Role / Title  
+- Short Bio  
+- LinkedIn URL  
+- Email  
+- Optional: Add Co-founder button
+
+### AI Enhancements
+
+- "Rewrite bio in investor-ready tone"  
+- "Summarize founder background into one sentence"
+
+### Layout
+
+Split layout: form left, AI rewrite panel right.
+
+---
+
+# 🟡 STEP 3 — BUSINESS FUNDAMENTALS  
+
+**Goal:** Collect core business attributes.
+
+### Fields (Two-column layout)
+
+- Industry  
+- Stage (Idea → Seed → Growth)  
+- Business Model (SaaS, Marketplace, etc.)  
+- Pricing Model  
+- Target Region  
+- Customer Segments  
+- Key Features (tags)  
+- Primary Competitors  
+- Differentiator (1 sentence)
+
+### AI Search Grounding Panel
+
+- Real-time competitor list  
+- Market keywords  
+- TAM/SAM/SOM hints  
+- Label: "Powered by Google Search Grounding"
+
+### AI Micro-interactions
+
+- "Detected similar companies…"  
+- "Common pricing for this category is…"
+
+---
+
+# 🟢 STEP 4 — TRACTION & METRICS  
+
+**Goal:** Provide validation signals to help AI generate strong investor content.
+
+### Fields
+
+- Monthly Revenue (MRR)  
+- # Users / Customers  
+- Growth Rate (MoM %)  
+- Waitlist Size  
+- Partners / Integrations  
+- Funding Raised (optional)  
+- Milestones Reached (tags or list)
+
+### Optional AI Extraction
+
+"Detected metrics from uploaded files…" (File Search)
+
+---
+
+# 🟣 STEP 5 — AI SUMMARY  
+
+**Goal:** Show the auto-generated startup profile with refinement tools.
+
+### Summary Sections (cards)
+
+- Problem & Solution  
+- Target Market  
+- Key Features  
+- Competitors  
+- Business Model  
+- Traction (if provided)  
+- Founder Bio  
+- AI Recommendations
+
+### Right-Side AI Controls
+
+Buttons:
+- Regenerate all  
+- Expand details  
+- Make concise  
+- Rewrite for investors  
+- Adjust tone: Professional / Bold / Friendly / Visionary
+
+### Add explanation block:
+
+"Gemini structured your profile using your inputs, website context, search grounding, and extracted signals."
+
+### Final CTA
+
+- **Finish & Save Profile**  
+- Link: Edit previous steps
+
+---
+
+# 🎨 COMPONENTS TO GENERATE
+
+- Horizontal 5-step progress bar with active/complete states  
+- Input fields, dropdowns, tag inputs  
+- Multiline text areas  
+- Structured Output Tags (toggle-style chips)  
+- AI panels (URL Context / Search Grounding / Reasoning)  
+- Suggestion buttons  
+- Navigation footer (Back / Continue)  
+- Summary cards with icons and dividers
+
+---
+
+# 📱 RESPONSIVE RULES
+
+- Desktop: two-column layout (content left, AI panel right)  
+- Tablet: AI panel collapses to bottom drawer  
+- Mobile: full vertical stack with sticky bottom nav  
+
+---
+
+# ✔️ FINAL INSTRUCTIONS
+
+Generate all 5 wizard screens, components, workflows, AI side panels, and sample content using auto-layout.  
+Prioritize clarity, hierarchy, and a smooth user journey.  
+Ensure all AI features (URL Context, Search Grounding, File Search, Reasoning) are visually represented with clean UI patterns and micro-interactions.
+```
+
+---
+
+### Additional Prompt Options
+
+**Generate mobile version:**
+```
+Design a mobile-responsive version of the Startup Profile Dashboard.
+Stack all cards vertically, collapse AI sidebar to bottom sheet.
+Use bottom navigation with 4 icons: Home, Decks, CRM, Profile.
+Keep SaaS aesthetic with violet AI accents.
+```
+
+**Generate dark mode version:**
+```
+Design a dark mode version of the Startup Profile Dashboard.
+Background: #0A0A0A, Cards: #1A1A1A, Borders: #2A2A2A
+Text: #FAFAFA (primary), #A0A0A0 (secondary)
+AI accents: violet gradient (#7C3AED → #A78BFA)
+Keep same layout and components.
+```
+
+**Generate design system tokens:**
+```
+Create a design system for StartupAI:
+
+Colors:
+- Background: #FAFAFA
+- Card: #FFFFFF
+- Border: #E5E7EB
+- Primary: #4F46E5 (indigo-600)
+- AI Accent: #7C3AED (violet-600)
+- Success: #10B981
+- Warning: #F59E0B
+- Error: #EF4444
+- Text Primary: #111827
+- Text Secondary: #6B7280
+
+Typography:
+- Font: Inter / System
+- H1: 32px / bold
+- H2: 24px / semibold
+- H3: 18px / semibold
+- Body: 14px / regular
+- Caption: 12px / regular
+
+Spacing:
+- 4px, 8px, 12px, 16px, 24px, 32px, 48px
+
+Border Radius:
+- Small: 4px
+- Medium: 8px
+- Large: 12px
+- XL: 16px
+
+Shadows:
+- Card: 0 1px 3px rgba(0,0,0,0.1)
+- Elevated: 0 4px 6px rgba(0,0,0,0.1)
+- Modal: 0 10px 15px rgba(0,0,0,0.1)
+```
+
+---
+
 **Legend:**
 - ✅ Done
 - 🟡 In Progress
@@ -980,4 +1470,3 @@ stateDiagram-v2
 
 **Estimated Effort:** 7 days
 **Dependencies:** Auth system, Supabase setup
-
