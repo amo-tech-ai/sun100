@@ -1,10 +1,11 @@
 # Deal System - Visual CRM Pipeline & AI Intelligence
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Last Updated:** 2025-12-07  
-**Status:** 🔴 Planning  
+**Status:** 🟡 In Progress (40%)  
 **Module:** 07 - Deal System  
-**Sprint:** S1-S2 (Days 1-14)
+**Sprint:** S1-S2 (Days 1-14)  
+**Database:** ✅ Schema Verified & Extended (2025-12-07)
 
 ---
 
@@ -80,6 +81,20 @@ Build a **visual, AI-powered Deal Pipeline** that enables founders to manage sal
 | **Deal Summary** | 🔴 | Gemini 2.5 Flash | - |
 | **Risk Analysis** | 🔴 | Gemini 3 Pro | Thinking |
 | **Similar Deals** | 🔴 | Gemini 3 Pro | - |
+
+### Database Status (Verified 2025-12-07)
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| **crm_deals** | ✅ Extended | +9 columns (owner_id, sector, next_action, ai_risk_factors, etc.) |
+| **crm_tasks** | ✅ Extended | +6 columns (deal_id, contact_id, status, priority, etc.) |
+| **crm_deal_enrichment** | ✅ Created | AI enrichment cache table |
+| **crm_deal_stage_history** | ✅ Created | Stage transition tracking |
+| **automation_rules** | ✅ Created | Workflow automation rules |
+| **crm_activities** | ✅ Created | Unified activity log |
+| **RLS Policies** | ✅ Applied | All 4 new tables secured |
+| **Indexes** | ✅ Created | 15+ indexes for performance |
+| **RPC Functions** | ✅ Created | move_deal_stage, get_deal_analytics, close_deal, get_deal_stage_history |
 
 ---
 
