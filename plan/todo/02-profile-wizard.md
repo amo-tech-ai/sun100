@@ -379,11 +379,14 @@ interface CoachResponse {
 
 ## Database Schema
 
+**Status:** ✅ Verified against Supabase (2025-12-07)
+
 ### Tables Used
 
-#### startups (Core)
+#### startups (Core) ✅
 
 ```sql
+-- Actual schema from Supabase (extended via migration)
 CREATE TABLE startups (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id         UUID REFERENCES auth.users(id),
@@ -391,28 +394,36 @@ CREATE TABLE startups (
   
   -- Basics (Step 1)
   name            TEXT NOT NULL,
-  tagline         TEXT,                    -- pitch
-  description     TEXT,                    -- solution
+  tagline         TEXT,                    -- pitch/tagline
+  description     TEXT,                    -- company description
   website_url     TEXT,
   logo_url        TEXT,
+  cover_image_url TEXT,                    -- hero/banner image
+  year_founded    INTEGER,
+  industry        TEXT,                    -- primary industry category
+  
+  -- Problem/Solution (Step 3)
+  problem         TEXT,                    -- problem statement
+  solution        TEXT,                    -- solution description
+  target_customers TEXT[],                 -- customer segments
   
   -- Traction (Step 4)
-  stage           TEXT,                    -- Idea, MVP, Pre-Seed, etc.
-  traction_data   JSONB DEFAULT '{}',      -- mau, revenue, growth
+  stage           TEXT CHECK (stage IN ('Idea', 'MVP', 'Pre-Seed', 'Seed', 'Series A+', 'Growth')),
+  traction_data   JSONB DEFAULT '{}',      -- {status, mau, revenue, growth}
   
   -- Business (Step 5)
-  business_model  TEXT[],
+  business_model  TEXT[],                  -- ['SaaS', 'Marketplace', etc.]
   pricing_model   TEXT,
   unique_value    TEXT,                    -- UVP
   
   -- Team (Step 6)
-  team_data       JSONB DEFAULT '{}',      -- teamSize, etc.
+  team_data       JSONB DEFAULT '{}',      -- {size: 'Solo'|'2-5'|'6-15'|'16+'}
   
   -- Funding (Step 7)
   is_raising      BOOLEAN DEFAULT false,
   raise_amount    NUMERIC,
   use_of_funds    TEXT[],
-  needs_data      JSONB DEFAULT '{}',      -- goals
+  needs_data      JSONB DEFAULT '{}',      -- {short, mid, major goals}
   
   -- Meta
   profile_strength INTEGER DEFAULT 0 CHECK (profile_strength >= 0 AND profile_strength <= 100),
@@ -421,27 +432,29 @@ CREATE TABLE startups (
   updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
--- RLS Policy
+-- RLS Policy (enabled)
 ALTER TABLE startups ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own startups" ON startups
   FOR ALL USING (user_id = auth.uid());
 ```
 
-#### startup_founders
+#### startup_founders ✅
 
 ```sql
 CREATE TABLE startup_founders (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   startup_id  UUID REFERENCES startups(id) ON DELETE CASCADE,
   full_name   TEXT NOT NULL,
-  role        TEXT,
+  role        TEXT,                       -- CEO, CTO, COO, CMO, Founder
   bio         TEXT,
   linkedin_url TEXT,
+  email       TEXT,
+  avatar_url  TEXT,
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
-#### startup_competitors
+#### startup_competitors ✅
 
 ```sql
 CREATE TABLE startup_competitors (
@@ -454,7 +467,7 @@ CREATE TABLE startup_competitors (
 );
 ```
 
-#### startup_metrics_snapshots
+#### startup_metrics_snapshots ✅
 
 ```sql
 CREATE TABLE startup_metrics_snapshots (
@@ -468,18 +481,66 @@ CREATE TABLE startup_metrics_snapshots (
 );
 ```
 
-#### ai_coach_insights
+#### startup_links ✅
+
+```sql
+-- Additional links table (exists in DB)
+CREATE TABLE startup_links (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  startup_id  UUID REFERENCES startups(id) ON DELETE CASCADE,
+  kind        TEXT CHECK (kind IN ('pitch_deck', 'demo', 'docs', 'linkedin', 'x', 'website', 'other')),
+  label       TEXT,
+  url         TEXT NOT NULL,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+#### ai_coach_insights ✅
 
 ```sql
 CREATE TABLE ai_coach_insights (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  startup_id  UUID REFERENCES startups(id) ON DELETE CASCADE,
-  payload     JSONB NOT NULL,    -- Full AI response
-  created_at  TIMESTAMPTZ DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ DEFAULT NOW(),
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  startup_id      UUID REFERENCES startups(id) ON DELETE CASCADE,
+  payload         JSONB NOT NULL DEFAULT '{}',
+  insights        JSONB DEFAULT '[]',      -- [{type, category, title, description}]
+  alerts          JSONB DEFAULT '[]',      -- [{severity, message, subtext}]
+  recommendations JSONB DEFAULT '[]',      -- [{action_id, label, reason}]
+  match_score     INTEGER CHECK (match_score >= 0 AND match_score <= 100),
+  created_at      TIMESTAMPTZ DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(startup_id)
 );
+
+-- RLS Policy
+ALTER TABLE ai_coach_insights ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage coach insights for own startups" ON ai_coach_insights
+  FOR ALL USING (
+    startup_id IN (SELECT id FROM startups WHERE user_id = auth.uid())
+  );
 ```
+
+### Schema Comparison
+
+| Field | Doc | DB | Status |
+|-------|-----|-----|--------|
+| `name` | ✅ | ✅ | ✅ Match |
+| `tagline` | ✅ | ✅ | ✅ Match |
+| `website_url` | ✅ | ✅ | ✅ Match |
+| `logo_url` | ✅ | ✅ | ✅ Match |
+| `cover_image_url` | ❌ | ✅ | ⚠️ Added to DB |
+| `year_founded` | ❌ | ✅ | ⚠️ Added to DB |
+| `industry` | ✅ | ✅ | ✅ Match |
+| `problem` | ✅ | ✅ | ✅ Match |
+| `solution` | ✅ | ✅ | ✅ Match |
+| `target_customers` | ✅ | ✅ | ✅ Match |
+| `stage` | ✅ | ✅ | ✅ Match |
+| `business_model` | ✅ | ✅ | ✅ Match |
+| `pricing_model` | ✅ | ✅ | ✅ Match |
+| `unique_value` | ✅ | ✅ | ✅ Match |
+| `is_raising` | ✅ | ✅ | ✅ Match |
+| `raise_amount` | ✅ | ✅ | ✅ Match |
+| `use_of_funds` | ✅ | ✅ | ✅ Match |
+| `profile_strength` | ✅ | ✅ | ✅ Match |
 
 ---
 
